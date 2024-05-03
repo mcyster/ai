@@ -3,8 +3,8 @@ name: inputConsumerEventNames
 description: Runs a report that lists the names of all the input consumer events and their counts for a client in the specified time period
 reportType: CONFIGURABLE_INPUT_RECORD_METRICS
 parameters:
-    mappings: 'name=event.name;count=group_count(event.id,name:"all")'
+    mappings: 'name=event.name;app_type=event.appType;api_type=event.apiType;count=group_count(event.id,name:"all")'
     container: 'production'
-    include_totals: false
     sort_order: 'descending(count)'
+    time_range: LAST_WEEK
 

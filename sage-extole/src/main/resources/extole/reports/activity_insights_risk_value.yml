@@ -3,13 +3,4 @@ name: activityInsightsRiskValue
 description: Runs a report that returns people with a high risk value.
 reportType: sbdbedyvskiz3oue03v
 parameters:    
-    mappings: 'Person Email=person(event.personId).normalizedEmail;Person ID=person(event.personId).id;Person Blocked=person(event.personId).blocked;Risk Value = number_format(maxmind_score(event.personId).riskScore);IP Risk Value=number_format(maxmind_score(event.personId).ipRiskScore);Email Risk=boolean_format(maxmind_score(event.personId).highRiskEmail == "true", "High", "Low");hidden(Count)=group_count_distinct(event.id, step_name:"risk_evaluated")'
-    filters: 'Risk Value >number_format("5")'
-    unattributed_events: false
-    quality: 'ALL'
-    campaign_states: 'ALL'
-    include_totals: false
-    sort_order: 'DESCENDING(Risk Value )'
-    container: 'production'
-    visit_type: 'ALL'
-    
+    time_range: LAST_WEEK

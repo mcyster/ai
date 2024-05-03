@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
 class ExtoleClientEventSearchTool implements ExtoleSupportAdvisorTool<Request> {
-    private static final String NOTIFICATION_ID_PATTERN = "[a-z0-9]{20}";
+    private static final String NOTIFICATION_ID_PATTERN = "[a-z0-9]{18,20}";
 
     private ExtoleWebClientFactory extoleWebClientFactory;
     private ExtoleNotificationGetTool extoleNotificationGetTool;
@@ -52,7 +52,8 @@ class ExtoleClientEventSearchTool implements ExtoleSupportAdvisorTool<Request> {
         
         if (request.likeNotificationId != null) {
             if (!request.likeNotificationId.matches(NOTIFICATION_ID_PATTERN)) {
-                throw new ToolException("likeNotificationId must be 20 characters and alphanumeric (lowercase alpha only)");  
+                throw new ToolException("likeNotificationId " + request.likeNotificationId +
+                        " must be 18 to 20 characters and alphanumeric (lowercase alpha only)");
             }
             
             var notificationRequest = new com.extole.sage.advisors.support.reports.ExtoleNotificationGetTool.Request();
@@ -61,7 +62,7 @@ class ExtoleClientEventSearchTool implements ExtoleSupportAdvisorTool<Request> {
             notificationRequest.notificationId = request.likeNotificationId;
             
             JsonNode notification = (JsonNode)this.extoleNotificationGetTool.execute(notificationRequest, null);
-            
+
             JsonNode tagsNode = new ObjectMapper().createArrayNode();
             if (notification.has("tags")) {
                 tagsNode = notification.path("tags");
@@ -69,7 +70,7 @@ class ExtoleClientEventSearchTool implements ExtoleSupportAdvisorTool<Request> {
             else if (notification.has("client_event") && notification.path("client_event").has("tags")) {
                 tagsNode = notification.path("client_event").path("tags");
             }
-            
+
             if (tagsNode.isArray()) {
                 for (JsonNode tagNode : tagsNode) {
                     if (tags.length() > 0 && !tags.toString().trim().isEmpty()) {
@@ -79,7 +80,7 @@ class ExtoleClientEventSearchTool implements ExtoleSupportAdvisorTool<Request> {
                 }
             }
         }
-        
+
         ObjectNode parameters = JsonNodeFactory.instance.objectNode();
         {
             parameters.put("time_range", "LAST_QUARTER");

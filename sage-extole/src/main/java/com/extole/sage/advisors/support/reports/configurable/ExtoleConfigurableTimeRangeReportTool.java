@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvisorTool<Request> {
     Tool<Request, Void> tool;
-    
+
     ExtoleConfigurableTimeRangeReportTool(Configuration configuration, ExtoleWebClientFactory extoleWebClientFactory) {
 
        this.tool = new UncachedExtoleConfigurableTimeRangeReportTool(
@@ -33,7 +33,7 @@ class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvisorTool<
            configuration.waitForResult(),
            extoleWebClientFactory);
     }
-    
+
     @Override
     public String getName() {
         return this.tool.getName();
@@ -73,20 +73,20 @@ class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvisorTool<
             setDescription(description);
             setReportType(reportType);
             setParameters(parameters);
-            
+
             if (rowLimit != null) {
                 this.rowLimit = rowLimit;
             } else {
                 this.rowLimit = 10;
             }
-            
+
             if (waitForResult != null) {
                 this.waitForResult = waitForResult;
             } else {
                 this.waitForResult = false;
             }
         }
-        
+
         public String getName() {
             return name;
         }
@@ -121,23 +121,20 @@ class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvisorTool<
         public boolean waitForResult() {
             return waitForResult;
         }
-        
+
         public Map<String, String> getParameters() {
             return parameters;
         }
 
         private void setParameters(Map<String, String> parameters) {
-            if (parameters == null || parameters.isEmpty()) {
-                throw new IllegalArgumentException("Parameters cannot be null or empty");
-            }
-            this.parameters = parameters;
+            this.parameters = parameters == null ? new HashMap<>() : parameters;
         }
-        
+
         private void validateString(String value, String fieldName) {
             if (value == null || value.trim().isEmpty()) {
                 throw new IllegalArgumentException(fieldName + " cannot be null or empty");
             }
-        } 
+        }
     }
 }
 
@@ -150,16 +147,16 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvi
     private int rowLimit;
     private Map<String, String> fixedParameters;
     private boolean waitForResult;
-    
+
     public UncachedExtoleConfigurableTimeRangeReportTool(
-            String name, 
-            String description, 
-            String reportType, 
-            int rowLimit, 
-            Map<String, String> fixedParameters, 
-            boolean waitForResult, 
+            String name,
+            String description,
+            String reportType,
+            int rowLimit,
+            Map<String, String> fixedParameters,
+            boolean waitForResult,
             ExtoleWebClientFactory extoleWebClientFactory) {
-        this.extoleWebClientFactory = extoleWebClientFactory;        
+        this.extoleWebClientFactory = extoleWebClientFactory;
         this.name = name;
         this.name = name;
         this.reportType = reportType;
@@ -186,13 +183,13 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvi
     @Override
     public Object execute(Request request, Void context) throws ToolException {
         ObjectNode parameters = JsonNodeFactory.instance.objectNode();
-        { 
+        {
             var timeRange = "LAST_MONTH";
             if (request.timeRange != null && !request.timeRange.isBlank()) {
                 timeRange = request.timeRange;
             }
             parameters.put("time_range", timeRange);
-            
+
             ObjectMapper mapper = new ObjectMapper();
             fixedParameters.forEach((key, value) -> {
                 JsonNode jsonNode = mapper.valueToTree(value);
@@ -203,15 +200,15 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvi
 
         var reportBuilder = new ExtoleReportBuilder(this.extoleWebClientFactory)
                 .withClientId(request.clientId)
-                .withLimit(rowLimit) 
+                .withLimit(rowLimit)
                 .withName(reportType)
                 .withDisplayName(name)
                 .withParameters(parameters)
                 .withWaitForResult(waitForResult);
-        
+
         return reportBuilder.build();
     }
-    
+
     static class Request {
         @JsonProperty(required = true)
         public String clientId;
@@ -225,10 +222,10 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvi
             if (this == object) {
                 return true;
             }
-            if (object == null || getClass() != object.getClass()) { 
+            if (object == null || getClass() != object.getClass()) {
                 return false;
             }
-            
+
             Request value = (Request) object;
             return Objects.equals(clientId, value.clientId) &&
                    Objects.equals(timeRange, value.timeRange);
@@ -237,8 +234,8 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvi
         @Override
         public int hashCode() {
             return Objects.hash(clientId, timeRange);
-        }   
-        
+        }
+
         @Override
         public String toString() {
             ObjectMapper mapper = new ObjectMapper();

@@ -3,13 +3,5 @@ name: activityInsightsHighIpCount
 description: Runs a report that returns people that have a high number of IP addresses associated with their profile.
 reportType: sbdcik2zjrtx4kuu073a
 parameters:
-    mappings: 'Person ID=person(event.personId).id;Person Email=person(event.personId).normalizedEmail;Blocked=person(event.personId).blocked;Risk Value=number_format(maxmind_score(event.personId).riskScore);Last IP Risk Value=number_format(maxmind_score(event.personId).ipRiskScore);Person IPs Count=count_distinct(collection(person(event.personId).recentRequestContexts, extracting:geoIp.ipAddress));Countries Count=count_distinct(collection(person(event.personId).recentRequestContexts, extracting:geoIp.country.name));Person IPs=concatenate_collection(person(event.personId).recentRequestContexts, extracting:geoIp.ipAddress, separator:", ");Countries=concatenate_collection(person(event.personId).recentRequestContexts, extracting:geoIp.country.name, separator:", ");Event Count=group_count_distinct(event.id, step_name:"all")'
-    filters: 'Person IPs Count>number_format("2")'
-    sort_order: 'DESCENDING(Person IPs Count)'
-    unattributed_events: false,
-    quality: 'ALL'
-    campaign_states: 'ALL'
-    include_totals: false,
-    container: 'production'
-    visit_type: 'ALL'
+  time_range: LAST_WEEK
     

@@ -3,12 +3,4 @@ name: activityInsightsEarnedRewards
 description: Runs a report that returns people and their reward count for people with more than 10 rewards or people who have been blocked.
 reportType: sbdcik2zjrtx4kuu073a
 parameters:
-    mappings: 'Person Email=person(event.personId).normalizedEmail;Person ID=person(event.personId).id;Blocked=person(event.personId).blocked;Rewards Count=count(person(event.personId).rewards);Rewards in Range=group_count_distinct(event.id, step_name:"reward_earned")'
-    filters: 'Rewards Count>number_format("10")'
-    unattributed_events: false
-    container: "production"
-    campaign_states: "ALL"
-    visit_type: "ALL"
-    quality: "ALL"
-    include_totals: false
-    sort_order: 'DESCENDING(Rewards Count)'
+  time_range: LAST_WEEK

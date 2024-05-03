@@ -8,17 +8,17 @@ import com.extole.sage.advisors.support.ExtoleSupportAdvisor;
 
 @Component
 public class ExtoleRunbookNotificationTrafficIncreaseScenario implements RunbookScenario {
-    public static String NAME = "extoleRunbookNotificationTrafficIncrease";
-    private static String DESCRIPTION = "Analyzes and comments on traffic increase notification tickets";    
-    private static String KEYWORDS = "notification traffic increase automatic change percentage alerts";
+    public static final String NAME = "extoleRunbookNotificationTrafficIncrease";
+    private static final String DESCRIPTION = "Analyzes and comments on traffic increase notification tickets";
+    private static final String KEYWORDS = "notification traffic increase automatic change percentage alerts";
 
-    private static String INSTRUCTIONS = """
+    private static final String INSTRUCTIONS = """
 Load the support ticket {{ticket_number}}
 
-Determine the client_id, notification_id (aka event_id) and user_id from https://my.extole.com/notifications/view
+Determine the client_id, notification_id (aka event_id) and user_id from https://https://my.extole.com/notifications?client_id={{client_id}}&user_id={{user_id}}#/view/{{notification_id}}
 
 Get the notification using the notification_id and user_id to determine its associated attributes.
-Get similar client events by searching for client events by user_id and like_noticication_id.
+Get similar client events by searching for client events by user_id and like_notification_id.
 Get the traffic to the top promotion sources.
 Run all the activity insight tools.
 
@@ -27,7 +27,7 @@ Add a comment to the ticket providing:
 - a link to the notification
 - the number of times the related client event has occurred, including the report link
 - the traffic to the to top promotion sources, including the report link
-- list the links returned by the the activity insight tools. 
+- list the links returned by the the activity insight tools.
 
 Note the ticket number, and an extremely brief summary of the comment added to the ticket.
 """;

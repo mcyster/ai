@@ -3,13 +3,5 @@
 name: activityInsightsFriendCount
 description: Runs a report that returns people with a lot of friends
 reportType: sbdbtvo9keb604hfxcz
-parameters:    
-    mappings: 'Advocate Email=person(event.data.related_person_id).normalizedEmail;Advocate ID=person(event.data.related_person_id).id;Advocate Blocked=person(event.data.related_person_id).blocked;All Time Friends=count_distinct(collection(person(event.data.related_person_id).recentAssociatedFriends, extracting:otherPersonId));Conversions In Time Range=group_count_distinct(event.id, step_name:"converted");Shares In Time Range=count_distinct(collection(person(event.data.related_person_id).steps, filter:name=="shared", extracting:eventId));All Time Friend IDs=concatenate_collection(person(event.data.related_person_id).recentAssociatedFriends, extracting:otherPersonId, separator:", ");Converted In Time Range Friend IDs=group_concatenate(person(event.personId).id, step_name:"converted", separator:",");hidden(activity)=GROUP_COUNT_DISTINCT(event.id, step_name:"all")'
-    filters: 'All Time Friends>number_format("5")'
-    sort_order: "DESCENDING(All Time Friends)"
-    unattributed_events: false
-    quality: 'ALL'
-    campaign_states: 'ALL'
-    include_totals: false
-    container: 'production'
-    visit_type: 'ALL'
+parameters:
+  time_range: LAST_WEEK
