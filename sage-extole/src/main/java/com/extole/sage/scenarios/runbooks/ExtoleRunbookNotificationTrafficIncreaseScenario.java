@@ -15,7 +15,7 @@ public class ExtoleRunbookNotificationTrafficIncreaseScenario implements Runbook
     private static final String INSTRUCTIONS = """
 Load the support ticket {{ticket_number}}
 
-Determine the client_id, notification_id (aka event_id) and user_id from https://https://my.extole.com/notifications?client_id={{client_id}}&user_id={{user_id}}#/view/{{notification_id}}
+Determine the client_id, notification_id (aka event_id) and user_id from https://my.extole.com/notifications?client_id={{client_id}}&user_id={{user_id}}#/view/{{notification_id}}
 
 Get the notification using the notification_id and user_id to determine its associated attributes.
 Get similar client events by searching for client events by user_id and like_notification_id.

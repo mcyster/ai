@@ -7,4 +7,3 @@ parameters:
     container: 'production'
     sort_order: 'descending(count)'
     time_range: LAST_WEEK
-
