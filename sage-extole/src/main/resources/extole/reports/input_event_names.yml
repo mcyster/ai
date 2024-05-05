@@ -6,4 +6,4 @@ parameters:
     mappings: 'name=event.name;app_type=event.appType;api_type=event.apiType;count=group_count(event.id,name:"all")'
     container: 'production'
     sort_order: 'descending(count)'
-    time_range: LAST_WEEK
+    time_range: LAST_MONTH

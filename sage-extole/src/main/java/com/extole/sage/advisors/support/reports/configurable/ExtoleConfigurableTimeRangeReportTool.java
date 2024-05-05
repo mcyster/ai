@@ -184,18 +184,18 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvi
     public Object execute(Request request, Void context) throws ToolException {
         ObjectNode parameters = JsonNodeFactory.instance.objectNode();
         {
-            var timeRange = "LAST_MONTH";
-            if (request.timeRange != null && !request.timeRange.isBlank()) {
-                timeRange = request.timeRange;
-            }
-            parameters.put("time_range", timeRange);
-
             ObjectMapper mapper = new ObjectMapper();
             fixedParameters.forEach((key, value) -> {
                 JsonNode jsonNode = mapper.valueToTree(value);
                 parameters.set(key, jsonNode);
             });
-
+            
+            if (request.timeRange != null && !request.timeRange.isBlank()) {
+                parameters.put("time_range", request.timeRange);
+            }
+            if (!parameters.has("timeRange")) {
+                parameters.put("time_range", "LAST_MONTH");                
+            }
         }
 
         var reportBuilder = new ExtoleReportBuilder(this.extoleWebClientFactory)
