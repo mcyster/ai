@@ -50,3 +50,11 @@ Commit basic deployment scripts
 Update scripts to work with systemd or perhaps goto Lamdbas?
 
 Leverage secret store for keys
+
+
+# Modules
+
+Use modules to declare public classes etc rather than separate builds
+
+module-info....
+

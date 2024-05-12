@@ -3,8 +3,7 @@ package com.cyster.assistant.impl.advisor;
 
 import com.cyster.assistant.service.advisor.AdvisorBuilder;
 import com.cyster.assistant.service.advisor.AdvisorService;
-import com.theokanning.openai.service.OpenAiService;
-
+import io.github.stefanbratanov.jvm.openai.OpenAI;
 
 // https://platform.openai.com/docs/assistants/overview
 // https://platform.openai.com/docs/assistants/tools/code-interpreter
@@ -15,15 +14,15 @@ import com.theokanning.openai.service.OpenAiService;
 
 public class AdvisorServiceImpl implements AdvisorService {
 
-    private OpenAiService openAiService;
+    private final OpenAI openAi;
     
-    public AdvisorServiceImpl(OpenAiService openAiService) {
-        this.openAiService = openAiService;
+    public AdvisorServiceImpl(OpenAI openAi) {
+        this.openAi = openAi;
     }
     
     public <C> AdvisorBuilder<C> getOrCreateAdvisor(String name) {
         // TODO support returning other advisor implementations: ChatAdvisor, TooledChatAdvisor
-        return new AssistantAdvisorImpl.Builder<C>(this.openAiService, name);    
+        return new AssistantAdvisorImpl.Builder<C>(this.openAi, name);    
     }
      
     

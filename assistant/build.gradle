@@ -8,6 +8,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
+    modularity.inferModulePath.set(true)
 }
 
 repositories {
@@ -16,7 +17,8 @@ repositories {
 
 
 dependencies {
-    implementation 'com.theokanning.openai-gpt3-java:service:0.18.2'
+    implementation("io.github.stefanbratanov:jvm-openai:0.9.1")
+
     implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema-jakarta:2.16.1'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
     implementation 'com.google.guava:guava:33.0.0-jre'
@@ -27,6 +29,15 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 }
+
+//compileJava {
+//    doFirst {
+//        options.compilerArgs = [
+//            '--module-path', classpath.asPath,
+//            '--add-modules', 'openai.service'
+//        ]
+//    }
+//}
 
 test {
     useJUnitPlatform()
