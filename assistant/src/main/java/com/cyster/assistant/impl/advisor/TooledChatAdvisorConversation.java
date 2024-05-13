@@ -41,9 +41,7 @@ public class TooledChatAdvisorConversation<C> implements Conversation {
     
         while (response == null) {
             var chatMessages = new ArrayList<ChatMessage>();
-        
-            // TODO "get_weather" hard coded?
-        
+                
             for (var message : this.messages) {
                 switch (message.getType()) {
                 case SYSTEM:
@@ -55,14 +53,6 @@ public class TooledChatAdvisorConversation<C> implements Conversation {
                 case USER:
                     chatMessages.add(ChatMessage.userMessage(message.getContent()));
                     break;
-                /*
-                case FUNCTION_CALL:
-                    chatMessages.add(ChatMessage.toolMessage(message.getContent(), "get_weather"));
-                    break;
-                case FUNCTION_RESULT:
-                    chatMessages.add(ChatMessage.toolMessage(message.getContent(), "get_weather"));
-                    break;
-                */
                 default:
                     // ignore
                 }
@@ -71,8 +61,6 @@ public class TooledChatAdvisorConversation<C> implements Conversation {
             var chatCompletionRequest = CreateChatCompletionRequest.newBuilder()
                 .model(model)
                 .messages(chatMessages)
-                // .functions(chatFunctionToolset.getFunctions())   // TODO !!!!!!!!!!!!!!
-                // .functionCall(new ChatCompletionRequestFunctionCall("auto"))
                 .maxTokens(1000);
     
             var chatResponse = chatClient.createChatCompletion(chatCompletionRequest.build());

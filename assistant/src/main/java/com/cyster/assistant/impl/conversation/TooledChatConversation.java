@@ -85,15 +85,6 @@ public class TooledChatConversation implements Conversation {
                 case USER:
                     chatMessages.add(ChatMessage.userMessage(message.getContent()));
                     break;
-                    /*
-                case FUNCTION_CALL:
-                    chatMessages.add(new ChatMessage(ChatMessageRole.ASSISTANT.value(), message.getContent(),
-                        "get_weather"));
-                case FUNCTION_RESULT:
-                    chatMessages.add(new ChatMessage(ChatMessageRole.FUNCTION.value(), message.getContent(),
-                        "get_weather"));
-                    break;
-                    */
                 default:
                     // ignore
                 }
@@ -104,8 +95,6 @@ public class TooledChatConversation implements Conversation {
             var chatCompletionRequest = CreateChatCompletionRequest.newBuilder()
                 .model(model)
                 .messages(chatMessages)
-//                .functions(chatFunctionToolset.getFunctions())
-//                .functionCall(new ChatCompletionRequestFunctionCall("auto"))
                 .maxTokens(1000)
                 .build();
 
