@@ -8,43 +8,42 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.cyster.assistant.service.advisor.Advisor;
 import com.cyster.assistant.service.advisor.AdvisorBuilder;
 import com.cyster.assistant.service.conversation.Conversation;
-import com.theokanning.openai.ListSearchParameters;
-import com.theokanning.openai.OpenAiHttpException;
-import com.theokanning.openai.OpenAiResponse;
-import com.theokanning.openai.assistants.Assistant;
-import com.theokanning.openai.assistants.AssistantRequest;
-import com.theokanning.openai.file.File;
-import com.theokanning.openai.service.OpenAiService;
+
+import io.github.stefanbratanov.jvm.openai.Assistant;
+import io.github.stefanbratanov.jvm.openai.AssistantsClient;
+import io.github.stefanbratanov.jvm.openai.CreateAssistantRequest;
+import io.github.stefanbratanov.jvm.openai.File;
+import io.github.stefanbratanov.jvm.openai.FilesClient;
+import io.github.stefanbratanov.jvm.openai.OpenAI;
+import io.github.stefanbratanov.jvm.openai.PaginationQueryParameters;
+import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
+import io.github.stefanbratanov.jvm.openai.AssistantsClient.PaginatedAssistants;
+
 
 public class AssistantAdvisorImpl<C> implements Advisor<C> {
-    private static final Logger logger = LogManager.getLogger(AssistantAdvisorImpl.class);
-
     public static String VERSION = "0.1";
     public static String METADATA_VERSION = "version";
     public static String METADATA_IDENTITY = "identityHash";
 
-    private OpenAiService openAiService;
+    private OpenAI openAi;
     private Assistant assistant;
     private Toolset<C> toolset;
 
-    public AssistantAdvisorImpl(OpenAiService openAiService, Assistant assistant, Toolset<C> toolset) {
-        this.openAiService = openAiService;
+    public AssistantAdvisorImpl(OpenAI openAi, Assistant assistant, Toolset<C> toolset) {
+        this.openAi = openAi;
         this.assistant = assistant;
         this.toolset = toolset;
     }
 
     public String getId() {
-        return this.assistant.getId();
+        return this.assistant.id();
     }
 
     public String getName() {
-        return this.assistant.getName();
+        return this.assistant.name();
     }
 
     @Override
@@ -82,8 +81,8 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
 
         @Override
         public Conversation start() {
-            var conversation = new AssistantAdvisorConversation<C2>(this.advisor.openAiService,
-                this.advisor.assistant.getId(),
+            var conversation = new AssistantAdvisorConversation<C2>(this.advisor.openAi,
+                this.advisor.assistant.id(),
                 this.advisor.toolset,
                 overrideInstructions,
                 context);
@@ -99,14 +98,14 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
     public static class Builder<C2> implements AdvisorBuilder<C2> {
         private static final String MODEL = "gpt-4-1106-preview";
 
-        private final OpenAiService openAiService;
+        private final OpenAI openAi;
         private final String name;
         private Optional<String> instructions = Optional.empty();
         private Toolset.Builder<C2> toolsetBuilder = new Toolset.Builder<C2>();
         private List<Path> filePaths = new ArrayList<Path>();
 
-        Builder(OpenAiService openAiService, String name) {
-            this.openAiService = openAiService;
+        Builder(OpenAI openAi, String name) {
+            this.openAi = openAi;
             this.name = name;
         }
 
@@ -137,14 +136,19 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
                 assistant = Optional.of(this.create(hash));
             }
 
-            return new AssistantAdvisorImpl<C2>(this.openAiService, assistant.get(), this.toolsetBuilder.create());
+            return new AssistantAdvisorImpl<C2>(this.openAi, assistant.get(), this.toolsetBuilder.create());
         }
 
         private Assistant create(String hash) {
             List<String> fileIds = new ArrayList<String>();
             for (var filePath : this.filePaths) {
-                File file = this.openAiService.uploadFile("assistants", filePath.toString());
-                fileIds.add(file.getId());
+                FilesClient filesClient = this.openAi.filesClient();
+                UploadFileRequest uploadInputFileRequest = UploadFileRequest.newBuilder()
+                    .file(filePath)
+                    .purpose("assistants")
+                    .build();
+                File file = filesClient.uploadFile(uploadInputFileRequest);
+                fileIds.add(file.id());
             }
 
             var metadata = new HashMap<String, String>();
@@ -156,52 +160,50 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
                 toolset.enableRetrival();
             }
 
-            var requestBuilder = AssistantRequest.builder()
+            AssistantsClient assistantsClient = this.openAi.assistantsClient();
+            CreateAssistantRequest.Builder requestBuilder = CreateAssistantRequest.newBuilder()
                 .name(this.name)
                 .model(MODEL)
                 .metadata(metadata)
                 .tools(toolset.getAssistantTools());
-
+                
             if (this.instructions.isPresent()) {
                 requestBuilder.instructions(this.instructions.get());
             }
 
+            /* TODO 
             if (fileIds.size() > 0) {
                 requestBuilder.fileIds(fileIds);
             }
-
-            Assistant assistant;
-            try {
-                assistant = this.openAiService.createAssistant(requestBuilder.build());
-            } catch (OpenAiHttpException exception) {
-                // TODO throw declared exception
-                logger.error("Failed to create OpenAI assistant: " + requestBuilder.toString().replace("\n", "\\n"),
-                    exception);
-                throw exception;
-            }
+            */
+            
+            Assistant assistant = assistantsClient.createAssistant(requestBuilder.build());
 
             return assistant;
         }
 
         private Optional<Assistant> findAssistant(String hash) {
-            OpenAiResponse<Assistant> response = null;
+            AssistantsClient assistantsClient = this.openAi.assistantsClient();
+            
+            PaginatedAssistants response = null;
             do {
-                var searchBuilder = ListSearchParameters.builder().limit(99);
+                PaginationQueryParameters.Builder queryBuilder = PaginationQueryParameters.newBuilder()
+                    .limit(99);
                 if (response != null) {
-                    searchBuilder.after(response.getLastId());
+                    queryBuilder.after(response.lastId());
                 }
-                response = this.openAiService.listAssistants(searchBuilder.build());
+                response = assistantsClient.listAssistants(queryBuilder.build());
 
-                for (var assistant : response.getData()) {
-                    if (assistant.getName() != null && assistant.getName().equals(this.name)) {
-                        if (assistant.getMetadata().containsKey(METADATA_IDENTITY)) {
-                            if (assistant.getMetadata().get(METADATA_IDENTITY).equals(hash)) {
+                for (var assistant : response.data()) {
+                    if (assistant.name() != null && assistant.name().equals(this.name)) {
+                        if (assistant.metadata().containsKey(METADATA_IDENTITY)) {
+                            if (assistant.metadata().get(METADATA_IDENTITY).equals(hash)) {
                                 return Optional.of(assistant);
                             }
                         }
                     }
                 }
-            } while (response.isHasMore());
+            } while (response.hasMore());
 
             return Optional.empty();
         }

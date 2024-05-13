@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
-import com.theokanning.openai.assistants.AssistantFunction;
-import com.theokanning.openai.assistants.AssistantToolsEnum;
+
+import io.github.stefanbratanov.jvm.openai.Function;
 
 class AdvisorToolset<C> {
     private Toolset<C> toolset;
@@ -34,28 +34,27 @@ class AdvisorToolset<C> {
         return this;
     }
 
-    public List<com.theokanning.openai.assistants.Tool> getAssistantTools() {
-        var requestTools = new ArrayList<com.theokanning.openai.assistants.Tool>();
+    public List<io.github.stefanbratanov.jvm.openai.Tool> getAssistantTools() {
+        var requestTools = new ArrayList<io.github.stefanbratanov.jvm.openai.Tool>();
 
         if (this.retrieval) {
-            requestTools.add(new com.theokanning.openai.assistants.Tool(AssistantToolsEnum.RETRIEVAL, null));
+            requestTools.add(new io.github.stefanbratanov.jvm.openai.Tool.FileSearchTool());
         }
 
         if (this.codeInterpreter) {
-            requestTools.add(new com.theokanning.openai.assistants.Tool(AssistantToolsEnum.CODE_INTERPRETER, null));
+            requestTools.add(new io.github.stefanbratanov.jvm.openai.Tool.CodeInterpreterTool());
         }
 
         for (var tool : this.toolset.getTools()) {
-
             var parameterSchema = getOpenAiToolParameterSchema(tool);
 
-            AssistantFunction requestFunction = AssistantFunction.builder()
+            var requestFunction = Function.newBuilder()
                 .name(tool.getName())
                 .description(tool.getDescription())
                 .parameters(parameterSchema)
                 .build();
 
-            requestTools.add(new com.theokanning.openai.assistants.Tool(AssistantToolsEnum.FUNCTION, requestFunction));
+            requestTools.add(new io.github.stefanbratanov.jvm.openai.Tool.FunctionTool(requestFunction));
         }
 
         return requestTools;
@@ -82,8 +81,7 @@ class AdvisorToolset<C> {
 
         var schemaNode = schema.toJsonNode();
 
-        return mapper.convertValue(schemaNode, new TypeReference<Map<String, Object>>() {
-        });
+        return mapper.convertValue(schemaNode, new TypeReference<Map<String, Object>>() {});
     }
 
 }

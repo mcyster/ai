@@ -13,16 +13,23 @@ import com.cyster.assistant.service.conversation.Conversation;
 import com.cyster.assistant.service.conversation.ConversationException;
 import com.cyster.assistant.service.conversation.Message;
 import com.cyster.assistant.service.conversation.Message.Type;
-import com.theokanning.openai.OpenAiResponse;
-import com.theokanning.openai.messages.MessageRequest;
-import com.theokanning.openai.runs.Run;
-import com.theokanning.openai.runs.RunCreateRequest;
-import com.theokanning.openai.runs.SubmitToolOutputRequestItem;
-import com.theokanning.openai.runs.SubmitToolOutputsRequest;
-import com.theokanning.openai.runs.ToolCall;
-import com.theokanning.openai.service.OpenAiService;
-import com.theokanning.openai.threads.Thread;
-import com.theokanning.openai.threads.ThreadRequest;
+
+import io.github.stefanbratanov.jvm.openai.CreateMessageRequest;
+import io.github.stefanbratanov.jvm.openai.CreateRunRequest;
+import io.github.stefanbratanov.jvm.openai.CreateThreadRequest;
+import io.github.stefanbratanov.jvm.openai.MessagesClient;
+import io.github.stefanbratanov.jvm.openai.OpenAI;
+import io.github.stefanbratanov.jvm.openai.OpenAIException;
+import io.github.stefanbratanov.jvm.openai.PaginationQueryParameters;
+import io.github.stefanbratanov.jvm.openai.RunsClient;
+import io.github.stefanbratanov.jvm.openai.SubmitToolOutputsRequest;
+import io.github.stefanbratanov.jvm.openai.ThreadRun;
+import io.github.stefanbratanov.jvm.openai.ThreadsClient;
+import io.github.stefanbratanov.jvm.openai.ToolCall;
+import io.github.stefanbratanov.jvm.openai.Thread;
+import io.github.stefanbratanov.jvm.openai.ThreadMessage.Content.TextContent;
+import io.github.stefanbratanov.jvm.openai.SubmitToolOutputsRequest.ToolOutput;
+import io.github.stefanbratanov.jvm.openai.ToolCall.FunctionToolCall;
 
 public class AssistantAdvisorConversation<C> implements Conversation {
     private static final long RUN_BACKOFF_MIN = 1000L;
@@ -35,7 +42,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
 
     private static final Logger logger = LogManager.getLogger(AssistantAdvisorConversation.class);
 
-    private OpenAiService openAiService;
+    private OpenAI openAi;
     private String assistantId;
     private Toolset<C> toolset;
     private List<Message> messages;
@@ -43,9 +50,9 @@ public class AssistantAdvisorConversation<C> implements Conversation {
     private Optional<String> overrideInstructions = Optional.empty();
     private C context;
 
-    AssistantAdvisorConversation(OpenAiService openAiService, String assistantId, Toolset<C> toolset,
+    AssistantAdvisorConversation(OpenAI openAiService, String assistantId, Toolset<C> toolset,
         Optional<String> overrideInstructions, C context) {
-        this.openAiService = openAiService;
+        this.openAi = openAiService;
         this.assistantId = assistantId;
         this.toolset = toolset;
         this.messages = new ArrayList<Message>();
@@ -93,19 +100,15 @@ public class AssistantAdvisorConversation<C> implements Conversation {
     private Message doRun() throws AdvisorConversationException {
         var thread = getOrCreateThread();
 
-        var runRequestBuilder = RunCreateRequest.builder()
+        var requestBuilder = CreateRunRequest.newBuilder()
             .assistantId(this.assistantId);
 
         if (overrideInstructions.isPresent()) {
-            runRequestBuilder.instructions(overrideInstructions.get());
+            requestBuilder.instructions(overrideInstructions.get());
         }
 
-        Run run;
-        try {
-            run = this.openAiService.createRun(thread.getId(), runRequestBuilder.build());
-        } catch (Throwable exception) {
-            throw new AdvisorConversationException("Error while starting an OpenAi.run", exception);
-        }
+        RunsClient runsClient = this.openAi.runsClient();
+        ThreadRun run = runsClient.createRun(thread.id(), requestBuilder.build());
 
         int retryCount = 0;
         long delay = RUN_BACKOFF_MIN;
@@ -114,7 +117,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
 
         do {
             try {
-                if (lastStatus.equals(run.getStatus())) {
+                if (lastStatus.equals(run.status())) {
                     java.lang.Thread.sleep(delay);
                     delay *= 2;
                     if (delay > RUN_BACKOFF_MAX) {
@@ -126,7 +129,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
                         delay = RUN_BACKOFF_MIN;
                     }
                 }
-                lastStatus = run.getStatus();
+                lastStatus = run.status();
             } catch (InterruptedException exception) {
                 throw new RuntimeException("Thread interrupted with waitfinr for OpenAI run response", exception);
             }
@@ -138,7 +141,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
             }
 
             try {
-                run = this.openAiService.retrieveRun(run.getThreadId(), run.getId());
+                run = runsClient.retrieveRun(run.threadId(), run.id());
             } catch (Throwable exception) {
                 if (exception instanceof SocketTimeoutException) {
                     if (retryCount++ > RUN_RETRIES_MAX) {
@@ -150,74 +153,77 @@ public class AssistantAdvisorConversation<C> implements Conversation {
                 }
             }
 
-            if (run.getStatus().equals("expired")) {
+            if (run.status().equals("expired")) {
                 throw new RetryableAdvisorConversationException("Run.expired");
             }
 
-            if (run.getStatus().equals("failed")) {
+            if (run.status().equals("failed")) {
                 throw new AdvisorConversationException("Run.failed");
             }
 
-            if (run.getStatus().equals("cancelled")) {
+            if (run.status().equals("cancelled")) {
                 throw new AdvisorConversationException("Run.cancelled");
             }
 
-            if (run.getRequiredAction() != null) {
-                logger.info("Run.actions[" + run.getId() + "]: " + run.getRequiredAction().getSubmitToolOutputs()
-                    .getToolCalls().stream()
+            if (run.requiredAction() != null) {
+                logger.info("Run.actions[" + run.id() + "]: " + run.requiredAction().submitToolOutputs()
+                    .toolCalls().stream()
                         .map(toolCall -> getToolCallSummary(toolCall))
                         .collect(Collectors.joining(", ")));
 
-                if (run.getRequiredAction().getSubmitToolOutputs() == null
-                    || run.getRequiredAction().getSubmitToolOutputs() == null
-                    || run.getRequiredAction().getSubmitToolOutputs().getToolCalls() == null) {
+                if (run.requiredAction().submitToolOutputs() == null
+                    || run.requiredAction().submitToolOutputs() == null
+                    || run.requiredAction().submitToolOutputs().toolCalls() == null) {
                     throw new AdvisorConversationException("Action Required but no details");
                 }
-
-                var outputItems = new ArrayList<SubmitToolOutputRequestItem>();
-
-                for (var toolCall : run.getRequiredAction().getSubmitToolOutputs().getToolCalls()) {
-                    if (!toolCall.getType().equals("function")) {
+ 
+                SubmitToolOutputsRequest.Builder toolOutputsBuilder = SubmitToolOutputsRequest.newBuilder();
+                
+                for (var toolCall : run.requiredAction().submitToolOutputs().toolCalls()) {
+                    if (!toolCall.type().equals("function")) {
                         throw new AdvisorConversationException("Unexpected tool call - not a function");
                     }
+                    FunctionToolCall functionToolCall = (FunctionToolCall)toolCall;
+                    
+                    var callId = functionToolCall.id();
 
-                    var callId = toolCall.getId();
-
-                    var output = this.toolset.execute(toolCall.getFunction().getName(), toolCall.getFunction()
-                        .getArguments(), this.context);
-
-                    var outputItem = SubmitToolOutputRequestItem.builder()
-                        .toolCallId(callId)
-                        .output(output)
-                        .build();
-
-                    outputItems.add(outputItem);
+                    var output = this.toolset.execute(functionToolCall.function().name(), 
+                        functionToolCall.function().arguments(), this.context);
+                    
+                    ToolOutput toolOutput = ToolOutput.newBuilder().toolCallId(callId).output(output).build();
+                    
+                    toolOutputsBuilder.toolOutput(toolOutput);
                     messages.add(new Message(Message.Type.INFO, "Toolcall: " + toolCall.toString() + " Response: "
-                        + outputItem.toString()));
+                        + toolOutput.toString()));                    
                 }
-                SubmitToolOutputsRequest outputs = SubmitToolOutputsRequest.builder()
-                    .toolOutputs(outputItems)
-                    .build();
-                this.openAiService.submitToolOutputs(run.getThreadId(), run.getId(), outputs);
+                   
+                try {
+                    runsClient.submitToolOutputs(run.threadId(), run.id(), toolOutputsBuilder.build());
+                } catch(OpenAIException exception) {
+                    throw new AdvisorConversationException("Submitting tool run failed", exception);
+                }
             }
 
-            logger.info("Run.status[" + run.getId() + "]: " + run.getStatus() + " (delay " + delay + "ms)");
-        } while (!run.getStatus().equals("completed"));
+            
+            logger.info("Run.status[" + run.id() + "]: " + run.status() + " (delay " + delay + "ms)");
+        } while (!run.status().equals("completed"));
 
-        OpenAiResponse<com.theokanning.openai.messages.Message> responseMessages = this.openAiService.listMessages(
-            thread.getId());
+        MessagesClient messagesClient = this.openAi.messagesClient();
+        
+        
+        var responseMessages = messagesClient.listMessages(thread.id(), PaginationQueryParameters.none(), Optional.empty());
 
-        if (responseMessages.getData().size() == 0) {
+        if (responseMessages.data().size() == 0) {
             messages.add(new Message(Message.Type.INFO, "No responses"));
             throw new AdvisorConversationException("No Reponses");
         }
-        var responseMessage = responseMessages.getData().get(0);
-        if (!responseMessage.getRole().equals("assistant")) {
+        var responseMessage = responseMessages.data().get(0);
+        if (!responseMessage.role().equals("assistant")) {
             messages.add(new Message(Message.Type.INFO, "Assistant did not response"));
             throw new AdvisorConversationException("Assistant did not respond");
         }
 
-        var content = responseMessage.getContent();
+        var content = responseMessage.content();
         if (content.size() == 0) {
             messages.add(new Message(Message.Type.INFO, "No content"));
             throw new AdvisorConversationException("No Content");
@@ -228,32 +234,36 @@ public class AssistantAdvisorConversation<C> implements Conversation {
             throw new AdvisorConversationException("Lots of Content");
         }
 
-        if (!content.get(0).getType().equals("text")) {
+        if (!content.get(0).type().equals("text")) {
             messages.add(new Message(Message.Type.INFO, "Content not of type text (ignored)"));
             throw new AdvisorConversationException("Content not of type text");
         }
+        var textContent = (TextContent)content.get(0);
+        
+        messages.add(new Message(Message.Type.INFO, textContent.toString()));
 
-        messages.add(new Message(Message.Type.INFO, content.toString()));
-
-        var message = new Message(Message.Type.AI, content.get(0).getText().getValue());
+        var message = new Message(Message.Type.AI, textContent.text().value());
         this.messages.add(message);
 
         return message;
     }
 
     private Thread getOrCreateThread() {
-        if (thread.isEmpty()) {
-            var threadRequest = ThreadRequest.builder().build();
+        ThreadsClient threadsClient = this.openAi.threadsClient();
+        MessagesClient messagesClient = this.openAi.messagesClient();
 
-            this.thread = Optional.of(this.openAiService.createThread(threadRequest));
+        if (thread.isEmpty()) {
+            var threadRequest = CreateThreadRequest.newBuilder().build();
+
+            this.thread = Optional.of(threadsClient.createThread(threadRequest));
 
             for (var message : this.messages) {
                 if (message.getType() == Type.USER) {
-                    MessageRequest messageRequest = MessageRequest.builder()
+                    CreateMessageRequest messageRequest = CreateMessageRequest.newBuilder()
                         .role("user")
                         .content(message.getContent())
                         .build();
-                    this.openAiService.createMessage(this.thread.get().getId(), messageRequest);
+                    messagesClient.createMessage(this.thread.get().id(), messageRequest);
                 }
             }
         }
@@ -262,14 +272,20 @@ public class AssistantAdvisorConversation<C> implements Conversation {
     }
 
     private static String getToolCallSummary(ToolCall toolCall) {
-        String name = toolCall.getFunction().getName();
-        
-        String arguments = escapeNonAlphanumericCharacters(toolCall.getFunction().getArguments());
-        
-        if (arguments.length() > MAX_PARAMETER_LENGTH) {
-            arguments = arguments.substring(0, MAX_PARAMETER_LENGTH - ELIPSES.length()) + ELIPSES;
+        if (toolCall.type() == "function") {
+            FunctionToolCall functionToolCall = (FunctionToolCall)toolCall;
+            String name = functionToolCall.function().name();
+            
+            String arguments = escapeNonAlphanumericCharacters(functionToolCall.function().arguments());
+            
+            if (arguments.length() > MAX_PARAMETER_LENGTH) {
+                arguments = arguments.substring(0, MAX_PARAMETER_LENGTH - ELIPSES.length()) + ELIPSES;
+            }
+            
+            return name + "(" + arguments + ")";
+        } else {                        
+            return toolCall.toString();
         }
-        return name + "(" + arguments + ")";
     }
     
     public static String escapeNonAlphanumericCharacters(String input) {

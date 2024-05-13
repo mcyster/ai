@@ -9,8 +9,7 @@ import org.springframework.stereotype.Component;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import com.theokanning.openai.service.OpenAiService;
-import com.cyster.assistant.impl.conversation.TooledChatConversation;
+import com.cyster.assistant.service.advisor.AdvisorService;
 import com.cyster.assistant.service.conversation.Conversation;
 import com.cyster.assistant.service.scenario.Scenario;
 import com.extole.sage.session.ExtoleSessionContext;
@@ -19,18 +18,18 @@ import com.extole.sage.session.ExtoleSessionContext;
 public class ExtoleWismrScenario implements Scenario<Void, ExtoleSessionContext> {
     private static final String NAME = "extoleWismr";
     
-    private OpenAiService openAiService;
+    private AdvisorService advisorService;
     private ExtolePersonFindToolFactory extolePersonFindToolFactory;
     private ExtolePersonRewardsToolFactory extolePersonRewardsToolFactory;
     private ExtolePersonStepsToolFactory extolePersonStepsToolFactory;
     private ExtoleStepsToolFactory extoleStepsToolFactory;
 
-    ExtoleWismrScenario(OpenAiService openAiService,
+    ExtoleWismrScenario(AdvisorService advisorService,
         ExtolePersonFindToolFactory extolePersonFindToolFactory,
         ExtolePersonRewardsToolFactory extolePersonRewardsToolFactory,
         ExtolePersonStepsToolFactory extolePersonStepsToolFactory,
         ExtoleStepsToolFactory extoleStepsToolFactory) {
-        this.openAiService = openAiService;
+        this.advisorService = advisorService;
         this.extolePersonFindToolFactory = extolePersonFindToolFactory;
         this.extolePersonRewardsToolFactory = extolePersonRewardsToolFactory;
         this.extolePersonStepsToolFactory = extolePersonStepsToolFactory;
@@ -89,7 +88,7 @@ If there are steps, show the steps and we are done.
         Optional<String> accessToken = Optional.empty();
         accessToken = Optional.of(context.getAccessToken());
         
-        var conversation = new TooledChatConversation(openAiService)
+        var conversation = advisorService.createTooledChatConversation()
             .addSystemMessage(messageWriter.toString())
             .addTool(this.extolePersonFindToolFactory.create(accessToken))
             .addTool(this.extolePersonRewardsToolFactory.create(accessToken))

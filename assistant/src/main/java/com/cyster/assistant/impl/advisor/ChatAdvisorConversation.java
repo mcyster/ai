@@ -7,18 +7,20 @@ import java.util.stream.Collectors;
 import com.cyster.assistant.service.conversation.Conversation;
 import com.cyster.assistant.service.conversation.ConversationException;
 import com.cyster.assistant.service.conversation.Message;
-import com.theokanning.openai.completion.chat.ChatCompletionRequest;
-import com.theokanning.openai.completion.chat.ChatMessage;
-import com.theokanning.openai.service.OpenAiService;
+
+import io.github.stefanbratanov.jvm.openai.ChatClient;
+import io.github.stefanbratanov.jvm.openai.ChatMessage;
+import io.github.stefanbratanov.jvm.openai.CreateChatCompletionRequest;
+import io.github.stefanbratanov.jvm.openai.OpenAI;
 
 public class ChatAdvisorConversation implements Conversation {
     private final String model = "gpt-3.5-turbo";
 
-    private OpenAiService openAiService;
+    private OpenAI openAi;
     private List<Message> messages;
     
-    ChatAdvisorConversation(OpenAiService openAiService, List<Message> messages) {
-        this.openAiService = openAiService;   
+    ChatAdvisorConversation(OpenAI openAi, List<Message> messages) {
+        this.openAi = openAi;   
         this.messages = messages;
     }
     
@@ -30,26 +32,27 @@ public class ChatAdvisorConversation implements Conversation {
 
     @Override
     public Message respond() throws ConversationException {
-        var chatMessages = new ArrayList<ChatMessage>();
+        ChatClient chatClient = this.openAi.chatClient();
+
+        var chatMessages = new ArrayList<ChatMessage>(); 
 
         for (var message : this.messages) {
             if (message.getType() == Message.Type.SYSTEM) {
-                chatMessages.add(new ChatMessage("system", message.getContent()));
+                chatMessages.add(ChatMessage.systemMessage(message.getContent()));
             } else if (message.getType() == Message.Type.AI) {
-                chatMessages.add(new ChatMessage("assistant", message.getContent()));
+                chatMessages.add(ChatMessage.assistantMessage(message.getContent()));
             } else if (message.getType() == Message.Type.USER) {
-                chatMessages.add(new ChatMessage("user", message.getContent()));
+                chatMessages.add(ChatMessage.userMessage(message.getContent()));
             }
         }
 
-        var chatCompletionRequest = ChatCompletionRequest.builder()
+        var requestBuilder = CreateChatCompletionRequest.newBuilder()
             .model(model)
-            .messages(chatMessages)
-            .build();
+            .messages(chatMessages);
 
-        var result = this.openAiService.createChatCompletion(chatCompletionRequest);
+        var result = chatClient.createChatCompletion(requestBuilder.build());
 
-        var choices = result.getChoices();
+        var choices = result.choices();
         if (choices.size() == 0) {
             messages.add(new Message(Message.Type.INFO, "No responses"));
             throw new ConversationException("No Reponses");
@@ -59,7 +62,7 @@ public class ChatAdvisorConversation implements Conversation {
             throw new ConversationException("Multiple Reponses");
         }
         
-        var message = new Message(Message.Type.AI, choices.get(0).getMessage().getContent());
+        var message = new Message(Message.Type.AI, choices.get(0).message().content());
         messages.add(message);
         return message;
     }

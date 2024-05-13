@@ -7,22 +7,23 @@ import java.util.stream.Collectors;
 import com.cyster.assistant.service.conversation.Conversation;
 import com.cyster.assistant.service.conversation.ConversationException;
 import com.cyster.assistant.service.conversation.Message;
-import com.theokanning.openai.completion.chat.ChatCompletionRequest;
-import com.theokanning.openai.completion.chat.ChatFunctionCall;
-import com.theokanning.openai.completion.chat.ChatMessage;
-import com.theokanning.openai.completion.chat.ChatMessageRole;
-import com.theokanning.openai.completion.chat.ChatCompletionRequest.ChatCompletionRequestFunctionCall;
-import com.theokanning.openai.service.OpenAiService;
+
+import io.github.stefanbratanov.jvm.openai.ChatClient;
+import io.github.stefanbratanov.jvm.openai.ChatMessage;
+import io.github.stefanbratanov.jvm.openai.ChatMessage.ToolMessage;
+import io.github.stefanbratanov.jvm.openai.CreateChatCompletionRequest;
+import io.github.stefanbratanov.jvm.openai.OpenAI;
+import io.github.stefanbratanov.jvm.openai.ToolCall.FunctionToolCall;
 
 public class TooledChatAdvisorConversation<C> implements Conversation {
     private final String model = "gpt-3.5-turbo-0613";
 
-    private OpenAiService openAiService;
+    private OpenAI openAi;
     private Toolset<C> toolset;
     private List<Message> messages;
     
-    TooledChatAdvisorConversation(OpenAiService openAiService, Toolset<C> toolset, List<Message> messages) {
-        this.openAiService = openAiService;   
+    TooledChatAdvisorConversation(OpenAI openAi, Toolset<C> toolset, List<Message> messages) {
+        this.openAi = openAi;   
         this.toolset = toolset;
         this.messages = messages;
     }
@@ -35,56 +36,56 @@ public class TooledChatAdvisorConversation<C> implements Conversation {
 
     @Override
     public Message respond() throws ConversationException {
+        ChatClient chatClient = openAi.chatClient();
         Message response = null;
     
         while (response == null) {
             var chatMessages = new ArrayList<ChatMessage>();
         
-            // TOOD "get_weather" hard coded?
+            // TODO "get_weather" hard coded?
         
             for (var message : this.messages) {
                 switch (message.getType()) {
                 case SYSTEM:
-                    chatMessages.add(new ChatMessage(ChatMessageRole.SYSTEM.value(), message.getContent()));
+                    chatMessages.add(ChatMessage.systemMessage(message.getContent()));
                     break;
                 case AI:
-                    chatMessages.add(new ChatMessage(ChatMessageRole.ASSISTANT.value(), message.getContent()));
+                    chatMessages.add(ChatMessage.assistantMessage(message.getContent()));
                     break;
                 case USER:
-                    chatMessages.add(new ChatMessage(ChatMessageRole.USER.value(), message.getContent()));
+                    chatMessages.add(ChatMessage.userMessage(message.getContent()));
                     break;
+                /*
                 case FUNCTION_CALL:
-                    chatMessages.add(new ChatMessage(ChatMessageRole.ASSISTANT.value(), message.getContent(),
-                        "get_weather"));
-                case FUNCTION_RESULT:
-                    chatMessages.add(new ChatMessage(ChatMessageRole.FUNCTION.value(), message.getContent(),
-                        "get_weather"));
+                    chatMessages.add(ChatMessage.toolMessage(message.getContent(), "get_weather"));
                     break;
+                case FUNCTION_RESULT:
+                    chatMessages.add(ChatMessage.toolMessage(message.getContent(), "get_weather"));
+                    break;
+                */
                 default:
                     // ignore
                 }
             }
-        
-            var chatFunctionToolset = new ChatFunctionToolset<C>(this.toolset);
-            var chatCompletionRequest = ChatCompletionRequest.builder()
+                    
+            var chatCompletionRequest = CreateChatCompletionRequest.newBuilder()
                 .model(model)
                 .messages(chatMessages)
-                .functions(chatFunctionToolset.getFunctions())
-                .functionCall(new ChatCompletionRequestFunctionCall("auto"))
-                .maxTokens(1000)
-                .build();
+                // .functions(chatFunctionToolset.getFunctions())   // TODO !!!!!!!!!!!!!!
+                // .functionCall(new ChatCompletionRequestFunctionCall("auto"))
+                .maxTokens(1000);
     
-            var chatResponse = this.openAiService.createChatCompletion(chatCompletionRequest);
+            var chatResponse = chatClient.createChatCompletion(chatCompletionRequest.build());
     
-            var choices = chatResponse.getChoices();
+            var choices = chatResponse.choices();
             if (choices.size() > 1) {
                 messages.add(new Message(Message.Type.INFO, "Multiple responses (ignored, only taking 1st response)"));
             }
             var choice = choices.get(0);
     
-            switch (choice.getFinishReason()) {
+            switch (choice.finishReason()) {
             case "stop":
-                var messageContent = choice.getMessage().getContent();
+                var messageContent = choice.message().content();
                 response = new Message(Message.Type.AI, messageContent);
                 messages.add(response);
                 break;
@@ -98,20 +99,25 @@ public class TooledChatAdvisorConversation<C> implements Conversation {
                 break;
     
             case "function_call":
-                ChatFunctionCall functionCall = choice.getMessage().getFunctionCall();
-                if (functionCall == null) {
-                    messages.add(new Message(Message.Type.ERROR, "Function call specified, but not found"));
-                }
-                messages.add(new Message(Message.Type.FUNCTION_CALL, functionCall.getName() + "(" + functionCall
-                    .getArguments()
-                    + ")"));
+                var chatFunctionToolset = new ChatFunctionToolset<C>(this.toolset);
+                
+                for(var toolCall: choice.message().toolCalls()) {
+                    if (toolCall.type() != "function") {
+                        messages.add(new Message(Message.Type.ERROR, "Tool call not a function"));
+                        continue;
+                    }
+                    FunctionToolCall functionToolCall = (FunctionToolCall)toolCall;
+                    
+                    messages.add(new Message(Message.Type.FUNCTION_CALL, functionToolCall.function().name() 
+                        + "(" + functionToolCall.function().arguments() + ")"));
     
-                ChatMessage functionResponseMessage = chatFunctionToolset.call(functionCall);
-                messages.add(new Message(Message.Type.FUNCTION_RESULT, functionResponseMessage.getContent()));
+                   ToolMessage toolMessage = chatFunctionToolset.call(functionToolCall);
+                   messages.add(new Message(Message.Type.FUNCTION_RESULT, toolMessage.content()));
+                }
                 break;
     
             default:
-                messages.add(new Message(Message.Type.ERROR, "Unexpected finish reason: " + choice.getFinishReason()));
+                messages.add(new Message(Message.Type.ERROR, "Unexpected finish reason: " + choice.finishReason()));
             }
         }
     

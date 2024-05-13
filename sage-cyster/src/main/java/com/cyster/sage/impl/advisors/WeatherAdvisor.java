@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 @Component
 public class WeatherAdvisor implements Advisor<Void> {
-    public final String CODING_ADVISOR = "weather-advisor";
+    public final String NAME = "weather-advisor";
 
     private AdvisorService advisorService;
     private Optional<Advisor<Void>> advisor = Optional.empty();
@@ -25,13 +25,13 @@ public class WeatherAdvisor implements Advisor<Void> {
     
     @Override
     public String getName() {
-        return CODING_ADVISOR;
+        return NAME;
     }
 
     @Override
     public ConversationBuilder<Void> createConversation() {
         if (this.advisor.isEmpty()) {
-            AdvisorBuilder<Void> builder = this.advisorService.getOrCreateAdvisor(CODING_ADVISOR);
+            AdvisorBuilder<Void> builder = this.advisorService.getOrCreateAdvisor(NAME);
                 
             builder
                 .setInstructions("Get the current weather of a location")

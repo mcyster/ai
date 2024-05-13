@@ -7,17 +7,18 @@ import java.util.Optional;
 import com.cyster.assistant.service.advisor.Advisor;
 import com.cyster.assistant.service.conversation.Conversation;
 import com.cyster.assistant.service.conversation.Message;
-import com.theokanning.openai.service.OpenAiService;
+
+import io.github.stefanbratanov.jvm.openai.OpenAI;
 
 public class TooledChatAdvisorImpl<C> implements Advisor<C> {
 
-    private OpenAiService openAiService;
+    private OpenAI openAi;
     private String name;
     private Toolset<C> toolset;
     private List<Message> messages;
 
-    TooledChatAdvisorImpl(OpenAiService openAiService, String name, Toolset<C> toolset, List<Message> messages) {
-        this.openAiService = openAiService;
+    TooledChatAdvisorImpl(OpenAI openAi, String name, Toolset<C> toolset, List<Message> messages) {
+        this.openAi = openAi;
         this.name = name;
         this.toolset = toolset;
         this.messages = messages;
@@ -60,19 +61,19 @@ public class TooledChatAdvisorImpl<C> implements Advisor<C> {
         @Override
         public Conversation start() {
             // TODO implement overrideInstruction
-            return new TooledChatAdvisorConversation<C>(TooledChatAdvisorImpl.this.openAiService,
+            return new TooledChatAdvisorConversation<C>(TooledChatAdvisorImpl.this.openAi, 
                 TooledChatAdvisorImpl.this.toolset, TooledChatAdvisorImpl.this.messages);
         }
     }
 
     static class Builder<C2> {
-        private OpenAiService openAiService;
+        private OpenAI openAi;
         private String name;
         private List<Message> messages;
         private Toolset.Builder<C2> toolsetBuilder;
 
-        Builder(OpenAiService openAiService) {
-            this.openAiService = openAiService;
+        Builder(OpenAI openAiService) {
+            this.openAi = openAiService;
             this.messages = new ArrayList<Message>();
             this.toolsetBuilder = new Toolset.Builder<C2>();
         }
@@ -103,7 +104,7 @@ public class TooledChatAdvisorImpl<C> implements Advisor<C> {
         }
 
         public TooledChatAdvisorImpl<C2> create() {
-            return new TooledChatAdvisorImpl<C2>(openAiService, name, this.toolsetBuilder.create(), this.messages);
+            return new TooledChatAdvisorImpl<C2>(openAi, name, this.toolsetBuilder.create(), this.messages);
         }
     }
 }

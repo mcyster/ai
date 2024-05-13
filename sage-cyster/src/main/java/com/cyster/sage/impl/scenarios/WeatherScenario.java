@@ -1,13 +1,20 @@
 package com.cyster.sage.impl.scenarios;
 
+import java.io.StringReader;
+import java.io.StringWriter;
+
 import org.springframework.stereotype.Component;
 
+import com.cyster.assistant.impl.advisor.AssistantAdvisorImpl.ConversationBuilder;
 import com.cyster.assistant.service.advisor.Advisor;
 import com.cyster.assistant.service.conversation.Conversation;
 import com.cyster.assistant.service.scenario.Scenario;
 import com.cyster.sage.impl.advisors.WeatherAdvisor;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 import com.cyster.sage.impl.scenarios.WeatherScenario.Parameters;
 
 @Component
@@ -42,7 +49,19 @@ public class WeatherScenario implements Scenario<Parameters, Void> {
 
     @Override
     public Conversation createConversation(Parameters parameters, Void context) {
-        return this.advisor.createConversation().start();
+        String systemPrompt = "Describe the weather in {{location}} in units of {{unit}}.";
+
+        MustacheFactory mostacheFactory = new DefaultMustacheFactory();
+        Mustache mustache = mostacheFactory.compile(new StringReader(systemPrompt), "system_prompt");
+        var messageWriter = new StringWriter();
+        mustache.execute(messageWriter, parameters);
+        messageWriter.flush();
+        var instructions = messageWriter.toString();
+        
+        var conversationBuilder  = this.advisor.createConversation()
+            .setOverrideInstructions(instructions);
+               
+        return conversationBuilder.start();
     }
     
     public static class Parameters {
@@ -56,20 +75,6 @@ public class WeatherScenario implements Scenario<Parameters, Void> {
 
     public enum WeatherUnit {
         CELSIUS, FAHRENHEIT;
-    }
-
-    public static class WeatherResponse {
-        public String location;
-        public WeatherUnit unit;
-        public int temperature;
-        public String description;
-
-        public WeatherResponse(String location, WeatherUnit unit, int temperature, String description) {
-            this.location = location;
-            this.unit = unit;
-            this.temperature = temperature;
-            this.description = description;
-        }
     }
 
 }

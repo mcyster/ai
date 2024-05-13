@@ -7,16 +7,17 @@ import java.util.Optional;
 import com.cyster.assistant.service.advisor.Advisor;
 import com.cyster.assistant.service.conversation.Conversation;
 import com.cyster.assistant.service.conversation.Message;
-import com.theokanning.openai.service.OpenAiService;
+
+import io.github.stefanbratanov.jvm.openai.OpenAI;
 
 public class ChatAdvisorImpl<C> implements Advisor<C> {
 
-    private OpenAiService openAiService;
+    private OpenAI openAi;
     private String name;
     private List<Message> messages;
 
-    ChatAdvisorImpl(OpenAiService openAiService, String name, List<Message> messages) {
-        this.openAiService = openAiService;
+    ChatAdvisorImpl(OpenAI openAi, String name, List<Message> messages) {
+        this.openAi = openAi;
         this.name = name;
         this.messages = messages;
     }
@@ -58,17 +59,17 @@ public class ChatAdvisorImpl<C> implements Advisor<C> {
         @Override
         public Conversation start() {
             // TODO implement overrideInstruction
-            return new ChatAdvisorConversation(ChatAdvisorImpl.this.openAiService, ChatAdvisorImpl.this.messages);
+            return new ChatAdvisorConversation(ChatAdvisorImpl.this.openAi, ChatAdvisorImpl.this.messages);
         }
     }
 
     static class Builder<C2> {
-        private OpenAiService openAiService;
+        private OpenAI openAi;
         private String name;
         private List<Message> messages;
 
-        Builder(OpenAiService openAiService) {
-            this.openAiService = openAiService;
+        Builder(OpenAI openAi) {
+            this.openAi = openAi;
             this.messages = new ArrayList<Message>();
         }
 
@@ -93,7 +94,7 @@ public class ChatAdvisorImpl<C> implements Advisor<C> {
         }
 
         public ChatAdvisorImpl<C2> create() {
-            return new ChatAdvisorImpl<C2>(openAiService, name, this.messages);
+            return new ChatAdvisorImpl<C2>(openAi, name, this.messages);
         }
     }
 }
