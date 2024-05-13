@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.cyster.assistant.service.conversation.Conversation;
 import com.cyster.assistant.service.conversation.ConversationException;
@@ -40,7 +40,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
     private static final String ELIPSES = "...";
     private static final int CONVERSATION_RETIES_MAX = 3;
 
-    private static final Logger logger = LogManager.getLogger(AssistantAdvisorConversation.class);
+    private static final Logger logger = LoggerFactory.getLogger(AssistantAdvisorConversation.class);
 
     private OpenAI openAi;
     private String assistantId;

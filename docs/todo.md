@@ -58,3 +58,5 @@ Use modules to declare public classes etc rather than separate builds
 
 module-info....
 
+https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_modular
+https://docs.gradle.org/current/samples/sample_java_modules_with_transform.html

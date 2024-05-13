@@ -1,8 +1,5 @@
 package com.cyster.assistant.impl.advisor;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.cyster.assistant.impl.advisor.ToolError.Type;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,8 +10,6 @@ import io.github.stefanbratanov.jvm.openai.ChatMessage.ToolMessage;
 import io.github.stefanbratanov.jvm.openai.ToolCall.FunctionToolCall;
 
 public class ChatFunctionToolset<C> {
-    private static final Logger logger = LogManager.getLogger(Toolset.class);
-
     private Toolset<C> toolset;
     C context = null;
 
@@ -47,7 +42,6 @@ public class ChatFunctionToolset<C> {
 
     private static String error(String message, Type errorType, Exception exception) {
         var response = new ToolError(message, errorType).toJsonString();
-        logger.error("ToolError: " + response, exception);
 
         return response;
     }
