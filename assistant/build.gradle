@@ -24,6 +24,8 @@ dependencies {
     implementation 'org.slf4j:slf4j-api:2.0.13'
     
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.0-M1'
+    testImplementation 'io.github.stefanbratanov:jvm-openai:0.9.1'
+    
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.0-M1'
     
     runtimeOnly 'ch.qos.logback:logback-classic:1.5.6'
@@ -35,12 +37,61 @@ java {
     modularity.inferModulePath = true
 }
 
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['src/test/java']
+        }
+    }
+}
+
 //extraJavaModuleInfo {
 //    automaticModule('io.github.stefanbratanov.jvm-openai') {
 //        exports 'io.github.stefanbratanov.jvm.openai'
 //        requires 'java.base'
 //    }
 //}
+
+tasks.compileJava {
+    options.compilerArgs += [
+        '--module-path', configurations.compileClasspath.asPath,
+        '--patch-module', "com.cyster.assistant=${sourceSets.main.output.asPath}"
+    ]
+}
+
+//tasks.named('run', JavaExec) {
+//    doFirst {
+//        classpath = files()
+//        jvmArgs = [
+//            '--module-path', configurations.runtimeClasspath.asPath,
+//            '--module', 'com.cyster.assistant/com.cyster.assistant.Main' // Replace with your main class
+//        ]
+//    }
+//}
+
+tasks.compileTestJava {
+    options.compilerArgs += [
+        '--module-path', configurations.testCompileClasspath.asPath + ':' + sourceSets.main.output.asPath,
+        '--patch-module', "com.cyster.assistant=${sourceSets.main.output.asPath}",
+        '--add-exports', 'com.cyster.assistant/com.cyster.assistant.impl.advisor.openai=com.cyster.assistant.test'
+    ]
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+    jvmArgs = [
+        '--module-path', configurations.testRuntimeClasspath.asPath + ':' + sourceSets.main.output.asPath + ':' + configurations.compileClasspath.asPath,
+        '--add-exports', 'com.cyster.assistant/com.cyster.assistant.impl.advisor.openai=com.cyster.assistant.test',
+        '--add-modules', 'com.cyster.assistant',
+        '--patch-module', "com.cyster.assistant=${sourceSets.main.output.asPath}"
+    ]
+}
+
 
 test {
     useJUnitPlatform()
