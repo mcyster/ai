@@ -1,4 +1,4 @@
-package com.cyster.assistant.test.impl.advisor.openai;
+package com.cyster.assistant.impl.advisor.openai;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

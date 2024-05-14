@@ -10,9 +10,4 @@ module com.cyster.assistant {
     exports com.cyster.assistant.service.advisor;
     exports com.cyster.assistant.service.conversation;
     exports com.cyster.assistant.service.scenario;
-    
-    //opens com.cyster.assistant.impl.advisor.openai to org.junit.jupiter.api;
-    //opens com.cyster.assistant.impl.advisor.openai to com.cyster.assistant.test.impl.advisor.openai;
-    opens com.cyster.assistant.impl.advisor.openai to org.junit.jupiter.api;
-
 }
