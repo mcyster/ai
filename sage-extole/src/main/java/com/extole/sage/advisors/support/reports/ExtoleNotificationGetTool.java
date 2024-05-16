@@ -11,9 +11,9 @@ import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.cyster.assistant.impl.advisor.CachingTool;
-import com.cyster.assistant.impl.advisor.FatalToolException;
 import com.cyster.assistant.impl.advisor.Tool;
 import com.cyster.assistant.impl.advisor.ToolException;
+import com.cyster.assistant.service.advisor.FatalToolException;
 import com.extole.sage.advisors.support.ExtoleSupportAdvisorTool;
 import com.extole.sage.advisors.support.ExtoleWebClientFactory;
 import com.extole.sage.advisors.support.reports.ExtoleNotificationGetTool.Request;

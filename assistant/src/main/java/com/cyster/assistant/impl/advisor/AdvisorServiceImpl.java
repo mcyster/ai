@@ -7,6 +7,7 @@ import java.time.Duration;
 import com.cyster.assistant.impl.conversation.TooledChatConversation;
 import com.cyster.assistant.service.advisor.AdvisorBuilder;
 import com.cyster.assistant.service.advisor.AdvisorService;
+import com.cyster.assistant.service.advisor.AdvisorServiceFactory;
 
 import io.github.stefanbratanov.jvm.openai.OpenAI;
 
@@ -48,6 +49,11 @@ public class AdvisorServiceImpl implements AdvisorService {
                 .build();             
     }
     
-    
+    public static class Factory implements AdvisorServiceFactory {
+        @Override
+        public AdvisorService createAdvisorService(String openAiApiKey) {
+            return new AdvisorServiceImpl(openAiApiKey);
+        }
+    }
  
 }

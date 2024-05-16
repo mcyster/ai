@@ -8,8 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.cyster.assistant.impl.advisor.FatalToolException;
 import com.cyster.assistant.impl.advisor.ToolException;
+import com.cyster.assistant.service.advisor.FatalToolException;
 
 @Component
 public class JiraWebClientFactory {

@@ -5,12 +5,15 @@ import static org.springframework.ai.autoconfigure.openai.OpenAiProperties.CONFI
 import com.cyster.assistant.impl.advisor.AdvisorServiceImpl;
 import com.cyster.assistant.impl.scenario.ScenarioServiceImpl;
 import com.cyster.assistant.service.advisor.AdvisorService;
+import com.cyster.assistant.service.advisor.AdvisorServiceFactory;
 import com.cyster.assistant.service.scenario.Scenario;
 import com.cyster.assistant.service.scenario.ScenarioLoader;
 import com.cyster.assistant.service.scenario.ScenarioService;
+import com.cyster.assistant.service.scenario.ScenarioServiceFactory;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import java.util.List;
+import java.util.ServiceLoader;
 
 import org.springframework.ai.autoconfigure.openai.OpenAiProperties;
 import org.springframework.context.annotation.Bean;
@@ -30,12 +33,25 @@ public class SageConfig {
                 "No Open API key with the property name " + CONFIG_PREFIX + ".api-key");
         }
     
-        return new AdvisorServiceImpl(openAiProperties.getApiKey());
+        
+        ServiceLoader<AdvisorServiceFactory> serviceLoader = ServiceLoader.load(AdvisorServiceFactory.class);
+        var factory = serviceLoader.findFirst();
+        if (factory.isEmpty()) {
+            throw new IllegalStateException("No implementation of: " + AdvisorServiceFactory.class.getSimpleName());
+        }
+        
+        return factory.get().createAdvisorService(openAiProperties.getApiKey());
     }
- 
+    
     @Bean
     public ScenarioService getScenarioService(List<ScenarioLoader> scenarioLoaders, List<Scenario<?,?>> scenarios) {
-        return new ScenarioServiceImpl(scenarioLoaders, scenarios);
+        var serviceLoader = ServiceLoader.load(ScenarioServiceFactory.class);
+        var factory = serviceLoader.findFirst();
+        if (factory.isEmpty()) {
+            throw new IllegalStateException("No implementation of: " + ScenarioServiceFactory.class.getSimpleName());
+        }
+        
+        return factory.get().createScenarioService(scenarioLoaders, scenarios);
     }
     
     @Bean

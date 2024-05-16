@@ -4,9 +4,9 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.assistant.impl.advisor.FatalToolException;
 import com.cyster.assistant.impl.advisor.Tool;
 import com.cyster.assistant.impl.advisor.ToolException;
+import com.cyster.assistant.service.advisor.FatalToolException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;

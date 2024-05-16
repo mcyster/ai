@@ -9,8 +9,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.assistant.impl.advisor.FatalToolException;
 import com.cyster.assistant.impl.advisor.ToolException;
+import com.cyster.assistant.service.advisor.FatalToolException;
 import com.extole.sage.advisors.support.ExtolePersonSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;

@@ -1,4 +1,6 @@
-package com.cyster.assistant.impl.advisor;
+package com.cyster.assistant.service.advisor;
+
+import com.cyster.assistant.impl.advisor.ToolException;
 
 public class FatalToolException extends ToolException {
     
