@@ -7,8 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import com.cyster.adf.AtlassianDocumentMapper;
-import com.cyster.assistant.impl.advisor.ToolException;
-import com.cyster.assistant.impl.advisor.Toolset;
+import com.cyster.assistant.service.advisor.ToolException;
 import com.extole.sage.advisors.support.ExtoleSupportAdvisorTool;
 import com.extole.sage.advisors.support.jira.SupportTicketCommentAddTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -22,7 +21,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 class SupportTicketCommentAddTool implements ExtoleSupportAdvisorTool<Request> {
-    private static final Logger logger = LogManager.getLogger(Toolset.class);
+    private static final Logger logger = LogManager.getLogger(SupportTicketCommentAddTool.class);
 
     private JiraWebClientFactory jiraWebClientFactory;
     private final boolean testMode;

@@ -1,4 +1,4 @@
-package com.cyster.assistant.impl.advisor;
+package com.cyster.assistant.service.advisor;
 
 public class ToolException extends Exception {
     private String localMessage = "";
@@ -21,7 +21,7 @@ public class ToolException extends Exception {
         this.localMessage = localMessage;
     }
     
-    String getLocalMessage() {
+    public String getLocalMessage() {
         return this.localMessage;
     }
 }

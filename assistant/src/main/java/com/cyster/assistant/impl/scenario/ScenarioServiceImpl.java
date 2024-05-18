@@ -6,9 +6,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.cyster.assistant.impl.advisor.AdvisorServiceImpl;
-import com.cyster.assistant.service.advisor.AdvisorService;
-import com.cyster.assistant.service.advisor.AdvisorServiceFactory;
 import com.cyster.assistant.service.scenario.Scenario;
 import com.cyster.assistant.service.scenario.ScenarioException;
 import com.cyster.assistant.service.scenario.ScenarioLoader;

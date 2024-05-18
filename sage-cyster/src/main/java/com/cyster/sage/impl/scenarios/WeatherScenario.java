@@ -5,7 +5,6 @@ import java.io.StringWriter;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.assistant.impl.advisor.AssistantAdvisorImpl.ConversationBuilder;
 import com.cyster.assistant.service.advisor.Advisor;
 import com.cyster.assistant.service.conversation.Conversation;
 import com.cyster.assistant.service.scenario.Scenario;

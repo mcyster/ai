@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import com.cyster.assistant.service.advisor.Advisor;
 import com.cyster.assistant.service.advisor.AdvisorBuilder;
+import com.cyster.assistant.service.advisor.Tool;
 import com.cyster.assistant.service.conversation.Conversation;
 
 import io.github.stefanbratanov.jvm.openai.Assistant;

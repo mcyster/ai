@@ -2,9 +2,9 @@ package com.extole.sage.advisors.support.reports;
 
 import java.util.Objects;
 
-import com.cyster.assistant.impl.advisor.CachingTool;
-import com.cyster.assistant.impl.advisor.Tool;
-import com.cyster.assistant.impl.advisor.ToolException;
+import com.cyster.assistant.service.advisor.AdvisorService;
+import com.cyster.assistant.service.advisor.Tool;
+import com.cyster.assistant.service.advisor.ToolException;
 import com.extole.sage.advisors.support.ExtoleSupportAdvisorTool;
 import com.extole.sage.advisors.support.ExtoleWebClientFactory;
 import com.extole.sage.advisors.support.reports.ExtoleClientEventGetByNotificationIdTool.Request;
@@ -20,8 +20,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 class ExtoleClientEventGetByNotificationIdTool implements ExtoleSupportAdvisorTool<Request> {
     Tool<Request, Void> tool;
 
-    ExtoleClientEventGetByNotificationIdTool(ExtoleWebClientFactory extoleWebClientFactory) {
-        this.tool = CachingTool.builder(new UncachedClientEventGetTool(extoleWebClientFactory)).build();
+    ExtoleClientEventGetByNotificationIdTool(ExtoleWebClientFactory extoleWebClientFactory, AdvisorService advisorService) {
+        this.tool = advisorService.cachingTool(new UncachedClientEventGetTool(extoleWebClientFactory));
     }
 
     @Override

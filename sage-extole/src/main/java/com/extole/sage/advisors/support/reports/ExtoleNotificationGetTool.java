@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.assistant.impl.advisor.CachingTool;
-import com.cyster.assistant.impl.advisor.Tool;
-import com.cyster.assistant.impl.advisor.ToolException;
+import com.cyster.assistant.service.advisor.AdvisorService;
+import com.cyster.assistant.service.advisor.Tool;
+import com.cyster.assistant.service.advisor.ToolException;
 import com.cyster.assistant.service.advisor.FatalToolException;
 import com.extole.sage.advisors.support.ExtoleSupportAdvisorTool;
 import com.extole.sage.advisors.support.ExtoleWebClientFactory;
@@ -29,8 +29,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class ExtoleNotificationGetTool implements ExtoleSupportAdvisorTool<Request> {
     private Tool<Request, Void> tool;
 
-    ExtoleNotificationGetTool(ExtoleWebClientFactory extoleWebClientFactory) {
-        this.tool = CachingTool.builder(new UncachedNotificationGetTool(extoleWebClientFactory)).build();
+    ExtoleNotificationGetTool(ExtoleWebClientFactory extoleWebClientFactory, AdvisorService advisorService) {
+        this.tool = advisorService.cachingTool(new UncachedNotificationGetTool(extoleWebClientFactory));
     }
 
     @Override

@@ -2,8 +2,6 @@ package com.cyster.app.sage;
 
 import static org.springframework.ai.autoconfigure.openai.OpenAiProperties.CONFIG_PREFIX;
 
-import com.cyster.assistant.impl.advisor.AdvisorServiceImpl;
-import com.cyster.assistant.impl.scenario.ScenarioServiceImpl;
 import com.cyster.assistant.service.advisor.AdvisorService;
 import com.cyster.assistant.service.advisor.AdvisorServiceFactory;
 import com.cyster.assistant.service.scenario.Scenario;

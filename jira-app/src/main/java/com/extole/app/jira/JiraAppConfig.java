@@ -5,15 +5,11 @@ import static org.springframework.ai.autoconfigure.openai.OpenAiProperties.CONFI
 import java.util.List;
 import java.util.ServiceLoader;
 
-import javax.management.ServiceNotFoundException;
-
 import org.springframework.ai.autoconfigure.openai.OpenAiProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
-import com.cyster.assistant.impl.advisor.AdvisorServiceImpl;
-import com.cyster.assistant.impl.scenario.ScenarioServiceImpl;
 import com.cyster.assistant.service.advisor.AdvisorService;
 import com.cyster.assistant.service.advisor.AdvisorServiceFactory;
 import com.cyster.assistant.service.scenario.Scenario;

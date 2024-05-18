@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.cyster.assistant.impl.advisor.Tool;
-import com.cyster.assistant.impl.advisor.ToolException;
+import com.cyster.assistant.service.advisor.Tool;
+import com.cyster.assistant.service.advisor.ToolException;
 import com.extole.sage.advisors.support.ExtoleSupportAdvisorTool;
 import com.extole.sage.advisors.support.ExtoleWebClientFactory;
 import com.extole.sage.advisors.support.reports.ExtoleReportBuilder;

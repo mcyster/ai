@@ -5,7 +5,7 @@ import java.util.Iterator;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import com.cyster.assistant.impl.advisor.ToolException;
+import com.cyster.assistant.service.advisor.ToolException;
 import com.cyster.assistant.service.advisor.FatalToolException;
 import com.extole.sage.advisors.support.ExtoleSupportAdvisorTool;
 import com.extole.sage.advisors.support.jira.SupportTicketGetTool.Request;

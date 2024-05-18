@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.cyster.assistant.impl.advisor.Tool;
+import com.cyster.assistant.service.advisor.Tool;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.core.JsonProcessingException;

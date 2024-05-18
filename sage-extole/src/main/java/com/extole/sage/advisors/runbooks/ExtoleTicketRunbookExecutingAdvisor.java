@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.assistant.impl.advisor.Tool;
+import com.cyster.assistant.service.advisor.Tool;
 import com.cyster.assistant.service.advisor.Advisor;
 import com.cyster.assistant.service.advisor.AdvisorBuilder;
 import com.cyster.assistant.service.advisor.AdvisorService;

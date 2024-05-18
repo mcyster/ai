@@ -9,7 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.cyster.assistant.impl.advisor.ToolException;
+import com.cyster.assistant.service.advisor.ToolException;
 import com.cyster.assistant.service.advisor.FatalToolException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;

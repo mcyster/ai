@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.cyster.assistant.impl.advisor.openai.OpenAiSchema;
+import com.cyster.assistant.service.advisor.Tool;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

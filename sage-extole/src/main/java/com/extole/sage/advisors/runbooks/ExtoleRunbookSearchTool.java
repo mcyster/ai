@@ -2,8 +2,8 @@ package com.extole.sage.advisors.runbooks;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.assistant.impl.advisor.Tool;
-import com.cyster.assistant.impl.advisor.ToolException;
+import com.cyster.assistant.service.advisor.Tool;
+import com.cyster.assistant.service.advisor.ToolException;
 import com.extole.sage.advisors.runbooks.ExtoleRunbookSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;

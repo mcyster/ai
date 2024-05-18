@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.cyster.assistant.service.advisor.Advisor;
+import com.cyster.assistant.service.advisor.Tool;
 import com.cyster.assistant.service.conversation.Conversation;
 import com.cyster.assistant.service.conversation.Message;
 

@@ -1,6 +1,6 @@
 package com.extole.sage.advisors.support;
 
-import com.cyster.assistant.impl.advisor.Tool;
+import com.cyster.assistant.service.advisor.Tool;
 
 public interface ExtoleSupportAdvisorTool<Request> extends Tool<Request, Void> {
 }

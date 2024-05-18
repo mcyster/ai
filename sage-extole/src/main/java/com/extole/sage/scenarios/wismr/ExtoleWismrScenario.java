@@ -89,7 +89,7 @@ If there are steps, show the steps and we are done.
         accessToken = Optional.of(context.getAccessToken());
         
         var conversation = advisorService.createTooledChatConversation()
-            .addSystemMessage(messageWriter.toString())
+            .addSystemMessage(messageWriter.toString()) 
             .addTool(this.extolePersonFindToolFactory.create(accessToken))
             .addTool(this.extolePersonRewardsToolFactory.create(accessToken))
             .addTool(this.extolePersonStepsToolFactory.create(accessToken))

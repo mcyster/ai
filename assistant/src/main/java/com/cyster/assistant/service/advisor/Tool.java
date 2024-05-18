@@ -1,4 +1,4 @@
-package com.cyster.assistant.impl.advisor;
+package com.cyster.assistant.service.advisor;
 
 
 public interface Tool<T, C> {

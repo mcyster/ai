@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.assistant.impl.advisor.ToolException;
+import com.cyster.assistant.service.advisor.ToolException;
 import com.cyster.assistant.service.advisor.FatalToolException;
 import com.cyster.assistant.service.conversation.ConversationException;
 import com.extole.sage.advisors.ExtoleJavascriptPrehandlerActionAdvisor;

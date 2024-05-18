@@ -3,7 +3,7 @@ package com.extole.sage.advisors.support;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.stereotype.Component;
 
-import com.cyster.assistant.impl.advisor.ToolException;
+import com.cyster.assistant.service.advisor.ToolException;
 import com.cyster.store.SimpleVectorStoreService;
 import com.extole.sage.advisors.support.ExtoleCodeStoreTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
