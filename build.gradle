@@ -3,3 +3,17 @@ defaultTasks 'defaultTask'
 
 task defaultTask(dependsOn: ':sage-app:bootRun')
 
+allprojects {
+    apply plugin: 'java'
+
+    repositories {
+        mavenCentral()
+    }
+
+    java {
+        modularity.inferModulePath = true
+    }
+
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}

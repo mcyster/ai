@@ -12,5 +12,9 @@ module com.cyster.assistant {
     exports com.cyster.assistant.service.conversation;
     exports com.cyster.assistant.service.scenario;
     
-    uses com.cyster.assistant.service.advisor.AdvisorService; 
+    exports com.cyster.assistant.impl.advisor;
+    
+    uses com.cyster.assistant.service.advisor.AdvisorServiceFactory;
+    provides com.cyster.assistant.service.advisor.AdvisorServiceFactory
+        with com.cyster.assistant.impl.advisor.AdvisorServiceImpl.Factory;
 }

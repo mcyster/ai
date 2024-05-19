@@ -27,7 +27,7 @@ dependencies {
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
-    modularity.inferModulePath.set(true)
+    modularity.inferModulePath = true    
 }
 
 tasks.compileJava {

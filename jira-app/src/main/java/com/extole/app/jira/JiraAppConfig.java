@@ -28,6 +28,8 @@ public class JiraAppConfig {
                 "No Open API key with the property name " + CONFIG_PREFIX + ".api-key");
         }
     
+        System.out.println("XXXXXXXXXXXXXXXXXXX JiraAppConfig");
+        
         ServiceLoader<AdvisorServiceFactory> serviceLoader = ServiceLoader.load(AdvisorServiceFactory.class);
         var factory = serviceLoader.findFirst();
         if (factory.isEmpty()) {

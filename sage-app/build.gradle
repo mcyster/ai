@@ -11,6 +11,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
+    modularity.inferModulePath = true
 }
 
 repositories {
@@ -48,6 +49,27 @@ dependencies {
     // tag::tests[]
     testImplementation('org.springframework.boot:spring-boot-starter-test')
     // end::tests[]
+}
+
+//sourceSets {
+//    main {
+//        resources {
+//            srcDir 'src/main/resources'
+//            include 'META-INF/services/**'
+//        }
+//    }
+//}
+
+
+// works but not really a solution
+sourceSets {
+    main {
+        resources {
+            srcDirs += [
+                project(':assistant').sourceSets.main.resources
+            ]
+        }
+    }
 }
 
 test {
