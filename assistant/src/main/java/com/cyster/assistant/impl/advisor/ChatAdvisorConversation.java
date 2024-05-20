@@ -14,7 +14,7 @@ import io.github.stefanbratanov.jvm.openai.CreateChatCompletionRequest;
 import io.github.stefanbratanov.jvm.openai.OpenAI;
 
 public class ChatAdvisorConversation implements Conversation {
-    private final String model = "gpt-3.5-turbo";
+    private final String MODEL = "gpt-4o";
 
     private OpenAI openAi;
     private List<Message> messages;
@@ -47,7 +47,7 @@ public class ChatAdvisorConversation implements Conversation {
         }
 
         var requestBuilder = CreateChatCompletionRequest.newBuilder()
-            .model(model)
+            .model(MODEL)
             .messages(chatMessages);
 
         var result = chatClient.createChatCompletion(requestBuilder.build());

@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -eu
+set -o pipefail
+
+if [ -z "$AI_HOME" ]; then
+    echo "Error: AI_HOME not defined, setup environment" 1>&2
+    exit 1
+fi
+
+cd $AI_HOME
+./gradlew :jira-app:build
+
+scp $AI_HOME/scripts/* ubuntu@prod-ai:ai/scripts
+scp $AI_HOME/jira-app/build/libs/jira-app-0.0.1-SNAPSHOT.jar ubuntu@prod-ai:ai/jira-app/libs
+
+#ssh ubuntu@prod-ai 'jira-app -r'
+echo "You will need to:"
+echo "  ssh ubuntu@prod-ai"
+echo "  jira-app -r  # restart app"
+echo "  tail -f $AI_HOME/jira-app/logs/jira-app-output.log"

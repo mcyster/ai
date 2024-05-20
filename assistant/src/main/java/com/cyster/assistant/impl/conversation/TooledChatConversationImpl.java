@@ -20,8 +20,7 @@ import io.github.stefanbratanov.jvm.openai.ToolCall.FunctionToolCall;
 
 // TODO TooledChatAdvisor is the generic form of this - remove one impl
 public class TooledChatConversationImpl implements TooledChatConversation {
-
-    private final String model = "gpt-3.5-turbo-0613";
+    private final String MODEL = "gpt-4o";
 
     private OpenAI openAi;
     private List<Message> messages;
@@ -93,7 +92,7 @@ public class TooledChatConversationImpl implements TooledChatConversation {
             Toolset<Void> toolset = this.toolsetBuilder.create();
                         
             var chatCompletionRequest = CreateChatCompletionRequest.newBuilder()
-                .model(model)
+                .model(MODEL)
                 .messages(chatMessages)
                 .maxTokens(1000)
                 .build();

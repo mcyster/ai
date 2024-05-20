@@ -168,10 +168,10 @@ class UncachedNotificationGetTool implements ExtoleSupportAdvisorTool<Request> {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientException exception) {
             if (exception.getCause() instanceof DataBufferLimitException) {
-                logger.warn("Buffer overflow while getting notifications for user: " + request.userId);
+                logger.warn("Buffer overflow while getting notifications for user: " + request.userId + " at client: " + request.clientId);
                 response = null;        
             } else {
-                throw new ToolException("Internal error, unable to get notications for user: " + request.userId, exception);
+                throw new ToolException("Internal error, unable to get notications for user: " + request.userId + " at client: " + request.clientId, exception);
             }
         }
 

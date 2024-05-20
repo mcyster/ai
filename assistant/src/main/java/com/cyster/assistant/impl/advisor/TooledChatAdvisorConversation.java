@@ -16,7 +16,7 @@ import io.github.stefanbratanov.jvm.openai.OpenAI;
 import io.github.stefanbratanov.jvm.openai.ToolCall.FunctionToolCall;
 
 public class TooledChatAdvisorConversation<C> implements Conversation {
-    private final String model = "gpt-3.5-turbo-0613";
+    private final String MODEL = "gpt-4o";
 
     private OpenAI openAi;
     private Toolset<C> toolset;
@@ -59,7 +59,7 @@ public class TooledChatAdvisorConversation<C> implements Conversation {
             }
                     
             var chatCompletionRequest = CreateChatCompletionRequest.newBuilder()
-                .model(model)
+                .model(MODEL)
                 .messages(chatMessages)
                 .maxTokens(1000);
     

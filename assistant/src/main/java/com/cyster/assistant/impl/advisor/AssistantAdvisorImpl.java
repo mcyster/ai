@@ -97,7 +97,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
     }
 
     public static class Builder<C2> implements AdvisorBuilder<C2> {
-        private static final String MODEL = "gpt-4-1106-preview";
+        private static final String MODEL = "gpt-4o";
 
         private final OpenAI openAi;
         private final String name;

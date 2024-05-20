@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -eu
+set -o pipefail
+
+usage="Usage: $(basename $0) [-h]
+    -h - help
+
+Starts the jira tunnel in the background
+"
+
+options=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|-\?)
+            echo "$usage"
+            exit 0
+        ;;
+    esac
+    shift
+done
+
+if [ -z "$AI_HOME" ]; then
+    echo "Error: AI_HOME not specified, is environment confitured"
+    exit 1
+fi
+
+if pgrep ngrok >/dev/null; then
+    echo "ngrok already running on $(pgrep ngrok)"
+else
+    nohup ngrok http http://localhost:8090 >/dev/null >$HOME/ai/logs/ngrok-tunnel.log 2>&1 &
+
+    echo "ngrok started running on http://localhost:4040 process: $!"
+    echo 
+    echo "!!! You will need to update the jira webhook reference here: https://extole.atlassian.net/plugins/servlet/webhooks !!!"
+fi
+
+echo ""
+
+max_attempts=30
+attempt=0
+webhook_url=""
+while true; do
+    webhook_url="$(curl -s 'http://localhost:4040/api/tunnels' | jq -r ".tunnels[0].public_url")"
+    if [ ! -z "$webhook_url" ] && [ "$webhook_url" != "null" ]; then
+        break
+    fi 
+
+    attempt=$((attempt + 1))
+    if [ "$attempt" -ge "$max_attempts" ]; then
+        echo "Error: Unable to talk to ngrok"
+        exit 1
+    fi
+    sleep 1
+done
+
+
+echo "Manage ngrok at: http://localhost:4040/api"
+echo "   webhhook url: $webhook_url"
