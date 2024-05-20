@@ -9,7 +9,6 @@ import com.cyster.assistant.impl.advisor.ChatFunctionToolset;
 import com.cyster.assistant.service.advisor.Tool;
 import com.cyster.assistant.service.advisor.TooledChatConversation;
 import com.cyster.assistant.impl.advisor.Toolset;
-import com.cyster.assistant.service.conversation.Conversation;
 import com.cyster.assistant.service.conversation.Message;
 
 import io.github.stefanbratanov.jvm.openai.ChatClient;

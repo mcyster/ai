@@ -8,4 +8,5 @@ include 'sage-cyster'
 include 'sage-extole'
 include 'sage-app'
 include 'jira-app'
+include 'check'
 

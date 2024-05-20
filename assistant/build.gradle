@@ -1,17 +1,5 @@
 
-plugins {
-    id 'application'
-}
-
-// TBD
-// https://docs.gradle.org/current/samples/sample_java_modules_with_transform.html
-
-group = 'com.cyster'
 version = '0.0.1-SNAPSHOT'
-
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     implementation("io.github.stefanbratanov:jvm-openai:0.9.1")
@@ -25,19 +13,19 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.0-M1'
 }
 
-java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    modularity.inferModulePath = true    
+jar {
+    archiveBaseName.set(project.group + "." + project.name)
+    archiveVersion.set(project.version)
 }
 
-tasks.compileJava {
-    options.compilerArgs += [
-        '--module-path', configurations.compileClasspath.asPath,
-        '--patch-module', "com.cyster.assistant=${sourceSets.main.output.asPath}"
-    ]
-}
+//tasks.compileJava {
+//    options.compilerArgs += [
+//        '--module-path', configurations.compileClasspath.asPath,
+//        '--patch-module', "com.cyster.assistant=${sourceSets.main.output.asPath}"
+//    ]
+//}
 
-test {
-    useJUnitPlatform()
-}
+//test {
+//    useJUnitPlatform()
+//}
 

@@ -2,6 +2,8 @@ package com.cyster.app.sage;
 
 import static org.springframework.ai.autoconfigure.openai.OpenAiProperties.CONFIG_PREFIX;
 
+import com.cyster.assistant.impl.advisor.AdvisorServiceImpl;
+import com.cyster.assistant.impl.scenario.ScenarioServiceImpl;
 import com.cyster.assistant.service.advisor.AdvisorService;
 import com.cyster.assistant.service.advisor.AdvisorServiceFactory;
 import com.cyster.assistant.service.scenario.Scenario;
@@ -14,9 +16,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Optional;
 import java.util.ServiceLoader;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 import org.springframework.ai.autoconfigure.openai.OpenAiProperties;
 import org.springframework.context.annotation.Bean;
@@ -35,35 +36,35 @@ public class SageConfig {
             throw new IllegalArgumentException(
                 "No Open API key with the property name " + CONFIG_PREFIX + ".api-key");
         }
+
+        return new AdvisorServiceImpl.Factory().createAdvisorService(openAiProperties.getApiKey());
+        // return factory.get().createAdvisorService(openAiProperties.getApiKey());
+    }
     
-        
+    @Bean
+    public ScenarioService getScenarioService(List<ScenarioLoader> scenarioLoaders, List<Scenario<?,?>> scenarios) {
+        return new ScenarioServiceImpl.Factory().createScenarioService(scenarioLoaders, scenarios);
+        //return loadScenarioService(scenarioLoaders, scenarios)
+    }
+    
+    @Bean
+    public ObjectMapper objectMapper() {
+        return Jackson2ObjectMapperBuilder
+        .json()
+        .featuresToEnable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .build();
+    }
+    
+    @Bean 
+    public Jackson2ObjectMapperBuilder objectMapperBuilder(){
+        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
+        builder.failOnUnknownProperties(true);
+        return builder;
+    }
+    
+    private AdvisorService loadAdvisorService() {
         System.out.println("!!!!!!!!!!!!!!!! sage app config 0");
-        try {
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            Enumeration<URL> resources = classLoader.getResources("");
-
-            while (resources.hasMoreElements()) {
-                URL resource = resources.nextElement();
-                System.out.println("Resource: " + resource);
-
-                // If it's a JAR file, list its entries
-                if (resource.getProtocol().equals("jar")) {
-                    String path = resource.getPath();
-                    String jarPath = path.substring(5, path.indexOf("!")); // strip off the "file:" prefix and everything after the "!"
-                    try (JarFile jarFile = new JarFile(jarPath)) {
-                        Enumeration<JarEntry> entries = jarFile.entries();
-                        while (entries.hasMoreElements()) {
-                            JarEntry entry = entries.nextElement();
-                            System.out.println("::" + resource + ":" + entry.getName());
-                        }
-                    }
-                } else {
-                    System.out.println("!!! Other");
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        printModules();
         
         System.out.println("!!!!!!!!!!!!!!!! sage app config 1");
         try {
@@ -88,11 +89,10 @@ public class SageConfig {
             throw new IllegalStateException("No implementation of: " + AdvisorServiceFactory.class.getSimpleName());
         }
         
-        return factory.get().createAdvisorService(openAiProperties.getApiKey());
+        return factory.get().createAdvisorService(CONFIG_PREFIX);
     }
     
-    @Bean
-    public ScenarioService getScenarioService(List<ScenarioLoader> scenarioLoaders, List<Scenario<?,?>> scenarios) {
+    private ScenarioService loadScenarioService(List<ScenarioLoader> scenarioLoaders, List<Scenario<?,?>> scenarios) {
         var serviceLoader = ServiceLoader.load(ScenarioServiceFactory.class);
         var factory = serviceLoader.findFirst();
         if (factory.isEmpty()) {
@@ -102,19 +102,11 @@ public class SageConfig {
         return factory.get().createScenarioService(scenarioLoaders, scenarios);
     }
     
-    @Bean
-    public ObjectMapper objectMapper() {
-        return Jackson2ObjectMapperBuilder
-        .json()
-        .featuresToEnable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .build();
+    private static void printModules() {
+        System.out.println("Loaded Modules:");
+        ModuleLayer.boot().modules().stream()
+            .map(module -> "  module://" + module.getName())
+            .forEach(System.out::println);
     }
-    
-    @Bean 
-    public Jackson2ObjectMapperBuilder objectMapperBuilder(){
-        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
-        builder.failOnUnknownProperties(true);
-        return builder;
-    }
-    
+
 }

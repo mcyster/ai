@@ -56,6 +56,9 @@ public class AdvisorServiceImpl implements AdvisorService {
     }
 
     public static class Factory implements AdvisorServiceFactory {
+        public Factory() {    
+        }
+        
         @Override
         public AdvisorService createAdvisorService(String openAiApiKey) {
             return new AdvisorServiceImpl(openAiApiKey);
