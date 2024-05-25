@@ -1,5 +1,5 @@
 
-module com.cyster.assistant {
+module com.cyster.ai.weave {
     requires com.fasterxml.jackson.core;
     requires com.fasterxml.jackson.databind;
     requires com.fasterxml.jackson.module.jsonSchema.jakarta;
@@ -7,6 +7,8 @@ module com.cyster.assistant {
     requires org.slf4j;
     requires com.google.common;
     requires jvm.openai;
+    
+    requires com.cyster.adf;
     
     exports com.cyster.ai.weave.service.advisor;
     exports com.cyster.ai.weave.service.conversation;
