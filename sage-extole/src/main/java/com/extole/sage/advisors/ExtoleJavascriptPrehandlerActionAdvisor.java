@@ -6,17 +6,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.advisor.AdvisorService;
-import com.cyster.ai.weave.service.advisor.Tool;
-import com.cyster.store.SimpleVectorStoreService;
 import com.extole.sage.advisors.ExtoleJavascriptPrehandlerActionAdvisor.AdminUserToolContext;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 @Component
 public class ExtoleJavascriptPrehandlerActionAdvisor implements Advisor<AdminUserToolContext> {
@@ -24,12 +19,11 @@ public class ExtoleJavascriptPrehandlerActionAdvisor implements Advisor<AdminUse
 
     private AdvisorService advisorService;
     private Optional<Advisor<AdminUserToolContext>> advisor = Optional.empty();
-    private SimpleVectorStoreService simpleVectorStoreService;
-
-    public ExtoleJavascriptPrehandlerActionAdvisor(AdvisorService advisorService,
-        SimpleVectorStoreService simpleVectorStoreService) {
+    private ExtoleStore extoleStore;
+    
+    public ExtoleJavascriptPrehandlerActionAdvisor(AdvisorService advisorService, ExtoleStore extoleStore) {
         this.advisorService = advisorService;
-        this.simpleVectorStoreService = simpleVectorStoreService;
+        this.extoleStore = extoleStore;
     }
 
     @Override
@@ -40,7 +34,6 @@ public class ExtoleJavascriptPrehandlerActionAdvisor implements Advisor<AdminUse
     @Override
     public ConversationBuilder<AdminUserToolContext> createConversation() {
         if (this.advisor.isEmpty()) {
-            VectorStore store = this.simpleVectorStoreService.getRepository("extoleCode");
 
             String resourcePath = "/extole/scenario/prehandler_action_context.js";
             URL resourceUrl = ExtoleJavascriptPrehandlerActionAdvisor.class.getResource(resourcePath);
@@ -94,47 +87,15 @@ To understand how to use the 'context' you need explore the api for classes like
 
             builder
                 .setInstructions(instructions)
-                .withFile(javascriptActionContextPath)
-                .withTool(new CodeRepositoryTool(store));
+                .withFile(javascriptActionContextPath);
+            
+            builder.withTool(extoleStore.createStoreTool());
 
             this.advisor = Optional.of(builder.getOrCreate());
         }
         return this.advisor.get().createConversation();
     }
 
-    public static class CodeRepositoryTool implements Tool<CodeRequest, AdminUserToolContext> {
-        private VectorStore store;
-
-        CodeRepositoryTool(VectorStore store) {
-            this.store = store;
-        }
-
-        @Override
-        public String getName() {
-            return "get_code";
-        }
-
-        @Override
-        public String getDescription() {
-            return "Retrieves interfaces and classes";
-        }
-
-        @Override
-        public Class<CodeRequest> getParameterClass() {
-            return CodeRequest.class;
-        }
-
-        @Override
-        public Object execute(CodeRequest codeRequest, AdminUserToolContext context) {
-            return store.similaritySearch(codeRequest.query);
-        }
-    }
-
-    public static class CodeRequest {
-        @JsonPropertyDescription("name of interface, class or attribute to find")
-        @JsonProperty(required = true)
-        public String query;
-    }
 
     public static class AdminUserToolContext {
         private String userToken;

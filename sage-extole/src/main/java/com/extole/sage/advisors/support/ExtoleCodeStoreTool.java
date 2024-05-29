@@ -1,6 +1,7 @@
 package com.extole.sage.advisors.support;
 
-import org.springframework.ai.vectorstore.SimpleVectorStore;
+import java.util.Collections;
+
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.advisor.ToolException;
@@ -11,12 +12,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 @Component
 class ExtoleCodeStoreTool implements ExtoleSupportAdvisorTool<Request> {
-    private SimpleVectorStore store;
 
     ExtoleCodeStoreTool(SimpleVectorStoreService storeService) {
-        this.store = storeService.getRepository("extoleCode");
         // TODO verify and warn if empty, perhaps also in tool.execute
-
     }
 
     @Override
@@ -36,7 +34,7 @@ class ExtoleCodeStoreTool implements ExtoleSupportAdvisorTool<Request> {
 
     @Override
     public Object execute(Request request, Void context) throws ToolException {
-        return store.similaritySearch(request.query);
+        return Collections.emptyMap();
 
     }
 

@@ -1,6 +1,8 @@
 package com.cyster.ai.weave.impl.store;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -13,10 +15,12 @@ import java.util.List;
 import com.cyster.ai.weave.service.advisor.SearchTool;
 import com.cyster.ai.weave.service.advisor.SearchTool.Document;
 
+import io.github.stefanbratanov.jvm.openai.CreateVectorStoreFileBatchRequest;
 import io.github.stefanbratanov.jvm.openai.CreateVectorStoreRequest;
 import io.github.stefanbratanov.jvm.openai.ExpiresAfter;
 import io.github.stefanbratanov.jvm.openai.OpenAI;
 import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
+import io.github.stefanbratanov.jvm.openai.VectorStore;
 
 public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEXT> {
     private OpenAI openAi;
@@ -39,6 +43,13 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
         return this;
     }
 
+    @Override
+    public SearchToolBuilderImpl<CONTEXT> addDocument(File file) {
+        System.out.println("File:" + file.toString());
+        this.documents.add(new FileDocument(file));
+        return this;
+    }
+    
     @Override
     public SearchToolBuilderImpl<CONTEXT> addDocument(Document document) {
         this.documents.add(document);
@@ -86,15 +97,31 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
             throw new RuntimeException(e);
         }
      
-        var createVectorStoreRequest = CreateVectorStoreRequest.newBuilder()
-            .name(this.name)
-            .fileIds(files)
-            //.metadata(null)
-            .expiresAfter(ExpiresAfter.lastActiveAt(1))
-            .build();
+        VectorStore vectorStore = null;
         
-        var vectorStore = this.openAi.vectorStoresClient().createVectorStore(createVectorStoreRequest);
-                        
+        int totalFileCount = files.size();
+        int batchSize = 100;
+        for (int i = 0; i < totalFileCount; i += batchSize) {
+            int end = Math.min(totalFileCount, i + batchSize);
+            List<String> fileBatch = files.subList(i, end);
+            if (vectorStore == null) {
+                var request = CreateVectorStoreRequest.newBuilder()
+                        .name(this.name)
+                        .fileIds(fileBatch)
+                        //.metadata(null)
+                        .expiresAfter(ExpiresAfter.lastActiveAt(1))
+                        .build();
+                    
+                vectorStore = this.openAi.vectorStoresClient().createVectorStore(request);
+            } else {
+                var request = CreateVectorStoreFileBatchRequest.newBuilder()
+                    .fileIds(fileBatch)
+                    .build();
+                
+                this.openAi.vectorStoreFileBatchesClient().createVectorStoreFileBatch(vectorStore.id(), request);
+            }
+        }
+
         return new SearchToolImpl<CONTEXT>( new ArrayList<>(Arrays.asList(vectorStore)));
     }
  
@@ -102,7 +129,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
         return name.replaceAll("\\s+", "_").replaceAll("[^a-zA-Z0-9_]", "");
     }
     
-    private class StringDocument implements Document {
+    private static class StringDocument implements Document {
         private String name;
         private String contents;
         
@@ -122,4 +149,21 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
         } 
     }
     
+    private static class FileDocument implements Document {
+        private File file;
+        
+        public FileDocument(File file) {
+            this.file = file;
+        }
+        
+        @Override
+        public String getName() {
+            return file.getName();
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+            return new FileInputStream(file);
+        } 
+    }
 }

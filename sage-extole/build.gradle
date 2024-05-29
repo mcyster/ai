@@ -19,7 +19,9 @@ dependencies {
    
     //implementation 'org.experimental.ai:spring-ai-openai-spring-boot-starter:1.0.0-SNAPSHOT'
     //implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter:0.8.0-SNAPSHOT'
-    implementation 'org.springframework.ai:spring-ai-transformers-spring-boot-starter:0.8.0-SNAPSHOT'
+    //implementation 'org.springframework.ai:spring-ai-transformers-spring-boot-starter:0.8.0-SNAPSHOT'
+   
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.8.0.202311291450-r'
    
     implementation 'com.github.spullara.mustache.java:compiler:0.9.10'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.16.2'
@@ -27,7 +29,7 @@ dependencies {
 
     implementation project(':adf')
     implementation project(':ai-weave')
-    implementation project(':store')
+    implementation project(':store') 
     
     testImplementation('org.springframework.boot:spring-boot-starter-test')
 }

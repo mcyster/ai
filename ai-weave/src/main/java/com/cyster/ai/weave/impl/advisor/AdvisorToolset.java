@@ -66,12 +66,18 @@ class AdvisorToolset<C> {
             }
         }
 
-        if (fileIds != null || vectorStoreIds != null) {
+        if (fileIds != null && vectorStoreIds != null) {
             var resources = ToolResources.codeInterpreterAndFileSearchToolResources(fileIds, vectorStoreIds);
-            
+            requestBuilder.toolResources(resources);
+        } 
+        else if (fileIds != null) {
+            var resources = ToolResources.codeInterpreterToolResources(fileIds);
+            requestBuilder.toolResources(resources);     
+        }
+        else if (vectorStoreIds != null) {
+            var resources = ToolResources.fileSearchToolResources(vectorStoreIds);
             requestBuilder.toolResources(resources);
         }
-
     }
 
     private static <C> JsonSchema getToolParameterSchema(Tool<?, C> tool) {

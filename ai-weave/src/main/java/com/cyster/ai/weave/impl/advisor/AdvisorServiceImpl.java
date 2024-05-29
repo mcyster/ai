@@ -4,11 +4,13 @@ package com.cyster.ai.weave.impl.advisor;
 import java.net.http.HttpClient;
 import java.time.Duration;
 
+import com.cyster.ai.weave.impl.code.CodeInterpreterToolBuilderImpl;
 import com.cyster.ai.weave.impl.conversation.TooledChatConversationImpl;
+import com.cyster.ai.weave.impl.store.SearchToolBuilderImpl;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.advisor.AdvisorService;
 import com.cyster.ai.weave.service.advisor.AdvisorServiceFactory;
-import com.cyster.ai.weave.service.advisor.CodeInterpreterTool.Builder;
+import com.cyster.ai.weave.service.advisor.CodeInterpreterTool;
 import com.cyster.ai.weave.service.advisor.SearchTool;
 import com.cyster.ai.weave.service.advisor.Tool;
 import com.cyster.ai.weave.service.advisor.TooledChatConversation;
@@ -40,7 +42,20 @@ public class AdvisorServiceImpl implements AdvisorService {
         return new TooledChatConversationImpl(this.openAi);
     }
     
-    
+    public <PARAMETERS, CONTEXT> Tool<PARAMETERS, CONTEXT> cachingTool(Tool<PARAMETERS, CONTEXT> tool) {
+        return CachingTool.builder(tool).build();
+    }
+
+    @Override
+    public <CONTEXT> SearchTool.Builder<CONTEXT> searchToolBuilder() {
+        return new SearchToolBuilderImpl<CONTEXT>(this.openAi);
+    }
+
+    @Override
+    public <CONTEXT> CodeInterpreterTool.Builder<CONTEXT> codeToolBuilder() {
+        return new CodeInterpreterToolBuilderImpl<CONTEXT>(this.openAi);
+    }
+   
     private static OpenAI createOpenAiService(String openApiKey, Boolean debug) {
         HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(20))
@@ -52,11 +67,7 @@ public class AdvisorServiceImpl implements AdvisorService {
                 .httpClient(httpClient)
                 .build();             
     }
- 
-    public <PARAMETERS, CONTEXT> Tool<PARAMETERS, CONTEXT> cachingTool(Tool<PARAMETERS, CONTEXT> tool) {
-        return CachingTool.builder(tool).build();
-    }
-
+    
     public static class Factory implements AdvisorServiceFactory {
         public Factory() {    
         }
@@ -67,13 +78,5 @@ public class AdvisorServiceImpl implements AdvisorService {
         }
     }
 
-    @Override
-    public <CONTEXT> SearchTool.Builder<CONTEXT> searchToolBuilder() {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
 
-    @Override
-    public <CONTEXT> Builder<CONTEXT> codeToolBuilder() {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
 }

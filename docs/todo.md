@@ -2,13 +2,15 @@
 
 # Minor Changes
 
+- prehandler use SearchTool
+- search for recent vector stores, create vector stores onload, ...
+- cleanup vectorstores, files
 - Support mention of BeepBoop in jira to have it evaluate ticket, support prompt as commment
 - Schedule Continuation of Conversation Tool (perhaps large, unless no context provided)
 - Scenario parameters ignored
 - Move supportSupportTicket scenario to yaml
 - AdvisorService.createToolBuilder so tools can apply to assistantCreateRequest
 - change parameters -> data for scenario
-- prehandler use SearchTool
 
 # Major Changes
 
