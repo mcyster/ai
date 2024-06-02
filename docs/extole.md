@@ -93,17 +93,7 @@ Listens on a webhook for ticket creation and runs the 'extoleSupportTicket' scen
 ## github key
 
 
-Currently struggling to get ssl to work
-```
-EXTOLE_GITHUB_AII_KEY=username:password
-```
-
-Test with
-```
-git clone "https://$(echo $EXTOLE_GITHUB_API_KEY | awk -F: '{print $1}'):$(echo $EXTOLE_GITHUB_API_KEY | awk -F: '{print $2}')@github.com/extole/java-api.git"
-```
-
-# Ssh key
+# Ssh key 
 Generate a ssh key
 ```
 ssh-keygen -t ecdsa -b 521 -C "your_email@example.com" -m pem
@@ -115,5 +105,6 @@ Host github.com
     User git
     IdentityFile ~/.ssh/id_ecdsa
 ```
+
 Add key to github
 
