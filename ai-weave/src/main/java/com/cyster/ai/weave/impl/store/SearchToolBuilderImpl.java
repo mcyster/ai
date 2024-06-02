@@ -82,8 +82,6 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
         return createStore(store.get());
     }
     
-
-
     public SearchTool<CONTEXT> createStore() { 
         List<String> files = new ArrayList<String>();
         
@@ -197,7 +195,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
         }
         
         if (vectorStore.metadata().containsKey(METADATA_HASH)) {
-            if (vectorStore.metadata().get(METADATA_HASH).equals(this.hash)) {
+            if (vectorStore.metadata().get(METADATA_HASH).equals(this.hash.get())) {
                 return true;
             }
         }
