@@ -86,3 +86,12 @@ curl -s  -H 'Content-Type: application/json' 'http://localhost:8080/conversation
 
 Listens on a webhook for ticket creation and runs the 'extoleSupportTicket' scenario.
 
+
+# Setup
+
+EXTOLE_GITHUB_AII_KEY=username:password
+
+Test with
+```
+git clone "https://$(echo $EXTOLE_GITHUB_API_KEY | awk -F: '{print $1}'):$(echo $EXTOLE_GITHUB_API_KEY | awk -F: '{print $2}')@github.com/extole/java-api.git"
+```
