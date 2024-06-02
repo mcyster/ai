@@ -11,61 +11,30 @@ import java.util.stream.Stream;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.StoredConfig;
-import org.eclipse.jgit.transport.CredentialsProvider;
-import org.eclipse.jgit.transport.HttpTransport;
-import org.eclipse.jgit.transport.TransportHttp;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
-import org.eclipse.jgit.transport.http.HttpConnection;
-import org.eclipse.jgit.transport.http.HttpConnectionFactory;
-import org.eclipse.jgit.util.HttpSupport;
-import org.springframework.beans.factory.annotation.Value;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.springframework.stereotype.Component;
-
-import org.eclipse.jgit.transport.ssh.jsch.JschConfigSessionFactory;
-import org.eclipse.jgit.transport.ssh.jsch.OpenSshConfig;
-import org.eclipse.jgit.transport.SshTransport;
-import org.eclipse.jgit.transport.Transport;
-import org.eclipse.jgit.util.FS;
 
 import com.cyster.ai.weave.service.advisor.AdvisorService;
 import com.cyster.ai.weave.service.advisor.SearchTool;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
- 
-@Component
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Component
 public class ExtoleStore {
-    // private static String remoteJavaApiRepository = "https://github.com/extole/java-api.git";
+    private static final Logger logger = LoggerFactory.getLogger(ExtoleStore.class);
+
     private static String remoteJavaApiRepository = "git@github.com:extole/java-api.git";
     private static File localJavaApiRepository = new File("/tmp/extole/java-api");
     private AdvisorService advisorService;
-    private String extoleGithubUsername;
-    private String extoleGithubToken;
     
-    ExtoleStore(AdvisorService advisorService, 
-            @Value("${EXTOLE_GITHUB_API_KEY}") String extoleGithubApiKey) {
+    ExtoleStore(AdvisorService advisorService) {  
         this.advisorService = advisorService;
-        if (extoleGithubApiKey == null) {
-            throw new IllegalArgumentException("EXTOLE_GIT_HUB_API_KEY not found");
-        }
-        String[] key = extoleGithubApiKey.split(":", 2);
-        if (key.length != 2) {
-            throw new IllegalArgumentException("EXTOLE_GITHUB_API_KEY needs to be of the form USER:TOKEN");
-        }
-        this.extoleGithubUsername = key[0];
-        this.extoleGithubToken = key[1];
-                
-        System.out.println("!!! Github username: " + this.extoleGithubUsername);
-        System.out.println("!!! Github token:    " + this.extoleGithubToken);
-
-        load();
+        loadOrUpdateLocalRepository();
     }
 
     public <CONTEXT> SearchTool<CONTEXT> createStoreTool() {
-        load();    
-        
+            
         @SuppressWarnings("unchecked")  // TBD
         SearchTool.Builder<CONTEXT> builder = (SearchTool.Builder<CONTEXT>) advisorService.searchToolBuilder()
             .withName("extole-store");
@@ -91,45 +60,39 @@ public class ExtoleStore {
         return false;
     }
     
-    private void load() {
+    private String loadOrUpdateLocalRepository() {
         if (!localJavaApiRepository.exists()) {
-            try {
-                System.setProperty("org.eclipse.jgit.util.log", "DEBUG");
-                
-                String sshKeyPath = "/home/mcyster/.ssh/id_rsa";
-                
-                JschConfigSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
-                    @Override
-                    protected void configure(OpenSshConfig.Host host, Session session) {
-                        // Optional configurations can be added here
-                    }
-
-                    @Override
-                    protected JSch createDefaultJSch(FS fs) throws JSchException {
-                        JSch jsch = super.createDefaultJSch(fs);
-                        jsch.addIdentity(sshKeyPath);
-                        return jsch;
-                    }
-                };
-
-                        
+            try {                                       
                 Git.cloneRepository()
                     .setURI(remoteJavaApiRepository)
                     .setDirectory(localJavaApiRepository)
-                    .setTransportConfigCallback(transport -> {
-                        if (transport instanceof SshTransport) {
-                            ((SshTransport) transport).setSshSessionFactory(sshSessionFactory);
-                        }
-                    })
-                    //.setCredentialsProvider(new UsernamePasswordCredentialsProvider(extoleGithubUsername, extoleGithubToken))
-                    .call();
-                
-                System.out.println("Repository cloned successfully!");
-            } catch (GitAPIException e) {
-                e.printStackTrace();
+                    .call();                
+            } catch (GitAPIException exception) {
+                logger.error("Unable to clone the java api repository: " + remoteJavaApiRepository, exception);
+            }
+        } else {
+            try {
+                Git git = Git.open(localJavaApiRepository);
+                git.pull().call();
+            } catch (IOException | GitAPIException exception) {
+                logger.error("Unable to update the java api repository: " + localJavaApiRepository, exception);
             }
         }
+
+        String latestCommitHash = null;
+        try {
+            Git git = Git.open(localJavaApiRepository);
+
+            Iterable<RevCommit> log = git.log().setMaxCount(1).call();
+            for (RevCommit commit : log) {
+                latestCommitHash = commit.getName();
+                break;
+            }
+
+        } catch (IOException | GitAPIException exception) {
+            logger.error("Unable to update the java api repository: " + localJavaApiRepository, exception);
+        }
+        
+        return latestCommitHash;
     }
-    
-    
 }

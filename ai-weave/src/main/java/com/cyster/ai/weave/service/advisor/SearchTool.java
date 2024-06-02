@@ -13,6 +13,7 @@ public interface SearchTool<CONTEXT> extends Tool<Void, CONTEXT> {
     
     static interface Builder<CONTEXT> {
         Builder<CONTEXT> withName(String name);
+        Builder<CONTEXT> withDocumentHash(String hash);
         Builder<CONTEXT> addDocument(String name, String contents);
         Builder<CONTEXT> addDocument(File file);
         Builder<CONTEXT> addDocument(Document document);
