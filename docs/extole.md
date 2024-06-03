@@ -92,8 +92,6 @@ Listens on a webhook for ticket creation and runs the 'extoleSupportTicket' scen
 
 ## github key
 
-
-# Ssh key 
 Generate a ssh key
 ```
 ssh-keygen -t ecdsa -b 521 -C "your_email@example.com" -m pem
@@ -107,4 +105,32 @@ Host github.com
 ```
 
 Add key to github
+
+Test with
+```
+ssh -i ~/.ssh/id_ecdsa -T git@github.com
+ssh -T git@github.com
+```
+
+## Extole Superuser Key
+Define
+```
+export EXTOLE_SUPERi_USER_API_KEY=XXXX
+```
+
+Test with
+```
+curl -s  -H "Authorization: Bearer $EXTOLE_SUPER_USER_API_KEY" 'http://api.extole.io/v4/tokens'  | jq .
+```
+
+## Open API Key
+
+```
+export OPENAI_API_KEY=XXXX
+```
+
+## Jira API Key
+```
+export JIRA_API_KEY=$USER_EMAIL:$TOKEN
+```
 
