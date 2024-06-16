@@ -1,4 +1,4 @@
-package com.extole.sage.scenarios.graph;
+package com.extole.sage.scenarios.grapher;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,21 +23,20 @@ import com.extole.sage.advisors.support.ExtoleWebClientFactory;
 import com.extole.sage.advisors.web.WebAdvisor;
 import com.extole.sage.advisors.web.WebsiteService;
 import com.extole.sage.advisors.web.WebsiteService.Website;
-import com.extole.sage.scenarios.graph.GraphScenario.Parameters;
+import com.extole.sage.scenarios.grapher.GrapherScenario.Parameters;
 
 
 @Component
-public class GraphScenario implements Scenario<Parameters, Void> {
-    private static final String NAME = "extoleGraph";
+public class GrapherScenario implements Scenario<Parameters, Void> {
+    private static final String NAME = "extoleGrapher";
     private WebAdvisor advisor;
     private ExtoleWebClientFactory extoleWebClientFactory;
     private WebsiteService websiteService;
 
-    GraphScenario(WebAdvisor advisor, WebsiteService websiteService, ExtoleWebClientFactory extoleWebClientFactory) {
+    GrapherScenario(WebAdvisor advisor, WebsiteService websiteService, ExtoleWebClientFactory extoleWebClientFactory) {
         this.advisor = advisor;
         this.websiteService = websiteService;
         this.extoleWebClientFactory = extoleWebClientFactory;
-        
     }
 
     @Override
@@ -63,7 +62,7 @@ public class GraphScenario implements Scenario<Parameters, Void> {
     @Override
     public Conversation createConversation(Parameters parameters, Void context) {
         
-        InputStream stream = GraphScenario.class.getResourceAsStream("/extole/web/graph/simple/index.html");
+        InputStream stream = GrapherScenario.class.getResourceAsStream("/extole/web/graph/simple/index.html");
         if (stream == null) {
             throw new RuntimeException("Error unable to load resource:/extole/web/graph/simple/index.html");
         }
