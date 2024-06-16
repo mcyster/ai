@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.cyster.ai.weave.impl.advisor.openai.OpenAiSchema;
 import com.cyster.ai.weave.impl.code.CodeInterpreterToolImpl;
+import com.cyster.ai.weave.impl.openai.OpenAiSchema;
 import com.cyster.ai.weave.impl.store.SearchToolImpl;
 import com.cyster.ai.weave.service.advisor.Tool;
 import com.fasterxml.jackson.core.type.TypeReference;

@@ -10,28 +10,30 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.advisor.DocumentStore;
 import com.cyster.ai.weave.service.advisor.SearchTool;
 
 import io.github.stefanbratanov.jvm.openai.CreateVectorStoreFileBatchRequest;
 import io.github.stefanbratanov.jvm.openai.CreateVectorStoreRequest;
 import io.github.stefanbratanov.jvm.openai.ExpiresAfter;
-import io.github.stefanbratanov.jvm.openai.OpenAI;
+import io.github.stefanbratanov.jvm.openai.FilesClient;
 import io.github.stefanbratanov.jvm.openai.PaginationQueryParameters;
 import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
 import io.github.stefanbratanov.jvm.openai.VectorStore;
+import io.github.stefanbratanov.jvm.openai.VectorStoreFileBatchesClient;
 import io.github.stefanbratanov.jvm.openai.VectorStoresClient;
 import io.github.stefanbratanov.jvm.openai.VectorStoresClient.PaginatedVectorStores;
 
 public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEXT> {
     private final static String METADATA_HASH = "data_hash";
     
-    private OpenAI openAi;
+    private OpenAiService openAiService;
     private DocumentStore documentStore;
     private String name;
     
-    public SearchToolBuilderImpl(OpenAI openAi) {
-        this.openAi = openAi;
+    public SearchToolBuilderImpl(OpenAiService openAiService) {
+        this.openAiService = openAiService;
     }
 
     @Override
@@ -88,7 +90,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
                         }
    
                         var fileUpload = new UploadFileRequest(realFile, "assistants");
-                        var file = this.openAi.filesClient().uploadFile(fileUpload);
+                        var file = this.openAiService.createClient().client(FilesClient.class).uploadFile(fileUpload);
                         files.add(file.id());
                     });
                     Files.delete(realFile);
@@ -121,13 +123,13 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
                         .expiresAfter(ExpiresAfter.lastActiveAt(7))
                         .build();
                     
-                vectorStore = this.openAi.vectorStoresClient().createVectorStore(request);
+                vectorStore = this.openAiService.createClient().client(VectorStoresClient.class).createVectorStore(request);
             } else {
                 var request = CreateVectorStoreFileBatchRequest.newBuilder()
                     .fileIds(fileBatch)
                     .build();
                 
-                this.openAi.vectorStoreFileBatchesClient().createVectorStoreFileBatch(vectorStore.id(), request);
+                this.openAiService.createClient().client(VectorStoreFileBatchesClient.class).createVectorStoreFileBatch(vectorStore.id(), request);
             }
         }
 
@@ -139,7 +141,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
     }
     
     private Optional<VectorStore> findVectorStore() {
-        VectorStoresClient vectorStoresClient = this.openAi.vectorStoresClient();
+        VectorStoresClient vectorStoresClient = this.openAiService.createClient().client(VectorStoresClient.class);
 
         VectorStore newestVectorStore = null;
 

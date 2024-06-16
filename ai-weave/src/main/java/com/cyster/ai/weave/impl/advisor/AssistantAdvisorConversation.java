@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
@@ -18,7 +19,6 @@ import io.github.stefanbratanov.jvm.openai.CreateMessageRequest;
 import io.github.stefanbratanov.jvm.openai.CreateRunRequest;
 import io.github.stefanbratanov.jvm.openai.CreateThreadRequest;
 import io.github.stefanbratanov.jvm.openai.MessagesClient;
-import io.github.stefanbratanov.jvm.openai.OpenAI;
 import io.github.stefanbratanov.jvm.openai.OpenAIException;
 import io.github.stefanbratanov.jvm.openai.PaginationQueryParameters;
 import io.github.stefanbratanov.jvm.openai.RunsClient;
@@ -42,7 +42,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
 
     private static final Logger logger = LoggerFactory.getLogger(AssistantAdvisorConversation.class);
 
-    private OpenAI openAi;
+    private OpenAiService openAiService;
     private String assistantId;
     private Toolset<C> toolset;
     private List<Message> messages;
@@ -50,9 +50,9 @@ public class AssistantAdvisorConversation<C> implements Conversation {
     private Optional<String> overrideInstructions = Optional.empty();
     private C context;
 
-    AssistantAdvisorConversation(OpenAI openAiService, String assistantId, Toolset<C> toolset,
+    AssistantAdvisorConversation(OpenAiService openAiService, String assistantId, Toolset<C> toolset,
         Optional<String> overrideInstructions, C context) {
-        this.openAi = openAiService;
+        this.openAiService = openAiService;
         this.assistantId = assistantId;
         this.toolset = toolset;
         this.messages = new ArrayList<Message>();
@@ -71,12 +71,14 @@ public class AssistantAdvisorConversation<C> implements Conversation {
 
     @Override
     public Message respond() throws ConversationException {
+        var messageLogger = new MessageLog.Builder();
+
         int retries = 0;
 
         Message message = null;
         do {
             try {
-                message = doRun();
+                message = doRun(messageLogger);
             } catch (RetryableAdvisorConversationException exception) {
                 retries = retries + 1;
                 if (retries > CONVERSATION_RETIES_MAX) {
@@ -97,8 +99,8 @@ public class AssistantAdvisorConversation<C> implements Conversation {
         return this.messages;
     }
 
-    private Message doRun() throws AdvisorConversationException {
-        var thread = getOrCreateThread();
+    private Message doRun(MessageLog.Builder messageLogger) throws AdvisorConversationException {
+        var thread = getOrCreateThread(messageLogger);
 
         var requestBuilder = CreateRunRequest.newBuilder()
             .assistantId(this.assistantId);
@@ -107,7 +109,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
             requestBuilder.instructions(overrideInstructions.get());
         }
 
-        RunsClient runsClient = this.openAi.runsClient();
+        RunsClient runsClient = this.openAiService.createClient().client(RunsClient.class);
         ThreadRun run = runsClient.createRun(thread.id(), requestBuilder.build());
 
         int retryCount = 0;
@@ -208,7 +210,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
             logger.info("Run.status[" + run.id() + "]: " + run.status() + " (delay " + delay + "ms)");
         } while (!run.status().equals("completed"));
 
-        MessagesClient messagesClient = this.openAi.messagesClient();
+        MessagesClient messagesClient = this.openAiService.createClient().client(MessagesClient.class);
         
         
         var responseMessages = messagesClient.listMessages(thread.id(), PaginationQueryParameters.none(), Optional.empty());
@@ -248,9 +250,9 @@ public class AssistantAdvisorConversation<C> implements Conversation {
         return message;
     }
 
-    private Thread getOrCreateThread() {
-        ThreadsClient threadsClient = this.openAi.threadsClient();
-        MessagesClient messagesClient = this.openAi.messagesClient();
+    private Thread getOrCreateThread(MessageLog.Builder messageLogger) {
+        ThreadsClient threadsClient = this.openAiService.createClient().client(ThreadsClient.class);
+        MessagesClient messagesClient = this.openAiService.createClient().client(MessagesClient.class);
 
         if (thread.isEmpty()) {
             var threadRequest = CreateThreadRequest.newBuilder().build();

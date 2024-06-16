@@ -1,4 +1,4 @@
-package com.cyster.ai.weave.impl.advisor.openai;
+package com.cyster.ai.weave.impl.openai;
 
 import java.util.Iterator;
 import java.util.Map;

@@ -9,19 +9,20 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.advisor.CodeInterpreterTool;
 import com.cyster.ai.weave.service.advisor.CodeInterpreterTool.Asset;
 
-import io.github.stefanbratanov.jvm.openai.OpenAI;
+import io.github.stefanbratanov.jvm.openai.FilesClient;
 import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
 
 public class CodeInterpreterToolBuilderImpl<CONTEXT> implements CodeInterpreterTool.Builder<CONTEXT> {
-    private OpenAI openAi;
+    private OpenAiService openAiService;
     private List<Asset> assets = new ArrayList<>();
     private String name;
     
-    public CodeInterpreterToolBuilderImpl(OpenAI openAi) {
-        this.openAi = openAi;
+    public CodeInterpreterToolBuilderImpl(OpenAiService openAiService) {
+        this.openAiService = openAiService;
     }
 
     @Override
@@ -63,7 +64,7 @@ public class CodeInterpreterToolBuilderImpl<CONTEXT> implements CodeInterpreterT
                     Files.copy(inputStream, realFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
     
                     var fileUpload = new UploadFileRequest(realFile, "assistants");
-                    var file = this.openAi.filesClient().uploadFile(fileUpload);
+                    var file = this.openAiService.createClient().client(FilesClient.class).uploadFile(fileUpload);
                     files.add(file.id());
                 }
                 Files.delete(realFile);

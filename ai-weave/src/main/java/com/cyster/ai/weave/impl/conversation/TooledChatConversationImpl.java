@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.cyster.ai.weave.impl.advisor.ChatFunctionToolset;
 import com.cyster.ai.weave.impl.advisor.Toolset;
+import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.advisor.Tool;
 import com.cyster.ai.weave.service.advisor.TooledChatConversation;
 import com.cyster.ai.weave.service.conversation.Message;
@@ -14,7 +15,6 @@ import com.cyster.ai.weave.service.conversation.Message;
 import io.github.stefanbratanov.jvm.openai.ChatClient;
 import io.github.stefanbratanov.jvm.openai.ChatMessage;
 import io.github.stefanbratanov.jvm.openai.CreateChatCompletionRequest;
-import io.github.stefanbratanov.jvm.openai.OpenAI;
 import io.github.stefanbratanov.jvm.openai.ChatMessage.ToolMessage;
 import io.github.stefanbratanov.jvm.openai.ToolCall.FunctionToolCall;
 
@@ -22,12 +22,12 @@ import io.github.stefanbratanov.jvm.openai.ToolCall.FunctionToolCall;
 public class TooledChatConversationImpl implements TooledChatConversation {
     private final String MODEL = "gpt-4o";
 
-    private OpenAI openAi;
+    private OpenAiService openAiService;
     private List<Message> messages;
     private Toolset.Builder<Void> toolsetBuilder;
 
-    public TooledChatConversationImpl(OpenAI openAi) {
-        this.openAi = openAi;
+    public TooledChatConversationImpl(OpenAiService openAiService) {
+        this.openAiService = openAiService;
         this.messages = new ArrayList<Message>();
         this.toolsetBuilder = new Toolset.Builder<Void>();
     }
@@ -67,7 +67,7 @@ public class TooledChatConversationImpl implements TooledChatConversation {
 
     @Override
     public Message respond() {
-        ChatClient chatClient = openAi.chatClient();
+        ChatClient chatClient = openAiService.createClient().client(ChatClient.class);
         Message response = null;
 
         while (response == null) {

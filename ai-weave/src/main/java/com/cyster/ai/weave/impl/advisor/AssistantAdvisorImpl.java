@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.advisor.Tool;
@@ -18,7 +19,6 @@ import io.github.stefanbratanov.jvm.openai.AssistantsClient;
 import io.github.stefanbratanov.jvm.openai.CreateAssistantRequest;
 import io.github.stefanbratanov.jvm.openai.File;
 import io.github.stefanbratanov.jvm.openai.FilesClient;
-import io.github.stefanbratanov.jvm.openai.OpenAI;
 import io.github.stefanbratanov.jvm.openai.PaginationQueryParameters;
 import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
 import io.github.stefanbratanov.jvm.openai.AssistantsClient.PaginatedAssistants;
@@ -30,12 +30,12 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
     public static String METADATA_VERSION = "version";
     public static String METADATA_IDENTITY = "identityHash";
 
-    private OpenAI openAi;
+    private OpenAiService openAiService;
     private Assistant assistant;
     private Toolset<C> toolset;
 
-    public AssistantAdvisorImpl(OpenAI openAi, Assistant assistant, Toolset<C> toolset) {
-        this.openAi = openAi;
+    public AssistantAdvisorImpl(OpenAiService openAiService, Assistant assistant, Toolset<C> toolset) {
+        this.openAiService = openAiService;
         this.assistant = assistant;
         this.toolset = toolset;
     }
@@ -83,7 +83,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
 
         @Override
         public Conversation start() {
-            var conversation = new AssistantAdvisorConversation<C2>(this.advisor.openAi,
+            var conversation = new AssistantAdvisorConversation<C2>(this.advisor.openAiService,
                 this.advisor.assistant.id(),
                 this.advisor.toolset,
                 overrideInstructions,
@@ -100,14 +100,14 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
     public static class Builder<C2> implements AdvisorBuilder<C2> {
         private static final String MODEL = "gpt-4o";
 
-        private final OpenAI openAi;
+        private final OpenAiService openAiService;
         private final String name;
         private Optional<String> instructions = Optional.empty();
         private Toolset.Builder<C2> toolsetBuilder = new Toolset.Builder<C2>();
         private List<Path> filePaths = new ArrayList<Path>();
         
-        Builder(OpenAI openAi, String name) {
-            this.openAi = openAi;
+        Builder(OpenAiService openAiService, String name) {
+            this.openAiService = openAiService;
             this.name = name;
         }
 
@@ -138,13 +138,13 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
                 assistant = Optional.of(this.create(hash));
             }
 
-            return new AssistantAdvisorImpl<C2>(this.openAi, assistant.get(), this.toolsetBuilder.create());
+            return new AssistantAdvisorImpl<C2>(this.openAiService, assistant.get(), this.toolsetBuilder.create());
         }
 
         private Assistant create(String hash) {
             List<String> fileIds = new ArrayList<String>();
             for (var filePath : this.filePaths) {
-                FilesClient filesClient = this.openAi.filesClient();
+                FilesClient filesClient = this.openAiService.createClient().client(FilesClient.class);
                 UploadFileRequest uploadInputFileRequest = UploadFileRequest.newBuilder()
                     .file(filePath)
                     .purpose("assistants")
@@ -159,7 +159,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
 
             var toolset = new AdvisorToolset<C2>(this.toolsetBuilder.create());
 
-            AssistantsClient assistantsClient = this.openAi.assistantsClient();
+            AssistantsClient assistantsClient = this.openAiService.createClient().client(AssistantsClient.class);
             CreateAssistantRequest.Builder requestBuilder = CreateAssistantRequest.newBuilder()
                 .name(this.name)
                 .model(MODEL)
@@ -177,7 +177,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
         }
 
         private Optional<Assistant> findAssistant(String hash) {
-            AssistantsClient assistantsClient = this.openAi.assistantsClient();
+            AssistantsClient assistantsClient = this.openAiService.createClient().client(AssistantsClient.class);
             
             PaginatedAssistants response = null;
             do {
