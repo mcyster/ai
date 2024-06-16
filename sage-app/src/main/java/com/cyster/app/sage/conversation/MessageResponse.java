@@ -3,30 +3,18 @@ package com.cyster.app.sage.conversation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class MessageResponse {
-	private String type;
-	private String content;
+public record MessageResponse(
+    String type, 
+    String content) {
+    
+    @Override
+    public String toString() {
+        ObjectMapper objectMapper = new ObjectMapper();
 
-	public MessageResponse(String type, String content) {
-		this.type = type;
-		this.content = content;
-	}
-
-	public String getType() {
-		return this.type;
-	}
-
-	public String getContent() {
-		return this.content;
-	}
-
-	public String toString() {
-		ObjectMapper objectMapper = new ObjectMapper();
-
-		try {
-			return objectMapper.writeValueAsString(this);
-		} catch (JsonProcessingException e) {
-			throw new RuntimeException(e);
-		}
-	}
+        try {
+            return objectMapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

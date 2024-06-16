@@ -61,18 +61,18 @@ public class ConversationController {
         @RequestBody ConversationRequest request)
         throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException,ScenarioParametersException, ScenarioContextException {
            
-        if (request == null || request.getScenarioName() == null || request.getScenarioName().isBlank()) {
+        if (request == null || request.scenario() == null || request.scenario().isBlank()) {
             throw new ScenarioNameNotSpecifiedRestException();
         }
 
         Scenario<?,?> scenario;
         try {
-            scenario = this.scenarioStore.getScenario(request.getScenarioName());
+            scenario = this.scenarioStore.getScenario(request.scenario());
         } catch (ScenarioException exception) {
-            throw new ScenarioNameNotFoundRestException(request.getScenarioName());
+            throw new ScenarioNameNotFoundRestException(request.scenario());
         }
         
-        var conversation = createConversation(scenario, request.getParameters(), headers);
+        var conversation = createConversation(scenario, request.parameters(), headers);
 
         var handle = scenarioSessionStore.addSession(scenario, conversation);
 
@@ -89,21 +89,21 @@ public class ConversationController {
         @RequestBody PromptedConversationRequest request)
         throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException, ConversationRestException, ScenarioParametersException, ScenarioContextException {
 
-        if (request == null || request.getScenario().isBlank()) {
+        if (request == null || request.scenario().isBlank()) {
             throw new ScenarioNameNotSpecifiedRestException();
         }
 
         Scenario<?,?> scenario;
         try {
-            scenario = this.scenarioStore.getScenario(request.getScenario());
+            scenario = this.scenarioStore.getScenario(request.scenario());
         } catch (ScenarioException exception) {
-            throw new ScenarioNameNotFoundRestException(request.getScenario());
+            throw new ScenarioNameNotFoundRestException(request.scenario());
         }
     
-        var conversation = createConversation(scenario, request.getParameters(), headers);
+        var conversation = createConversation(scenario, request.parameters(), headers);
 
-        if (request.getPrompt() != null && !request.getPrompt().isBlank()) {
-            conversation.addMessage(request.getPrompt());
+        if (request.prompt() != null && !request.prompt().isBlank()) {
+            conversation.addMessage(request.prompt());
         }
 
         var handle = scenarioSessionStore.addSession(scenario, conversation);

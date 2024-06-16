@@ -7,32 +7,26 @@ import com.cyster.ai.weave.service.conversation.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ConversationResponse {
-	private String id;
-	private String scenario;
-	private List<MessageResponse> messages;
+public record ConversationResponse(
+    String id, 
+    String scenario, 
+    List<MessageResponse> messages) {
 
-	protected ConversationResponse(String id, String scenario, List<MessageResponse> messages) {
-		this.id = id;
-		this.scenario = scenario;
-		this.messages = messages;
+	public ConversationResponse {
+		if (id == null || id.isBlank()) {
+			throw new IllegalArgumentException("Id cannot be null or blank");
+		}
+		if (scenario == null || scenario.isBlank()) {
+			throw new IllegalArgumentException("Scenario cannot be null or blank");
+		}
+		if (messages == null) {
+			throw new IllegalArgumentException("Messages cannot be null");
+		}
 	}
 
-	public String getId() {
-		return this.id;
-	}
-
-	public String getScenario() {
-		return scenario;
-	}
-
-	public List<MessageResponse> getMessages() {
-		return messages;
-	}
-
+	@Override
 	public String toString() {
 		ObjectMapper objectMapper = new ObjectMapper();
-
 		try {
 			return objectMapper.writeValueAsString(this);
 		} catch (JsonProcessingException e) {

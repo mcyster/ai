@@ -90,7 +90,7 @@ public class GrapherScenario implements Scenario<Parameters, Void> {
             .putAsset("data.js",  data.replace("```", "&#96;&#96;&#96;"));
         
         String instructions = """ 
-The web page at %s is supported by the following assets.
+The web page at %s (we're in developer mode, so localhost is ok) is supported by the following assets.
 
 index.html:
 ```

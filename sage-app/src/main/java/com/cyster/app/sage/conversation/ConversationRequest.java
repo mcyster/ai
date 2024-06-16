@@ -1,22 +1,22 @@
 package com.cyster.app.sage.conversation;
 
-import java.util.HashMap;
 import java.util.Map;
 
-public class ConversationRequest {
-    private String scenarioName;
-    private Map<String, Object> parameters = new HashMap<String, Object>();
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-    public ConversationRequest(String scenarioName, Map<String, Object> parameters) {
-        this.scenarioName = scenarioName;
-        this.parameters = parameters;
-    }
-
-    public String getScenarioName() {
-        return this.scenarioName;
-    }
-
-    public Map<String, Object> getParameters() {
-        return this.parameters;
+public record ConversationRequest(
+    String scenario,
+    Map<String, Object> parameters) {
+    
+    @Override
+    public String toString() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
+
