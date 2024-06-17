@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.cyster.ai.weave.impl.advisor.ChatFunctionToolset;
+import com.cyster.ai.weave.impl.advisor.MessageImpl;
 import com.cyster.ai.weave.impl.advisor.Toolset;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.advisor.Tool;
@@ -34,24 +35,24 @@ public class TooledChatConversationImpl implements TooledChatConversation {
 
     @Override
     public TooledChatConversationImpl addMessage(String content) {
-        this.messages.add(new Message(content));
+        this.messages.add(new MessageImpl(content));
 
         return this;
     }
 
 
     public TooledChatConversationImpl addUserMessage(String content) {
-        this.messages.add(new Message(content));
+        this.messages.add(new MessageImpl(content));
         return this;
     }
     
     public TooledChatConversationImpl addSystemMessage(String content) {
-        this.messages.add(new Message(Message.Type.SYSTEM, content));
+        this.messages.add(new MessageImpl(Message.Type.SYSTEM, content));
         return this;
     }
     
     public TooledChatConversationImpl addAiMessage(String content) {
-        this.messages.add(new Message(Message.Type.AI, content));
+        this.messages.add(new MessageImpl(Message.Type.AI, content));
         return this;
     }
     public <T> TooledChatConversationImpl addTool(String name, String description, Class<T> parameterClass,
@@ -101,23 +102,23 @@ public class TooledChatConversationImpl implements TooledChatConversation {
 
             var choices = chatResponse.choices();
             if (choices.size() > 1) {
-                messages.add(new Message(Message.Type.INFO, "Multiple responses (ignored, only taking 1st response)"));
+                messages.add(new MessageImpl(Message.Type.INFO, "Multiple responses (ignored, only taking 1st response)"));
             }
             var choice = choices.get(0);
 
             switch (choice.finishReason()) {
             case "stop":
                 var messageContent = choice.message().content();
-                response = new Message(Message.Type.AI, messageContent);
+                response = new MessageImpl(Message.Type.AI, messageContent);
                 messages.add(response);
                 break;
 
             case "length":
-                messages.add(new Message(Message.Type.ERROR, "Token Limit Exceeded"));
+                messages.add(new MessageImpl(Message.Type.ERROR, "Token Limit Exceeded"));
                 break;
 
             case "content_filter":
-                messages.add(new Message(Message.Type.ERROR, "Content Filtered"));
+                messages.add(new MessageImpl(Message.Type.ERROR, "Content Filtered"));
                 break;
 
             case "function_call":
@@ -125,21 +126,21 @@ public class TooledChatConversationImpl implements TooledChatConversation {
 
                 for(var toolCall: choice.message().toolCalls()) {
                     if (toolCall.type() != "function") {
-                        messages.add(new Message(Message.Type.ERROR, "Tool call not a function"));
+                        messages.add(new MessageImpl(Message.Type.ERROR, "Tool call not a function"));
                         continue;
                     }
                     FunctionToolCall functionToolCall = (FunctionToolCall)toolCall;
                     
-                    messages.add(new Message(Message.Type.FUNCTION_CALL, functionToolCall.function().name() 
+                    messages.add(new MessageImpl(Message.Type.FUNCTION_CALL, functionToolCall.function().name() 
                         + "(" + functionToolCall.function().arguments() + ")"));
     
                    ToolMessage toolMessage = chatFunctionToolset.call(functionToolCall);
-                   messages.add(new Message(Message.Type.FUNCTION_RESULT, toolMessage.content()));
+                   messages.add(new MessageImpl(Message.Type.FUNCTION_RESULT, toolMessage.content()));
                 }
                 break;
 
             default:
-                messages.add(new Message(Message.Type.ERROR, "Unexpected finish reason: " + choice.finishReason()));
+                messages.add(new MessageImpl(Message.Type.ERROR, "Unexpected finish reason: " + choice.finishReason()));
             }
         }
 

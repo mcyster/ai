@@ -3,6 +3,8 @@ package com.cyster.ai.weave.impl.openai;
 import java.net.http.HttpClient;
 import java.time.Duration;
 
+import com.cyster.ai.weave.impl.advisor.OperationLogger;
+
 import io.github.stefanbratanov.jvm.openai.OpenAI;
 
 public class OpenAiService {
@@ -23,7 +25,17 @@ public class OpenAiService {
             .build();
              
         return new OpenAiClient(OpenAI.newBuilder(apiKey)
-            .httpClient(new HttpClientLogger(httpClient))
+            .httpClient(httpClient)
+            .build());             
+    }
+    
+    public OpenAiClient createClient(OperationLogger operationLogger) {
+        HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(20))
+            .build();
+             
+        return new OpenAiClient(OpenAI.newBuilder(apiKey)
+            .httpClient(new HttpClientLogger(httpClient, operationLogger))
             .build());             
     }
 }

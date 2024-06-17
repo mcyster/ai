@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.cyster.ai.weave.impl.openai.OpenAiClient;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
@@ -62,7 +63,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
 
     @Override
     public Conversation addMessage(String message) {
-        var typedMessage = new Message(message);
+        var typedMessage = new MessageImpl(message);
 
         this.messages.add(typedMessage);
 
@@ -71,14 +72,15 @@ public class AssistantAdvisorConversation<C> implements Conversation {
 
     @Override
     public Message respond() throws ConversationException {
-        var messageLogger = new MessageLog.Builder();
+        var operations = new OperationImpl("Assistant");
+        var openAi= this.openAiService.createClient(operations);
 
         int retries = 0;
 
-        Message message = null;
+        String response = null;
         do {
             try {
-                message = doRun(messageLogger);
+                response = doRun(openAi);
             } catch (RetryableAdvisorConversationException exception) {
                 retries = retries + 1;
                 if (retries > CONVERSATION_RETIES_MAX) {
@@ -87,10 +89,15 @@ public class AssistantAdvisorConversation<C> implements Conversation {
                 }
                 logger.warn("Advisor thread run failed, retrying");
             } catch (AdvisorConversationException exception) {
+                operations.log("Conversation Failed", exception.getMessage());
                 throw new ConversationException("Advisor experienced problems responding to conversation", exception);
             }
-        } while (message == null);
+        } while (response == null);
 
+ 
+        var message = new MessageImpl(Type.AI, response, operations);  // TODO add the message at the start, so we can follow
+        this.messages.add(message);
+        
         return message;
     }
 
@@ -99,8 +106,8 @@ public class AssistantAdvisorConversation<C> implements Conversation {
         return this.messages;
     }
 
-    private Message doRun(MessageLog.Builder messageLogger) throws AdvisorConversationException {
-        var thread = getOrCreateThread(messageLogger);
+    private String doRun(OpenAiClient openAi) throws AdvisorConversationException {
+        var thread = getOrCreateThread(openAi);
 
         var requestBuilder = CreateRunRequest.newBuilder()
             .assistantId(this.assistantId);
@@ -195,7 +202,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
                     ToolOutput toolOutput = ToolOutput.newBuilder().toolCallId(callId).output(output).build();
                     
                     toolOutputsBuilder.toolOutput(toolOutput);
-                    messages.add(new Message(Message.Type.INFO, "Toolcall: " + toolCall.toString() + " Response: "
+                    messages.add(new MessageImpl(Message.Type.INFO, "Toolcall: " + toolCall.toString() + " Response: "
                         + toolOutput.toString()));                    
                 }
                    
@@ -210,49 +217,41 @@ public class AssistantAdvisorConversation<C> implements Conversation {
             logger.info("Run.status[" + run.id() + "]: " + run.status() + " (delay " + delay + "ms)");
         } while (!run.status().equals("completed"));
 
-        MessagesClient messagesClient = this.openAiService.createClient().client(MessagesClient.class);
+        MessagesClient messagesClient = openAi.client(MessagesClient.class);
         
         
         var responseMessages = messagesClient.listMessages(thread.id(), PaginationQueryParameters.none(), Optional.empty());
 
         if (responseMessages.data().size() == 0) {
-            messages.add(new Message(Message.Type.INFO, "No responses"));
+            messages.add(new MessageImpl(Message.Type.INFO, "No responses"));
             throw new AdvisorConversationException("No Reponses");
         }
         var responseMessage = responseMessages.data().get(0);
         if (!responseMessage.role().equals("assistant")) {
-            messages.add(new Message(Message.Type.INFO, "Assistant did not response"));
+            messages.add(new MessageImpl(Message.Type.INFO, "Assistant did not response"));
             throw new AdvisorConversationException("Assistant did not respond");
         }
 
         var content = responseMessage.content();
         if (content.size() == 0) {
-            messages.add(new Message(Message.Type.INFO, "No content"));
             throw new AdvisorConversationException("No Content");
         }
 
         if (content.size() > 1) {
-            messages.add(new Message(Message.Type.INFO, "Lots of content (ignored)"));
             throw new AdvisorConversationException("Lots of Content");
         }
 
         if (!content.get(0).type().equals("text")) {
-            messages.add(new Message(Message.Type.INFO, "Content not of type text (ignored)"));
             throw new AdvisorConversationException("Content not of type text");
         }
         var textContent = (TextContent)content.get(0);
         
-        messages.add(new Message(Message.Type.INFO, textContent.toString()));
-
-        var message = new Message(Message.Type.AI, textContent.text().value());
-        this.messages.add(message);
-
-        return message;
+        return textContent.text().value();
     }
 
-    private Thread getOrCreateThread(MessageLog.Builder messageLogger) {
-        ThreadsClient threadsClient = this.openAiService.createClient().client(ThreadsClient.class);
-        MessagesClient messagesClient = this.openAiService.createClient().client(MessagesClient.class);
+    private Thread getOrCreateThread(OpenAiClient openAi) {
+        ThreadsClient threadsClient = openAi.client(ThreadsClient.class);
+        MessagesClient messagesClient = openAi.client(MessagesClient.class);
 
         if (thread.isEmpty()) {
             var threadRequest = CreateThreadRequest.newBuilder().build();

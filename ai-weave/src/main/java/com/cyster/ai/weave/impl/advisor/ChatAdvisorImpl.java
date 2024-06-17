@@ -79,17 +79,17 @@ public class ChatAdvisorImpl<C> implements Advisor<C> {
         }
 
         public Builder<C2> addUserMessage(String content) {
-            this.messages.add(new Message(content));
+            this.messages.add(new MessageImpl(content));
             return this;
         }
 
         public Builder<C2> addSystemMessage(String content) {
-            this.messages.add(new Message(Message.Type.SYSTEM, content));
+            this.messages.add(new MessageImpl(Message.Type.SYSTEM, content));
             return this;
         }
 
         public Builder<C2> addAiMessage(String content) {
-            this.messages.add(new Message(Message.Type.AI, content));
+            this.messages.add(new MessageImpl(Message.Type.AI, content));
             return this;
         }
 

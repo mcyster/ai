@@ -1,9 +1,6 @@
 package com.cyster.ai.weave.service.conversation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public class Message {
+public interface Message {
 
     public enum Type {
         SYSTEM("System"), AI("Ai"), USER("User"), ERROR("Error"), INFO("Info"), FUNCTION_CALL("Function Call"),
@@ -20,34 +17,10 @@ public class Message {
         }
     }
 
-    private Type type;
-    private String content;
-
-    public Message(Type type, String content) {
-        this.type = type;
-        this.content = content;
-    }
-
-    public Message(String content) {
-        this.type = Type.USER;
-        this.content = content;
-    }
-
-    public Type getType() {
-        return this.type;
-    }
-
-    public String getContent() {
-        return this.content;
-    }
-
-    public String toString() {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        try {
-            return objectMapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    Type getType();
+    
+    String getContent();
+    
+    Operation operation();   
+       
 }

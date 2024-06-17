@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.Authenticator;
 import java.net.CookieHandler;
 import java.net.ProxySelector;
+import java.net.URI;
 import java.net.http.*;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.PushPromiseHandler;
@@ -11,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -22,12 +24,18 @@ import java.util.concurrent.Flow.Subscription;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 
+import com.cyster.ai.weave.impl.advisor.OperationLogger;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class HttpClientLogger extends HttpClient {
 
     private final HttpClient delegate;
+    private final OperationLogger logger;
 
-    public HttpClientLogger(HttpClient delegate) {
+    public HttpClientLogger(HttpClient delegate, OperationLogger logger) {
         this.delegate = delegate;
+        this.logger = logger.childLogger("Http Client");
     }
 
     @Override
@@ -49,17 +57,15 @@ public class HttpClientLogger extends HttpClient {
     }
 
     private void logRequest(HttpRequest request) {
-        System.out.println("Request URI: " + request.uri());
-        System.out.println("Request Method: " + request.method());
-        System.out.println("Request Headers: " + request.headers());
+        logger.log("Request", new Request(request.uri(), request.method(), request.headers().map()));
+
         request.bodyPublisher().ifPresent(bodyPublisher -> {
-            bodyPublisher.subscribe(new LoggingSubscriber());
+            bodyPublisher.subscribe(new LoggingSubscriber(logger));
         });
     }
 
     private <T> void logResponse(HttpResponse<T> response) {
-        System.out.println("Response Code: " + response.statusCode());
-        System.out.println("Response Headers: " + response.headers());
+        logger.log("Response", new Response(response.statusCode(), response.headers().map()));
     }
 
     private <T> HttpResponse.BodyHandler<T> loggingBodyHandler(HttpResponse.BodyHandler<T> bodyHandler) {
@@ -70,7 +76,7 @@ public class HttpClientLogger extends HttpClient {
                 public CompletionStage<T> getBody() {
                     return bodySubscriber.getBody().thenApply(body -> {
                         if (body instanceof String) {
-                            System.out.println("Response Body: " + body);
+                            logger.log("Response Body: ", body);
                         }
                         return body;
                     });
@@ -141,6 +147,12 @@ public class HttpClientLogger extends HttpClient {
 
 
     private static class LoggingSubscriber implements Subscriber<ByteBuffer> {
+        private final OperationLogger logger;
+
+        public LoggingSubscriber(OperationLogger logger) {
+            this.logger = logger;
+        }
+        
         @Override
         public void onSubscribe(Subscription subscription) {
             subscription.request(Long.MAX_VALUE);
@@ -150,7 +162,7 @@ public class HttpClientLogger extends HttpClient {
         public void onNext(ByteBuffer item) {
             byte[] bytes = new byte[item.remaining()];
             item.get(bytes);
-            System.out.println("Request Body: " + new String(bytes, StandardCharsets.UTF_8));
+            logger.log("Request Body", new String(bytes, StandardCharsets.UTF_8));
         }
 
         @Override
@@ -173,4 +185,29 @@ public class HttpClientLogger extends HttpClient {
             PushPromiseHandler<T> pushPromiseHandler) {
         return delegate.sendAsync(request, responseBodyHandler);
     }
+    
+    public static record Request(URI uri, String method, Map<String,List<String>> headers) {
+        @Override
+        public String toString() {
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                return objectMapper.writeValueAsString(this);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public static record Response(int code, Map<String,List<String>> headers) {
+        @Override
+        public String toString() {
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                return objectMapper.writeValueAsString(this);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
 }

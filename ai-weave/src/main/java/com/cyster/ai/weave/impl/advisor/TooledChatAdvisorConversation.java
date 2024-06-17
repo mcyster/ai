@@ -30,7 +30,7 @@ public class TooledChatAdvisorConversation<C> implements Conversation {
     
     @Override
     public Conversation addMessage(String message) {
-        this.messages.add(new Message(message));
+        this.messages.add(new MessageImpl(message));
         return this;
     }
 
@@ -67,23 +67,23 @@ public class TooledChatAdvisorConversation<C> implements Conversation {
     
             var choices = chatResponse.choices();
             if (choices.size() > 1) {
-                messages.add(new Message(Message.Type.INFO, "Multiple responses (ignored, only taking 1st response)"));
+                messages.add(new MessageImpl(Message.Type.INFO, "Multiple responses (ignored, only taking 1st response)"));
             }
             var choice = choices.get(0);
     
             switch (choice.finishReason()) {
             case "stop":
                 var messageContent = choice.message().content();
-                response = new Message(Message.Type.AI, messageContent);
+                response = new MessageImpl(Message.Type.AI, messageContent);
                 messages.add(response);
                 break;
     
             case "length":
-                messages.add(new Message(Message.Type.ERROR, "Token Limit Exceeded"));
+                messages.add(new MessageImpl(Message.Type.ERROR, "Token Limit Exceeded"));
                 break;
     
             case "content_filter":
-                messages.add(new Message(Message.Type.ERROR, "Content Filtered"));
+                messages.add(new MessageImpl(Message.Type.ERROR, "Content Filtered"));
                 break;
     
             case "function_call":
@@ -91,21 +91,21 @@ public class TooledChatAdvisorConversation<C> implements Conversation {
                 
                 for(var toolCall: choice.message().toolCalls()) {
                     if (toolCall.type() != "function") {
-                        messages.add(new Message(Message.Type.ERROR, "Tool call not a function"));
+                        messages.add(new MessageImpl(Message.Type.ERROR, "Tool call not a function"));
                         continue;
                     }
                     FunctionToolCall functionToolCall = (FunctionToolCall)toolCall;
                     
-                    messages.add(new Message(Message.Type.FUNCTION_CALL, functionToolCall.function().name() 
+                    messages.add(new MessageImpl(Message.Type.FUNCTION_CALL, functionToolCall.function().name() 
                         + "(" + functionToolCall.function().arguments() + ")"));
     
                    ToolMessage toolMessage = chatFunctionToolset.call(functionToolCall);
-                   messages.add(new Message(Message.Type.FUNCTION_RESULT, toolMessage.content()));
+                   messages.add(new MessageImpl(Message.Type.FUNCTION_RESULT, toolMessage.content()));
                 }
                 break;
     
             default:
-                messages.add(new Message(Message.Type.ERROR, "Unexpected finish reason: " + choice.finishReason()));
+                messages.add(new MessageImpl(Message.Type.ERROR, "Unexpected finish reason: " + choice.finishReason()));
             }
         }
     

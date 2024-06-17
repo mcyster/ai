@@ -137,7 +137,7 @@ public class ConversationController {
 
         var messages = new ArrayList<MessageResponse>();
         for (var message : session.get().getConversation().getMessages()) {
-            messages.add(new MessageResponse(message.getType().toString(), message.getContent()));
+            messages.add(new MessageResponse(message.getType().toString(), message.getContent(), message.operation()));
         }
 
         return messages;
@@ -167,7 +167,7 @@ public class ConversationController {
             throw new ConversationRestException(session.get().getId(), exception);
         }
 
-        return new MessageResponse(response.getType().toString(), response.getContent());
+        return new MessageResponse(response.getType().toString(), response.getContent(), response.operation());
     }
 
     // TODO make this pluggable

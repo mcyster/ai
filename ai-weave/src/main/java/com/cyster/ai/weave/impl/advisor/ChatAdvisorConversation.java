@@ -26,7 +26,7 @@ public class ChatAdvisorConversation implements Conversation {
     
     @Override
     public Conversation addMessage(String message) {
-        this.messages.add(new Message(message));
+        this.messages.add(new MessageImpl(message));
         return this;
     }
 
@@ -54,15 +54,15 @@ public class ChatAdvisorConversation implements Conversation {
 
         var choices = result.choices();
         if (choices.size() == 0) {
-            messages.add(new Message(Message.Type.INFO, "No responses"));
+            messages.add(new MessageImpl(Message.Type.INFO, "No responses"));
             throw new ConversationException("No Reponses");
         } 
         if (choices.size() > 1) {
-            messages.add(new Message(Message.Type.INFO, "Multiple responses (ignored)"));
+            messages.add(new MessageImpl(Message.Type.INFO, "Multiple responses (ignored)"));
             throw new ConversationException("Multiple Reponses");
         }
         
-        var message = new Message(Message.Type.AI, choices.get(0).message().content());
+        var message = new MessageImpl(Message.Type.AI, choices.get(0).message().content());
         messages.add(message);
         return message;
     }
