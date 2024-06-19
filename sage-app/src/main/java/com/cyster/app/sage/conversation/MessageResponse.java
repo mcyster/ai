@@ -9,37 +9,84 @@ import com.cyster.ai.weave.service.conversation.Operation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class MessageResponse {
-    private final String type;
-    private final String content;
-    private final OperationResponse operation;
-    
-    private MessageResponse(String type, String content, Operation operation) {
-        this.type = type;
-        this.content = content;
-        this.operation = createOperationResponse(operation);
+public interface MessageResponse {
+    enum Level {
+        Debug,
+        Verbose,
+        Normal,
+        Quiet;
     }
     
-    public String getType() {
-        return this.type;
+    String getType();
+    String getContent();
+    
+    
+    public static class QuietMessageResponse implements MessageResponse {
+        private final String type;
+        private final String content;
+                
+        private QuietMessageResponse(String type, String content) {
+            this.type = type;
+            this.content = content;
+        }
+        
+        @Override
+        public String getType() {
+            return this.type;
+        }
+        
+        @Override
+        public String getContent() {
+            return this.content;
+        }
+        
+        @Override
+        public String toString() {
+            ObjectMapper objectMapper = new ObjectMapper();
+    
+            try {
+                return objectMapper.writeValueAsString(this);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
     
-    public String getContent() {
-        return this.content;
-    }
+    public static class VerboseMessageResponse implements MessageResponse {
+        private final String type;
+        private final String content;
+        private final OperationResponse operation;
+        
+        
+        private VerboseMessageResponse(String type, String content, Operation operation) {
+            this.type = type;
+            this.content = content;
+            this.operation = createOperationResponse(operation);
+        }
+       
+        @Override
+        public String getType() {
+            return this.type;
+        }
+       
+        @Override
+        public String getContent() {
+            return this.content;
+        }
+        
+        public OperationResponse getOperation() {
+            return operation;
+        }
+        
+        @Override
+        public String toString() {
+            ObjectMapper objectMapper = new ObjectMapper();
     
-    public OperationResponse getOperation() {
-        return operation;
-    }
-    
-    @Override
-    public String toString() {
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        try {
-            return objectMapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            try {
+                return objectMapper.writeValueAsString(this);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
     
@@ -53,11 +100,7 @@ public class MessageResponse {
     }
     
     public static interface OperationResponse {
-        enum Level {
-            Debug,
-            Verbose,
-            Normal;
-        }
+
             
         Level getLevel();
         String getDescription();
@@ -65,12 +108,12 @@ public class MessageResponse {
     }
     
     public static class OperationResponseNoChildren implements OperationResponse {
-        OperationResponse.Level level;
+        MessageResponse.Level level;
         String description;
         Optional<Object> context;
         
         public OperationResponseNoChildren(Operation operation) {
-            this.level = toReponseLevel(operation.getLevel());
+            this.level = toResponseLevel(operation.getLevel());
             this.description = operation.getDescription();
             this.context = operation.context();
         }
@@ -92,13 +135,13 @@ public class MessageResponse {
     }
 
     public static class OperationResponseWithChildren implements OperationResponse {
-        OperationResponse.Level level;
+        MessageResponse.Level level;
         String description;
         List<OperationResponse> children;
         Optional<Object> context;
         
         public OperationResponseWithChildren(Operation operation) {
-            this.level = toReponseLevel(operation.getLevel());
+            this.level = toResponseLevel(operation.getLevel());
             this.description = operation.getDescription();
             this.children = new ArrayList<>();
             for (Operation child: operation.children()) {
@@ -125,31 +168,42 @@ public class MessageResponse {
         public Object getContext() {
             return this.context;
         }
-
-
     }
     
-    public static OperationResponse.Level toReponseLevel(Operation.Level level) {
+    public static MessageResponse.Level toResponseLevel(Operation.Level level) {
         return switch (level) {
-            case Normal -> OperationResponse.Level.Normal;
-            case Verbose -> OperationResponse.Level.Verbose;
-            case Debug -> OperationResponse.Level.Debug;
+            case Normal -> MessageResponse.Level.Normal;
+            case Verbose -> MessageResponse.Level.Verbose;
+            case Debug -> MessageResponse.Level.Debug;
+        };
+    }
+
+    public static Operation.Level toLevel(MessageResponse.Level level) {
+        return switch (level) {
+            case Quiet -> Operation.Level.Normal;
+            case Normal -> Operation.Level.Normal;
+            case Verbose -> Operation.Level.Verbose;
+            case Debug -> Operation.Level.Debug;
         };
     }
     
     public static class Builder {
-        Operation.Level level;
+        MessageResponse.Level responseLevel;
         
-        public Builder(Operation.Level level) {
-            this.level = level;
+        public Builder(MessageResponse.Level level) {
+            this.responseLevel = level;
         }
         
         public MessageResponse create(String type, String content, Operation operation) {
-            return new MessageResponse(type, content, new FilteredOperation(operation, this.level));
+            if (responseLevel == MessageResponse.Level.Quiet) {
+                return new QuietMessageResponse(type, content);
+            } else {
+                return new VerboseMessageResponse(type, content, new FilteredOperation(operation, toLevel(this.responseLevel)));
+            }
         }
     }
     
-    private static class FilteredOperation implements Operation {
+    public static class FilteredOperation implements Operation {
         private final Operation original;
         private final List<Operation> filteredChildren;
 

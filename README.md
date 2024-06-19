@@ -43,6 +43,11 @@ Synchronously run a scenario:
 curl -s  -H 'Content-Type: application/json' 'http://localhost:8080/conversations/messages' -d '{"scenario":"translate", "prompt": "Hello World", "parameters": { "language": "en", "target_language": "fr" }}' | jq .
 ```
 
+Synchronously run a scenario with details of what happened:
+```
+curl -s  -H 'Content-Type: application/json' 'http://localhost:8080/conversations/messages?level=Debug' -d '{"scenario":"translate", "prompt": "Hello World", "parameters": { "language": "en", "target_language": "fr" }}' | jq .
+```
+
 # jira-app
 Detail documentation can be found here: [jira-app](https://github.com/mcyster/ai/blob/main/docs/jira-app.md)
 

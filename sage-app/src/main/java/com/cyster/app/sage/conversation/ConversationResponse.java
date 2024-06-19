@@ -36,12 +36,12 @@ public record ConversationResponse(
 	}
 
 	public static class Builder {
-	    private Operation.Level level;
+	    private MessageResponse.Level level;
 		private String id;
 		private String scenario;
 		private List<MessageResponse> messages;
 
-	    public Builder(Operation.Level level) {
+	    public Builder(MessageResponse.Level level) {
 	        this.level = level;
 	    }
 	      

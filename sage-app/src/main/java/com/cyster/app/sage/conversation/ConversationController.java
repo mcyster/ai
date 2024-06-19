@@ -51,7 +51,7 @@ public class ConversationController {
 
     @GetMapping("/conversations")
     public List<ConversationResponse> index(
-        @RequestParam(name = "level", required = false, defaultValue = "Normal") Operation.Level level) {
+        @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level) {
         return scenarioSessionStore.createQueryBuilder().list().stream()
             .map(value -> new ConversationResponse.Builder(level).setId(value.getId())
                 .setMessages(value.getConversation().getMessages()).build())
@@ -60,7 +60,7 @@ public class ConversationController {
 
     @PostMapping("/conversations")
     public ConversationResponse create_conversation(
-        @RequestParam(name = "level", required = false, defaultValue = "Normal") Operation.Level level,
+        @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level,
         @RequestHeader MultiValueMap<String, String> headers,
         @RequestBody ConversationRequest request)
         throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException,ScenarioParametersException, ScenarioContextException {
@@ -89,7 +89,7 @@ public class ConversationController {
 
     @PostMapping("/conversations/messages")
     public ConvenienceConversationResponse startConversation(
-        @RequestParam(name = "level", required = false, defaultValue = "Normal") Operation.Level level,
+        @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level,
         @RequestHeader MultiValueMap<String, String> headers,
         @RequestBody PromptedConversationRequest request)
         throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException, ConversationRestException, ScenarioParametersException, ScenarioContextException {
@@ -130,7 +130,7 @@ public class ConversationController {
     @GetMapping("/conversations/{id}/messages")
     public List<MessageResponse> get_conversation_messages(
         @PathVariable("id") String id,
-        @RequestParam(name = "level", required = false, defaultValue = "Normal") Operation.Level level)
+        @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level)
         throws ScenarioSessionNotFoundRestException, ScenarioSessionNotSpecifiedRestException {
 
         if (id == null || id.isBlank()) {
@@ -153,7 +153,7 @@ public class ConversationController {
     @PostMapping("/conversations/{id}/messages")
     public MessageResponse continue_conversation(
         @PathVariable("id") String id,
-        @RequestParam(name = "level", required = false, defaultValue = "Normal") Operation.Level level,
+        @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level,
         @RequestBody MessagePromptRequest request)
         throws ScenarioSessionNotFoundRestException, ScenarioSessionNotSpecifiedRestException,
         ConversationRestException {
