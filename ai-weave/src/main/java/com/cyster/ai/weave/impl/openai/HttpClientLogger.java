@@ -27,6 +27,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 
 import com.cyster.ai.weave.impl.advisor.OperationLogger;
+import com.cyster.ai.weave.service.conversation.Operation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,7 +38,7 @@ public class HttpClientLogger extends HttpClient {
 
     public HttpClientLogger(HttpClient delegate, OperationLogger logger) {
         this.delegate = delegate;
-        this.logger = logger.childLogger("Http Client");
+        this.logger = logger.childLogger(Operation.Level.Verbose, "Http Client");
     }
 
     @Override
@@ -69,7 +70,8 @@ public class HttpClientLogger extends HttpClient {
             headers.put("Authorization", maskedHeaderValues);
         });
    
-        logger.log("Request", new Request(request.uri(), request.method(), headers));
+        logger.log("Request", new Request(request.uri(), request.method()));
+        logger.log(Operation.Level.Debug, "details", new RequestDetails(headers));
 
         request.bodyPublisher().ifPresent(bodyPublisher -> {
             bodyPublisher.subscribe(new LoggingSubscriber(logger));
@@ -77,7 +79,9 @@ public class HttpClientLogger extends HttpClient {
     }
 
     private <T> void logResponse(HttpResponse<T> response) {
-        logger.log("Response", new Response(response.statusCode(), response.headers().map()));
+        logger.log("Response", new Response(response.statusCode()));
+        logger.log(Operation.Level.Debug, "details", new ResponseDetails(response.headers().map()));
+
     }
 
     
@@ -207,7 +211,7 @@ public class HttpClientLogger extends HttpClient {
         return delegate.sendAsync(request, responseBodyHandler);
     }
     
-    public static record Request(URI uri, String method, Map<String,List<String>> headers) {
+    public static record Request(URI uri, String method) {
         @Override
         public String toString() {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -219,7 +223,19 @@ public class HttpClientLogger extends HttpClient {
         }
     }
 
-    public static record Response(int code, Map<String,List<String>> headers) {
+    public static record RequestDetails(Map<String,List<String>> headers) {
+        @Override
+        public String toString() {
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                return objectMapper.writeValueAsString(this);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    
+    public static record Response(int code) {
         @Override
         public String toString() {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -231,4 +247,15 @@ public class HttpClientLogger extends HttpClient {
         }
     }
 
+    public static record ResponseDetails(Map<String,List<String>> headers) {
+        @Override
+        public String toString() {
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                return objectMapper.writeValueAsString(this);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }

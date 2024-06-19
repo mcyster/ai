@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Operation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioService;
@@ -48,16 +50,18 @@ public class ConversationController {
     }
 
     @GetMapping("/conversations")
-    public List<ConversationResponse> index() {
+    public List<ConversationResponse> index(
+        @RequestParam(name = "level", required = false, defaultValue = "Normal") Operation.Level level) {
         return scenarioSessionStore.createQueryBuilder().list().stream()
-            .map(value -> new ConversationResponse.Builder().setId(value.getId())
+            .map(value -> new ConversationResponse.Builder(level).setId(value.getId())
                 .setMessages(value.getConversation().getMessages()).build())
             .collect(Collectors.toList());
     }
 
     @PostMapping("/conversations")
     public ConversationResponse create_conversation(
-       @RequestHeader MultiValueMap<String, String> headers,
+        @RequestParam(name = "level", required = false, defaultValue = "Normal") Operation.Level level,
+        @RequestHeader MultiValueMap<String, String> headers,
         @RequestBody ConversationRequest request)
         throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException,ScenarioParametersException, ScenarioContextException {
            
@@ -76,7 +80,7 @@ public class ConversationController {
 
         var handle = scenarioSessionStore.addSession(scenario, conversation);
 
-        return new ConversationResponse.Builder()
+        return new ConversationResponse.Builder(level)
             .setId(handle.getId())
             .setScenario(scenario.getName())
             .setMessages(conversation.getMessages())
@@ -85,6 +89,7 @@ public class ConversationController {
 
     @PostMapping("/conversations/messages")
     public ConvenienceConversationResponse startConversation(
+        @RequestParam(name = "level", required = false, defaultValue = "Normal") Operation.Level level,
         @RequestHeader MultiValueMap<String, String> headers,
         @RequestBody PromptedConversationRequest request)
         throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException, ConversationRestException, ScenarioParametersException, ScenarioContextException {
@@ -115,7 +120,7 @@ public class ConversationController {
             throw new ConversationRestException(handle.getId(), exception);
         }
 
-        var response = new ConversationResponse.Builder().setId(handle.getId())
+        var response = new ConversationResponse.Builder(level).setId(handle.getId())
             .setScenario(scenario.getName()).setMessages(handle.getConversation().getMessages()).build();
 
         var conveneinceReponse = new ConvenienceConversationResponse(response, answer.getContent());
@@ -124,7 +129,8 @@ public class ConversationController {
 
     @GetMapping("/conversations/{id}/messages")
     public List<MessageResponse> get_conversation_messages(
-        @PathVariable("id") String id)
+        @PathVariable("id") String id,
+        @RequestParam(name = "level", required = false, defaultValue = "Normal") Operation.Level level)
         throws ScenarioSessionNotFoundRestException, ScenarioSessionNotSpecifiedRestException {
 
         if (id == null || id.isBlank()) {
@@ -135,9 +141,10 @@ public class ConversationController {
             throw new ScenarioSessionNotFoundRestException(id);
         }
 
+        var builder = new MessageResponse.Builder(level);
         var messages = new ArrayList<MessageResponse>();
         for (var message : session.get().getConversation().getMessages()) {
-            messages.add(new MessageResponse(message.getType().toString(), message.getContent(), message.operation()));
+            messages.add(builder.create(message.getType().toString(), message.getContent(), message.operation()));
         }
 
         return messages;
@@ -146,6 +153,7 @@ public class ConversationController {
     @PostMapping("/conversations/{id}/messages")
     public MessageResponse continue_conversation(
         @PathVariable("id") String id,
+        @RequestParam(name = "level", required = false, defaultValue = "Normal") Operation.Level level,
         @RequestBody MessagePromptRequest request)
         throws ScenarioSessionNotFoundRestException, ScenarioSessionNotSpecifiedRestException,
         ConversationRestException {
@@ -167,7 +175,9 @@ public class ConversationController {
             throw new ConversationRestException(session.get().getId(), exception);
         }
 
-        return new MessageResponse(response.getType().toString(), response.getContent(), response.operation());
+
+        return new MessageResponse.Builder(level)
+            .create(response.getType().toString(), response.getContent(), response.operation());
     }
 
     // TODO make this pluggable

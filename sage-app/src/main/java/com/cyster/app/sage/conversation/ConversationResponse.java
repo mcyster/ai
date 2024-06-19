@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Operation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -35,10 +36,15 @@ public record ConversationResponse(
 	}
 
 	public static class Builder {
+	    private Operation.Level level;
 		private String id;
 		private String scenario;
 		private List<MessageResponse> messages;
 
+	    public Builder(Operation.Level level) {
+	        this.level = level;
+	    }
+	      
 		public Builder setId(String id) {
 			this.id = id;
 			return this;
@@ -52,7 +58,8 @@ public record ConversationResponse(
 		public Builder setMessages(List<Message> messages) {
 			var response = new ArrayList<MessageResponse>();
 			for (var message : messages) {
-				response.add(new MessageResponse(message.getType().toString(), message.getContent(), message.operation()));
+				response.add(new MessageResponse.Builder(level)
+				        .create(message.getType().toString(), message.getContent(), message.operation()));
 			}
 			this.messages = response;
 			return this;

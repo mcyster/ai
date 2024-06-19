@@ -10,34 +10,49 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class OperationImpl implements Operation, OperationLogger {
+    private final Level level;
     private final String description;
     private final Optional<Object> context;
     private final List<Operation> children;
     
-    public OperationImpl(String description, Object context, List<Operation> children) {
+    public OperationImpl(Level level, String description, Object context, List<Operation> children) {
+        this.level = level;
         this.description = description;
         this.context = Optional.of(context);
         this.children = children;
     }
 
-    public OperationImpl(String description, Object context) {
+    public OperationImpl(Level level, String description, Object context) {
+        this.level = level;
         this.description = description;
         this.context = Optional.of(context);
         this.children = new CopyOnWriteArrayList<>();
     }
 
-    public OperationImpl(String description) {
+    public OperationImpl(Level level, String description) {
+        this.level = level;
         this.description = description;
         this.context = Optional.empty();
         this.children = new CopyOnWriteArrayList<>();
+    }
+
+    public OperationImpl(String description) {
+        this.level = Level.Normal;
+        this.description = description;
+        this.context = Optional.empty();
+        this.children = new CopyOnWriteArrayList<>();
+    }
+
+    @Override 
+    public Level getLevel() {
+        return level;
     }
     
     @Override
     public String getDescription() {
         return description;
     }
-
-
+    
     @Override
     public List<Operation> children() {
         return children;
@@ -50,12 +65,24 @@ public class OperationImpl implements Operation, OperationLogger {
     
     @Override
     public void log(String description, Object context) {
-       children.add(new OperationImpl(description, context));
+       children.add(new OperationImpl(level, description, context));
     }
 
     @Override
+    public void log(Level level, String description, Object context) {
+       children.add(new OperationImpl(level, description, context));
+    }
+    
+    @Override
     public OperationLogger childLogger(String description) {
-        var operation = new OperationImpl(description);
+        var operation = new OperationImpl(level, description);
+        children.add(operation);
+        return operation;
+    }
+    
+    @Override
+    public OperationLogger childLogger(Level level, String description) {
+        var operation = new OperationImpl(level, description);
         children.add(operation);
         return operation;
     }

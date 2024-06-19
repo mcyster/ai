@@ -39,4 +39,5 @@ public record ConvenienceConversationResponse(
             throw new RuntimeException(e);
         }
     }
+    
 }
