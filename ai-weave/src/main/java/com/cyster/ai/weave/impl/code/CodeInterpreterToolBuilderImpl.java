@@ -64,7 +64,7 @@ public class CodeInterpreterToolBuilderImpl<CONTEXT> implements CodeInterpreterT
                     Files.copy(inputStream, realFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
     
                     var fileUpload = new UploadFileRequest(realFile, "assistants");
-                    var file = this.openAiService.createClient().client(FilesClient.class).uploadFile(fileUpload);
+                    var file = this.openAiService.createClient(FilesClient.class).uploadFile(fileUpload);
                     files.add(file.id());
                 }
                 Files.delete(realFile);

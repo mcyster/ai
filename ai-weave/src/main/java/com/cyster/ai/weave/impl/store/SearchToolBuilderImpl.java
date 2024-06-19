@@ -90,7 +90,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
                         }
    
                         var fileUpload = new UploadFileRequest(realFile, "assistants");
-                        var file = this.openAiService.createClient().client(FilesClient.class).uploadFile(fileUpload);
+                        var file = this.openAiService.createClient(FilesClient.class).uploadFile(fileUpload);
                         files.add(file.id());
                     });
                     Files.delete(realFile);
@@ -123,13 +123,13 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
                         .expiresAfter(ExpiresAfter.lastActiveAt(7))
                         .build();
                     
-                vectorStore = this.openAiService.createClient().client(VectorStoresClient.class).createVectorStore(request);
+                vectorStore = this.openAiService.createClient(VectorStoresClient.class).createVectorStore(request);
             } else {
                 var request = CreateVectorStoreFileBatchRequest.newBuilder()
                     .fileIds(fileBatch)
                     .build();
                 
-                this.openAiService.createClient().client(VectorStoreFileBatchesClient.class).createVectorStoreFileBatch(vectorStore.id(), request);
+                this.openAiService.createClient(VectorStoreFileBatchesClient.class).createVectorStoreFileBatch(vectorStore.id(), request);
             }
         }
 
@@ -141,7 +141,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
     }
     
     private Optional<VectorStore> findVectorStore() {
-        VectorStoresClient vectorStoresClient = this.openAiService.createClient().client(VectorStoresClient.class);
+        VectorStoresClient vectorStoresClient = this.openAiService.createClient(VectorStoresClient.class);
 
         VectorStore newestVectorStore = null;
 

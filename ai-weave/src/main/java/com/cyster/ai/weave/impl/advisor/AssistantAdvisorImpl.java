@@ -144,7 +144,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
         private Assistant create(String hash) {
             List<String> fileIds = new ArrayList<String>();
             for (var filePath : this.filePaths) {
-                FilesClient filesClient = this.openAiService.createClient().client(FilesClient.class);
+                FilesClient filesClient = this.openAiService.createClient(FilesClient.class);
                 UploadFileRequest uploadInputFileRequest = UploadFileRequest.newBuilder()
                     .file(filePath)
                     .purpose("assistants")
@@ -159,7 +159,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
 
             var toolset = new AdvisorToolset<C2>(this.toolsetBuilder.create());
 
-            AssistantsClient assistantsClient = this.openAiService.createClient().client(AssistantsClient.class);
+            AssistantsClient assistantsClient = this.openAiService.createClient(AssistantsClient.class);
             CreateAssistantRequest.Builder requestBuilder = CreateAssistantRequest.newBuilder()
                 .name(this.name)
                 .model(MODEL)
@@ -177,7 +177,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
         }
 
         private Optional<Assistant> findAssistant(String hash) {
-            AssistantsClient assistantsClient = this.openAiService.createClient().client(AssistantsClient.class);
+            AssistantsClient assistantsClient = this.openAiService.createClient(AssistantsClient.class);
             
             PaginatedAssistants response = null;
             do {

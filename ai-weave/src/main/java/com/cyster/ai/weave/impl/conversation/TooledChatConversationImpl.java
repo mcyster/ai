@@ -68,7 +68,7 @@ public class TooledChatConversationImpl implements TooledChatConversation {
 
     @Override
     public Message respond() {
-        ChatClient chatClient = openAiService.createClient().client(ChatClient.class);
+        ChatClient chatClient = openAiService.createClient(ChatClient.class);
         Message response = null;
 
         while (response == null) {

@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cyster.ai.weave.impl.openai.OpenAiClient;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
@@ -73,14 +72,13 @@ public class AssistantAdvisorConversation<C> implements Conversation {
     @Override
     public Message respond() throws ConversationException {
         var operations = new OperationImpl("Assistant");
-        var openAi= this.openAiService.createClient(operations);
-
+ 
         int retries = 0;
 
         String response = null;
         do {
             try {
-                response = doRun(openAi);
+                response = doRun(operations);
             } catch (RetryableAdvisorConversationException exception) {
                 retries = retries + 1;
                 if (retries > CONVERSATION_RETIES_MAX) {
@@ -106,8 +104,8 @@ public class AssistantAdvisorConversation<C> implements Conversation {
         return this.messages;
     }
 
-    private String doRun(OpenAiClient openAi) throws AdvisorConversationException {
-        var thread = getOrCreateThread(openAi);
+    private String doRun(OperationLogger operations) throws AdvisorConversationException {
+        var thread = getOrCreateThread(operations);
 
         var requestBuilder = CreateRunRequest.newBuilder()
             .assistantId(this.assistantId);
@@ -116,7 +114,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
             requestBuilder.instructions(overrideInstructions.get());
         }
 
-        RunsClient runsClient = this.openAiService.createClient().client(RunsClient.class);
+        RunsClient runsClient = this.openAiService.createClient(RunsClient.class, operations);
         ThreadRun run = runsClient.createRun(thread.id(), requestBuilder.build());
 
         int retryCount = 0;
@@ -217,8 +215,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
             logger.info("Run.status[" + run.id() + "]: " + run.status() + " (delay " + delay + "ms)");
         } while (!run.status().equals("completed"));
 
-        MessagesClient messagesClient = openAi.client(MessagesClient.class);
-        
+        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations);
         
         var responseMessages = messagesClient.listMessages(thread.id(), PaginationQueryParameters.none(), Optional.empty());
 
@@ -249,9 +246,9 @@ public class AssistantAdvisorConversation<C> implements Conversation {
         return textContent.text().value();
     }
 
-    private Thread getOrCreateThread(OpenAiClient openAi) {
-        ThreadsClient threadsClient = openAi.client(ThreadsClient.class);
-        MessagesClient messagesClient = openAi.client(MessagesClient.class);
+    private Thread getOrCreateThread(OperationLogger operations) {
+        ThreadsClient threadsClient = openAiService.createClient(ThreadsClient.class, operations);
+        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations);
 
         if (thread.isEmpty()) {
             var threadRequest = CreateThreadRequest.newBuilder().build();

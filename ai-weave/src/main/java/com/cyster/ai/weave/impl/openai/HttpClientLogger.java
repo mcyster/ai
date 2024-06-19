@@ -11,6 +11,7 @@ import java.net.http.HttpResponse.PushPromiseHandler;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +21,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Flow;
 import java.util.concurrent.Flow.Subscriber;
 import java.util.concurrent.Flow.Subscription;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
@@ -56,8 +58,18 @@ public class HttpClientLogger extends HttpClient {
                 });
     }
 
-    private void logRequest(HttpRequest request) {
-        logger.log("Request", new Request(request.uri(), request.method(), request.headers().map()));
+    private void logRequest(HttpRequest request) {        
+        Map<String, List<String>> headers = new HashMap<>(request.headers().map());
+        
+        Optional<List<String>> authorizationHeader = Optional.ofNullable(headers.get("Authorization"));
+        authorizationHeader.ifPresent(headerValues -> {
+            List<String> maskedHeaderValues = headerValues.stream()
+                .map(HttpClientLogger::maskToken)
+                .collect(Collectors.toList());
+            headers.put("Authorization", maskedHeaderValues);
+        });
+   
+        logger.log("Request", new Request(request.uri(), request.method(), headers));
 
         request.bodyPublisher().ifPresent(bodyPublisher -> {
             bodyPublisher.subscribe(new LoggingSubscriber(logger));
@@ -68,6 +80,15 @@ public class HttpClientLogger extends HttpClient {
         logger.log("Response", new Response(response.statusCode(), response.headers().map()));
     }
 
+    
+    private static String maskToken(String token) {
+        if (token == null || token.length() <= 4) {
+            return token;
+        }
+        String maskedPart = "*".repeat(token.length() - 4);
+        return maskedPart + token.substring(token.length() - 4);
+    }
+    
     private <T> HttpResponse.BodyHandler<T> loggingBodyHandler(HttpResponse.BodyHandler<T> bodyHandler) {
         return responseInfo -> {
             HttpResponse.BodySubscriber<T> bodySubscriber = bodyHandler.apply(responseInfo);
