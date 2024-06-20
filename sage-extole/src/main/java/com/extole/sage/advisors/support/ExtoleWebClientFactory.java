@@ -18,13 +18,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
 public class ExtoleWebClientFactory {
-    private static final int KEY_LENGTH_MIN = 25;
-    private static final int KEY_PEEK_LENGTH = 4;
+    public final String extoleBaseUri = "https://api.extole.io/";
 
     private static final Logger logger = LogManager.getLogger(ExtoleWebClientFactory.class);
 
+    private static final int KEY_LENGTH_MIN = 25;
+    private static final int KEY_PEEK_LENGTH = 4;
+
     private AtomicReference<Optional<String>> extoleSuperUserApiKey = new AtomicReference<Optional<String>>();
-    private final String extoleBaseUri = "https://api.extole.io/";
 
     ExtoleWebClientFactory(
         @Value("${extoleSuperUserApiKey:#{environment.EXTOLE_SUPER_USER_API_KEY}}") String extoleSuperUserApiKey) {

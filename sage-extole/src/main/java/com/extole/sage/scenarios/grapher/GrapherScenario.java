@@ -62,18 +62,9 @@ public class GrapherScenario implements Scenario<Parameters, Void> {
     @Override
     public Conversation createConversation(Parameters parameters, Void context) {
         
-        InputStream stream = GrapherScenario.class.getResourceAsStream("/extole/web/graph/simple/index.html");
-        if (stream == null) {
-            throw new RuntimeException("Error unable to load resource:/extole/web/graph/simple/index.html");
-        }
-        byte[] bytes;
-        try {
-            bytes = stream.readAllBytes();
-        } catch (IOException exception) {
-            throw new RuntimeException("Error unable to read resource: /extole/web/graph/simple/index.html", exception);
-        }
-        String index = new String(bytes, StandardCharsets.UTF_8);
-        
+        String indexHtml = loadAsset("/extole/web/graph/simple/index.html");
+        String dataJs = loadAsset("/extole/web/graph/simple/data.js");
+
         JsonNode report;
         try {
             report = downloadReport(parameters.reportId);
@@ -81,23 +72,24 @@ public class GrapherScenario implements Scenario<Parameters, Void> {
            throw new RuntimeException(exception);
         }
         
-        String data = reportAsJavascriptFunction(report);
+        String data = report.toPrettyString();
         
         Website website = this.websiteService.create();
                 
         website
-            .putAsset("index.html", index)
-            .putAsset("data.js",  data.replace("```", "&#96;&#96;&#96;"));
+            .putAsset("index.html", indexHtml)
+            .putAsset("data.js", dataJs);
         
         String instructions = """ 
-The web page at %s (we're in developer mode, so localhost is ok) is supported by the following assets.
+The web page at %s?report_id=%s (we're in developer mode, so localhost is ok) is supported by the following assets.
 
 index.html:
 ```
 %s
 ```
 
-data.js that starts like this:
+data.js defines a function getData() which returns a Promise.
+The promise will provide a data object of the form:
 ```
 %s
 ```
@@ -107,12 +99,18 @@ Tell the user the Url of the web page.
 Then ask the user how they would like to see the data, and update the script to reflext their requests.
 """;
         
+        System.out.println("INSTRUCTOINS " + String.format(instructions,
+                    website.getUri().toString(),
+                    parameters.reportId,
+                    indexHtml.replace("```", "&#96;&#96;&#96;"), 
+                    getFirstFewLines(data).replace("```", "&#96;&#96;&#96;")));
         
         return advisor.createConversation()
             .withContext(website)
             .setOverrideInstructions(String.format(instructions,
                     website.getUri().toString(),
-                    index.replace("```", "&#96;&#96;&#96;"), 
+                    parameters.reportId,
+                    indexHtml.replace("```", "&#96;&#96;&#96;"), 
                     getFirstFewLines(data).replace("```", "&#96;&#96;&#96;")))
             .start();
     }
@@ -144,8 +142,19 @@ Then ask the user how they would like to see the data, and update the script to 
         return result;
     }
     
-    public static String reportAsJavascriptFunction(JsonNode report) {
-        return "function getReport() { return Promise.resolve(" + report.toString() + "); }";
+    public static String loadAsset(String assetPath) {
+        InputStream stream = GrapherScenario.class.getResourceAsStream(assetPath);
+        if (stream == null) {
+            throw new RuntimeException("Error unable to load resource:/extole/web/graph/simple/index.html");
+        }
+        byte[] bytes;
+        try {
+            bytes = stream.readAllBytes();
+        } catch (IOException exception) {
+            throw new RuntimeException("Error unable to read resource: /extole/web/graph/simple/index.html", exception);
+        }
+        
+        return new String(bytes, StandardCharsets.UTF_8);        
     }
     
     public static String getFirstFewLines(String input) {

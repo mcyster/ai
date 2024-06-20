@@ -56,10 +56,10 @@ public record ConversationResponse(
 		}
 
 		public Builder setMessages(List<Message> messages) {
-			var response = new ArrayList<MessageResponse>();
+		    var response = new ArrayList<MessageResponse>();
 			for (var message : messages) {
-				response.add(new MessageResponse.Builder(level)
-				        .create(message.getType().toString(), message.getContent(), message.operation()));
+			    response.add(new MessageResponse.Builder(level)
+				    .create(message.getType().toString(), message.getContent(), message.operation()));
 			}
 			this.messages = response;
 			return this;
