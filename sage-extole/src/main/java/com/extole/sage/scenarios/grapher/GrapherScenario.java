@@ -81,7 +81,11 @@ public class GrapherScenario implements Scenario<Parameters, Void> {
             .putAsset("data.js", dataJs);
         
         String instructions = """ 
-The web page at %s?report_id=%s (we're in developer mode, so localhost is ok) is supported by the following assets.
+There is a web page at %s?report_id=%s 
+- don't forget to include the report_id parameter when you mention the url
+- we're in developer mode, so localhost is ok 
+
+The page is supported by the following assets:
 
 index.html:
 ```
@@ -94,16 +98,10 @@ The promise will provide a data object of the form:
 %s
 ```
 
-Use the file tool to put a script.js file that shows the data.
+If there are no explicit instructions, use the file tool to put a script.js file that shows the data.
 Tell the user the Url of the web page.  
-Then ask the user how they would like to see the data, and update the script to reflext their requests.
+Then ask the user how they would like to see the data, and update script.js to reflect their requests.
 """;
-        
-        System.out.println("INSTRUCTOINS " + String.format(instructions,
-                    website.getUri().toString(),
-                    parameters.reportId,
-                    indexHtml.replace("```", "&#96;&#96;&#96;"), 
-                    getFirstFewLines(data).replace("```", "&#96;&#96;&#96;")));
         
         return advisor.createConversation()
             .withContext(website)
