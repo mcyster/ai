@@ -7,7 +7,7 @@ in
       less
       vim
       jq.bin
-      jdk17
+      jdk21
       #ngrok
     ];
 
