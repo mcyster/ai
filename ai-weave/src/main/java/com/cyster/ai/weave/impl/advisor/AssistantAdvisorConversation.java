@@ -14,6 +14,7 @@ import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
+import com.cyster.ai.weave.service.conversation.Operation;
 
 import io.github.stefanbratanov.jvm.openai.CreateMessageRequest;
 import io.github.stefanbratanov.jvm.openai.CreateRunRequest;
@@ -98,7 +99,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
                 }
                 logger.warn("Advisor thread run failed, retrying");
             } catch (AdvisorConversationException exception) {
-                operations.log("Conversation Failed", exception.getMessage());
+                this.messages.add(new MessageImpl(Type.ERROR, exception.getMessage(), operations));
                 throw new ConversationException("Advisor experienced problems responding to conversation", exception);
             }
         } while (response == null);
@@ -193,8 +194,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
                     ToolOutput toolOutput = ToolOutput.newBuilder().toolCallId(callId).output(output).build();
                     
                     toolOutputsBuilder.toolOutput(toolOutput);
-                    messages.add(new MessageImpl(Message.Type.INFO, "Toolcall: " + toolCall.toString() + " Response: "
-                        + toolOutput.toString()));                    
+                    operations.log(Operation.Level.Normal, "Toolcall: " + toolCall.toString(), toolOutput);                    
                 }
                    
                 try {
@@ -225,26 +225,28 @@ public class AssistantAdvisorConversation<C> implements Conversation {
         var responseMessages = messagesClient.listMessages(thread.id(), PaginationQueryParameters.none(), Optional.empty());
 
         if (responseMessages.data().size() == 0) {
-            messages.add(new MessageImpl(Message.Type.INFO, "No responses"));
+            operations.log(Operation.Level.Normal, "No Response from AI", null);                    
             throw new AdvisorConversationException("No Reponses");
         }
         var responseMessage = responseMessages.data().get(0);
         if (!responseMessage.role().equals("assistant")) {
-            messages.add(new MessageImpl(Message.Type.INFO, "Assistant did not response"));
+            operations.log(Operation.Level.Normal, "Assistant did not respond", null);                    
             throw new AdvisorConversationException("Assistant did not respond");
         }
 
         var content = responseMessage.content();
         if (content.size() == 0) {
-            messages.add(new MessageImpl(Message.Type.INFO, "Assistant responded with no content"));
+            operations.log(Operation.Level.Normal, "Assistant responded with no content", null);                    
             throw new AdvisorConversationException("No Content: " + responseMessages.toString());
         }
 
         if (content.size() > 1) {
+            operations.log(Operation.Level.Normal, "Assistant responded with lots of content, ignoring", null);                    
             throw new AdvisorConversationException("Lots of Content");
         }
 
         if (!content.get(0).type().equals("text")) {
+            operations.log(Operation.Level.Normal, "Assistant responded with non text content, ignoring", null);                    
             throw new AdvisorConversationException("Content not of type text");
         }
         var textContent = (TextContent)content.get(0);

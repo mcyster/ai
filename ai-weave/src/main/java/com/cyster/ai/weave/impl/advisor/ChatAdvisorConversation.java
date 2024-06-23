@@ -56,11 +56,11 @@ public class ChatAdvisorConversation implements Conversation {
 
         var choices = result.choices();
         if (choices.size() == 0) {
-            messages.add(new MessageImpl(Message.Type.INFO, "No responses"));
+            messages.add(new MessageImpl(Message.Type.ERROR, "No responses"));
             throw new ConversationException("No Reponses");
         } 
         if (choices.size() > 1) {
-            messages.add(new MessageImpl(Message.Type.INFO, "Multiple responses (ignored)"));
+            messages.add(new MessageImpl(Message.Type.ERROR, "Multiple responses (ignored)"));
             throw new ConversationException("Multiple Reponses");
         }
         

@@ -1,7 +1,6 @@
 package com.cyster.ai.weave.impl.advisor;
 
 import com.cyster.ai.weave.impl.code.CodeInterpreterToolBuilderImpl;
-import com.cyster.ai.weave.impl.conversation.TooledChatConversationImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.impl.store.DirectoryDocumentStore;
 import com.cyster.ai.weave.impl.store.SearchToolBuilderImpl;
@@ -14,7 +13,6 @@ import com.cyster.ai.weave.service.advisor.DocumentStore.DirectoryDocumentStoreB
 import com.cyster.ai.weave.service.advisor.DocumentStore.SimpleDocumentStoreBuilder;
 import com.cyster.ai.weave.service.advisor.SearchTool;
 import com.cyster.ai.weave.service.advisor.Tool;
-import com.cyster.ai.weave.service.advisor.TooledChatConversation;
 
 // https://platform.openai.com/docs/assistants/overview
 // https://platform.openai.com/docs/assistants/tools/code-interpreter
@@ -36,11 +34,6 @@ public class AdvisorServiceImpl implements AdvisorService {
         return new AssistantAdvisorImpl.Builder<C>(this.openAiService, name);    
     }
      
-    // TBD is this an advisor ??? 
-    public TooledChatConversation createTooledChatConversation() {
-        return new TooledChatConversationImpl(this.openAiService);
-    }
-    
     public <PARAMETERS, CONTEXT> Tool<PARAMETERS, CONTEXT> cachingTool(Tool<PARAMETERS, CONTEXT> tool) {
         return CachingTool.builder(tool).build();
     }

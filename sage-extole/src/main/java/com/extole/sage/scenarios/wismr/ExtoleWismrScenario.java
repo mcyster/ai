@@ -88,12 +88,13 @@ If there are steps, show the steps and we are done.
         Optional<String> accessToken = Optional.empty();
         accessToken = Optional.of(context.getAccessToken());
         
-        var conversation = advisorService.createTooledChatConversation()
-            .addSystemMessage(messageWriter.toString()) 
-            .addTool(this.extolePersonFindToolFactory.create(accessToken))
-            .addTool(this.extolePersonRewardsToolFactory.create(accessToken))
-            .addTool(this.extolePersonStepsToolFactory.create(accessToken))
-            .addTool(this.extoleStepsToolFactory.create(accessToken));
+        var conversation = advisorService.getOrCreateAdvisor("wismr")
+            .setInstructions(messageWriter.toString()) 
+            //.withTool(this.extolePersonFindToolFactory.create(accessToken))
+            //.withTool(this.extolePersonRewardsToolFactory.create(accessToken))
+            //.withTool(this.extolePersonStepsToolFactory.create(accessToken))
+            //.withTool(this.extoleStepsToolFactory.create(accessToken));
+            .getOrCreate().createConversation().start();
 
         return conversation;
     }
