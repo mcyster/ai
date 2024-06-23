@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Website List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h2 {
+            color: #333;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h2>Managed</h2>
+    <ul id="managedList"></ul>
+
+    <h2>Named</h2>
+    <ul id="namedList"></ul>
+
+    <h2>Temporary</h2>
+    <ul id="temporaryList"></ul>
+
+    <script>
+        async function fetchWebsites() {
+            try {
+                const response = await fetch('http://localhost:8080/pages');
+                const websites = await response.json();
+                displayWebsites(websites);
+            } catch (error) {
+                console.error('Error fetching websites:', error);
+            }
+        }
+
+        function displayWebsites(websites) {
+            const managedList = document.getElementById('managedList');
+            const namedList = document.getElementById('namedList');
+            const temporaryList = document.getElementById('temporaryList');
+
+            websites.forEach(website => {
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = website.uri;
+                link.textContent = website.name; 
+                listItem.appendChild(link);
+
+                switch (website.type) {
+                    case 'Managed':
+                        managedList.appendChild(listItem);
+                        break;
+                    case 'Named':
+                        namedList.appendChild(listItem);
+                        break;
+                    case 'Temporary':
+                        temporaryList.appendChild(listItem);
+                        break;
+                }
+            });
+        }
+
+        // Fetch websites on page load
+        window.onload = fetchWebsites;
+    </script>
+</body>
+</html>
+

@@ -1,39 +1,19 @@
 package com.cyster.app.sage.conversation;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cyster.ai.weave.service.conversation.Conversation;
-import com.cyster.ai.weave.service.conversation.ConversationException;
-import com.cyster.ai.weave.service.conversation.Message;
-import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.ai.weave.service.scenario.ScenarioException;
-import com.cyster.ai.weave.service.scenario.ScenarioService;
 import com.cyster.app.sage.site.WebsiteServiceImpl;
-import com.cyster.sage.impl.advisors.web.WebsiteService;
 import com.cyster.sage.impl.advisors.web.WebsiteService.Website;
-import com.cyster.sage.service.scenariosession.ScenarioSession;
-import com.cyster.sage.service.scenariosession.ScenarioSessionStore;
-import com.extole.sage.session.ExtoleSessionContext;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
-
 
 @RestController
 public class SiteController {
@@ -46,15 +26,51 @@ public class SiteController {
     }
 
     @GetMapping("/pages")
-    public List<Website> index() {
-        return sites.getSites();
+    public List<WebsiteResponse> getSites() {
+        List<WebsiteResponse> websites = new ArrayList<>();
+        
+        for(var site: sites.getSites()) {
+            websites.add(new WebsiteResponse(site.getId(), site.getType(), site.getUri()));
+        }
+        
+        return websites;
     }
 
-    @PostMapping("/pages/{id}")
-    public Website getSite(
-       @PathVariable("id") String id)
+    @PostMapping("/pages/{name}")
+    public WebsiteResponse getSite(
+        @PathVariable("name") String name)
         throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException,ScenarioParametersException, ScenarioContextException {
            
-        return sites.getSite(id);            
+        var site = sites.getSite(name);
+        
+        return new WebsiteResponse(site.getId(), site.getType(), site.getUri());
     }
+    
+    @PostMapping("/pages/{name}/copy")
+    public WebsiteResponse copySite(
+        @PathVariable("name") String name)
+        throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException,ScenarioParametersException, ScenarioContextException {
+           
+        var site = sites.getSite(name); 
+        Website newSite = sites.copy(site);
+        
+        return new WebsiteResponse(newSite.getId(), newSite.getType(), newSite.getUri());
+    }
+
+    @PostMapping("/pages/{name}/name")
+    public WebsiteResponse nameSite(
+        @PathVariable("name") String name, 
+        @RequestBody NameRequest request)
+        throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException,ScenarioParametersException, ScenarioContextException {
+           
+        var site = sites.getSite(name); 
+        Website newSite = sites.name(site, request.name());
+        
+        return new WebsiteResponse(newSite.getId(), newSite.getType(), newSite.getUri());
+    }
+
+    
+    static record WebsiteResponse (String name, Website.Type type, URI uri) {};
+    static record NameRequest (String name) {};
+
 }

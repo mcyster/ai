@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Interface</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        #app {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 5px;
+        }
+        .message {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .message:last-child {
+            border-bottom: none;
+        }
+        .input-group {
+            display: flex;
+            margin-top: 10px;
+            align-items: center;
+        }
+        .input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+        .input-group button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        .scenario-select {
+            padding: 10px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div v-for="message in messages" class="message">
+            {{ message }}
+        </div>
+        <div class="input-group">
+            <input v-model="newMessage" @keyup.enter="sendMessage" placeholder="Type a message">
+            <button @click="sendMessage">Send</button>
+            <div class="scenario-select">
+                <select v-model="selectedScenario">
+                    <option value="chat">Chat</option>
+                    <option value="weather">Weather</option>
+                    <option value="extoleSupportHelp">Extole Support Help</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    messages: [],
+                    newMessage: '',
+                    selectedScenario: 'chat',
+                    conversationId: null
+                };
+            },
+            methods: {
+                async createConversation(scenario) {
+                    const response = await fetch('http://localhost:8080/conversations', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ scenario })
+                    });
+                    const data = await response.json();
+                    this.conversationId = data.id;
+                    return data;
+                },
+                async addMessageToConversation(prompt) {
+                    const response = await fetch(`http://localhost:8080/conversations/${this.conversationId}/messages`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ prompt })
+                    });
+                    const data = await response.json();
+                    return data;
+                },
+                async sendMessage() {
+                    if (this.newMessage.trim() !== '') {
+                        // Add the new message to the chat
+                        this.messages.push(this.newMessage);
+
+                        // Store the current message and scenario
+                        const messageToSend = this.newMessage;
+                        const scenarioToSend = this.selectedScenario;
+
+                        // Clear the input field
+                        this.newMessage = '';
+
+                        try {
+                            // If there is no conversation ID, create a new conversation
+                            if (!this.conversationId) {
+                                await this.createConversation(scenarioToSend);
+                            }
+
+                            // Add message to the created conversation
+                            const messageResponse = await this.addMessageToConversation(messageToSend);
+                            this.messages.push(messageResponse.content);
+                        } catch (error) {
+                            console.error('Error sending message:', error);
+                            this.messages.push('Error: Could not send message');
+                        }
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
+

@@ -5,11 +5,15 @@ import java.util.List;
 
 public interface WebsiteService {
     List<Website> getSites();
-    Website getSite(String id);
+    Website getSite(String name);
     Website create();
-    
+    Website name(Website website, String name);
+    Website copy(Website site);
+
     interface Website {
         String getId();
+        
+        Type getType();
         
         URI getUri();
     
@@ -21,6 +25,12 @@ public interface WebsiteService {
         interface Asset {
             String filename();
             String content();
+        }
+        
+        enum Type {
+            Temporary, 
+            Named,
+            Managed
         }
     }
     

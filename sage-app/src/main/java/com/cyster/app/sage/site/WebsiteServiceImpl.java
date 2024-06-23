@@ -2,7 +2,6 @@ package com.cyster.app.sage.site;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -12,6 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.cyster.sage.impl.advisors.web.WebsiteService;
+import com.cyster.sage.impl.advisors.web.WebsiteService.Website.Type;
 
 public class WebsiteServiceImpl implements WebsiteService {
     private URI baseUri;
@@ -25,46 +25,87 @@ public class WebsiteServiceImpl implements WebsiteService {
     public List<Website> getSites() {
         List<Website> sites = new ArrayList<>();
         
-        try (Stream<Path> paths = Files.walk(baseDirectory, 1)) {
-            sites = paths
-                .filter(Files::isDirectory)
-                .filter(path -> !path.equals(baseDirectory)) 
-                .map(path -> new WebsiteImpl(this.baseUri, path.getFileName()))
-                .collect(Collectors.toList()); 
-        } catch (IOException exception) {
-            throw new RuntimeException(exception);
+        for(Type type: Website.Type.values()) {
+            Path typeRoot = baseDirectory.resolve(type.toString().toLowerCase());
+            
+            try (Stream<Path> paths = Files.walk(typeRoot, 1)) {
+                var typedSites = paths
+                    .filter(Files::isDirectory)
+                    .filter(path -> !path.equals(typeRoot)) 
+                    .map(path -> new WebsiteImpl(this.baseUri, this.baseDirectory, path.getFileName().toString(), type))
+                    .collect(Collectors.toList());
+                sites.addAll(typedSites);
+            } catch (IOException exception) {
+                throw new RuntimeException(exception);
+            }
         }
         
         return sites;
     }
     
     public Website getSite(String name) {
-        Path root = baseDirectory.resolve(name);
-        if (!Files.exists(root)) {
-            throw new RuntimeException("Not Found: " + name);
+        Type websiteType = null;
+        for(var type: Website.Type.values()) {
+            var websiteRoot = baseDirectory.resolve(type.toString().toLowerCase()).resolve(name);
+            if (Files.exists(websiteRoot)) {
+                websiteType = type;
+                break;
+            }
         }
-        return new WebsiteImpl(this.baseUri, root);
+        if (websiteType == null) {
+            throw new RuntimeException("Wesbite not found: " + name);
+        }
+        
+        return new WebsiteImpl(this.baseUri, baseDirectory, name, websiteType);
     }
     
     @Override
     public Website create() {
         String name = UUID.randomUUID().toString();
-        Path directory = baseDirectory.resolve(name);
+        return create(Type.Temporary, name);
+    }
+
+    @Override
+    public Website name(Website website, String name) {
+        Path directory = baseDirectory.resolve(Type.Named.toString().toLowerCase()).resolve(name);
+        if (Files.exists(directory)) {
+            throw new RuntimeException("Wesbite with that name already exists: " + name);
+        }
+
+        var namedWebsite = create(Type.Named, name);
+        
+        for(var assetName: website.getAssets()) {
+            namedWebsite.putAsset(assetName, website.getAsset(assetName).content());
+        }
+        
+        return namedWebsite;
+    }
+
+    @Override
+    public Website copy(Website website) {
+        var newWebsite = create();
+               
+        clone(website, newWebsite);
+        
+        return newWebsite;
+    }
+    
+    private Website create(Type type, String name) {
+        Path directory = baseDirectory.resolve(type.toString().toLowerCase()).resolve(name);
 
         try {
             Files.createDirectories(directory);
         } catch (IOException e) {
             throw new RuntimeException("Unable to create site directory: " + directory.toString());
         }
-        
-        //URI siteUri = this.baseUri.resolve(name).resolve("index.html");
-        URI siteUri;
-        try {
-            siteUri = new URI(baseUri.toString() + "/" + name + "/index.html");
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Unable to create site baseUri: " + directory.toString());
-        }
-        
-        return new WebsiteImpl(siteUri, directory);
+                
+        return new WebsiteImpl(baseUri, baseDirectory, name, type);
+    }
+    
+    private Website clone(Website fromWebsite, Website toWebsite) {
+        for(var assetName: fromWebsite.getAssets()) {
+            toWebsite.putAsset(assetName, fromWebsite.getAsset(assetName).content());
+        }   
+        return toWebsite;
     }
 }

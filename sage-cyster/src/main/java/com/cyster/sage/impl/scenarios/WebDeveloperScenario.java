@@ -13,15 +13,15 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.sage.impl.advisors.web.WebAdvisor;
 import com.cyster.sage.impl.advisors.web.WebsiteService;
 import com.cyster.sage.impl.advisors.web.WebsiteService.Website;
-import com.cyster.sage.impl.scenarios.WebsiteScenario.Parameters;
+import com.cyster.sage.impl.scenarios.WebDeveloperScenario.Parameters;
 
 @Component
-public class WebsiteScenario implements Scenario<Parameters, Void> {
-    private static final String NAME = "websiteBuilder";
+public class WebDeveloperScenario implements Scenario<Parameters, Void> {
+    private static final String NAME = "webDeveloper";
     private WebAdvisor advisor;
     private WebsiteService websiteService;
 
-    WebsiteScenario(WebAdvisor advisor, WebsiteService websiteService) {
+    WebDeveloperScenario(WebAdvisor advisor, WebsiteService websiteService) {
         this.advisor = advisor;
         this.websiteService = websiteService;
     }
@@ -80,7 +80,7 @@ Use the web_developer_file_put tool to create or update the website as requested
     }
     
     public static String loadAsset(String assetPath) {
-        InputStream stream = WebsiteScenario.class.getResourceAsStream(assetPath);
+        InputStream stream = WebDeveloperScenario.class.getResourceAsStream(assetPath);
         if (stream == null) {
             throw new RuntimeException("Error unable to load resource:/extole/web/graph/simple/index.html");
         }

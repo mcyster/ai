@@ -25,4 +25,5 @@ bin/
 /.idea/
 */out/
 
-/sites
+/sites/named
+/sites/temporary
