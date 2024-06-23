@@ -8,6 +8,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.cyster.ai.weave.service.advisor.FatalToolException;
 import com.cyster.ai.weave.service.advisor.ToolException;
 import com.cyster.ai.weave.service.conversation.ConversationException;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.extole.sage.advisors.ExtoleJavascriptPrehandlerActionAdvisor;
 import com.extole.sage.advisors.ExtoleJavascriptPrehandlerActionAdvisor.AdminUserToolContext;
 import com.extole.sage.advisors.support.ExtolePrehandlerHelpTool.Request;
@@ -75,7 +76,9 @@ class ExtolePrehandlerHelpTool implements ExtoleSupportAdvisorTool<Request> {
         var prehandlerContext = new AdminUserToolContext(result.path("access_token").asText());
 
         try {
-            return advisor.createConversation().withContext(prehandlerContext).start().respond(request.question);
+            var conversation = advisor.createConversation().withContext(prehandlerContext).start();
+            conversation.addMessage(Type.USER, request.question);
+            return conversation.respond();
         } catch (ConversationException exception) {
             throw new ToolException("", exception);
         }

@@ -6,10 +6,12 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.impl.advisor.MessageImpl;
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.sage.impl.advisors.SimpleAdvisor;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -62,20 +64,12 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
             this.conversation = conversation;
         }
 
-        public LocalizeConversation addMessage(String message) {
-            // TODO update to support new API
-            // this.conversation.addMessage(message);
-            
-            return this;
+        public Message addMessage(Type type, String content) {
+            return this.conversation.addMessage(type, content);
         }
 
         @Override
         public Message respond() throws ConversationException {
-            return respond("thoughts");    
-        }
-        
-        @Override
-        public Message respond(String userMessage) throws ConversationException {
             List<Message> messages = this.conversation.getMessages();
             if (messages.size() == 0 || messages.get(messages.size() - 1).getType() != Message.Type.USER) {
                 throw new ConversationException("This conversation scenaio requires a user prompt");

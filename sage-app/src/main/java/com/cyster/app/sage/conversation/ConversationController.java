@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.conversation.Operation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
@@ -112,7 +113,8 @@ public class ConversationController {
         Message answer;
         try {
             if (request.prompt() != null && !request.prompt().isBlank()) {
-                answer = conversation.respond(request.prompt());   
+                conversation.addMessage(Type.USER, request.prompt());
+                answer = conversation.respond();   
             } else {
                 answer = conversation.respond();
             }
@@ -170,7 +172,8 @@ public class ConversationController {
 
         Message response;
         try {
-            response = session.get().getConversation().respond(request.getPrompt());
+            session.get().getConversation().addMessage(Type.USER, request.getPrompt());
+            response = session.get().getConversation().respond();
         } catch (ConversationException exception) {
             throw new ConversationRestException(session.get().getId(), exception);
         }

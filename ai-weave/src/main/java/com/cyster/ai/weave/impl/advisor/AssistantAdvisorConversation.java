@@ -48,6 +48,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
     private String assistantId;
     private Toolset<C> toolset;
     private List<Message> messages;
+    private List<Message> newMessages;
     private Optional<Thread> thread = Optional.empty();
     private Optional<String> overrideInstructions = Optional.empty();
     private C context;
@@ -59,36 +60,36 @@ public class AssistantAdvisorConversation<C> implements Conversation {
         this.assistantId = assistantId;
         this.toolset = toolset;
         this.messages = new ArrayList<Message>();
+        this.newMessages = new ArrayList<Message>();
         this.overrideInstructions = overrideInstructions;
         this.context = context;
     }
 
     @Override
-    public Message respond() throws ConversationException {
-        var typedMessage = new MessageImpl(Type.SYSTEM, "Thoughts");
-        return respond(typedMessage);
+    public Message addMessage(Type type, String content) {
+        var message = new MessageImpl(type, content);
+        
+        newMessages.add(message);
+        
+        return message;
     }
-    
+
     @Override
-    public Message respond(String message) throws ConversationException {
-        var typedMessage = new MessageImpl(message);
-        return respond(typedMessage);
-    }
-    
-    private Message respond(Message message) throws ConversationException {
+    public Message respond() throws ConversationException {
         var operations = new OperationImpl("Assistant");
 
         var thread = getOrCreateThread(operations);
  
-        this.messages.add(message);        
-
         int retries = 0;
         String response = null;
         do {
             try {
-                var threadMessage = addThreadedMessage(thread, message, operations);
+                for(var message: this.newMessages) {
+                    addThreadedMessage(thread, message, operations);
+                }
+                newMessages.clear();
                 
-                response = doRun(threadMessage, operations);
+                response = doRun(thread, operations);
             } catch (RetryableAdvisorConversationException exception) {
                 retries = retries + 1;
                 if (retries > CONVERSATION_RETIES_MAX) {
@@ -106,7 +107,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
         var responseMessage = new MessageImpl(Type.AI, response, operations);  
         this.messages.add(responseMessage);
         
-        return message;
+        return responseMessage;
     }
 
     @Override
@@ -114,18 +115,18 @@ public class AssistantAdvisorConversation<C> implements Conversation {
         return this.messages;
     }
 
-    private String doRun(ThreadMessage threadMessage, OperationLogger operations) throws AdvisorConversationException {        
+    private String doRun(Thread thread, OperationLogger operations) throws AdvisorConversationException {        
         RunsClient runsClient = this.openAiService.createClient(RunsClient.class, operations);
 
         int retryCount = 0;
         long delay = RUN_BACKOFF_MIN;
         long attempts = 0;
         
-        System.out.println("!!!threadMessage: " + threadMessage.toString());
+        System.out.println("!!!threadMessage: " + thread.toString());
         
         var requestBuilder = CreateRunRequest.newBuilder()
             .assistantId(this.assistantId);
-        ThreadRun run = runsClient.createRun(threadMessage.threadId(), requestBuilder.build());
+        ThreadRun run = runsClient.createRun(thread.id(), requestBuilder.build());
         
         String lastStatus = "";
         do {
@@ -223,7 +224,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
 
         MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations);
         
-        var responseMessages = messagesClient.listMessages(threadMessage.threadId(), PaginationQueryParameters.none(), Optional.empty());
+        var responseMessages = messagesClient.listMessages(thread.id(), PaginationQueryParameters.none(), Optional.empty());
 
         if (responseMessages.data().size() == 0) {
             messages.add(new MessageImpl(Message.Type.INFO, "No responses"));
@@ -293,7 +294,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
                 threadRequestBuilder.message(threadMessage);
             }
             
-            for (var message : this.messages) {
+            for (var message : this.newMessages) {
                 if (message.getType() == Type.AI) {
                     var threadMessage = CreateThreadRequest.Message.newBuilder()
                         .role(Role.ASSISTANT)
@@ -319,6 +320,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
                         threadRequestBuilder.message(threadMessage);
                 }
             }
+            this.newMessages.clear();
             
             this.thread = Optional.of(threadsClient.createThread(threadRequestBuilder.build()));
         }

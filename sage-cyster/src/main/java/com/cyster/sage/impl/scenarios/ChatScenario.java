@@ -10,6 +10,7 @@ import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.sage.impl.advisors.SimpleAdvisor;
 import com.github.mustachejava.DefaultMustacheFactory;
@@ -58,15 +59,13 @@ public class ChatScenario implements Scenario<Void, Void> {
             this.conversation = conversation;
         }
 
-        public LocalizeConversation addMessage(String message) {
-            // TODO update to support new API
-            //this.conversation.addMessage(message);
-            return this;
+        @Override
+        public Message addMessage(Type type, String message) {
+            return this.conversation.addMessage(type, message);
         }
 
         @Override
-        public Message respond(String message) throws ConversationException {
-            addMessage(message);
+        public Message respond() throws ConversationException {
             return this.conversation.respond();
         }
 
@@ -75,10 +74,6 @@ public class ChatScenario implements Scenario<Void, Void> {
             return this.conversation.getMessages();
         }
 
-        @Override
-        public Message respond() throws ConversationException {
-            return this.conversation.respond();  
-        }
 
     }
 

@@ -16,6 +16,7 @@ import com.cyster.ai.weave.service.advisor.ToolException;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.extole.sage.advisors.runbooks.ExtoleTicketRunbookTool.Request;
 import com.extole.sage.scenarios.runbooks.RunbookScenario;
 import com.extole.sage.scenarios.runbooks.RunbookScenarioParameters;
@@ -54,7 +55,8 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
         
         Message message;
         try {
-            message = conversation.respond(request.ticket_number);
+            conversation.addMessage(Type.USER, request.ticket_number);
+            message = conversation.respond();
         } catch (ConversationException exception) {
            throw new ToolException("extoleTicketRunbookSelectingAdvisor failed to start conversation", exception);
         }
@@ -91,7 +93,8 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
         
         Message message2;
         try {
-            message2 = conversation2.respond(ticketNumber);
+            conversation2.addMessage(Type.USER, ticketNumber);
+            message2 = conversation2.respond();
         } catch (ConversationException e) {
             throw new ToolException("rubookScenarion[" + runbookName + "] failed to start conversation");
         }

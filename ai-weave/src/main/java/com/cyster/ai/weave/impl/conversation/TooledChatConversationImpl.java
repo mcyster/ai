@@ -13,6 +13,7 @@ import com.cyster.ai.weave.service.advisor.Tool;
 import com.cyster.ai.weave.service.advisor.TooledChatConversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 
 import io.github.stefanbratanov.jvm.openai.ChatClient;
 import io.github.stefanbratanov.jvm.openai.ChatMessage;
@@ -34,10 +35,11 @@ public class TooledChatConversationImpl implements TooledChatConversation {
         this.toolsetBuilder = new Toolset.Builder<Void>();
     }
 
-    public TooledChatConversationImpl addMessage(String content) {
-        this.messages.add(new MessageImpl(content));
+    public Message addMessage(Type type, String content) {
+        Message message = new MessageImpl(type, content);
+        this.messages.add(message);
 
-        return this;
+        return message;
     }
 
 
@@ -68,12 +70,6 @@ public class TooledChatConversationImpl implements TooledChatConversation {
 
     @Override
     public Message respond() {
-        return respond("thoughts?");  
-    }
-    
-    @Override
-    public Message respond(String userMessage) {
-        addUserMessage(userMessage);
         ChatClient chatClient = openAiService.createClient(ChatClient.class);
         Message response = null;
 

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 
 import io.github.stefanbratanov.jvm.openai.ChatClient;
 import io.github.stefanbratanov.jvm.openai.ChatMessage;
@@ -24,18 +25,15 @@ public class ChatAdvisorConversation implements Conversation {
         this.messages = messages;
     }
     
-    public Conversation addMessage(String message) {
-        this.messages.add(new MessageImpl(message));
-        return this;
+    @Override
+    public Message addMessage(Type type, String content) {
+        Message message = new MessageImpl(type, content);
+        this.messages.add(message);
+        return message;
     }
 
-    public Message respond() throws ConversationException {
-        return respond("thoughts");
-    }
-    
     @Override
-    public Message respond(String userMessage) throws ConversationException {
-        addMessage(userMessage);
+    public Message respond() throws ConversationException {
         ChatClient chatClient = this.openAi.chatClient();
 
         var chatMessages = new ArrayList<ChatMessage>(); 
