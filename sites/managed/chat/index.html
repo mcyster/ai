@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Interface</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,10 +24,12 @@
             padding: 20px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             border-radius: 5px;
+            overflow: hidden;
         }
         .message {
             padding: 10px;
             border-bottom: 1px solid #e0e0e0;
+            word-wrap: break-word;
         }
         .message:last-child {
             border-bottom: none;
@@ -52,52 +55,53 @@
             cursor: pointer;
             margin-right: 5px;
         }
-        .scenario-select {
-            padding: 10px;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 5px;
-        }
     </style>
 </head>
 <body>
     <div id="app">
-        <div v-for="message in messages" class="message">
-            {{ message }}
-        </div>
+        <div v-for="message in messages" class="message" v-html="message.html"></div>
         <div class="input-group">
             <input v-model="newMessage" @keyup.enter="sendMessage" placeholder="Type a message">
             <button @click="sendMessage">Send</button>
-            <div class="scenario-select">
-                <select v-model="selectedScenario">
-                    <option value="chat">Chat</option>
-                    <option value="weather">Weather</option>
-                    <option value="extoleSupportHelp">Extole Support Help</option>
-                </select>
-            </div>
         </div>
     </div>
 
     <script>
         const { createApp } = Vue;
 
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            let queryParams = {};
+            for (const [key, value] of params.entries()) {
+                queryParams[key] = value;
+            }
+            return queryParams;
+        }
+
         createApp({
             data() {
                 return {
                     messages: [],
                     newMessage: '',
-                    selectedScenario: 'chat',
+                    scenario: '',
+                    parameters: {},
                     conversationId: null
                 };
             },
+            created() {
+                const queryParams = getQueryParams();
+                this.scenario = queryParams.scenario || 'chat';
+                this.parameters = queryParams;
+                delete this.parameters.scenario;
+            },
             methods: {
-                async createConversation(scenario) {
+                async createConversation(scenario, parameters) {
                     const response = await fetch('http://localhost:8080/conversations', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ scenario })
+                        body: JSON.stringify({ scenario, parameters })
                     });
                     const data = await response.json();
                     this.conversationId = data.id;
@@ -117,11 +121,10 @@
                 async sendMessage() {
                     if (this.newMessage.trim() !== '') {
                         // Add the new message to the chat
-                        this.messages.push(this.newMessage);
+                        this.messages.push({ text: this.newMessage, html: marked.parse(this.newMessage) });
 
-                        // Store the current message and scenario
+                        // Store the current message
                         const messageToSend = this.newMessage;
-                        const scenarioToSend = this.selectedScenario;
 
                         // Clear the input field
                         this.newMessage = '';
@@ -129,15 +132,15 @@
                         try {
                             // If there is no conversation ID, create a new conversation
                             if (!this.conversationId) {
-                                await this.createConversation(scenarioToSend);
+                                await this.createConversation(this.scenario, this.parameters);
                             }
 
                             // Add message to the created conversation
                             const messageResponse = await this.addMessageToConversation(messageToSend);
-                            this.messages.push(messageResponse.content);
+                            this.messages.push({ text: messageResponse.content, html: marked.parse(messageResponse.content) });
                         } catch (error) {
                             console.error('Error sending message:', error);
-                            this.messages.push('Error: Could not send message');
+                            this.messages.push({ text: 'Error: Could not send message', html: 'Error: Could not send message' });
                         }
                     }
                 }

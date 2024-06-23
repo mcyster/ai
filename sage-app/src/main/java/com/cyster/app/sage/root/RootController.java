@@ -1,12 +1,15 @@
 package com.cyster.app.sage.root;
 
+import java.io.IOException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.view.RedirectView;
 
-@RestController
+@Controller
 public class RootController {
     private static final Logger logger = LogManager.getLogger(RootController.class);
     
@@ -15,9 +18,9 @@ public class RootController {
 	}
 
 	@GetMapping("/")
-	public String index() {
+	public RedirectView index() throws IOException {
 	    logger.info("get /");
 	    
-		return "Hello world\n";
+	    return new RedirectView("/sites/managed/sites/index.html");
 	}
 }

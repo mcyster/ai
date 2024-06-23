@@ -50,8 +50,8 @@ public class WebDeveloperScenario implements Scenario<Parameters, Void> {
     public Conversation createConversation(Parameters parameters, Void context) {
         
         Website website;
-        if (parameters != null && parameters.siteId() != null && !parameters.siteId().isBlank()) {
-            website = this.websiteService.getSite(parameters.siteId());
+        if (parameters != null && parameters.siteName() != null && !parameters.siteName().isBlank()) {
+            website = this.websiteService.getSite(parameters.siteName());
         } 
         else {
             String indexHtml = loadAsset("/web/simple/index.html");
@@ -94,6 +94,6 @@ Use the web_developer_file_put tool to create or update the website as requested
         return new String(bytes, StandardCharsets.UTF_8);        
     }
     
-    public record Parameters(@JsonProperty(required = false) String siteId) {}
+    public record Parameters(@JsonProperty(required = false) String siteName) {}
 
 }

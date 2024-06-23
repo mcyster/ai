@@ -17,6 +17,10 @@
         li {
             margin: 5px 0;
         }
+        .button {
+            margin-left: 10px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -49,8 +53,28 @@
                 const listItem = document.createElement('li');
                 const link = document.createElement('a');
                 link.href = website.uri;
-                link.textContent = website.name; 
+                link.textContent = website.name;
                 listItem.appendChild(link);
+
+                const copyButton = document.createElement('button');
+                copyButton.textContent = 'copy';
+                copyButton.className = 'button';
+                copyButton.onclick = () => copyWebsite(website.name);
+                listItem.appendChild(copyButton);
+
+                if (website.type === 'Temporary') {
+                    const editButton = document.createElement('button');
+                    editButton.textContent = 'edit';
+                    editButton.className = 'button';
+                    editButton.onclick = () => editWebsite(website.name);
+                    listItem.appendChild(editButton);
+
+                    const nameButton = document.createElement('button');
+                    nameButton.textContent = 'name';
+                    nameButton.className = 'button';
+                    nameButton.onclick = () => nameWebsitePrompt(website.name);
+                    listItem.appendChild(nameButton);
+                }
 
                 switch (website.type) {
                     case 'Managed':
@@ -64,6 +88,46 @@
                         break;
                 }
             });
+        }
+
+        async function copyWebsite(name) {
+            try {
+                const response = await fetch(`http://localhost:8080/pages/${name}/copy`, { method: 'POST' });
+                const newWebsite = await response.json();
+                alert(`New temporary website created: ${newWebsite.uri}`);
+                fetchWebsites();
+            } catch (error) {
+                console.error('Error copying website:', error);
+            }
+        }
+
+        function editWebsite(name) {
+            const url = `http://localhost:8080/sites/managed/chat/index.html?scenario=webDeveloper&siteName=${name}`;
+            window.location.href = url;
+        }
+
+        async function nameWebsite(name, newName) {
+            try {
+                const response = await fetch(`http://localhost:8080/pages/${name}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: newName })
+                });
+                const namedWebsite = await response.json();
+                alert(`Website named successfully: ${namedWebsite.uri}`);
+                fetchWebsites();
+            } catch (error) {
+                console.error('Error naming website:', error);
+            }
+        }
+
+        function nameWebsitePrompt(name) {
+            const newName = prompt('Enter the new name for the website:');
+            if (newName) {
+                nameWebsite(name, newName);
+            }
         }
 
         // Fetch websites on page load
