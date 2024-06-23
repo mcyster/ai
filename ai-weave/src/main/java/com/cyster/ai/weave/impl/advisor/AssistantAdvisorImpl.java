@@ -13,6 +13,7 @@ import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.advisor.Tool;
 import com.cyster.ai.weave.service.conversation.Conversation;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 
 import io.github.stefanbratanov.jvm.openai.Assistant;
 import io.github.stefanbratanov.jvm.openai.AssistantsClient;
@@ -89,9 +90,9 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
                 overrideInstructions,
                 context);
 
-            //for (var message : this.messages) {
-            //    conversation.addMessage(message);
-            //}
+            for (var message : this.messages) {
+                conversation.addMessage(Type.USER, message);
+            }
 
             return conversation;
         }

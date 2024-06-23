@@ -121,9 +121,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
         int retryCount = 0;
         long delay = RUN_BACKOFF_MIN;
         long attempts = 0;
-        
-        System.out.println("!!!threadMessage: " + thread.toString());
-        
+                
         var requestBuilder = CreateRunRequest.newBuilder()
             .assistantId(this.assistantId);
         ThreadRun run = runsClient.createRun(thread.id(), requestBuilder.build());
