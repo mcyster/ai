@@ -23,16 +23,16 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioService;
 import com.cyster.app.sage.site.WebsiteServiceImpl;
+import com.cyster.sage.impl.advisors.web.WebsiteService;
+import com.cyster.sage.impl.advisors.web.WebsiteService.Website;
 import com.cyster.sage.service.scenariosession.ScenarioSession;
 import com.cyster.sage.service.scenariosession.ScenarioSessionStore;
-import com.extole.sage.advisors.web.WebsiteService;
 import com.extole.sage.session.ExtoleSessionContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
-import com.extole.sage.advisors.web.WebsiteService.Website;
 
 
 @RestController

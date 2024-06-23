@@ -231,7 +231,8 @@ public class AssistantAdvisorConversation<C> implements Conversation {
 
         var content = responseMessage.content();
         if (content.size() == 0) {
-            throw new AdvisorConversationException("No Content");
+            messages.add(new MessageImpl(Message.Type.INFO, "Assistant responded with no content"));
+            throw new AdvisorConversationException("No Content: " + responseMessages.toString());
         }
 
         if (content.size() > 1) {

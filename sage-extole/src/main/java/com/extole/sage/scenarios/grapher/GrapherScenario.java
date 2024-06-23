@@ -20,9 +20,9 @@ import com.cyster.ai.weave.service.advisor.ToolException;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.sage.advisors.support.ExtoleWebClientFactory;
-import com.extole.sage.advisors.web.WebAdvisor;
-import com.extole.sage.advisors.web.WebsiteService;
-import com.extole.sage.advisors.web.WebsiteService.Website;
+import com.cyster.sage.impl.advisors.web.WebAdvisor;
+import com.cyster.sage.impl.advisors.web.WebsiteService;
+import com.cyster.sage.impl.advisors.web.WebsiteService.Website;
 import com.extole.sage.scenarios.grapher.GrapherScenario.Parameters;
 
 
@@ -76,9 +76,8 @@ public class GrapherScenario implements Scenario<Parameters, Void> {
         
         Website website = this.websiteService.create();
                 
-        website
-            .putAsset("index.html", indexHtml)
-            .putAsset("data.js", dataJs);
+        website.putAsset("index.html", indexHtml);
+        website.putAsset("data.js", dataJs);
         
         String instructions = """ 
 There is a web page at %s?report_id=%s 

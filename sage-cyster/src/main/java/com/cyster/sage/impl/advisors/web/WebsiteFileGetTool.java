@@ -1,28 +1,29 @@
-package com.extole.sage.advisors.web;
+package com.cyster.sage.impl.advisors.web;
 
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.advisor.FatalToolException;
 import com.cyster.ai.weave.service.advisor.Tool;
 import com.cyster.ai.weave.service.advisor.ToolException;
-import com.extole.sage.advisors.web.WebPublishingTool.Request;
-import com.extole.sage.advisors.web.WebsiteService.Website;
+import com.cyster.sage.impl.advisors.web.WebsiteFileGetTool.Request;
+import com.cyster.sage.impl.advisors.web.WebsiteService.Website;
+import com.cyster.sage.impl.advisors.web.WebsiteService.Website.Asset;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
-class WebPublishingTool implements Tool<Request, Website> {
+class WebsiteFileGetTool implements Tool<Request, Website> {
     
-    WebPublishingTool() {
+    WebsiteFileGetTool() {
     }
 
     @Override
     public String getName() {
-        return "web_file_put";
+        return "web_developer_file_get";
     }
 
     @Override
     public String getDescription() {
-        return "Write content to the specified file";
+        return "Read the contents of the specified file";
     }
 
     @Override
@@ -36,19 +37,19 @@ class WebPublishingTool implements Tool<Request, Website> {
         if (request.filename() == null || request.filename().isBlank()) {
             throw new FatalToolException("No filename specified"); 
         }
-        if (request.content() == null) {
-            throw new FatalToolException("No content specified"); 
-        }        
+              
+        Asset asset = context.getAsset(request.filename());
         
-        context.putAsset(request.filename(), request.content());
-        
-        return context;
+        return new Response(asset.filename(), asset.content());
     }
 
     static record Request(
-        @JsonProperty(required = true) String filename, 
-        @JsonProperty(required = true) String content
+        @JsonProperty(required = true) String filename 
     ) {}
 
+    static record Response(
+        String filename,
+        String content 
+    ) {}
     
 }
