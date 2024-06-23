@@ -16,6 +16,7 @@ import com.cyster.ai.weave.service.advisor.ToolException;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.extole.sage.advisors.runbooks.ExtoleTicketRunbookTool.Request;
 import com.extole.sage.scenarios.runbooks.RunbookScenario;
 import com.extole.sage.scenarios.runbooks.RunbookScenarioParameters;
@@ -49,13 +50,12 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
     @Override
     public Object execute(Request request, Void context) throws ToolException {
         Conversation conversation = extoleTicketRunbookSelectingAdvisor.createConversation().start();
-        
-        conversation.addMessage(request.ticket_number);
-        
+                
         // TODO support adding conversation as sub-context on run info message
         
         Message message;
         try {
+            conversation.addMessage(Type.USER, request.ticket_number);
             message = conversation.respond();
         } catch (ConversationException exception) {
            throw new ToolException("extoleTicketRunbookSelectingAdvisor failed to start conversation", exception);
@@ -91,10 +91,9 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
         var parameters = new RunbookScenarioParameters(ticketNumber);
         Conversation conversation2 = scenario.createConversation(parameters, null);
         
-        conversation2.addMessage(ticketNumber);
-
         Message message2;
         try {
+            conversation2.addMessage(Type.USER, ticketNumber);
             message2 = conversation2.respond();
         } catch (ConversationException e) {
             throw new ToolException("rubookScenarion[" + runbookName + "] failed to start conversation");

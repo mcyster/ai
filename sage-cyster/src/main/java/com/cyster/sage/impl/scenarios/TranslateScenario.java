@@ -6,10 +6,12 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.impl.advisor.MessageImpl;
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.sage.impl.advisors.SimpleAdvisor;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -62,10 +64,8 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
             this.conversation = conversation;
         }
 
-        @Override
-        public LocalizeConversation addMessage(String message) {
-            this.conversation.addMessage(message);
-            return this;
+        public Message addMessage(Type type, String content) {
+            return this.conversation.addMessage(type, content);
         }
 
         @Override

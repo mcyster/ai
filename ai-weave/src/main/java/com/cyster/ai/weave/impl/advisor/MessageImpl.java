@@ -6,6 +6,9 @@ import com.cyster.ai.weave.service.conversation.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.github.stefanbratanov.jvm.openai.CreateThreadRequest;
+import io.github.stefanbratanov.jvm.openai.Role;
+
 public class MessageImpl implements Message {
     private final Type type;
     private final String content;
@@ -54,5 +57,5 @@ public class MessageImpl implements Message {
             throw new RuntimeException(e);
         }
     }
-    
+ 
 }

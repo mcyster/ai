@@ -2,12 +2,13 @@ package com.cyster.ai.weave.service.conversation;
 
 import java.util.List;
 
+import com.cyster.ai.weave.service.conversation.Message.Type;
+
 public interface Conversation {
 
-    public Conversation addMessage(String message);
+    Message addMessage(Type type, String message);
+    
+    Message respond() throws ConversationException;
 
-    public Message respond() throws ConversationException;
-
-    public List<Message> getMessages();
-
+    List<Message> getMessages();
 }

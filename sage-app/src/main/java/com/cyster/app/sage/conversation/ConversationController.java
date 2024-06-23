@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.conversation.Operation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
@@ -107,15 +108,16 @@ public class ConversationController {
     
         var conversation = createConversation(scenario, request.parameters(), headers);
 
-        if (request.prompt() != null && !request.prompt().isBlank()) {
-            conversation.addMessage(request.prompt());
-        }
-
         var handle = scenarioSessionStore.addSession(scenario, conversation);
 
         Message answer;
         try {
-            answer = conversation.respond();
+            if (request.prompt() != null && !request.prompt().isBlank()) {
+                conversation.addMessage(Type.USER, request.prompt());
+                answer = conversation.respond();   
+            } else {
+                answer = conversation.respond();
+            }
         } catch (ConversationException exception) {
             throw new ConversationRestException(handle.getId(), exception);
         }
@@ -170,7 +172,8 @@ public class ConversationController {
 
         Message response;
         try {
-            response = session.get().getConversation().addMessage(request.getPrompt()).respond();
+            session.get().getConversation().addMessage(Type.USER, request.getPrompt());
+            response = session.get().getConversation().respond();
         } catch (ConversationException exception) {
             throw new ConversationRestException(session.get().getId(), exception);
         }
