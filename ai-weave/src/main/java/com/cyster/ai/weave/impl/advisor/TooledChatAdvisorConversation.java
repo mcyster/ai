@@ -28,7 +28,6 @@ public class TooledChatAdvisorConversation<C> implements Conversation {
         this.messages = messages;
     }
     
-    @Override
     public Conversation addMessage(String message) {
         this.messages.add(new MessageImpl(message));
         return this;
@@ -36,6 +35,12 @@ public class TooledChatAdvisorConversation<C> implements Conversation {
 
     @Override
     public Message respond() throws ConversationException {
+        return respond("Thoughts");
+    }
+    
+    @Override
+    public Message respond(String userMessage) throws ConversationException {
+        addMessage(userMessage);
         ChatClient chatClient = openAi.chatClient();
         Message response = null;
     

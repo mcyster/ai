@@ -24,14 +24,18 @@ public class ChatAdvisorConversation implements Conversation {
         this.messages = messages;
     }
     
-    @Override
     public Conversation addMessage(String message) {
         this.messages.add(new MessageImpl(message));
         return this;
     }
 
-    @Override
     public Message respond() throws ConversationException {
+        return respond("thoughts");
+    }
+    
+    @Override
+    public Message respond(String userMessage) throws ConversationException {
+        addMessage(userMessage);
         ChatClient chatClient = this.openAi.chatClient();
 
         var chatMessages = new ArrayList<ChatMessage>(); 

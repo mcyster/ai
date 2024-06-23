@@ -75,8 +75,7 @@ class ExtolePrehandlerHelpTool implements ExtoleSupportAdvisorTool<Request> {
         var prehandlerContext = new AdminUserToolContext(result.path("access_token").asText());
 
         try {
-            return advisor.createConversation().withContext(prehandlerContext).start().addMessage(request.question)
-                .respond();
+            return advisor.createConversation().withContext(prehandlerContext).start().respond(request.question);
         } catch (ConversationException exception) {
             throw new ToolException("", exception);
         }

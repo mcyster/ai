@@ -89,9 +89,9 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
                 overrideInstructions,
                 context);
 
-            for (var message : this.messages) {
-                conversation.addMessage(message);
-            }
+            //for (var message : this.messages) {
+            //    conversation.addMessage(message);
+            //}
 
             return conversation;
         }

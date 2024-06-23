@@ -49,14 +49,12 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
     @Override
     public Object execute(Request request, Void context) throws ToolException {
         Conversation conversation = extoleTicketRunbookSelectingAdvisor.createConversation().start();
-        
-        conversation.addMessage(request.ticket_number);
-        
+                
         // TODO support adding conversation as sub-context on run info message
         
         Message message;
         try {
-            message = conversation.respond();
+            message = conversation.respond(request.ticket_number);
         } catch (ConversationException exception) {
            throw new ToolException("extoleTicketRunbookSelectingAdvisor failed to start conversation", exception);
         }
@@ -91,11 +89,9 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
         var parameters = new RunbookScenarioParameters(ticketNumber);
         Conversation conversation2 = scenario.createConversation(parameters, null);
         
-        conversation2.addMessage(ticketNumber);
-
         Message message2;
         try {
-            message2 = conversation2.respond();
+            message2 = conversation2.respond(ticketNumber);
         } catch (ConversationException e) {
             throw new ToolException("rubookScenarion[" + runbookName + "] failed to start conversation");
         }

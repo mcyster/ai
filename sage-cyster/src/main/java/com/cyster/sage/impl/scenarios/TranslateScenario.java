@@ -62,14 +62,20 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
             this.conversation = conversation;
         }
 
-        @Override
         public LocalizeConversation addMessage(String message) {
-            this.conversation.addMessage(message);
+            // TODO update to support new API
+            // this.conversation.addMessage(message);
+            
             return this;
         }
 
         @Override
         public Message respond() throws ConversationException {
+            return respond("thoughts");    
+        }
+        
+        @Override
+        public Message respond(String userMessage) throws ConversationException {
             List<Message> messages = this.conversation.getMessages();
             if (messages.size() == 0 || messages.get(messages.size() - 1).getType() != Message.Type.USER) {
                 throw new ConversationException("This conversation scenaio requires a user prompt");

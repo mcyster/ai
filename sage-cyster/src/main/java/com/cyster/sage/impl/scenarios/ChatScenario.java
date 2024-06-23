@@ -58,20 +58,26 @@ public class ChatScenario implements Scenario<Void, Void> {
             this.conversation = conversation;
         }
 
-        @Override
         public LocalizeConversation addMessage(String message) {
-            this.conversation.addMessage(message);
+            // TODO update to support new API
+            //this.conversation.addMessage(message);
             return this;
         }
 
         @Override
-        public Message respond() throws ConversationException {
+        public Message respond(String message) throws ConversationException {
+            addMessage(message);
             return this.conversation.respond();
         }
 
         @Override
         public List<Message> getMessages() {
             return this.conversation.getMessages();
+        }
+
+        @Override
+        public Message respond() throws ConversationException {
+            return this.conversation.respond();  
         }
 
     }

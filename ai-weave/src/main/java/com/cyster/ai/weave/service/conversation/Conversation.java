@@ -4,10 +4,9 @@ import java.util.List;
 
 public interface Conversation {
 
-    public Conversation addMessage(String message);
+    Message respond() throws ConversationException;
 
-    public Message respond() throws ConversationException;
+    Message respond(String message) throws ConversationException;
 
-    public List<Message> getMessages();
-
+    List<Message> getMessages();
 }

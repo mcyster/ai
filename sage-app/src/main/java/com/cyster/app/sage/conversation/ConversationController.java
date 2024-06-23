@@ -107,15 +107,15 @@ public class ConversationController {
     
         var conversation = createConversation(scenario, request.parameters(), headers);
 
-        if (request.prompt() != null && !request.prompt().isBlank()) {
-            conversation.addMessage(request.prompt());
-        }
-
         var handle = scenarioSessionStore.addSession(scenario, conversation);
 
         Message answer;
         try {
-            answer = conversation.respond();
+            if (request.prompt() != null && !request.prompt().isBlank()) {
+                answer = conversation.respond(request.prompt());   
+            } else {
+                answer = conversation.respond();
+            }
         } catch (ConversationException exception) {
             throw new ConversationRestException(handle.getId(), exception);
         }
@@ -170,7 +170,7 @@ public class ConversationController {
 
         Message response;
         try {
-            response = session.get().getConversation().addMessage(request.getPrompt()).respond();
+            response = session.get().getConversation().respond(request.getPrompt());
         } catch (ConversationException exception) {
             throw new ConversationRestException(session.get().getId(), exception);
         }
