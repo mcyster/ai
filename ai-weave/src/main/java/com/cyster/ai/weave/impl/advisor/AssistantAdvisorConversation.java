@@ -121,11 +121,17 @@ public class AssistantAdvisorConversation<C> implements Conversation {
         long delay = RUN_BACKOFF_MIN;
         long attempts = 0;
         
+        System.out.println("!!!threadMessage: " + threadMessage.toString());
+        
+        var requestBuilder = CreateRunRequest.newBuilder()
+            .assistantId(this.assistantId);
+        ThreadRun run = runsClient.createRun(threadMessage.threadId(), requestBuilder.build());
+        
         String lastStatus = "";
-        String runStatus = "pending";
         do {
+            
             try {
-                if (lastStatus.equals(runStatus)) {
+                if (lastStatus.equals(run.status())) {
                     java.lang.Thread.sleep(delay);
                     delay *= 2;
                     if (delay > RUN_BACKOFF_MAX) {
@@ -137,29 +143,10 @@ public class AssistantAdvisorConversation<C> implements Conversation {
                         delay = RUN_BACKOFF_MIN;
                     }
                 }
-                lastStatus = runStatus;
+                lastStatus = run.status();
             } catch (InterruptedException exception) {
                 throw new RuntimeException("Thread interrupted with waitfinr for OpenAI run response", exception);
             }
-            
-            ThreadRun run;        
-            try {
-                System.out.println("!!! ThreadMessage: " + threadMessage.toString());
-                
-                run = runsClient.retrieveRun(threadMessage.threadId(), threadMessage.runId());
-                runStatus = run.status();
-            } catch (Throwable exception) {
-                if (exception instanceof SocketTimeoutException) {
-                    if (retryCount++ > RUN_RETRIES_MAX) {
-                        throw new AdvisorConversationException("Socket Timeout while checking OpenAi.run.status",
-                            exception);
-                    }
-                } else {
-                    throw new AdvisorConversationException("Error while checking OpenAi.run.status", exception);
-                }
-                continue;
-            }
-
 
             if (attempts > RUN_POLL_ATTEMPTS_MAX) {
                 throw new AdvisorConversationException("Exceeded maximum openai thread run retry attempts ("
@@ -167,16 +154,15 @@ public class AssistantAdvisorConversation<C> implements Conversation {
                     + ") while waiting for a response for an openai run");
             }
 
-
-            if (runStatus.equals("expired")) {
+            if (run.status().equals("expired")) {
                 throw new RetryableAdvisorConversationException("Run.expired");
             }
 
-            if (runStatus.equals("failed")) {
+            if (run.status().equals("failed")) {
                 throw new AdvisorConversationException("Run.failed");
             }
 
-            if (runStatus.equals("cancelled")) {
+            if (run.status().equals("cancelled")) {
                 throw new AdvisorConversationException("Run.cancelled");
             }
 
@@ -219,8 +205,21 @@ public class AssistantAdvisorConversation<C> implements Conversation {
                 }
             }
             
+            try {                
+                run = runsClient.retrieveRun(run.threadId(), run.id());
+            } catch (Throwable exception) {
+                if (exception instanceof SocketTimeoutException) {
+                    if (retryCount++ > RUN_RETRIES_MAX) {
+                        throw new AdvisorConversationException("Socket Timeout while checking OpenAi.run.status",
+                            exception);
+                    }
+                } else {
+                    throw new AdvisorConversationException("Error while checking OpenAi.run.status", exception);
+                }
+            }
+            
             logger.info("Run.status[" + run.id() + "]: " + run.status() + " (delay " + delay + "ms)");
-        } while (!runStatus.equals("completed"));
+        } while (!run.status().equals("completed"));
 
         MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations);
         
