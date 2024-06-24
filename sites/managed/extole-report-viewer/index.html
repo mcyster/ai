@@ -1,0 +1,41 @@
+<html ng-app="jsonFormatterApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsonformatter"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsonformatter/dist/json-formatter.min.css">
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+        #jsonDisplay {
+            padding: 20px;
+            margin: 20px auto;
+            width: 80%;
+            max-width: 2400px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <h2 id="graphTitle"></h2>
+        <canvas id="chart"></canvas>
+    </div>
+    <div id="jsonDisplay" ng-controller="JsonController">
+        <json-formatter open="1" json="jsonData"></json-formatter>
+    </div>
+    <script src="data.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,17 +1,22 @@
 package com.cyster.app.sage.site;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.cyster.sage.impl.advisors.web.WebsiteService;
 import com.cyster.sage.impl.advisors.web.WebsiteService.Website.Type;
+
+import java.nio.file.attribute.FileTime;
+import java.util.Comparator;
 
 public class WebsiteServiceImpl implements WebsiteService {
     private URI baseUri;
@@ -27,11 +32,20 @@ public class WebsiteServiceImpl implements WebsiteService {
         
         for(Type type: Website.Type.values()) {
             Path typeRoot = baseDirectory.resolve(type.toString().toLowerCase());
-            
+                       
             try (Stream<Path> paths = Files.walk(typeRoot, 1)) {
+                Function<Path, FileTime> getLastModifiedTime = path -> {
+                    try {
+                        return Files.getLastModifiedTime(path);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                };
+    
                 var typedSites = paths
                     .filter(Files::isDirectory)
-                    .filter(path -> !path.equals(typeRoot)) 
+                    .filter(path -> !path.equals(typeRoot))
+                    .sorted(Comparator.comparing(getLastModifiedTime).reversed())
                     .map(path -> new WebsiteImpl(this.baseUri, this.baseDirectory, path.getFileName().toString(), type))
                     .collect(Collectors.toList());
                 sites.addAll(typedSites);
