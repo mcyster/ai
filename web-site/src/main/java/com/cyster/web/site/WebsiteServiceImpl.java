@@ -32,6 +32,9 @@ public class WebsiteServiceImpl implements WebsiteService {
         
         for(Type type: Website.Type.values()) {
             Path typeRoot = baseDirectory.resolve(type.toString().toLowerCase());
+            if (!Files.exists(typeRoot)) {
+                continue;
+            }
                        
             try (Stream<Path> paths = Files.walk(typeRoot, 1)) {
                 Function<Path, FileTime> getLastModifiedTime = path -> {
