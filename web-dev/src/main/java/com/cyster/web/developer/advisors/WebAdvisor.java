@@ -1,4 +1,4 @@
-package com.cyster.sage.impl.advisors.web;
+package com.cyster.web.developer.advisors;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,7 +10,7 @@ import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.advisor.AdvisorService;
 import com.cyster.ai.weave.service.advisor.Tool;
-import com.cyster.sage.impl.advisors.web.WebsiteService.Website;
+import com.cyster.web.developer.advisors.WebsiteService.Website;
 
 @Component
 public class WebAdvisor implements Advisor<Website> {

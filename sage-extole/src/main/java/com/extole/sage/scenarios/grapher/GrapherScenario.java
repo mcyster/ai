@@ -20,9 +20,9 @@ import com.cyster.ai.weave.service.advisor.ToolException;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.sage.advisors.support.ExtoleWebClientFactory;
-import com.cyster.sage.impl.advisors.web.WebAdvisor;
-import com.cyster.sage.impl.advisors.web.WebsiteService;
-import com.cyster.sage.impl.advisors.web.WebsiteService.Website;
+import com.cyster.web.developer.advisors.WebAdvisor;
+import com.cyster.web.developer.advisors.WebsiteService;
+import com.cyster.web.developer.advisors.WebsiteService.Website;
 import com.extole.sage.scenarios.grapher.GrapherScenario.Parameters;
 
 

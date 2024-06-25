@@ -1,4 +1,4 @@
-package com.cyster.app.sage.conversation;
+package com.cyster.web.site.controller;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cyster.app.sage.site.WebsiteServiceImpl;
-import com.cyster.sage.impl.advisors.web.WebsiteService.Website;
+import com.cyster.web.developer.advisors.WebsiteService.Website;
+import com.cyster.web.site.WebsiteServiceImpl;
 
 @RestController
 public class SiteController {
@@ -38,8 +38,7 @@ public class SiteController {
 
     @PostMapping("/pages/{name}")
     public WebsiteResponse getSite(
-        @PathVariable("name") String name)
-        throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException,ScenarioParametersException, ScenarioContextException {
+        @PathVariable("name") String name) {
            
         var site = sites.getSite(name);
         
@@ -48,8 +47,7 @@ public class SiteController {
     
     @PostMapping("/pages/{name}/copy")
     public WebsiteResponse copySite(
-        @PathVariable("name") String name)
-        throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException,ScenarioParametersException, ScenarioContextException {
+        @PathVariable("name") String name) {
            
         var site = sites.getSite(name); 
         Website newSite = sites.copy(site);
@@ -60,8 +58,7 @@ public class SiteController {
     @PostMapping("/pages/{name}/name")
     public WebsiteResponse nameSite(
         @PathVariable("name") String name, 
-        @RequestBody NameRequest request)
-        throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException,ScenarioParametersException, ScenarioContextException {
+        @RequestBody NameRequest request){
            
         var site = sites.getSite(name); 
         Website newSite = sites.name(site, request.name());

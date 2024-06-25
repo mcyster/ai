@@ -1,4 +1,4 @@
-package com.cyster.sage.impl.scenarios;
+package com.cyster.web.developer.scenarios;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,10 +10,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.sage.impl.advisors.web.WebAdvisor;
-import com.cyster.sage.impl.advisors.web.WebsiteService;
-import com.cyster.sage.impl.advisors.web.WebsiteService.Website;
-import com.cyster.sage.impl.scenarios.WebDeveloperScenario.Parameters;
+import com.cyster.web.developer.advisors.WebAdvisor;
+import com.cyster.web.developer.advisors.WebsiteService;
+import com.cyster.web.developer.advisors.WebsiteService.Website;
+import com.cyster.web.developer.scenarios.WebDeveloperScenario.Parameters;
 
 @Component
 public class WebDeveloperScenario implements Scenario<Parameters, Void> {

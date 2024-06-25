@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.extole.sage.scenarios.support.ExtoleSupportTicketScenario;
 
 @Service
@@ -46,7 +47,7 @@ public class TicketCommenter {
             var conversation = supportTicketScenario.createConversation(parameters, null);
                   
             if (prompt.isPresent()) {
-                conversation.addMessage(prompt.get());
+                conversation.addMessage(Type.USER, prompt.get());
             }
                     
             response = conversation.respond();

@@ -10,8 +10,8 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
 import com.cyster.ai.weave.service.scenario.ScenarioService;
 import com.cyster.ai.weave.service.scenario.ScenarioServiceFactory;
-import com.cyster.app.sage.site.WebsiteServiceImpl;
-import com.cyster.sage.impl.advisors.web.WebsiteService;
+import com.cyster.web.developer.advisors.WebsiteService;
+import com.cyster.web.site.WebsiteServiceImpl;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import java.io.IOException;
@@ -42,11 +42,11 @@ import org.springframework.context.ApplicationContext;
 
 @Configuration
 @EnableWebMvc
-public class SageConfig implements WebMvcConfigurer {
+public class SageAppConfig implements WebMvcConfigurer {
     private Path sites;
     private URI applicationUri;
 
-    public SageConfig(ApplicationContext applicationContext, @Value("${AI_HOME}") String aiHome) {
+    public SageAppConfig(ApplicationContext applicationContext, @Value("${AI_HOME}") String aiHome) {
         this.applicationUri = baseUri(applicationContext);
         
         if (aiHome == null || aiHome.isBlank()) {

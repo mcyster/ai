@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioService;
@@ -31,6 +33,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
 
+ 
 @RestController
 public class ConversationController {
     private ScenarioSessionStore scenarioSessionStore;
@@ -44,38 +47,40 @@ public class ConversationController {
         this.scenarioStore = scenarioStore;
         this.objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
-    }
+    } 
 
     @GetMapping("/conversations")
-    public List<ConversationResponse> index() {
+    public List<ConversationResponse> index(
+        @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level) {
         return scenarioSessionStore.createQueryBuilder().list().stream()
-            .map(value -> new ConversationResponse.Builder().setId(value.getId())
+            .map(value -> new ConversationResponse.Builder(level).setId(value.getId())
                 .setMessages(value.getConversation().getMessages()).build())
             .collect(Collectors.toList());
     }
 
     @PostMapping("/conversations")
     public ConversationResponse create_conversation(
-       @RequestHeader MultiValueMap<String, String> headers,
+        @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level,
+        @RequestHeader MultiValueMap<String, String> headers,
         @RequestBody ConversationRequest request)
         throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException,ScenarioParametersException, ScenarioContextException {
            
-        if (request == null || request.getScenarioName() == null || request.getScenarioName().isBlank()) {
+        if (request == null || request.scenario() == null || request.scenario().isBlank()) {
             throw new ScenarioNameNotSpecifiedRestException();
         }
 
         Scenario<?,?> scenario;
         try {
-            scenario = this.scenarioStore.getScenario(request.getScenarioName());
+            scenario = this.scenarioStore.getScenario(request.scenario());
         } catch (ScenarioException exception) {
-            throw new ScenarioNameNotFoundRestException(request.getScenarioName());
+            throw new ScenarioNameNotFoundRestException(request.scenario());
         }
         
-        var conversation = createConversation(scenario, request.getParameters(), headers);
+        var conversation = createConversation(scenario, request.parameters(), headers);
 
         var handle = scenarioSessionStore.addSession(scenario, conversation);
 
-        return new ConversationResponse.Builder()
+        return new ConversationResponse.Builder(level)
             .setId(handle.getId())
             .setScenario(scenario.getName())
             .setMessages(conversation.getMessages())
@@ -84,37 +89,39 @@ public class ConversationController {
 
     @PostMapping("/conversations/messages")
     public ConvenienceConversationResponse startConversation(
+        @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level,
         @RequestHeader MultiValueMap<String, String> headers,
         @RequestBody PromptedConversationRequest request)
         throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException, ConversationRestException, ScenarioParametersException, ScenarioContextException {
 
-        if (request == null || request.getScenario().isBlank()) {
+        if (request == null || request.scenario().isBlank()) {
             throw new ScenarioNameNotSpecifiedRestException();
         }
 
         Scenario<?,?> scenario;
         try {
-            scenario = this.scenarioStore.getScenario(request.getScenario());
+            scenario = this.scenarioStore.getScenario(request.scenario());
         } catch (ScenarioException exception) {
-            throw new ScenarioNameNotFoundRestException(request.getScenario());
+            throw new ScenarioNameNotFoundRestException(request.scenario());
         }
     
-        var conversation = createConversation(scenario, request.getParameters(), headers);
-
-        if (request.getPrompt() != null && !request.getPrompt().isBlank()) {
-            conversation.addMessage(request.getPrompt());
-        }
+        var conversation = createConversation(scenario, request.parameters(), headers);
 
         var handle = scenarioSessionStore.addSession(scenario, conversation);
 
         Message answer;
         try {
-            answer = conversation.respond();
+            if (request.prompt() != null && !request.prompt().isBlank()) {
+                conversation.addMessage(Type.USER, request.prompt());
+                answer = conversation.respond();   
+            } else {
+                answer = conversation.respond();
+            }
         } catch (ConversationException exception) {
             throw new ConversationRestException(handle.getId(), exception);
         }
 
-        var response = new ConversationResponse.Builder().setId(handle.getId())
+        var response = new ConversationResponse.Builder(level).setId(handle.getId())
             .setScenario(scenario.getName()).setMessages(handle.getConversation().getMessages()).build();
 
         var conveneinceReponse = new ConvenienceConversationResponse(response, answer.getContent());
@@ -123,7 +130,8 @@ public class ConversationController {
 
     @GetMapping("/conversations/{id}/messages")
     public List<MessageResponse> get_conversation_messages(
-        @PathVariable("id") String id)
+        @PathVariable("id") String id,
+        @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level)
         throws ScenarioSessionNotFoundRestException, ScenarioSessionNotSpecifiedRestException {
 
         if (id == null || id.isBlank()) {
@@ -134,9 +142,10 @@ public class ConversationController {
             throw new ScenarioSessionNotFoundRestException(id);
         }
 
+        var builder = new MessageResponse.Builder(level);
         var messages = new ArrayList<MessageResponse>();
         for (var message : session.get().getConversation().getMessages()) {
-            messages.add(new MessageResponse(message.getType().toString(), message.getContent()));
+            messages.add(builder.create(message.getType().toString(), message.getContent(), message.operation()));
         }
 
         return messages;
@@ -145,6 +154,7 @@ public class ConversationController {
     @PostMapping("/conversations/{id}/messages")
     public MessageResponse continue_conversation(
         @PathVariable("id") String id,
+        @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level,
         @RequestBody MessagePromptRequest request)
         throws ScenarioSessionNotFoundRestException, ScenarioSessionNotSpecifiedRestException,
         ConversationRestException {
@@ -161,12 +171,15 @@ public class ConversationController {
 
         Message response;
         try {
-            response = session.get().getConversation().addMessage(request.getPrompt()).respond();
+            session.get().getConversation().addMessage(Type.USER, request.getPrompt());
+            response = session.get().getConversation().respond();
         } catch (ConversationException exception) {
             throw new ConversationRestException(session.get().getId(), exception);
         }
 
-        return new MessageResponse(response.getType().toString(), response.getContent());
+
+        return new MessageResponse.Builder(level)
+            .create(response.getType().toString(), response.getContent(), response.operation());
     }
 
     // TODO make this pluggable
@@ -206,7 +219,7 @@ public class ConversationController {
             }
             throw new ScenarioParametersException("Parameters do not have the expected attributes: " + schema, exception);
         }
-        
+
         CONTEXT context = null;
         if (scenario. getContextClass() == ExtoleSessionContext.class) {   
             context = (CONTEXT)getSessionContext(headers);

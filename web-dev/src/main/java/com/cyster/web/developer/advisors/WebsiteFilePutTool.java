@@ -1,12 +1,12 @@
-package com.cyster.sage.impl.advisors.web;
+package com.cyster.web.developer.advisors;
 
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.advisor.FatalToolException;
 import com.cyster.ai.weave.service.advisor.Tool;
 import com.cyster.ai.weave.service.advisor.ToolException;
-import com.cyster.sage.impl.advisors.web.WebsiteFilePutTool.Request;
-import com.cyster.sage.impl.advisors.web.WebsiteService.Website;
+import com.cyster.web.developer.advisors.WebsiteFilePutTool.Request;
+import com.cyster.web.developer.advisors.WebsiteService.Website;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component

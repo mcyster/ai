@@ -1,4 +1,4 @@
-package com.cyster.sage.impl.advisors.web;
+package com.cyster.web.developer.advisors;
 
 import java.net.URI;
 import java.util.List;
@@ -33,7 +33,5 @@ public interface WebsiteService {
             Managed
         }
     }
-    
-
-    
+        
 }

@@ -1,4 +1,4 @@
-package com.cyster.app.sage.site;
+package com.cyster.web.site;
 
 import java.io.IOException;
 import java.net.URI;
@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.cyster.sage.impl.advisors.web.WebsiteService.Website;
+import com.cyster.web.developer.advisors.WebsiteService.Website;
 
 class WebsiteImpl implements Website {
     private final URI uri;

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.cyster.ai.weave.service.conversation.Message;
-import com.cyster.ai.weave.service.conversation.Operation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

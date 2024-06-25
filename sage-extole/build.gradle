@@ -26,7 +26,7 @@ dependencies {
     implementation project(':adf')
     implementation project(':ai-weave')
     implementation project(':store')
-    implementation project(':sage-cyster')
+    implementation project(':web-dev')
     
     testImplementation('org.springframework.boot:spring-boot-starter-test')
 }

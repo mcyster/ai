@@ -21,7 +21,6 @@ import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
-import com.cyster.ai.weave.service.conversation.Operation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioService;

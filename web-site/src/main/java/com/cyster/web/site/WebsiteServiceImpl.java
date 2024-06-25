@@ -1,4 +1,4 @@
-package com.cyster.app.sage.site;
+package com.cyster.web.site;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -12,8 +12,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.cyster.sage.impl.advisors.web.WebsiteService;
-import com.cyster.sage.impl.advisors.web.WebsiteService.Website.Type;
+import com.cyster.web.developer.advisors.WebsiteService;
+import com.cyster.web.developer.advisors.WebsiteService.Website.Type;
 
 import java.nio.file.attribute.FileTime;
 import java.util.Comparator;

@@ -1,4 +1,4 @@
-package com.cyster.sage.impl.advisors.web;
+package com.cyster.web.developer.advisors;
 
 import java.util.List;
 
@@ -6,10 +6,10 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.advisor.Tool;
 import com.cyster.ai.weave.service.advisor.ToolException;
-import com.cyster.sage.impl.advisors.web.WebsiteService.Website;
+import com.cyster.web.developer.advisors.WebsiteFileListTool.Request;
+import com.cyster.web.developer.advisors.WebsiteService.Website;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.cyster.sage.impl.advisors.web.WebsiteFileListTool.Request;
 
 @Component
 class WebsiteFileListTool implements Tool<Request, Website> {
