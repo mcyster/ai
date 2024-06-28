@@ -102,10 +102,13 @@ public class SageAppConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String resourcePath = "file:" + sites.toAbsolutePath().toString() + "/";
         registry.addResourceHandler("/sites/**")
-                .addResourceLocations(resourcePath)
-                .setCachePeriod(3600)
-                .resourceChain(true)
-                .addResolver(new PathResourceResolver());
+            .addResourceLocations(resourcePath)
+            .setCachePeriod(3600)
+            .resourceChain(true)
+            .addResolver(new PathResourceResolver());
+        
+        registry.addResourceHandler("/**")
+            .addResourceLocations("classpath:/static/");
     }
     
     private AdvisorService loadAdvisorService(String openAiApiKey) {
