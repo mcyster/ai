@@ -4,12 +4,7 @@ import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-
-import com.cyster.ai.weave.service.advisor.FatalToolException;
-import com.cyster.ai.weave.service.advisor.ToolException;
 
 public class JiraWebClientFactory {
     private Optional<String> jiraApiKey = Optional.empty();
@@ -28,9 +23,9 @@ public class JiraWebClientFactory {
         this.jiraBaseUri = jiraBaseUri;
     }
     
-    public WebClient getWebClient() throws ToolException {
+    public WebClient getWebClient() {
         if (this.jiraApiKey.isEmpty()) {
-            throw new FatalToolException("jiraApiKey is required");
+            throw new IllegalArgumentException("jiraApiKey is required");
         }
 
         return JiraWebClientBuilder.builder(this.jiraBaseUri)

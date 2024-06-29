@@ -12,16 +12,19 @@ dependencies {
     implementation('org.springframework.boot:spring-boot-starter-webflux')
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
   
-    implementation 'com.github.spullara.mustache.java:compiler:0.9.10'
+    implementation 'com.vladsch.flexmark:flexmark:0.64.8'
+  
     implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema-jakarta'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
 
-    implementation project(':ai-weave')
-    implementation project(':sage-cyster')
-
-    testImplementation('org.springframework.boot:spring-boot-starter-test')
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
+test {
+    useJUnitPlatform()
+}
 
 bootJar {
     enabled = false
