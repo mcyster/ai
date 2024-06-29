@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.advisor.FatalToolException;
 import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.jira.client.JiraWebClientFactory;
 import com.extole.sage.advisors.support.ExtoleSupportAdvisorTool;
 import com.extole.sage.advisors.support.jira.SupportTicketGetTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;

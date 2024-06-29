@@ -1,4 +1,4 @@
-package com.extole.sage.advisors.support.jira;
+package com.cyster.jira.client;
 
 import java.util.Optional;
 
@@ -11,16 +11,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.cyster.ai.weave.service.advisor.FatalToolException;
 import com.cyster.ai.weave.service.advisor.ToolException;
 
-@Component
 public class JiraWebClientFactory {
     private Optional<String> jiraApiKey = Optional.empty();
     private final String jiraBaseUri;
         
     private static final Logger logger = LogManager.getLogger(JiraWebClientFactory.class);
 
-    JiraWebClientFactory(
-        @Value("${jiraApiKey:#{environment.JIRA_API_KEY}}") String jiraApiKey,
-        @Value("https://extole.atlassian.net/") String jiraBaseUri) {
+    public JiraWebClientFactory(String jiraApiKey, String jiraBaseUri) {
         
         if (jiraApiKey != null) {
             this.jiraApiKey = Optional.of(jiraApiKey);            

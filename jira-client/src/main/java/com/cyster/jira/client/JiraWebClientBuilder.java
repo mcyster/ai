@@ -1,4 +1,4 @@
-package com.extole.sage.advisors.support.jira;
+package com.cyster.jira.client;
 
 import java.nio.charset.StandardCharsets;
 
