@@ -36,9 +36,10 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 public class SupportTicketsController {    
     private JiraWebClientFactory jiraWebClientFactory;
     private Path tempDirectory;
+    private final ObjectMapper objectMapper;
     
-    
-    public SupportTicketsController(@Value("${AI_HOME}") String aiHome, JiraWebClientFactory jiraWebClientFactory) {
+    public SupportTicketsController(@Value("${AI_HOME}") String aiHome, JiraWebClientFactory jiraWebClientFactory, 
+        ObjectMapper objectMapper) {
         Path directory = Paths.get(aiHome);
         if (!Files.exists(directory)) {
             throw new IllegalArgumentException("AI_HOME (" + aiHome + ") does not exist");
@@ -56,6 +57,7 @@ public class SupportTicketsController {
         }
 
         this.jiraWebClientFactory = jiraWebClientFactory;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping("/tickets")
@@ -80,7 +82,6 @@ public class SupportTicketsController {
                 throw new RuntimeException(exception);
             }
             
-            ObjectMapper objectMapper = new ObjectMapper();
             try {
                 tickets = objectMapper.readValue(json, new TypeReference<List<SupportTicketResponse>>(){});
             } catch (JsonProcessingException exception) {
@@ -88,8 +89,6 @@ public class SupportTicketsController {
             }
         } else {
             tickets = fetchTickets(limit);
-
-            ObjectMapper objectMapper = new ObjectMapper();
 
             try (FileWriter file = new FileWriter(cacheFilename.toString())) {
                 file.write(objectMapper.writeValueAsString(tickets));
@@ -236,7 +235,7 @@ public class SupportTicketsController {
         for(JsonNode issue: issues) {
             JsonNode fields = issue.path("fields");
 
-            String client = "";
+            String client = null;
             String value = fields.path("customfield_11312").path("value").asText();
             if (value != null && !value.trim().isEmpty()) {
                 client = value.split("-")[0].trim();
@@ -249,17 +248,17 @@ public class SupportTicketsController {
             ticketBuilder.type(fields.path("issuetype").path("name").asText());
             ticketBuilder.status(fields.path("status").path("name").asText());
             ticketBuilder.statusChanged(fields.path("statuscategorychangedate").asText());
-            ticketBuilder.category(fields.path("parent").path("fields").path("summary").asText());
+            ticketBuilder.category(fields.path("parent").path("fields").path("summary").asText(null));
             ticketBuilder.resolved(fields.path("resolutiondate").asText(null));
             ticketBuilder.due(fields.path("customfield_11301").asText(null));
             ticketBuilder.priority(fields.path("priority").path("name").asText());
-            ticketBuilder.reporter(fields.path("reporter").path("emailAddress").asText());
-            ticketBuilder.assignee(fields.path("assignee").path("emailAddress").asText());
+            ticketBuilder.reporter(fields.path("reporter").path("emailAddress").asText(null));
+            ticketBuilder.assignee(fields.path("assignee").path("emailAddress").asText(null));
             ticketBuilder.client(client);
             ticketBuilder.clientId(fields.path("customfield_11320").asText(null));
             ticketBuilder.pod(fields.path("customfield_11326").asText(null));
-            ticketBuilder.pairCsm(fields.path("customfield_11375").path("emailAddress").asText());
-            ticketBuilder.pairSupport(fields.path("customfield_11376").path("emailAddress").asText());
+            ticketBuilder.pairCsm(fields.path("customfield_11375").path("emailAddress").asText(null));
+            ticketBuilder.pairSupport(fields.path("customfield_11376").path("emailAddress").asText(null));
             ticketBuilder.clientPriority(fields.path("customfield_11373").asText(null));
             ticketBuilder.timeSeconds(fields.path("aggregatetimespent").asInt());
             
@@ -270,25 +269,25 @@ public class SupportTicketsController {
     }
     
     public static record SupportTicketResponse (
-        String key,
-        String project, 
-        String created,
-        String type,
-        String status,
-        String statusChanged,
-        String category,
-        String resolved,
-        String due,
-        String priority,
-        String reporter,
-        String assignee,
-        String client,
-        String clientId,
-        String pod,
-        String pairCsm,
-        String pairSupport,
-        String clientPriority,
-        Integer timeSeconds
+            String key,
+            String project,
+            String created,
+            String type,
+            String status,
+            String statusChanged,
+            Optional<String> category,
+            Optional<String> resolved,
+            Optional<String> due,
+            String priority,
+            Optional<String> reporter,
+            Optional<String> assignee,
+            Optional<String> client,
+            Optional<String> clientId,
+            Optional<String> pod,
+            Optional<String> pairCsm,
+            Optional<String> pairSupport,
+            Optional<String> clientPriority,
+            Integer timeSeconds
     ) {
         public static Builder newBuilder() {
             return new Builder();
@@ -301,18 +300,18 @@ public class SupportTicketsController {
             private String type;
             private String status;
             private String statusChanged;
-            private String category;
-            private String resolved;
-            private String due;
+            private Optional<String> category = Optional.empty();
+            private Optional<String> resolved = Optional.empty();
+            private Optional<String> due = Optional.empty();
             private String priority;
-            private String reporter;
-            private String assignee;
-            private String client;
-            private String clientId;
-            private String pod;
-            private String pairCsm;
-            private String pairSupport;
-            private String clientPriority;
+            private Optional<String> reporter = Optional.empty();
+            private Optional<String> assignee = Optional.empty();
+            private Optional<String> client = Optional.empty();
+            private Optional<String> clientId = Optional.empty();
+            private Optional<String> pod = Optional.empty();
+            private Optional<String> pairCsm = Optional.empty();
+            private Optional<String> pairSupport = Optional.empty();
+            private Optional<String> clientPriority = Optional.empty();
             private Integer timeSeconds;
 
             public Builder key(String key) {
@@ -346,17 +345,17 @@ public class SupportTicketsController {
             }
 
             public Builder category(String category) {
-                this.category = category;
+                this.category = Optional.ofNullable(category);
                 return this;
             }
 
             public Builder resolved(String resolved) {
-                this.resolved = resolved;
+                this.resolved = Optional.ofNullable(resolved);
                 return this;
             }
 
             public Builder due(String due) {
-                this.due = due;
+                this.due = Optional.ofNullable(due);
                 return this;
             }
 
@@ -366,42 +365,42 @@ public class SupportTicketsController {
             }
 
             public Builder reporter(String reporter) {
-                this.reporter = reporter;
+                this.reporter = Optional.ofNullable(reporter);
                 return this;
             }
 
             public Builder assignee(String assignee) {
-                this.assignee = assignee;
+                this.assignee = Optional.ofNullable(assignee);
                 return this;
             }
 
             public Builder client(String client) {
-                this.client = client;
+                this.client = Optional.ofNullable(client);
                 return this;
             }
 
             public Builder clientId(String clientId) {
-                this.clientId = clientId;
+                this.clientId = Optional.ofNullable(clientId);
                 return this;
             }
 
             public Builder pod(String pod) {
-                this.pod = pod;
+                this.pod = Optional.ofNullable(pod);
                 return this;
             }
 
             public Builder pairCsm(String pairCsm) {
-                this.pairCsm = pairCsm;
+                this.pairCsm = Optional.ofNullable(pairCsm);
                 return this;
             }
 
             public Builder pairSupport(String pairSupport) {
-                this.pairSupport = pairSupport;
+                this.pairSupport = Optional.ofNullable(pairSupport);
                 return this;
             }
 
             public Builder clientPriority(String clientPriority) {
-                this.clientPriority = clientPriority;
+                this.clientPriority = Optional.ofNullable(clientPriority);
                 return this;
             }
 
@@ -419,7 +418,6 @@ public class SupportTicketsController {
             }
         }
     }
-   
 
 }
 

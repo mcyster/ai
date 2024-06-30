@@ -83,21 +83,6 @@ public class SageAppConfig implements WebMvcConfigurer {
         return new WebsiteServiceImpl(applicationUri.resolve("/sites"), sites);
     }
     
-    @Bean
-    public ObjectMapper objectMapper() {
-        return Jackson2ObjectMapperBuilder
-        .json()
-        .featuresToEnable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-        .build();
-    }
-    
-    @Bean 
-    public Jackson2ObjectMapperBuilder objectMapperBuilder(){
-        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
-        builder.failOnUnknownProperties(true);
-        return builder;
-    }
-    
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String resourcePath = "file:" + sites.toAbsolutePath().toString() + "/";

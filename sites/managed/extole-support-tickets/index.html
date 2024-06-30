@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html ng-app="jsonFormatterApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsonformatter"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript/lib/typescript.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsonformatter/dist/json-formatter.min.css">
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+        #jsonDisplay {
+            padding: 20px;
+            margin: 20px auto;
+            width: 80%;
+            max-width: 2400px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <h2 id="graphTitle">Support Tickets Created and Closed Each Week</h2>
+        <canvas id="chart"></canvas>
+    </div>
+    <div id="jsonDisplay" ng-controller="JsonController">
+        <json-formatter open="1" json="jsonData"></json-formatter>
+    </div>
+
+    <!-- TypeScript code -->
+    <script id="typescript-code" type="text/typescript">
+        interface SupportTicket {
+            key: string;
+            project: string;
+            created: Date;
+            type: string;
+            status: string;
+            statusChanged: Date;
+            category: string | null;
+            resolved: Date | null;
+            due: Date | null;
+            priority: string;
+            reporter: string | null;
+            assignee: string | null;
+            client: string | null;
+            clientId: string | null;
+            pod: string | null;
+            pairCsm: string | null;
+            pairSupport: string | null;
+            clientPriority: string | null;
+            timeSeconds: number;
+        }
+
+        async function getData(): Promise<SupportTicket[]> {
+            const url = 'http://localhost:8080/support/tickets';
+
+            try {
+                const response = await fetch(url, { method: 'GET' });
+                if (!response.ok) {
+                    alert(`Error: unable to fetch ${url}`);
+                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
+                }
+                const rawData: any[] = await response.json();
+                const data: SupportTicket[] = rawData.map(ticket => ({
+                    ...ticket,
+                    created: new Date(Date.parse(ticket.created)),
+                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
+                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
+                }));
+                return data;
+            } catch (error) {
+                alert(`Error: problem fetching ${url}`);
+                console.error('Fetch error:', error);
+                throw error;
+            }
+        }
+
+        function countTicketsPerWeek(tickets: SupportTicket[]) {
+            const createCounts: { [endOfWeekDate: string]: number } = {};
+            const resolveCounts: { [endOfWeekDate: string]: number } = {};
+            
+            tickets.forEach(ticket => {
+                const creationDate = ticket.created;
+                const resolutionDate = ticket.resolved;
+
+                const createdWeekEnd = getWeekEndDate(creationDate);
+                const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
+
+                createCounts[createdWeekEnd] = (createCounts[createdWeekEnd] || 0) + 1;
+                if (resolvedWeekEnd) {
+                    resolveCounts[resolvedWeekEnd] = (resolveCounts[resolvedWeekEnd] || 0) + 1;
+                }
+            });
+            return { createCounts, resolveCounts };
+        }
+
+        function getWeekEndDate(date: Date) {
+            const dayOfWeek = date.getUTCDay();
+            const weekEndDate = new Date(date);
+            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+        }
+
+        function renderChart(createCounts: { [endOfWeekDate: string]: number }, resolveCounts: { [endOfWeekDate: string]: number }) {
+            const ctx = document.getElementById('chart') as HTMLCanvasElement;
+            if (!ctx) return;
+            let weeks = Object.keys(createCounts).sort();
+            // Remove the first week unconditionally
+            if (weeks.length > 1) {
+                weeks.shift();
+            }
+            const createData = weeks.map(week => ({ x: new Date(week), y: createCounts[week] || 0 }));
+            const resolveData = weeks.map(week => ({ x: new Date(week), y: resolveCounts[week] || 0 }));
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Tickets Created',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            fill: false,
+                            data: createData,
+                            borderWidth: 4 
+                        },
+                        {
+                            label: 'Tickets Closed',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(0, 255, 0, 1)',
+                            fill: false,
+                            data: resolveData,
+                            borderWidth: 4 
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'week',
+                                tooltipFormat: 'PP',
+                                displayFormats: {
+                                    week: 'PP'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Week Ending',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true, // Ensure y-axis starts at 0
+                            title: {
+                                display: true,
+                                text: 'Number of Tickets',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        angular.module('jsonFormatterApp', [])
+        .controller('JsonController', ['$scope', function($scope) {
+            $scope.jsonData = [];
+
+            getData().then(tickets => {
+                $scope.jsonData = tickets;
+                const { createCounts, resolveCounts } = countTicketsPerWeek(tickets);
+                renderChart(createCounts, resolveCounts);
+                $scope.$apply(); // Manually trigger digest cycle to update view
+            }).catch(error => {
+                console.error('Error loading data:', error);
+            });
+        }]);
+    </script>
+
+    <script>
+        (async function compileAndExecute() {
+            const tsCode = document.getElementById('typescript-code').textContent;
+            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
+            eval(jsCode);
+        })();
+    </script>
+</body>
+</html>
