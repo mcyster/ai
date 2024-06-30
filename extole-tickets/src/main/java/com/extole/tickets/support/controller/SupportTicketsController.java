@@ -59,7 +59,16 @@ public class SupportTicketsController {
     }
 
     @GetMapping("/tickets")
-    public List<SupportTicketResponse> getTickets(@RequestParam Optional<Integer> limit) {
+    public List<SupportTicketResponse> getTickets(@RequestParam Optional<Integer> limit) {       
+        return loadTickets(limit);
+    }
+    
+    @Scheduled(initialDelayString = "PT30M", fixedRateString = "PT1H")
+    public void performScheduledTask() {
+        loadTickets(Optional.empty());
+    }
+    
+    private List<SupportTicketResponse> loadTickets(Optional<Integer> limit) {
         List<SupportTicketResponse> tickets;
         
         Path cacheFilename = getCacheFilename(getHash(limit));
@@ -90,11 +99,6 @@ public class SupportTicketsController {
         }
         
         return tickets;
-    }
-    
-    @Scheduled(initialDelayString = "PT30M", fixedRateString = "PT1H")
-    public void performScheduledTask() {
-        fetchTickets(Optional.empty());
     }
     
     private List<SupportTicketResponse> fetchTickets(Optional<Integer> limit) {
