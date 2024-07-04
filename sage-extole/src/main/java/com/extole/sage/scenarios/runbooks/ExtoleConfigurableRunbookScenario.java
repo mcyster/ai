@@ -1,9 +1,15 @@
 package com.extole.sage.scenarios.runbooks;
 
+import java.io.StringReader;
+import java.io.StringWriter;
+
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.extole.sage.advisors.support.ExtoleSupportAdvisor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 
 public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
     private String name;
@@ -46,7 +52,13 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
  
     @Override
     public Conversation createConversation(RunbookScenarioParameters parameters, Void context) {
-        return this.advisor.createConversation().setOverrideInstructions(this.instructions).start();
+        MustacheFactory mostacheFactory = new DefaultMustacheFactory();
+        Mustache mustache = mostacheFactory.compile(new StringReader(instructions), "advisor_instructions");
+        var messageWriter = new StringWriter();
+        mustache.execute(messageWriter, parameters);
+        messageWriter.flush();
+        
+        return this.advisor.createConversation().setOverrideInstructions(messageWriter.toString()).start();
     }
     
     public static class Configuration {
