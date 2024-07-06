@@ -35,7 +35,7 @@ import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
 
 @RestController
 public class ConversationController {
-    private static final String PARAMETER_PREFIX = "parameter_";
+    private static final String PARAMETER_PREFIX = "parameter.";
 
     private ScenarioSessionStore scenarioSessionStore;
     private ScenarioService scenarioStore;
@@ -56,7 +56,7 @@ public class ConversationController {
         
         var scenarioQueryBuilder = scenarioSessionStore.createQueryBuilder();
         
-        allParameters.entrySet().stream()
+        allParameters.entrySet().stream()   
             .filter(entry -> entry.getKey().startsWith(PARAMETER_PREFIX))
             .forEach(entry -> {
                 String parameterName = entry.getKey().substring(PARAMETER_PREFIX.length()); 
@@ -64,10 +64,12 @@ public class ConversationController {
             });
         
         return scenarioQueryBuilder.list().stream()
-            .map(value -> new ConversationResponse.Builder(level).setId(value.getId())
+            .map(value -> new ConversationResponse.Builder(level)
+                .setId(value.getId())
                 .setScenario(value.getScenario().getName())
                 .setParameters(value.getParameters())
-                .setMessages(value.getConversation().getMessages()).build())
+                .setMessages(value.getConversation().getMessages())
+                .build())
             .collect(Collectors.toList());
     }
 

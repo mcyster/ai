@@ -35,7 +35,7 @@ import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
  
 @RestController
 public class ConversationController {
-    private static final String PARAMETER_PREFIX = "parameter_";
+    private static final String PARAMETER_PREFIX = "parameter.";
     
     private ScenarioSessionStore scenarioSessionStore;
     private ScenarioService scenarioStore;

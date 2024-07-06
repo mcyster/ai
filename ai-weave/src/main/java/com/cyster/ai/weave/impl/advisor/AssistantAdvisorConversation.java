@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,7 +115,8 @@ public class AssistantAdvisorConversation<C> implements Conversation {
 
     @Override
     public List<Message> getMessages() {
-        return this.messages;
+        return Stream.concat(this.messages.stream(), this.newMessages.stream())
+            .collect(Collectors.toList());
     }
 
     private String doRun(Thread thread, OperationLogger operations) throws AdvisorConversationException {        
