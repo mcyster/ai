@@ -3,12 +3,12 @@ package com.cyster.sage.service.scenariosession;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 
-public interface ScenarioSession {
+public interface ScenarioSession<PARAMETERS, CONTEXT> {
 
-	public String getId();
-
-	public Scenario<?,?> getScenario();
+	String getId();
+    Scenario<PARAMETERS,CONTEXT> getScenario();
+	PARAMETERS getParameters(); 
 	
-	public Conversation getConversation();
+	Conversation getConversation();
 	
 }

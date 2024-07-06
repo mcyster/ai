@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public record ConversationResponse(
     String id, 
     String scenario, 
+    Object parameters,
     List<MessageResponse> messages) {
 
     public ConversationResponse {
@@ -18,7 +19,7 @@ public record ConversationResponse(
         }
         if (scenario == null || scenario.isBlank()) {
             throw new IllegalArgumentException("Scenario cannot be null or blank");
-        }
+        }  
         if (messages == null) {
             throw new IllegalArgumentException("Messages cannot be null");
         }
@@ -38,6 +39,7 @@ public record ConversationResponse(
         private MessageResponse.Level level;
         private String id;
         private String scenario;
+        private Object parameters;
         private List<MessageResponse> messages;
 
         public Builder(MessageResponse.Level level) {
@@ -54,6 +56,11 @@ public record ConversationResponse(
             return this;
         }
 
+        public Builder setParameters(Object parameters) {
+            this.parameters = parameters;
+            return this;
+        }
+        
         public Builder setMessages(List<Message> messages) {
             var response = new ArrayList<MessageResponse>();
             for (var message : messages) {
@@ -65,7 +72,7 @@ public record ConversationResponse(
         }
 
         public ConversationResponse build() {
-            return new ConversationResponse(this.id, this.scenario, this.messages);
+            return new ConversationResponse(this.id, this.scenario, this.parameters, this.messages);
         }
     }
 }

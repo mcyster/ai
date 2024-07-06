@@ -9,6 +9,36 @@ function getQueryParams() {
     return queryParams;
 }
 
+function findCurrentScript() {
+    var scripts = document.getElementsByTagName('script');
+    for (var i = 0; i < scripts.length; i++) {
+        if (scripts[i].src.includes('chat.js')) {
+            return scripts[i];
+        }
+    }
+    return null;
+}
+
+function getScriptTagParams() {
+    var currentScript = document.currentScript;
+    if (!currentScript) {
+        currentScript = findCurrentScript();
+    }
+
+    if (currentScript == null) {
+        console.error("Error unable to identify current script", currentScript);
+	return null
+    }
+
+    for (var i = 0; i < currentScript.attributes.length; i++) {
+        var attr = currentScript.attributes[i];
+        if (attr.name.startsWith('data-')) {
+            var paramName = attr.name.slice(5); 
+            params[paramName] = attr.value;
+        }
+    }
+}
+
 function injectStyles() {
     const styles = `
         #overlay {
@@ -135,9 +165,11 @@ function initialize() {
             };
         },
         created() {
+            const scriptTagParams = getScriptTagParams();
             const queryParams = getQueryParams();
-            this.scenario = queryParams.scenario || 'chat';
-            this.parameters = queryParams;
+            const params = { scriptTagParams, ...queryParams };
+            this.scenario = params.scenario || 'chat';
+            this.parameters = params;
             delete this.parameters.scenario;
         },
         methods: {
@@ -201,7 +233,7 @@ function initialize() {
             },
             handleKeydown(event) {
                 if (event.key === 'Enter') {
-                    if (event.ctrlKey || event.metaKey) {
+                    if (event.shiftKey || event.metaKey) {
                         this.newMessage += '\n';
                     } else {
                         this.sendMessage();

@@ -15,6 +15,7 @@ import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.conversation.Operation;
+import com.cyster.ai.weave.service.scenario.Scenario;
 
 import io.github.stefanbratanov.jvm.openai.CreateMessageRequest;
 import io.github.stefanbratanov.jvm.openai.CreateRunRequest;
@@ -65,7 +66,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
         this.overrideInstructions = overrideInstructions;
         this.context = context;
     }
-
+    
     @Override
     public Message addMessage(Type type, String content) {
         var message = new MessageImpl(type, content);
@@ -374,4 +375,6 @@ public class AssistantAdvisorConversation<C> implements Conversation {
                 return "\\" + character;
         }
     }
+
+
 }
