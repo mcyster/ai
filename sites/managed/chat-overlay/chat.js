@@ -8,7 +8,6 @@ const ErrorManager = {
         const errorDetails = `${message}\n${stack}`;
         this.errors.push(errorDetails);
         this.updateButtonVisibility();
-        
     },
     getError() {
         return this.errors.length > 0 ? this.errors[0] : null;
@@ -136,38 +135,32 @@ function injectStyles() {
             border-radius: 5px;
             cursor: pointer;
         }
-        .closeOverlayButton {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+        .overlayButtonContainer {
+            position: sticky;
+            top: 0;
+            display: flex;
+            justify-content: flex-end;
+            background: white;
+            z-index: 1;
+        }
+        .closeOverlayButton, .reloadOverlayButton, .sendErrorsButton {
             padding: 5px 10px;
             border: none;
+            border-radius: 5px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .closeOverlayButton {
             background-color: #ff0000;
             color: white;
-            border-radius: 5px;
-            cursor: pointer;
         }
         .reloadOverlayButton {
-            position: absolute;
-            top: 10px;
-            right: 80px;
-            padding: 5px 10px;
-            border: none;
             background-color: #28a745;
             color: white;
-            border-radius: 5px;
-            cursor: pointer;
         }
         .sendErrorsButton {
-            position: absolute;
-            top: 10px;
-            right: 160px;
-            padding: 5px 10px;
-            border: none;
             background-color: #ffc107;
             color: white;
-            border-radius: 5px;
-            cursor: pointer;
             display: none;
         }
         .message {
@@ -212,12 +205,14 @@ function addOverlayHTML() {
     const overlayHTML = `
         <div id="overlay">
             <div id="app">
-                <button class="closeOverlayButton" @click="closeOverlay">Close</button>
-                <button class="reloadOverlayButton" @click="reloadPage">Reload</button>
-                <button id="sendErrorsButton" @click="sendErrors">Send Errors</button>
+                <div class="overlayButtonContainer">
+                    <button class="sendErrorsButton" id="sendErrorsButton" @click="sendErrors">Send Errors</button>
+                    <button class="reloadOverlayButton" @click="reloadPage">Reload</button>
+                    <button class="closeOverlayButton" @click="closeOverlay">Close</button>
+                </div>
                 <div v-for="message in messages" class="message" v-html="message.html"></div>
                 <div class="input-group" ref="inputGroup">
-                    <textarea v-model="newMessage" @keydown="handleKeydown" placeholder="Type a message"></textarea>
+                    <textarea v-model="newMessage" @keydown="handleKeydown" placeholder="Type a message (2 minutes to process)"></textarea>
                     <button @click="sendMessage">Send</button>
                 </div>
             </div>
@@ -383,7 +378,8 @@ function initialize() {
             sendErrors() {
                 const errorToSend = ErrorManager.getError();
                 if (errorToSend) {
-                    this.newMessage = `Captured JavaScript Error:\n${errorToSend}`;
+                    this.newMessage = `JavaScript Error:\n${errorToSend}`;
+                    this.scrollToBottom();
                     ErrorManager.removeError();
                 }
             },
