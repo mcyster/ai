@@ -3,160 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Interface</title>
+    <title>Chat Test Page</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        #app {
-            width: 100%;
-            max-width: 600px;
-            background: white;
-            padding: 20px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        .message {
-            padding: 10px;
-            border-bottom: 1px solid #e0e0e0;
-            word-wrap: break-word;
-        }
-        .message:last-child {
-            border-bottom: none;
-        }
-        .input-group {
-            display: flex;
-            margin-top: 10px;
-            align-items: center;
-        }
-        .input-group textarea {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: 5px;
-            margin-right: 5px;
-            height: 60px;
-        }
-        .input-group button {
-            padding: 10px 15px;
-            border: none;
-            background-color: #007bff;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-right: 5px;
-        }
-    </style>
+    <script src="/sites/managed/chat/chat.js" data-scenario="webDeveloper"></script>
 </head>
 <body>
-    <div id="app">
-        <div v-for="message in messages" class="message" v-html="message.html"></div>
-        <div class="input-group">
-            <textarea v-model="newMessage" @keydown="handleKeydown" placeholder="Type a message"></textarea>
-            <button @click="sendMessage">Send</button>
-        </div>
+    <div>
+        <h1>Lorem Ipsum</h1>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
     </div>
-
-    <script>
-        const { createApp } = Vue;
-
-        function getQueryParams() {
-            const params = new URLSearchParams(window.location.search);
-            let queryParams = {};
-            for (const [key, value] of params.entries()) {
-                queryParams[key] = value;
-            }
-            return queryParams;
-        }
-
-        createApp({
-            data() {
-                return {
-                    messages: [],
-                    newMessage: '',
-                    scenario: '',
-                    parameters: {},
-                    conversationId: null
-                };
-            },
-            created() {
-                const queryParams = getQueryParams();
-                this.scenario = queryParams.scenario || 'chat';
-                this.parameters = queryParams;
-                delete this.parameters.scenario;
-            },
-            methods: {
-                async createConversation(scenario, parameters) {
-                    const response = await fetch('http://localhost:8080/conversations', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ scenario, parameters })
-                    });
-                    const data = await response.json();
-                    this.conversationId = data.id;
-                    return data;
-                },
-                async addMessageToConversation(prompt) {
-                    const response = await fetch(`http://localhost:8080/conversations/${this.conversationId}/messages`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ prompt })
-                    });
-                    const data = await response.json();
-                    return data;
-                },
-                async sendMessage() {
-                    if (this.newMessage.trim() !== '') {
-                        // Add the new message to the chat
-                        this.messages.push({ text: this.newMessage, html: marked.parse(this.newMessage) });
-
-                        // Store the current message
-                        const messageToSend = this.newMessage;
-
-                        // Clear the input field
-                        this.newMessage = '';
-
-                        try {
-                            // If there is no conversation ID, create a new conversation
-                            if (!this.conversationId) {
-                                await this.createConversation(this.scenario, this.parameters);
-                            }
-
-                            // Add message to the created conversation
-                            const messageResponse = await this.addMessageToConversation(messageToSend);
-                            this.messages.push({ text: messageResponse.content, html: marked.parse(messageResponse.content) });
-                        } catch (error) {
-                            console.error('Error sending message:', error);
-                            this.messages.push({ text: 'Error: Could not send message', html: 'Error: Could not send message' });
-                        }
-                    }
-                },
-                handleKeydown(event) {
-                    if (event.key === 'Enter') {
-                        if (event.ctrlKey || event.metaKey) {
-                            this.newMessage += '\n';
-                        } else {
-                            this.sendMessage();
-                        }
-                        event.preventDefault();
-                    }
-                }
-            }
-        }).mount('#app');
-    </script>
 </body>
 </html>
