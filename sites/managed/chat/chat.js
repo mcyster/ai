@@ -155,6 +155,7 @@ function injectStyles() {
         .reloadOverlayButton {
             background-color: #28a745;
             color: white;
+            display: none;
         }
         .sendErrorsButton {
             background-color: #ffc107;
@@ -287,11 +288,6 @@ function initialize() {
             this.candidateConversationId = allParameters['conversationId'];
             const openChat = allParameters['openChat'];
 
-            if (this.candidateConversationId) {
-                await this.getExistingConversation(this.candidateConveRSationId);
-                this.candidateConversationId = null;
-            }
-
             if (openChat) {
                 this.openOverlay();
             }
@@ -309,6 +305,7 @@ function initialize() {
                 });
                 const data = await response.json();
                 this.conversationId = data.id;
+                this.toggleReloadButtonVisibility(true);
                 return data;
             },
             async getExistingConversation(candidateConversationId) {
@@ -319,8 +316,30 @@ function initialize() {
                     for (var message of data.messages) {
                         this.messages.push({ text: message.content, html: marked.parse(message.content) });
                     }
+                    this.toggleReloadButtonVisibility(true);
                 }
                 return data;
+            },
+            async loadOrStartConversation() {
+                try {
+                    if (!this.conversationId) {
+                        if (this.candidateConversationId) {
+                            await this.getExistingConversation(this.candidateConversationId);
+                            this.candidateConversationId = null;
+                        }
+                        if (!this.conversationId) {
+                            await this.createConversation(this.scenario, this.parameters);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Unable to get or create a conversation:', error);
+                    this.messages.push({ text: 'Error: Could not send message', html: 'Error: Could not send message' });
+                    this.toggleReloadButtonVisibility(false);
+                }
+            },
+            toggleReloadButtonVisibility(isVisible) {
+                const reloadButton = document.querySelector('.reloadOverlayButton');
+                reloadButton.style.display = isVisible ? 'inline-block' : 'none';
             },
             async addMessageToConversation(prompt) {
                 const response = await fetch(`/conversations/${this.conversationId}/messages`, {
@@ -337,37 +356,29 @@ function initialize() {
                 if (this.newMessage.trim() !== '') {
                     // Add the new message to the chat
                     this.messages.push({ text: this.newMessage, html: marked.parse(this.newMessage) });
-
+        
                     // Store the current message
                     const messageToSend = this.newMessage;
-
+        
                     // Clear the input field
                     this.newMessage = '';
-
+        
                     await nextTick();
                     this.scrollToBottom();
-
+        
                     try {
-                        if (!this.conversationId) {
-                            if (this.candidateConversationId) {
-                                await this.getExistingConversation(this.candidateConversationid);
-                                this.candidateConversationid = null;
-                            }
-                            if (!this.conversationId) {
-                                await this.createConversation(this.scenario, this.parameters);
-                            }
-                        }
-
+                        await this.loadOrStartConversation();
+        
                         // Add message to the created or found conversation
                         const messageResponse = await this.addMessageToConversation(messageToSend);
                         this.messages.push({ text: messageResponse.content, html: marked.parse(messageResponse.content) });
-
+        
                         await nextTick();
                         this.scrollToBottom();
                     } catch (error) {
                         console.error('Error sending message:', error);
                         this.messages.push({ text: 'Error: Could not send message', html: 'Error: Could not send message' });
-
+        
                         await nextTick();
                         this.scrollToBottom();
                     }
@@ -408,6 +419,7 @@ function initialize() {
                 container.scrollIntoView({ behavior: 'smooth' });
             }
         }
+
     });
 
     document.getElementById('openOverlayButton').addEventListener('click', function () {
