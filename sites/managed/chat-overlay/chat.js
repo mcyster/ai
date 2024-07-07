@@ -30,13 +30,25 @@ function getScriptTagParams() {
 	return null
     }
 
+    var parameters = {};
     for (var i = 0; i < currentScript.attributes.length; i++) {
         var attr = currentScript.attributes[i];
         if (attr.name.startsWith('data-')) {
-            var paramName = attr.name.slice(5); 
-            params[paramName] = attr.value;
+            var name = attr.name.slice(5); 
+            parameters[name] = attr.value;
         }
     }
+
+    return parameters;
+}
+
+function capitalizeTagParameter(input) {
+    return input.split('-').map((word, index) => {
+        if (index === 0) {
+            return word;
+        }
+        return word.charAt(0).toUpperCase() + word.slice(1);
+    }).join('');
 }
 
 function injectStyles() {
@@ -167,13 +179,49 @@ function initialize() {
         created() {
             const scriptTagParams = getScriptTagParams();
             const queryParams = getQueryParams();
-            const params = { scriptTagParams, ...queryParams };
-            this.scenario = params.scenario || 'chat';
-            this.parameters = params;
-            delete this.parameters.scenario;
+            const allParameters = { ...scriptTagParams, ...queryParams };
+
+            console.log("allParameters", allParameters);
+
+            this.scenario = allParameters['scenario'] || 'chat';
+
+            var parameters = {}
+            for (const key in allParameters) {
+                if (allParameters.hasOwnProperty(key)) {
+                    let name = undefined;
+                    if (key.startsWith('href-')) {
+                        name = capitalizeTagParameter(key.substring(5));
+                     } else if (key.startsWith('href.')) {
+                        name = key.substring(5); 
+                    }
+                    if (name) {
+                        console.log("keyname", name, allParameters[key]);
+                        const regex = new RegExp(allParameters[key]);
+                        const match = window.location.href.match(regex);
+
+                        if (match) {
+                            parameters[name] = match[1];
+                        } 
+                    }
+
+                    name = undefined;
+                    if (key.startsWith('parameter-')) {
+                        name = capitalizeTagParameter(key.substring(10));
+                     } else if (key.startsWith('parameter.')) {
+                        name = key.substring(10); 
+                    }
+                    if (name) {
+                        parameters[name] = allParameters[key]
+                    }
+               }
+            }
+            this.parameters = parameters;
+            console.log("Scenario", this.scenario, parameters);
+          
         },
         methods: {
             async createConversation(scenario, parameters) {
+                console.log("createConvo", scenario, parameters)
                 const response = await fetch('http://localhost:8080/conversations', {
                     method: 'POST',
                     headers: {
