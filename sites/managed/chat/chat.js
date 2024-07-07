@@ -241,8 +241,7 @@ function initialize() {
                 newMessage: '',
                 scenario: '',
                 parameters: {},
-                conversationId: null,
-                candidateConversationId: null
+                conversationId: null
             };
         },
         mounted() {
@@ -284,12 +283,15 @@ function initialize() {
             }
             this.parameters = parameters;
 
-            // Check for conversationId and openChat parameters
-            this.candidateConversationId = allParameters['conversationId'];
             const openChat = allParameters['openChat'];
 
             if (openChat) {
                 this.openOverlay();
+            }
+
+            const existingConversationId = allParameters['conversationId'];
+            if (existingConversationId) {
+                await this.loadExistingConversation(existingConversationId);
             }
 
             console.log('Scenario', this.scenario, parameters);
@@ -305,11 +307,10 @@ function initialize() {
                 });
                 const data = await response.json();
                 this.conversationId = data.id;
-                this.toggleReloadButtonVisibility(true);
                 return data;
             },
-            async getExistingConversation(candidateConversationId) {
-                const response = await fetch(`/conversations/${candidateConversationId}`);
+            async loadExistingConversation(existingConversationId) {
+                const response = await fetch(`/conversations/${existingConversationId}`);
                 const data = await response.json();
                 if (data.hasOwnProperty('id')) {
                     this.conversationId = data.id;
@@ -323,19 +324,14 @@ function initialize() {
             async loadOrStartConversation() {
                 try {
                     if (!this.conversationId) {
-                        if (this.candidateConversationId) {
-                            await this.getExistingConversation(this.candidateConversationId);
-                            this.candidateConversationId = null;
-                        }
-                        if (!this.conversationId) {
-                            await this.createConversation(this.scenario, this.parameters);
-                        }
+                        await this.createConversation(this.scenario, this.parameters);
                     }
                 } catch (error) {
                     console.error('Unable to get or create a conversation:', error);
                     this.messages.push({ text: 'Error: Could not send message', html: 'Error: Could not send message' });
                     this.toggleReloadButtonVisibility(false);
                 }
+                this.toggleReloadButtonVisibility(true);
             },
             toggleReloadButtonVisibility(isVisible) {
                 const reloadButton = document.querySelector('.reloadOverlayButton');
