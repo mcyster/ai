@@ -1,5 +1,54 @@
 const { createApp, nextTick } = Vue;
 
+const ErrorManager = {
+    errors: [],
+    addError(error) {
+        const message = error.message || 'Unknown error';
+        const stack = error.stack || 'No stack trace available';
+        const errorDetails = `${message}\n${stack}`;
+        this.errors.push(errorDetails);
+        this.updateButtonVisibility();
+        
+    },
+    getError() {
+        return this.errors.length > 0 ? this.errors[0] : null;
+    },
+    removeError() {
+        if (this.errors.length > 0) {
+            this.errors.shift();
+        }
+        this.updateButtonVisibility();
+    },
+    updateButtonVisibility() {
+        const sendErrorsButton = document.getElementById('sendErrorsButton');
+        if (sendErrorsButton) {
+            sendErrorsButton.style.display = this.errors.length > 0 ? 'inline-block' : 'none';
+        }
+    }
+};
+
+window.addEventListener('error', function (event) {
+    const file = event.filename || 'Not available';
+    const line = event.lineno || 'Not available';
+    const column = event.colno || 'Not available';
+    const error = {
+        message: event.message,
+        stack: `File: ${file}\nLine: ${line}\nColumn: ${column}`
+    };
+    ErrorManager.addError(error);
+    console.error('JavaScript Error:', event.message);
+});
+
+window.addEventListener('unhandledrejection', function (event) {
+    const reason = event.reason instanceof Error ? event.reason : { message: event.reason, stack: 'No stack trace available' };
+    const error = {
+        message: reason.message,
+        stack: `Stack: ${reason.stack}`
+    };
+    ErrorManager.addError(error);
+    console.error('Unhandled Rejection:', event.reason);
+});
+
 function getQueryParams() {
     const params = new URLSearchParams(window.location.search);
     let queryParams = {};
@@ -27,14 +76,14 @@ function getScriptTagParams() {
 
     if (currentScript == null) {
         console.error("Error unable to identify current script", currentScript);
-        return null
+        return null;
     }
 
     var parameters = {};
     for (var i = 0; i < currentScript.attributes.length; i++) {
         var attr = currentScript.attributes[i];
         if (attr.name.startsWith('data-')) {
-            var name = attr.name.slice(5); 
+            var name = attr.name.slice(5);
             parameters[name] = attr.value;
         }
     }
@@ -98,6 +147,29 @@ function injectStyles() {
             border-radius: 5px;
             cursor: pointer;
         }
+        .reloadOverlayButton {
+            position: absolute;
+            top: 10px;
+            right: 80px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .sendErrorsButton {
+            position: absolute;
+            top: 10px;
+            right: 160px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #ffc107;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
         .message {
             padding: 10px;
             border-bottom: 1px solid #e0e0e0;
@@ -141,6 +213,8 @@ function addOverlayHTML() {
         <div id="overlay">
             <div id="app">
                 <button class="closeOverlayButton" @click="closeOverlay">Close</button>
+                <button class="reloadOverlayButton" @click="reloadPage">Reload</button>
+                <button id="sendErrorsButton" @click="sendErrors">Send Errors</button>
                 <div v-for="message in messages" class="message" v-html="message.html"></div>
                 <div class="input-group" ref="inputGroup">
                     <textarea v-model="newMessage" @keydown="handleKeydown" placeholder="Type a message"></textarea>
@@ -177,6 +251,9 @@ function initialize() {
                 candidateConversationId: null
             };
         },
+        mounted() {
+            ErrorManager.updateButtonVisibility();
+        },
         async created() {
             const scriptTagParams = getScriptTagParams();
             const queryParams = getQueryParams();
@@ -190,31 +267,29 @@ function initialize() {
                     let name = undefined;
                     if (key.startsWith('href-')) {
                         name = capitalizeTagParameter(key.substring(5));
-                     } else if (key.startsWith('href.')) {
-                        name = key.substring(5); 
+                    } else if (key.startsWith('href.')) {
+                        name = key.substring(5);
                     }
                     if (name) {
                         const regex = new RegExp(allParameters[key]);
                         const match = window.location.href.match(regex);
-
                         if (match) {
                             parameters[name] = match[1];
-                        } 
+                        }
                     }
-
                     name = undefined;
                     if (key.startsWith('parameter-')) {
                         name = capitalizeTagParameter(key.substring(10));
-                     } else if (key.startsWith('parameter.')) {
-                        name = key.substring(10); 
+                    } else if (key.startsWith('parameter.')) {
+                        name = key.substring(10);
                     }
                     if (name) {
-                        parameters[name] = allParameters[key]
+                        parameters[name] = allParameters[key];
                     }
-               }
+                }
             }
             this.parameters = parameters;
-            
+
             // Check for conversationId and openChat parameters
             this.candidateConversationId = allParameters['conversationId'];
             const openChat = allParameters['openChat'];
@@ -228,12 +303,10 @@ function initialize() {
                 this.openOverlay();
             }
 
-            console.log("Scenario", this.scenario, parameters);
-          
+            console.log('Scenario', this.scenario, parameters);
         },
         methods: {
             async createConversation(scenario, parameters) {
-                console.log("createConvo", scenario, parameters)
                 const response = await fetch('/conversations', {
                     method: 'POST',
                     headers: {
@@ -243,13 +316,12 @@ function initialize() {
                 });
                 const data = await response.json();
                 this.conversationId = data.id;
-                console.log("ConversationId", this.conversationId);
                 return data;
             },
             async getExistingConversation(candidateConversationId) {
                 const response = await fetch(`/conversations/${candidateConversationId}`);
                 const data = await response.json();
-                if (data.hasOwnProperty("id")) {
+                if (data.hasOwnProperty('id')) {
                     this.conversationId = data.id;
                     for (var message of data.messages) {
                         this.messages.push({ text: message.content, html: marked.parse(message.content) });
@@ -308,6 +380,13 @@ function initialize() {
                     }
                 }
             },
+            sendErrors() {
+                const errorToSend = ErrorManager.getError();
+                if (errorToSend) {
+                    this.newMessage = `Captured JavaScript Error:\n${errorToSend}`;
+                    ErrorManager.removeError();
+                }
+            },
             handleKeydown(event) {
                 if (event.key === 'Enter') {
                     if (event.shiftKey || event.metaKey) {
@@ -324,6 +403,11 @@ function initialize() {
             openOverlay() {
                 document.getElementById('overlay').style.display = 'flex';
             },
+            reloadPage() {
+                const currentUrl = window.location.href.split('?')[0];
+                const newUrl = `${currentUrl}?conversationId=${this.conversationId}&openChat=true`;
+                window.location.href = newUrl;
+            },
             scrollToBottom() {
                 const container = this.$refs.inputGroup;
                 container.scrollIntoView({ behavior: 'smooth' });
@@ -331,14 +415,14 @@ function initialize() {
         }
     });
 
-    document.getElementById('openOverlayButton').addEventListener('click', function() {
+    document.getElementById('openOverlayButton').addEventListener('click', function () {
         document.getElementById('overlay').style.display = 'flex';
     });
 
     app.mount('#app');
 }
 
-// Wait for the DOM to fully load before running any scripts
+// Wait for the DOM to be fully loaded before running any scripts
 window.addEventListener('DOMContentLoaded', (event) => {
     initialize();
 });
