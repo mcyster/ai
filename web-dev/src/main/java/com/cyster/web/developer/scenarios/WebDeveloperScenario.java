@@ -68,6 +68,8 @@ There is a web page at %s
 Use the associated website tools, by listing and getting files to understand what the website does. 
 The web page will serve the file index.html, so you should read the context of that file with the webdeveloper_file_get tool 
 
+Unless explicitly asked, do not show the user source code, just update or create files as needed. 
+
 Tell the user the Url of the web page.  
 Then ask the user how they would like to modify the website. 
 Use the web_developer_file_put tool to create or update the website as requested by the user.

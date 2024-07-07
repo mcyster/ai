@@ -112,10 +112,16 @@
             const ctx = document.getElementById('chart') as HTMLCanvasElement;
             if (!ctx) return;
             let weeks = Object.keys(createCounts).sort();
+            
             // Remove the first week unconditionally
             if (weeks.length > 1) {
                 weeks.shift();
             }
+            // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
+            if (weeks.length > 24) {
+                weeks = weeks.slice(-24);
+            }
+
             const createData = weeks.map(week => ({ x: new Date(week), y: createCounts[week] || 0 }));
             const resolveData = weeks.map(week => ({ x: new Date(week), y: resolveCounts[week] || 0 }));
 

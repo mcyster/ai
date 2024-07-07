@@ -126,7 +126,7 @@ public class SupportTicketsController {
        }};
        
        String query = "project in (\"SUP\", \"LAUNCH\", \"SPEED\")"
-           + " AND created > startOfMonth(\"-6M\")"
+           + " AND (created > startOfMonth(\"-7M\") OR resolved > startOfMonth(\"-7M\"))"
            //+ " AND created >= -1w" 
            + " AND type in (Bug, Task, Story)"
            + " ORDER BY CREATED ASC";
