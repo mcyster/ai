@@ -27,7 +27,7 @@ function getScriptTagParams() {
 
     if (currentScript == null) {
         console.error("Error unable to identify current script", currentScript);
-	return null
+        return null
     }
 
     var parameters = {};
@@ -173,15 +173,14 @@ function initialize() {
                 newMessage: '',
                 scenario: '',
                 parameters: {},
-                conversationId: null
+                conversationId: null,
+                candidateConversationId: null
             };
         },
-        created() {
+        async created() {
             const scriptTagParams = getScriptTagParams();
             const queryParams = getQueryParams();
             const allParameters = { ...scriptTagParams, ...queryParams };
-
-            console.log("allParameters", allParameters);
 
             this.scenario = allParameters['scenario'] || 'chat';
 
@@ -195,7 +194,6 @@ function initialize() {
                         name = key.substring(5); 
                     }
                     if (name) {
-                        console.log("keyname", name, allParameters[key]);
                         const regex = new RegExp(allParameters[key]);
                         const match = window.location.href.match(regex);
 
@@ -216,6 +214,20 @@ function initialize() {
                }
             }
             this.parameters = parameters;
+            
+            // Check for conversationId and openChat parameters
+            this.candidateConversationId = allParameters['conversationId'];
+            const openChat = allParameters['openChat'];
+
+            if (this.candidateConversationId) {
+                await this.getExistingConversation(this.candidateConversationId);
+                this.candidateConversationId = null;
+            }
+
+            if (openChat) {
+                this.openOverlay();
+            }
+
             console.log("Scenario", this.scenario, parameters);
           
         },
@@ -231,6 +243,21 @@ function initialize() {
                 });
                 const data = await response.json();
                 this.conversationId = data.id;
+                console.log("ConversationId", this.conversationId);
+                return data;
+            },
+            async getExistingConversation(candidateConversationId) {
+                const response = await fetch(`http://localhost:8080/conversations/${candidateConversationId}`);
+                const data = await response.json();
+                console.log("data", data);
+                console.log("ConversationId", this.conversationId);
+                console.log("data.messages", data.messages);
+                if (data.hasOwnProperty("id")) {
+                    this.conversationId = data.id;
+                    for (var message of data.messages) {
+                        this.messages.push({ text: message.content, html: marked.parse(message.content) });
+                    }
+                }
                 return data;
             },
             async addMessageToConversation(prompt) {
@@ -259,12 +286,17 @@ function initialize() {
                     this.scrollToBottom();
 
                     try {
-                        // If there is no conversation ID, create a new conversation
                         if (!this.conversationId) {
-                            await this.createConversation(this.scenario, this.parameters);
+                            if (this.candidateConversationId) {
+                                await this.getExistingConversation(this.scenario, this.parameters);
+                                this.candidateConversationid = null;
+                            }
+                            if (!this.conversationId) {
+                                await this.createConversation(this.scenario, this.parameters);
+                            }
                         }
 
-                        // Add message to the created conversation
+                        // Add message to the created or found conversation
                         const messageResponse = await this.addMessageToConversation(messageToSend);
                         this.messages.push({ text: messageResponse.content, html: marked.parse(messageResponse.content) });
 
@@ -291,6 +323,9 @@ function initialize() {
             },
             closeOverlay() {
                 document.getElementById('overlay').style.display = 'none';
+            },
+            openOverlay() {
+                document.getElementById('overlay').style.display = 'flex';
             },
             scrollToBottom() {
                 const container = this.$refs.inputGroup;

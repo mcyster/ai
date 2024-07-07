@@ -103,6 +103,29 @@ public class ConversationController {
             .build();
     }
 
+
+    @GetMapping("/conversations/{id}")
+    public ConversationResponse get_conversation(
+        @PathVariable("id") String id,
+        @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level)
+        throws ScenarioSessionNotFoundRestException, ScenarioSessionNotSpecifiedRestException {
+
+        if (id == null || id.isBlank()) {
+            throw new ScenarioSessionNotSpecifiedRestException();
+        }
+        Optional<ScenarioSession<?,?>> session = this.scenarioSessionStore.getSession(id);
+        if (session.isEmpty()) {
+            throw new ScenarioSessionNotFoundRestException(id);
+        }
+
+        return new ConversationResponse.Builder(level)
+            .setId(session.get().getId())
+            .setScenario(session.get().getScenario().getName())
+            .setParameters(session.get().getParameters())
+            .setMessages(session.get().getConversation().getMessages())
+            .build();
+    }
+    
     @PostMapping("/conversations/messages")
     public ConvenienceConversationResponse startConversation(
         @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level,
