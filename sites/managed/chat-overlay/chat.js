@@ -234,7 +234,7 @@ function initialize() {
         methods: {
             async createConversation(scenario, parameters) {
                 console.log("createConvo", scenario, parameters)
-                const response = await fetch('http://localhost:8080/conversations', {
+                const response = await fetch('/conversations', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -247,11 +247,8 @@ function initialize() {
                 return data;
             },
             async getExistingConversation(candidateConversationId) {
-                const response = await fetch(`http://localhost:8080/conversations/${candidateConversationId}`);
+                const response = await fetch(`/conversations/${candidateConversationId}`);
                 const data = await response.json();
-                console.log("data", data);
-                console.log("ConversationId", this.conversationId);
-                console.log("data.messages", data.messages);
                 if (data.hasOwnProperty("id")) {
                     this.conversationId = data.id;
                     for (var message of data.messages) {
@@ -261,7 +258,7 @@ function initialize() {
                 return data;
             },
             async addMessageToConversation(prompt) {
-                const response = await fetch(`http://localhost:8080/conversations/${this.conversationId}/messages`, {
+                const response = await fetch(`/conversations/${this.conversationId}/messages`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
