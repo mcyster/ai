@@ -1,5 +1,3 @@
-const { createApp, nextTick } = Vue;
-
 // Define ErrorManager early to ensure it catches all errors
 const ErrorManager = {
     errors: [],
@@ -61,6 +59,15 @@ function loadScript(url, callback) {
     document.head.appendChild(script);
 }
 
+// Function to ensure Vue.js is loaded
+function ensureVue(callback) {
+    if (typeof Vue === 'undefined') {
+        loadScript('https://cdn.jsdelivr.net/npm/vue@3', callback);
+    } else {
+        callback();
+    }
+}
+
 // Ensure marked.min.js is properly available
 function ensureMarked(callback) {
     if (typeof marked === 'undefined') {
@@ -72,6 +79,8 @@ function ensureMarked(callback) {
 
 // Main initialization function for the app
 function initializeApp() {
+    const { createApp, nextTick } = Vue;
+
     function getQueryParams() {
         const params = new URLSearchParams(window.location.search);
         let queryParams = {};
@@ -451,6 +460,7 @@ function initializeApp() {
         app.mount('#chatApp');
     }
 
+    // Check if DOM is already loaded, otherwise add event listener
     if (document.readyState === 'loading') {
         window.addEventListener('DOMContentLoaded', (event) => {
             initialize();
@@ -460,5 +470,5 @@ function initializeApp() {
     }
 }
 
-// Ensure marked is loaded before initializing
-ensureMarked(initializeApp);
+// Ensure Vue.js is loaded before initializing marked and the app
+ensureVue(() => ensureMarked(initializeApp));
