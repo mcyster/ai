@@ -1,22 +1,18 @@
 <!DOCTYPE html>
-<html ng-app="jsonFormatterApp">
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Graph</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsonformatter"></script>
-    <script src="https://cdn.jsdelivr.net/npm/typescript/lib/typescript.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="https://cdn.jsdelivr.net/npm/vue-json-pretty@2.4.0"></script>
 
     <!-- chat.js and marked.min.js are used to support AI Chat UI - do not remove -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="/sites/managed/chat/chat.js" data-scenario="webDeveloper" data-href-site-name="/([^/]+)/[^/]+$"></script>
 
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsonformatter/dist/json-formatter.min.css">
     <style>
         #graphTitle {
             text-align: center;
@@ -38,12 +34,14 @@
     </style>
 </head>
 <body>
-    <div class="chart-container">
-        <h2 id="graphTitle">Support Tickets Created and Closed Each Week</h2>
-        <canvas id="chart"></canvas>
-    </div>
-    <div id="jsonDisplay" ng-controller="JsonController">
-        <json-formatter open="1" json="jsonData"></json-formatter>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Support Tickets Created and Closed Each Week</h2>
+            <canvas id="chart"></canvas>
+        </div>
+        <div id="jsonDisplay">
+            <vue-json-pretty :data="jsonData" :deep="1"></vue-json-pretty>
+        </div>
     </div>
 
     <!-- TypeScript code -->
@@ -201,20 +199,36 @@
             });
         }
 
-        angular.module('jsonFormatterApp', [])
-        .controller('JsonController', ['$scope', function($scope) {
-            $scope.jsonData = [];
+        const app = {
+            data() {
+                return {
+                    jsonData: []
+                };
+            },
+            async created() {
+                // Ensure vue-json-pretty is loaded
+                if (window['vue-json-pretty'] && window['vue-json-pretty'].default) {
+                    getData().then(tickets => {
+                        this.jsonData = tickets;
+                        const { createCounts, resolveCounts } = countTicketsPerWeek(tickets);
+                        renderChart(createCounts, resolveCounts);
+                    }).catch(error => {
+                        console.error('Error loading data:', error);
+                    });
+                } else {
+                    console.error('vue-json-pretty is not loaded');
+                }
+            },
+            components: {
+                'vue-json-pretty': window['vue-json-pretty'] ? window['vue-json-pretty'].default : null
+            }
+        };
 
-            getData().then(tickets => {
-                $scope.jsonData = tickets;
-                const { createCounts, resolveCounts } = countTicketsPerWeek(tickets);
-                renderChart(createCounts, resolveCounts);
-                $scope.$apply(); // Manually trigger digest cycle to update view
-            }).catch(error => {
-                console.error('Error loading data:', error);
-            });
-        }]);
+        Vue.createApp(app).mount('#app');
     </script>
+
+    <!-- Load vue-json-pretty -->
+    <script src="https://cdn.jsdelivr.net/npm/vue-json-pretty"></script>
 
     <script>
         (async function compileAndExecute() {
