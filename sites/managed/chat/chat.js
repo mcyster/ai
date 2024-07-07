@@ -35,7 +35,6 @@ window.addEventListener('error', function (event) {
         stack: `File: ${file}\nLine: ${line}\nColumn: ${column}`
     };
     ErrorManager.addError(error);
-    console.error('JavaScript Error:', event.message);
 });
 
 window.addEventListener('unhandledrejection', function (event) {
@@ -45,7 +44,6 @@ window.addEventListener('unhandledrejection', function (event) {
         stack: `Stack: ${reason.stack}`
     };
     ErrorManager.addError(error);
-    console.error('Unhandled Rejection:', event.reason);
 });
 
 function getQueryParams() {
@@ -101,7 +99,7 @@ function capitalizeTagParameter(input) {
 
 function injectStyles() {
     const styles = `
-        #overlay {
+        #chatOverlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -113,7 +111,7 @@ function injectStyles() {
             align-items: center;
             display: none; /* Initially hidden */
         }
-        #app {
+        #chatApp {
             width: 100%;
             max-width: 600px;
             max-height: 90vh;
@@ -203,10 +201,10 @@ function injectStyles() {
 
 function addOverlayHTML() {
     const overlayHTML = `
-        <div id="overlay">
-            <div id="app">
+        <div id="chatOverlay">
+            <div id="chatApp">
                 <div class="overlayButtonContainer">
-                    <button class="sendErrorsButton" id="sendErrorsButton" @click="sendErrors">Send Errors</button>
+                    <button class="sendErrorsButton" id="sendErrorsButton" @click="sendErrors">Errors</button>
                     <button class="reloadOverlayButton" @click="reloadPage">Reload</button>
                     <button class="closeOverlayButton" @click="closeOverlay">Close</button>
                 </div>
@@ -290,7 +288,7 @@ function initialize() {
             const openChat = allParameters['openChat'];
 
             if (this.candidateConversationId) {
-                await this.getExistingConversation(this.candidateConversationId);
+                await this.getExistingConversation(this.candidateConveRSationId);
                 this.candidateConversationId = null;
             }
 
@@ -352,7 +350,7 @@ function initialize() {
                     try {
                         if (!this.conversationId) {
                             if (this.candidateConversationId) {
-                                await this.getExistingConversation(this.scenario, this.parameters);
+                                await this.getExistingConversation(this.candidateConversationid);
                                 this.candidateConversationid = null;
                             }
                             if (!this.conversationId) {
@@ -377,6 +375,7 @@ function initialize() {
             },
             sendErrors() {
                 const errorToSend = ErrorManager.getError();
+                console.log("Errors", errorToSend);
                 if (errorToSend) {
                     this.newMessage = `JavaScript Error:\n${errorToSend}`;
                     this.scrollToBottom();
@@ -394,10 +393,10 @@ function initialize() {
                 }
             },
             closeOverlay() {
-                document.getElementById('overlay').style.display = 'none';
+                document.getElementById('chatOverlay').style.display = 'none';
             },
             openOverlay() {
-                document.getElementById('overlay').style.display = 'flex';
+                document.getElementById('chatOverlay').style.display = 'flex';
             },
             reloadPage() {
                 const currentUrl = window.location.href.split('?')[0];
@@ -412,10 +411,10 @@ function initialize() {
     });
 
     document.getElementById('openOverlayButton').addEventListener('click', function () {
-        document.getElementById('overlay').style.display = 'flex';
+        document.getElementById('chatOverlay').style.display = 'flex';
     });
 
-    app.mount('#app');
+    app.mount('#chatApp');
 }
 
 // Wait for the DOM to be fully loaded before running any scripts
