@@ -7,7 +7,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
     <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
-    <script src="https://cdn.jsdelivr.net/npm/vue-json-pretty@2.4.0"></script>
 
     <!-- chat.js and marked.min.js are used to support AI Chat UI - do not remove -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -24,13 +23,6 @@
             margin: auto;
             max-width: 2400px;
         }
-        #jsonDisplay {
-            padding: 20px;
-            margin: 20px auto;
-            width: 80%;
-            max-width: 2400px;
-            border: 1px solid #ddd;
-        }
     </style>
 </head>
 <body>
@@ -39,12 +31,8 @@
             <h2 id="graphTitle">Support Tickets Created and Closed Each Week</h2>
             <canvas id="chart"></canvas>
         </div>
-        <div id="jsonDisplay">
-            <vue-json-pretty :data="jsonData" :deep="1"></vue-json-pretty>
-        </div>
     </div>
 
-    <!-- TypeScript code -->
     <script id="typescript-code" type="text/typescript">
         interface SupportTicket {
             key: string;
@@ -69,7 +57,7 @@
         }
 
         async function getData(): Promise<SupportTicket[]> {
-            const url = 'http://localhost:8080/support/tickets';
+            const url = '/support/tickets';
 
             try {
                 const response = await fetch(url, { method: 'GET' });
@@ -206,29 +194,17 @@
                 };
             },
             async created() {
-                // Ensure vue-json-pretty is loaded
-                if (window['vue-json-pretty'] && window['vue-json-pretty'].default) {
-                    getData().then(tickets => {
-                        this.jsonData = tickets;
-                        const { createCounts, resolveCounts } = countTicketsPerWeek(tickets);
-                        renderChart(createCounts, resolveCounts);
-                    }).catch(error => {
-                        console.error('Error loading data:', error);
-                    });
-                } else {
-                    console.error('vue-json-pretty is not loaded');
-                }
-            },
-            components: {
-                'vue-json-pretty': window['vue-json-pretty'] ? window['vue-json-pretty'].default : null
+                getData().then(tickets => {
+                    const { createCounts, resolveCounts } = countTicketsPerWeek(tickets);
+                    renderChart(createCounts, resolveCounts);
+                }).catch(error => {
+                    console.error('Error loading data:', error);
+                });
             }
         };
 
         Vue.createApp(app).mount('#app');
     </script>
-
-    <!-- Load vue-json-pretty -->
-    <script src="https://cdn.jsdelivr.net/npm/vue-json-pretty"></script>
 
     <script>
         (async function compileAndExecute() {
