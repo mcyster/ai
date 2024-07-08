@@ -80,7 +80,7 @@
                     const editButton = document.createElement('button');
                     editButton.textContent = 'edit';
                     editButton.className = 'button';
-                    editButton.onclick = () => editWebsite(website.name);
+                    editButton.onclick = () => editWebsite(website.type, website.name);
                     listItem.appendChild(editButton);
 
                     const nameButton = document.createElement('button');
@@ -115,8 +115,9 @@
             }
         }
 
-        function editWebsite(name) {
-            const url = `/sites/managed/chat/index.html?scenario=webDeveloper&siteName=${name}`;
+        function editWebsite(type, name) {
+            const typePath = type.toLowerCase();
+            const url = `/sites/${typePath}/${name}/index.html`;
             window.location.href = url;
         }
 
