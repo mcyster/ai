@@ -106,7 +106,7 @@
 
         async function copyWebsite(name) {
             try {
-                const response = await fetch(`http://localhost:8080/pages/${name}/copy`, { method: 'POST' });
+                const response = await fetch(`/pages/${name}/copy`, { method: 'POST' });
                 const newWebsite = await response.json();
                 fetchWebsites();
                 setTimeout(() => flashNewWebsite(newWebsite.uri), 100); // add delay
@@ -116,13 +116,13 @@
         }
 
         function editWebsite(name) {
-            const url = `http://localhost:8080/sites/managed/chat/index.html?scenario=webDeveloper&siteName=${name}`;
+            const url = `/sites/managed/chat/index.html?scenario=webDeveloper&siteName=${name}`;
             window.location.href = url;
         }
 
         async function nameWebsite(name, newName) {
             try {
-                const response = await fetch(`http://localhost:8080/pages/${name}`, {
+                const response = await fetch(`/pages/${name}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
