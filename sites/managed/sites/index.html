@@ -45,7 +45,7 @@
     <script>
         async function fetchWebsites() {
             try {
-                const response = await fetch('http://localhost:8080/pages');
+                const response = await fetch('/pages');
                 const websites = await response.json();
                 displayWebsites(websites);
             } catch (error) {
