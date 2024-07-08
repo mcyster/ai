@@ -2,11 +2,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Graph</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsonformatter"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsonformatter/dist/json-formatter.min.css">
+    <script src="/sites/managed/chat/chat.js" data-scenario="webDeveloper" data-href-site-name="/([^/]+)/[^/]+$"></script>
+    <script src="data.js"></script>
     <style>
         #graphTitle {
             text-align: center;
@@ -25,6 +25,17 @@
             max-width: 2400px;
             border: 1px solid #ddd;
         }
+        #reopenFormButton {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+        }
+        #inputFormContainer {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -32,10 +43,88 @@
         <h2 id="graphTitle"></h2>
         <canvas id="chart"></canvas>
     </div>
-    <div id="jsonDisplay" ng-controller="JsonController">
-        <json-formatter open="1" json="jsonData"></json-formatter>
+    <div id="jsonDisplay"></div>
+    <div id="inputFormContainer">
+        <form id='inputForm' style="display: flex; flex-direction: column; max-width: 400px; margin: auto;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <label for='report_id' style="flex: 1;">Report ID:</label>
+                <input type='text' id='report_id' name='report_id' style="flex: 2;" required>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <label for='extole_token' style="flex: 1;">Extole Token:</label>
+                <input type='password' id='extole_token' name='extole_token' style="flex: 2;" required>
+            </div>
+            <div style="display: flex; justify-content: flex-end;">
+                <input type='submit' value='Submit' style="align-self: flex-end;">
+            </div>
+        </form>
     </div>
-    <script src="data.js"></script>
-    <script src="script.js"></script>
 </body>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const reportIdInput = document.getElementById('report_id');
+    const extoleTokenInput = document.getElementById('extole_token');
+    
+    // Populate the form with stored values
+    const storedReportId = sessionStorage.getItem('report_id');
+    const storedExtoleToken = localStorage.getItem('extole_token');
+
+    if (storedReportId) {
+        reportIdInput.value = storedReportId;
+    }
+
+    if (storedExtoleToken) {
+        extoleTokenInput.value = storedExtoleToken;
+    }
+
+    document.getElementById('inputForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const reportId = reportIdInput.value;
+        const extoleToken = extoleTokenInput.value;
+        sessionStorage.setItem('report_id', reportId);
+        localStorage.setItem('extole_token', extoleToken);
+        showData();
+    });
+
+    async function showData() {
+        const reportId = sessionStorage.getItem('report_id');
+        const extoleToken = localStorage.getItem('extole_token');
+        
+        console.log('Fetching data with Report ID:', reportId, 'and Extole Token:', extoleToken);
+        
+        try {
+            const data = await getData(reportId, extoleToken);
+            console.log('Data fetched successfully:', data);
+            const dataDisplay = document.getElementById('jsonDisplay');
+            if (data) {
+                dataDisplay.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } else {
+                dataDisplay.innerHTML = '<pre>No data available</pre>';
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryReportId = urlParams.get('report_id');
+    const queryExtoleToken = localStorage.getItem('extole_token');
+
+    if (queryReportId) {
+        sessionStorage.setItem('report_id', queryReportId);
+        reportIdInput.value = queryReportId;
+    }
+
+    if (queryExtoleToken) {
+        localStorage.setItem('extole_token', queryExtoleToken);
+        extoleTokenInput.value = queryExtoleToken;
+    }
+
+    console.log("Initial reportId:", queryReportId);
+    console.log("Initial extoleToken:", queryExtoleToken);
+
+    // Initial data display call if values are already present
+    showData();
+});
+</script>
 </html>
