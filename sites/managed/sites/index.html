@@ -4,11 +4,7 @@
     <meta charset="UTF-8">
     <title>Website List</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
-
-    <!-- chat.js and marked.min.js are used to support AI Chat UI - do not remove -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="/sites/managed/chat/chat.js" data-scenario="webDeveloper" data-href-site-name="/([^/]+)/[^/]+$"></script>
-
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,6 +22,13 @@
         .button {
             margin-left: 10px;
             cursor: pointer;
+        }
+        .flash {
+            animation: flashAnimation 1.5s ease-in-out 3;
+        }
+        @keyframes flashAnimation {
+            0%, 100% { background-color: yellow; }
+            50% { background-color: transparent; }
         }
     </style>
 </head>
@@ -54,6 +57,11 @@
             const managedList = document.getElementById('managedList');
             const namedList = document.getElementById('namedList');
             const temporaryList = document.getElementById('temporaryList');
+
+            // Clear existing list items
+            managedList.innerHTML = '';
+            namedList.innerHTML = '';
+            temporaryList.innerHTML = '';
 
             websites.forEach(website => {
                 const listItem = document.createElement('li');
@@ -100,8 +108,8 @@
             try {
                 const response = await fetch(`http://localhost:8080/pages/${name}/copy`, { method: 'POST' });
                 const newWebsite = await response.json();
-                alert(`New temporary website created: ${newWebsite.uri}`);
                 fetchWebsites();
+                setTimeout(() => flashNewWebsite(newWebsite.uri), 100); // add delay
             } catch (error) {
                 console.error('Error copying website:', error);
             }
@@ -122,8 +130,8 @@
                     body: JSON.stringify({ name: newName })
                 });
                 const namedWebsite = await response.json();
-                alert(`Website named successfully: ${namedWebsite.uri}`);
                 fetchWebsites();
+                setTimeout(() => flashNewWebsite(namedWebsite.uri), 100); 
             } catch (error) {
                 console.error('Error naming website:', error);
             }
@@ -136,9 +144,19 @@
             }
         }
 
+        function flashNewWebsite(uri) {
+            const linkElements = document.querySelectorAll(`a[href='${uri}']`);
+            linkElements.forEach(link => {
+                const listItem = link.parentElement;
+                listItem.classList.add('flash');
+                setTimeout(() => {
+                    listItem.classList.remove('flash');
+                }, 4500); // Duration of animation (1.5s * 3)
+            });
+        }
+
         // Fetch websites on page load
         window.onload = fetchWebsites;
     </script>
 </body>
 </html>
-

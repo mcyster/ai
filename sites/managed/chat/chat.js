@@ -246,7 +246,7 @@ function initializeApp() {
                     </div>
                     <div v-for="message in messages" class="message" v-html="message.html"></div>
                     <div class="input-group" ref="inputGroup">
-                        <textarea v-model="newMessage" @keydown="handleKeydown" placeholder="Type a message (2 minutes to process)"></textarea>
+                        <textarea v-model="newMessage" @keydown="handleKeydown" placeholder="Type a message (2+ minutes to process)"></textarea>
                         <button @click="sendMessage">Send</button>
                     </div>
                 </div>
