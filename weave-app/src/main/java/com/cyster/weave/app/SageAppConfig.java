@@ -1,4 +1,4 @@
-package com.cyster.app.sage;
+package com.cyster.weave.app;
 
 import com.cyster.ai.weave.impl.advisor.AdvisorServiceImpl;
 

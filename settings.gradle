@@ -9,6 +9,6 @@ include 'weave-rest'
 include 'web-dev'
 include 'web-site'
 include 'extole-tickets'
-include 'sage-app'
+include 'weave-app'
 include 'jira-app'
 

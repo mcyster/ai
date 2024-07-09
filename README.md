@@ -10,25 +10,30 @@ cd $AI_HOME
 ./gradlew build
 ```
 
-To start, for example, the sage-app:
+To start, for example, the weave-app:
 ```
-./gradlew :sage-app:bootRun
-```
-
-Debug the sage-app:
-```
-./gradlew :sage-app:bootRun --debug-jvm
+./gradlew :weave-app:bootRun
 ```
 
-# sage-app
+Or just:
+```
+./gradlew
+```
 
-To start the sage-app in development:
+Debug the weave-app:
+```
+./gradlew :weave-app:bootRun --debug-jvm
+```
+
+# weave-app
+
+To start the weave-app in development:
 ```
 cd $AI_HOME
-./gradlew :sage-app:bootRun
+./gradlew :weave-app:bootRun
 ```
 
-Check the sage-app is up with:
+Check the weave-app is up with:
 ```
 curl -s 'http://localhost:8080/' 
 ```

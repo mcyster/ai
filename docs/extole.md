@@ -40,7 +40,7 @@ It is also possible to configure Runbooks using YAML, by putting .yml files in t
 - keywords - words that would appear in a ticket that would match this runbook
 - instructions - instructions to the advisor on what to do.
 
-Restart sage-app and check your runbook is loaded with:
+Restart weave-app and check your runbook is loaded with:
 ```
 curl -s  -H 'Content-Type: application/json' 'http://localhost:8080/scenarios' | jq -r '.[].name'   | grep extoleRunbook
 extoleRunbookNotificationWebhook

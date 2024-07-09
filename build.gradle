@@ -21,4 +21,4 @@ subprojects {
 
 defaultTasks 'defaultTask'
 
-task defaultTask(dependsOn: ':sage-app:bootRun')
+task defaultTask(dependsOn: ':weave-app:bootRun')
