@@ -26,6 +26,7 @@ dependencies {
     implementation project(':rest')
     implementation project(':sage-cyster')
     implementation project(':sage-extole')
+    implementation project(':weave-rest')
     implementation project(':web-dev')
     implementation project(':web-site')
     
