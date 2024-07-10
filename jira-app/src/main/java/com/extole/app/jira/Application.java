@@ -18,9 +18,10 @@ import com.cyster.weave.rest.WeaveRestScan;
 import com.cyster.web.developer.WebDeveloperScan;
 import com.cyster.web.site.WebSiteScan;
 import com.extole.sage.ExtoleSageScan;
+import com.extole.tickets.ExtoleTicketsScan;
 
 @SpringBootApplication
-@Import(value = { CysterSageScan.class,WeaveRestScan.class, WebDeveloperScan.class, CysterStoreScan.class, ExtoleSageScan.class,  WebSiteScan.class, CysterRestScan.class })
+@Import(value = { CysterSageScan.class,WeaveRestScan.class, WebDeveloperScan.class, ExtoleTicketsScan.class, CysterStoreScan.class, ExtoleSageScan.class,  WebSiteScan.class, CysterRestScan.class })
 public class Application {
 
     private static final Logger logger = LogManager.getLogger(Application.class);
