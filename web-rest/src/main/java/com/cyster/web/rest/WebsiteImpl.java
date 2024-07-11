@@ -25,9 +25,7 @@ class WebsiteImpl implements Website {
         this.id = id;
         this.type = type;
         try {
-            //this.uri = new URI(baseUri.getScheme(), baseUri.getAuthority(), path, baseUri.getQuery(), baseUri.getFragment());
-            this.uri = new URI(path);
-
+            this.uri = new URI(baseUri.getScheme(), baseUri.getAuthority(), path, baseUri.getQuery(), baseUri.getFragment());
         } catch (URISyntaxException e) {
             throw new RuntimeException("Unable to build website uri");
         }
