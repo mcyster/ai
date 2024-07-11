@@ -78,9 +78,12 @@ public class JiraAppConfig implements WebMvcConfigurer {
         String resourcePath = "file:" + sites.toAbsolutePath().toString() + "/";
         registry.addResourceHandler("/sites/**")
                 .addResourceLocations(resourcePath)
-                .setCachePeriod(3600)
+                .setCachePeriod(0)
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver());
+        
+        registry.addResourceHandler("/**")
+            .addResourceLocations("classpath:/static/");
     }
     
     private static URI baseUri(ApplicationContext context) {

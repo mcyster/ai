@@ -89,7 +89,7 @@ public class SageAppConfig implements WebMvcConfigurer {
         String resourcePath = "file:" + sites.toAbsolutePath().toString() + "/";
         registry.addResourceHandler("/sites/**")
             .addResourceLocations(resourcePath)
-            .setCachePeriod(3600)
+            .setCachePeriod(0)
             .resourceChain(true)
             .addResolver(new PathResourceResolver());
         
