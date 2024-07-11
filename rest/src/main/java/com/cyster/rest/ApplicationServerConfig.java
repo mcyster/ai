@@ -53,22 +53,27 @@ public class ApplicationServerConfig {
             protocol = environment.getProperty("server.protocol");
         }
 
-        String domain = "localhost";
-        if (environment.getProperty("server.domain") != null) {
-            domain = environment.getProperty("server.domain");
+        String applicationUrl;
+        if (environment.getProperty("app.url") != null) {
+            applicationUrl = environment.getProperty("app.url");
+        } else {      
+            String domain = "localhost";
+            if (environment.getProperty("server.domain") != null) {
+                domain = environment.getProperty("server.domain");
+            }
+    
+            String port = "8080";
+            if (environment.getProperty("server.port") != null) {
+                port = environment.getProperty("server.port");
+            }
+            String contextPath = "/";
+            if (environment.getProperty("server.servlet.context-path") != null) {
+                contextPath = environment.getProperty("server.servlet.context-path");
+            }
+            applicationUrl = protocol + "://" + domain + ":" + port + contextPath;
         }
-
-        String port = "8080";
-        if (environment.getProperty("server.port") != null) {
-            port = environment.getProperty("server.port");
-        }
-        String contextPath = "/";
-        if (environment.getProperty("server.servlet.context-path") != null) {
-            contextPath = environment.getProperty("server.servlet.context-path");
-        }
-
-        return "Application '" + applicationName + "' listening on " + protocol + "://" + domain + ":"
-            + port + contextPath;
+        
+        return "Application '" + applicationName + "' listening on " + applicationUrl;
 
     }
 }

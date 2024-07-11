@@ -47,8 +47,19 @@ public class SageAppConfig implements WebMvcConfigurer {
     private Path sites;
     private URI applicationUri;
 
-    public SageAppConfig(ApplicationContext applicationContext, @Value("${AI_HOME}") String aiHome) {
-        this.applicationUri = baseUri(applicationContext);
+    public SageAppConfig(ApplicationContext applicationContext,
+        @Value("${AI_HOME}") String aiHome,
+        @Value("${app.url:}") String appUrl) {    
+        
+        if (appUrl != null && !appUrl.isBlank()) {
+            try {
+                this.applicationUri = new URI(appUrl);
+            } catch (URISyntaxException exception) {
+                throw new RuntimeException("Configured app.url is invalid", exception);
+            }
+        } else {
+            this.applicationUri = baseUri(applicationContext);
+        }
         
         if (aiHome == null || aiHome.isBlank()) {
             throw new IllegalArgumentException("AI_HOME not defined");
