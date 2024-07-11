@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -56,7 +57,7 @@ public class SiteController {
         return new WebsiteResponse(newSite.getId(), newSite.getType(), newSite.getUri());
     }
 
-    @PostMapping("/pages/{name}/name")
+    @PutMapping("/pages/{name}")
     public WebsiteResponse nameSite(
         @PathVariable("name") String name, 
         @RequestBody NameRequest request){

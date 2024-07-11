@@ -124,7 +124,7 @@
         async function nameWebsite(name, newName) {
             try {
                 const response = await fetch(`/pages/${name}`, {
-                    method: 'POST',
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
                     },
