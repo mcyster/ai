@@ -11,7 +11,7 @@ import com.cyster.ai.weave.service.scenario.ScenarioLoader;
 import com.cyster.ai.weave.service.scenario.ScenarioService;
 import com.cyster.ai.weave.service.scenario.ScenarioServiceFactory;
 import com.cyster.web.developer.advisors.WebsiteService;
-import com.cyster.web.site.WebsiteServiceImpl;
+import com.cyster.web.rest.WebsiteServiceImpl;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 
 import java.io.IOException;

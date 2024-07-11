@@ -16,9 +16,9 @@ import com.cyster.sage.CysterSageScan;
 import com.cyster.store.CysterStoreScan;
 import com.cyster.weave.rest.WeaveRestScan;
 import com.cyster.web.developer.WebDeveloperScan;
-import com.cyster.web.site.WebSiteScan;
+import com.cyster.web.rest.WebSiteScan;
 import com.extole.sage.ExtoleSageScan;
-import com.extole.tickets.ExtoleTicketsScan;
+import com.extole.tickets.rest.ExtoleTicketsScan;
 
 @SpringBootApplication
 @Import(value = { CysterSageScan.class,WeaveRestScan.class, WebDeveloperScan.class, ExtoleTicketsScan.class, CysterStoreScan.class, ExtoleSageScan.class,  WebSiteScan.class, CysterRestScan.class })

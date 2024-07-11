@@ -25,12 +25,12 @@ dependencies {
     implementation project(':store')
     implementation project(':rest')
     implementation project(':sage-cyster')
-    implementation project(':extole-tickets')
+    implementation project(':extole-tickets-rest')
     implementation project(':sage-extole')
     implementation project(':weave-rest')
     
     implementation project(':web-dev')
-    implementation project(':web-site')
+    implementation project(':web-rest')
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

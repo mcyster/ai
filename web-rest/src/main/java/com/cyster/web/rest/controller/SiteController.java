@@ -1,4 +1,4 @@
-package com.cyster.web.site.controller;
+package com.cyster.web.rest.controller;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cyster.web.developer.advisors.WebsiteService.Website;
-import com.cyster.web.site.WebsiteServiceImpl;
+import com.cyster.web.rest.WebsiteServiceImpl;
 
 @RestController
 public class SiteController {

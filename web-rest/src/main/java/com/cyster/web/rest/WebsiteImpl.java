@@ -1,4 +1,4 @@
-package com.cyster.web.site;
+package com.cyster.web.rest;
 
 import java.io.IOException;
 import java.net.URI;

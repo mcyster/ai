@@ -1,4 +1,4 @@
-package com.extole.tickets.support.controller;
+package com.extole.tickets.rest.support.controller;
 
 
 import java.io.FileWriter;
