@@ -1,20 +1,24 @@
 package com.cyster.weave.impl.scenarios;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.weave.impl.advisors.SimpleAssistantScenario;
-
 
 @Component
 public class ChatScenario implements Scenario<Void, Void> {
-    private static final String NAME = "chat";
-    private SimpleAssistantScenario scenario;
+    public final String NAME = "chat";
+    public final String DESCRIPTION = "A helpful assistant";
 
+    private AiWeaveService aiWeaveService;
+    private Optional<Scenario<Void, Void>> scenario = Optional.empty();
 
-    ChatScenario(SimpleAssistantScenario scenario) {
-        this.scenario = scenario;
+    public ChatScenario(AiWeaveService aiWeaveService) {
+      this.aiWeaveService = aiWeaveService;
     }
 
     @Override
@@ -24,12 +28,12 @@ public class ChatScenario implements Scenario<Void, Void> {
 
     @Override
     public String getDescription() {
-        return "Chat with the AI";
+        return DESCRIPTION;
     }
 
     @Override
     public Class<Void> getParameterClass() {
-        return Void.class;
+       return Void.class;
     }
 
     @Override
@@ -41,14 +45,16 @@ public class ChatScenario implements Scenario<Void, Void> {
     public Conversation createConversation(Void parameters, Void context) {
         throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
     }
-    
+
     @Override
     public ConversationBuilder createConversationBuilder(Void parameters, Void context) {
-        String instructions = "Enjoy a chat, say hi if there is no prompt.";
-
-        return this.scenario.createConversationBuilder(parameters, context)
-            .setOverrideInstructions(instructions);
+        if (this.scenario.isEmpty()) {
+            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
+            
+            builder.setInstructions("You are a helpful assistant.");
+            
+            this.scenario = Optional.of(builder.getOrCreate());
+        }
+        return this.scenario.get().createConversationBuilder(parameters, context);
     }
-
-
 }
