@@ -19,10 +19,6 @@ public class ExtoleWismrScenario implements Scenario<Void, ExtoleSessionContext>
     private static final String NAME = "extoleWismr";
 
     private AdvisorService advisorService;
-    private ExtolePersonFindToolFactory extolePersonFindToolFactory;
-    private ExtolePersonRewardsToolFactory extolePersonRewardsToolFactory;
-    private ExtolePersonStepsToolFactory extolePersonStepsToolFactory;
-    private ExtoleStepsToolFactory extoleStepsToolFactory;
 
     ExtoleWismrScenario(AdvisorService advisorService,
         ExtolePersonFindToolFactory extolePersonFindToolFactory,
@@ -30,10 +26,6 @@ public class ExtoleWismrScenario implements Scenario<Void, ExtoleSessionContext>
         ExtolePersonStepsToolFactory extolePersonStepsToolFactory,
         ExtoleStepsToolFactory extoleStepsToolFactory) {
         this.advisorService = advisorService;
-        this.extolePersonFindToolFactory = extolePersonFindToolFactory;
-        this.extolePersonRewardsToolFactory = extolePersonRewardsToolFactory;
-        this.extolePersonStepsToolFactory = extolePersonStepsToolFactory;
-        this.extoleStepsToolFactory = extoleStepsToolFactory;
     }
 
     @Override
