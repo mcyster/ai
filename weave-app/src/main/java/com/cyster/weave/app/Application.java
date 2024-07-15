@@ -12,13 +12,13 @@ import org.springframework.core.env.Environment;
 
 import com.cyster.rest.ApplicationServerConfig;
 import com.cyster.rest.CysterRestScan;
-import com.cyster.sage.CysterSageScan;
 import com.cyster.store.CysterStoreScan;
+import com.cyster.weave.CysterSageScan;
 import com.cyster.weave.rest.WeaveRestScan;
 import com.cyster.web.developer.WebDeveloperScan;
 import com.cyster.web.rest.WebSiteScan;
-import com.extole.sage.ExtoleSageScan;
 import com.extole.tickets.rest.ExtoleTicketsScan;
+import com.extole.weave.ExtoleSageScan;
 
 @SpringBootApplication
 @Import(value = { CysterSageScan.class, WeaveRestScan.class, WebDeveloperScan.class, ExtoleTicketsScan.class, CysterStoreScan.class, ExtoleSageScan.class, WebSiteScan.class, CysterRestScan.class })

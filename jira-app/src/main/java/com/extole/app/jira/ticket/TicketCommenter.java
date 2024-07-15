@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
-import com.extole.sage.scenarios.support.ExtoleSupportTicketScenario;
+import com.extole.weave.scenarios.support.ExtoleSupportTicketScenario;
 
 @Service
 @EnableAsync
