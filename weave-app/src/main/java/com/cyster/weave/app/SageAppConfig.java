@@ -1,9 +1,11 @@
 package com.cyster.weave.app;
 
+import com.cyster.ai.weave.impl.AiWeaveServiceImpl;
 import com.cyster.ai.weave.impl.advisor.AdvisorServiceImpl;
 
 
 import com.cyster.ai.weave.impl.scenario.ScenarioServiceImpl;
+import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.advisor.AdvisorService;
 import com.cyster.ai.weave.service.advisor.AdvisorServiceFactory;
 import com.cyster.ai.weave.service.scenario.Scenario;
@@ -74,6 +76,17 @@ public class SageAppConfig implements WebMvcConfigurer {
         this.sites = directory.resolve("sites");
     }
 
+    @Bean
+    public AiWeaveService getAiWeaveService(@Value("${OPENAI_API_KEY}") String openAiApiKey) {
+        if (!StringUtils.hasText(openAiApiKey)) {
+            throw new IllegalArgumentException("OPENAI_API_KEY not defined");
+        }
+
+        return new AiWeaveServiceImpl(openAiApiKey);
+    }
+
+    
+    
     @Bean
     public AdvisorService getAdvisorService(@Value("${OPENAI_API_KEY}") String openAiApiKey) {
         if (!StringUtils.hasText(openAiApiKey)) {

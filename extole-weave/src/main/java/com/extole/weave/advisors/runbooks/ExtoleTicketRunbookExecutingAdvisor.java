@@ -31,7 +31,7 @@ public class ExtoleTicketRunbookExecutingAdvisor implements Advisor<Void> {
     }
 
     @Override
-    public ConversationBuilder<Void> createConversation() {
+    public AdvisorConversationBuilder<Void> createConversation() {
         if (this.advisor.isEmpty()) {
             String instructions = """
 Given the ticket execute the Runbook.

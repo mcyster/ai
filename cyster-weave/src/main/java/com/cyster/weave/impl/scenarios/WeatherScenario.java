@@ -76,4 +76,10 @@ public class WeatherScenario implements Scenario<Parameters, Void> {
         CELSIUS, FAHRENHEIT;
     }
 
+    @Override
+    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

@@ -12,7 +12,7 @@ import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.weave.impl.advisors.SimpleAdvisor;
+import com.cyster.weave.impl.advisors.SimpleAssistantScenario;
 import com.cyster.weave.impl.scenarios.TranslateScenario.Parameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -23,11 +23,11 @@ import com.github.mustachejava.MustacheFactory;
 @Component
 public class TranslateScenario implements Scenario<Parameters, Void> {
     private static final String NAME = "translate";
-    private Advisor<Void> advisor;
+    private SimpleAssistantScenario scenario;
 
 
-    TranslateScenario(SimpleAdvisor advisor) {
-        this.advisor = advisor;
+    TranslateScenario(SimpleAssistantScenario scenario) {
+        this.scenario = scenario;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
 
     @Override
     public Conversation createConversation(Parameters parameters, Void context) {
-        return new Builder(this.advisor).setParameters(parameters).start();
+        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
     }
 
     private static class LocalizeConversation implements Conversation {
@@ -121,5 +121,11 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
         @JsonPropertyDescription("the language to which to translate the text, ISO 639-1")
         @JsonProperty(required = true)
         public String target_language;
+    }
+
+    @Override
+    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -269,6 +269,6 @@ public class ConversationController {
             context = (CONTEXT)getSessionContext(headers);
         }
 
-        return scenarioSessionStore.addSession(scenario, parameters, scenario.createConversation(parameters, context));
+        return scenarioSessionStore.addSession(scenario, parameters, scenario.createConversationBuilder(parameters, context).start());
     }
 }

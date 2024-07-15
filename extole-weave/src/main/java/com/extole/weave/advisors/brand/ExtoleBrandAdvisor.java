@@ -29,7 +29,7 @@ public class ExtoleBrandAdvisor implements Advisor<Void> {
     }
 
     @Override
-    public ConversationBuilder<Void> createConversation() {
+    public AdvisorConversationBuilder<Void> createConversation() {
         if (this.advisor.isEmpty()) {
             String instructions = """
 You focus on find details on Company brands.

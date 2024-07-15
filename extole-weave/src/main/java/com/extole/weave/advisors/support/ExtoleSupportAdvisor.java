@@ -39,7 +39,7 @@ public class ExtoleSupportAdvisor implements Advisor<Void> {
     }
 
     @Override
-    public ConversationBuilder<Void> createConversation() {
+    public AdvisorConversationBuilder<Void> createConversation() {
         if (this.advisor.isEmpty()) {
             String instructions = """
 You are an advisor the support team at Extole a SaaS marketing platform.

@@ -6,15 +6,15 @@ public interface Advisor<C> {
 
     String getName();
 
-    ConversationBuilder<C> createConversation();
+    AdvisorConversationBuilder<C> createConversation();
 
-    interface ConversationBuilder<C> {
+    interface AdvisorConversationBuilder<C> {
 
-        ConversationBuilder<C> withContext(C context);
+        AdvisorConversationBuilder<C> withContext(C context);
 
-        ConversationBuilder<C> setOverrideInstructions(String instruction);
+        AdvisorConversationBuilder<C> setOverrideInstructions(String instruction);
 
-        ConversationBuilder<C> addMessage(String message);
+        AdvisorConversationBuilder<C> addMessage(String message);
 
         Conversation start();
     }

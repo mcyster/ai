@@ -25,7 +25,7 @@ public class ExtoleClientAdvisor implements Advisor<ExtoleClientAdvisor.Context>
     }
 
     @Override
-    public ConversationBuilder<ExtoleClientAdvisor.Context> createConversation() {
+    public AdvisorConversationBuilder<ExtoleClientAdvisor.Context> createConversation() {
 
         if (this.advisor.isEmpty()) {
             String instructions = """

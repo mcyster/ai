@@ -32,7 +32,7 @@ public class ChatAdvisorImpl<C> implements Advisor<C> {
         return new ConversationBuilder();
     }
 
-    public class ConversationBuilder implements Advisor.ConversationBuilder<C> {
+    public class ConversationBuilder implements Advisor.AdvisorConversationBuilder<C> {
         Optional<String> overrideInstructions = Optional.empty();
         C context = null;
 
@@ -51,7 +51,7 @@ public class ChatAdvisorImpl<C> implements Advisor<C> {
         }
 
         @Override
-        public com.cyster.ai.weave.service.advisor.Advisor.ConversationBuilder<C> addMessage(String message) {
+        public com.cyster.ai.weave.service.advisor.Advisor.AdvisorConversationBuilder<C> addMessage(String message) {
             // TODO Auto-generated method stub
             return null;
         }

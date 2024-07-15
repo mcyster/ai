@@ -168,5 +168,10 @@ Then ask the user how they would like to see the data, and update script.js to r
         @JsonProperty(required = true)
         public String reportId;
     }
+    @Override
+    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 }

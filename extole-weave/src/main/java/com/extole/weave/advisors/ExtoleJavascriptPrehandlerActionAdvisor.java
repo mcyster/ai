@@ -32,7 +32,7 @@ public class ExtoleJavascriptPrehandlerActionAdvisor implements Advisor<AdminUse
     }
 
     @Override
-    public ConversationBuilder<AdminUserToolContext> createConversation() {
+    public AdvisorConversationBuilder<AdminUserToolContext> createConversation() {
         if (this.advisor.isEmpty()) {
 
             String resourcePath = "/extole/scenario/prehandler_action_context.js";

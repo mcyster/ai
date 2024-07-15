@@ -53,5 +53,11 @@ Note the ticket number, and note its classified as "other".
     public Conversation createConversation(RunbookScenarioParameters parameters, Void context) {
         return this.advisor.createConversation().setOverrideInstructions(INSTRUCTIONS).start();
     }
+
+    @Override
+    public ConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters, Void context) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }
 

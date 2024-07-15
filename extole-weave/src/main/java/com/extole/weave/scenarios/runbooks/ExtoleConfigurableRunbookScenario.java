@@ -127,5 +127,11 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
             }
         }
     }
+
+    @Override
+    public ConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters, Void context) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }
 

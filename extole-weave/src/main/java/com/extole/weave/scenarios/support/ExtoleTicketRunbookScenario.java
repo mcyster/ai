@@ -66,6 +66,12 @@ public class ExtoleTicketRunbookScenario implements Scenario<Parameters, Void> {
         }
     }
 
+    @Override
+    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }
 
 

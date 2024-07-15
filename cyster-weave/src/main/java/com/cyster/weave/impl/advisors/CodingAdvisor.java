@@ -28,7 +28,7 @@ public class CodingAdvisor implements Advisor<Void> {
     }
 
     @Override
-    public ConversationBuilder<Void> createConversation() {
+    public AdvisorConversationBuilder<Void> createConversation() {
         if (this.advisor.isEmpty()) {
             AdvisorBuilder<Void> builder = this.advisorService.getOrCreateAdvisor(NAME);
             builder

@@ -45,4 +45,10 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
 
         return advisor.createConversation().withContext(advisorContext).start();
     }
+
+    @Override
+    public ConversationBuilder createConversationBuilder(Void parameters, ExtoleSessionContext context) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

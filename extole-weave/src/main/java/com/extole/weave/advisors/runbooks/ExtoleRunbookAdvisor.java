@@ -36,7 +36,7 @@ public class ExtoleRunbookAdvisor implements Advisor<Void> {
     }
 
     @Override
-    public ConversationBuilder<Void> createConversation() {
+    public AdvisorConversationBuilder<Void> createConversation() {
         if (this.advisor.isEmpty()) {
             String instructions = """
 Interpret the prompt as keywords and use it to create a query

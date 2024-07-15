@@ -28,7 +28,7 @@ public class MumboJumboAdvisor implements Advisor<Void> {
     }
 
     @Override
-    public ConversationBuilder<Void> createConversation() {
+    public AdvisorConversationBuilder<Void> createConversation() {
         var dictionaryPath = createDictionary();
 
         if (this.advisor.isEmpty()) {

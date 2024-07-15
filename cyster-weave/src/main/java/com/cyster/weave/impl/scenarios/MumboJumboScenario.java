@@ -45,5 +45,11 @@ public class MumboJumboScenario implements Scenario<Void, Void> {
             .start();
     }
 
+    @Override
+    public ConversationBuilder createConversationBuilder(Void parameters, Void context) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 
 }

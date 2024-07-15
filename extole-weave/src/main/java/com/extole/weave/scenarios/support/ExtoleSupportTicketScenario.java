@@ -62,4 +62,10 @@ public class ExtoleSupportTicketScenario implements Scenario<Parameters, Void> {
             return ticketNumber;
         }
     }
+
+    @Override
+    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

@@ -39,7 +39,7 @@ public class WebAdvisor implements Advisor<Website> {
     }
 
     @Override
-    public ConversationBuilder<Website> createConversation() {
+    public AdvisorConversationBuilder<Website> createConversation() {
         if (this.advisor.isEmpty()) {
             String instructions = """
 You are web developer that has the ability to modify the associated website, by listing, updating or adding files sing your website tools

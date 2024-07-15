@@ -66,4 +66,10 @@ public class ExtoleReportScenario implements Scenario<Parameters, ExtoleSessionC
         public String report_id;
     }
 
+    @Override
+    public ConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSessionContext context) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

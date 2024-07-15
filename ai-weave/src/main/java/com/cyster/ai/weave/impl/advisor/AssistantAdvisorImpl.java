@@ -54,7 +54,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
         return new ConversationBuilder<C>(this);
     }
 
-    public static class ConversationBuilder<C2> implements Advisor.ConversationBuilder<C2> {
+    public static class ConversationBuilder<C2> implements Advisor.AdvisorConversationBuilder<C2> {
         private Optional<String> overrideInstructions = Optional.empty();
         private C2 context = null;
         private AssistantAdvisorImpl<C2> advisor;
@@ -107,7 +107,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
         private Toolset.Builder<C2> toolsetBuilder = new Toolset.Builder<C2>();
         private List<Path> filePaths = new ArrayList<Path>();
 
-        Builder(OpenAiService openAiService, String name) {
+        public Builder(OpenAiService openAiService, String name) {
             this.openAiService = openAiService;
             this.name = name;
         }

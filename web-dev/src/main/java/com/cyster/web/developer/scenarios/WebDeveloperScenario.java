@@ -98,4 +98,10 @@ Use the web_developer_file_put tool to create or update the website as requested
 
     public record Parameters(@JsonProperty(required = false) String siteName) {}
 
+    @Override
+    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

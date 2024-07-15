@@ -42,4 +42,10 @@ public class BrandScenaio implements Scenario<Void, Void> {
         return this.advisor.createConversation().start();
     }
 
+    @Override
+    public ConversationBuilder createConversationBuilder(Void parameters, Void context) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

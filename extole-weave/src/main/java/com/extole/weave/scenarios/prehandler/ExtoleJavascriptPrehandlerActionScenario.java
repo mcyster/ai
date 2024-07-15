@@ -64,4 +64,11 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
         }
     }
 
+    @Override
+    public com.cyster.ai.weave.service.scenario.Scenario.ConversationBuilder createConversationBuilder(Void parameters,
+        ExtoleSessionContext context) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

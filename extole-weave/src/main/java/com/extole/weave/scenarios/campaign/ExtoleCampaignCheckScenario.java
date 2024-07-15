@@ -69,4 +69,10 @@ For each variable that has a problem respond in json of the form: { "name": "VAR
         public String campaignId;
     }
 
+    @Override
+    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }
