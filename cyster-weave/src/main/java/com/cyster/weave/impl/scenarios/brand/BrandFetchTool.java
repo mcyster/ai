@@ -1,4 +1,4 @@
-package com.extole.weave.advisors.brand;
+package com.cyster.weave.impl.scenarios.brand;
 
 import java.util.HashMap;
 import java.util.Optional;
