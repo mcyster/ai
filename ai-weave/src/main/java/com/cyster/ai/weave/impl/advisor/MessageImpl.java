@@ -28,7 +28,7 @@ public class MessageImpl implements Message {
         this.content = content;
         this.operation = new OperationImpl("operations");
     }
-    
+
     @Override
     public Type getType() {
         return this.type;
@@ -43,7 +43,7 @@ public class MessageImpl implements Message {
     public Operation operation() {
         return this.operation;
     }
-    
+
     @Override
     public String toString() {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -54,5 +54,5 @@ public class MessageImpl implements Message {
             throw new RuntimeException(e);
         }
     }
- 
+
 }

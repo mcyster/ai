@@ -35,7 +35,7 @@ public class ExtoleReportScenario implements Scenario<Parameters, ExtoleSessionC
     public String getDescription() {
         return "Describe an extole report given its report_id";
     }
-    
+
     @Override
     public Class<Parameters> getParameterClass() {
         return Parameters.class;
@@ -55,9 +55,9 @@ public class ExtoleReportScenario implements Scenario<Parameters, ExtoleSessionC
         var messageWriter = new StringWriter();
         mustache.execute(messageWriter, parameters);
         messageWriter.flush();
-        
+
         var advisorContext = new ExtoleClientAdvisor.Context(context.getAccessToken());
-        
+
         return advisor.createConversation().setOverrideInstructions(messageWriter.toString()).withContext(advisorContext).start();
     }
 
@@ -65,5 +65,5 @@ public class ExtoleReportScenario implements Scenario<Parameters, ExtoleSessionC
         @JsonProperty(required = true)
         public String report_id;
     }
-    
+
 }

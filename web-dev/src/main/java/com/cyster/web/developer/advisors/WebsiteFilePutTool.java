@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
 class WebsiteFilePutTool implements Tool<Request, Website> {
-    
+
     WebsiteFilePutTool() {
     }
 
@@ -32,23 +32,23 @@ class WebsiteFilePutTool implements Tool<Request, Website> {
 
     @Override
     public Object execute(Request request, Website context) throws ToolException {
-        
+
         if (request.filename() == null || request.filename().isBlank()) {
-            throw new FatalToolException("No filename specified"); 
+            throw new FatalToolException("No filename specified");
         }
         if (request.content() == null) {
-            throw new FatalToolException("No content specified"); 
-        }        
-        
+            throw new FatalToolException("No content specified");
+        }
+
         context.putAsset(request.filename(), request.content());
-        
+
         return context;
     }
 
     static record Request(
-        @JsonProperty(required = true) String filename, 
+        @JsonProperty(required = true) String filename,
         @JsonProperty(required = true) String content
     ) {}
 
-    
+
 }

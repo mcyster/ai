@@ -16,7 +16,7 @@ public interface ScenarioSessionStore {
     public interface QueryBuilder {
 
         QueryBuilder withFilterParameter(String name, String value);
-        
+
         QueryBuilder setOffset(int offset);
 
         QueryBuilder setLimit(int limit);

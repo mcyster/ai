@@ -21,7 +21,7 @@ import java.util.Comparator;
 public class WebsiteServiceImpl implements WebsiteService {
     private URI baseUri;
     private Path baseDirectory;
-    
+
     public WebsiteServiceImpl(URI baseUri, Path baseDirectory) {
         this.baseUri = baseUri;
         this.baseDirectory = baseDirectory;
@@ -29,13 +29,13 @@ public class WebsiteServiceImpl implements WebsiteService {
 
     public List<Website> getSites() {
         List<Website> sites = new ArrayList<>();
-        
+
         for(Type type: Website.Type.values()) {
             Path typeRoot = baseDirectory.resolve(type.toString().toLowerCase());
             if (!Files.exists(typeRoot)) {
                 continue;
             }
-                       
+
             try (Stream<Path> paths = Files.walk(typeRoot, 1)) {
                 Function<Path, FileTime> getLastModifiedTime = path -> {
                     try {
@@ -44,7 +44,7 @@ public class WebsiteServiceImpl implements WebsiteService {
                         throw new UncheckedIOException(e);
                     }
                 };
-    
+
                 var typedSites = paths
                     .filter(Files::isDirectory)
                     .filter(path -> !path.equals(typeRoot))
@@ -56,10 +56,10 @@ public class WebsiteServiceImpl implements WebsiteService {
                 throw new RuntimeException(exception);
             }
         }
-        
+
         return sites;
     }
-    
+
     public Website getSite(String name) {
         Type websiteType = null;
         for(var type: Website.Type.values()) {
@@ -72,10 +72,10 @@ public class WebsiteServiceImpl implements WebsiteService {
         if (websiteType == null) {
             throw new RuntimeException("Wesbite not found: " + name);
         }
-        
+
         return new WebsiteImpl(this.baseUri, baseDirectory, name, websiteType);
     }
-    
+
     @Override
     public Website create() {
         String name = UUID.randomUUID().toString();
@@ -90,23 +90,23 @@ public class WebsiteServiceImpl implements WebsiteService {
         }
 
         var namedWebsite = create(Type.Named, name);
-        
+
         for(var assetName: website.getAssets()) {
             namedWebsite.putAsset(assetName, website.getAsset(assetName).content());
         }
-        
+
         return namedWebsite;
     }
 
     @Override
     public Website copy(Website website) {
         var newWebsite = create();
-               
+
         clone(website, newWebsite);
-        
+
         return newWebsite;
     }
-    
+
     private Website create(Type type, String name) {
         Path directory = baseDirectory.resolve(type.toString().toLowerCase()).resolve(name);
 
@@ -115,14 +115,14 @@ public class WebsiteServiceImpl implements WebsiteService {
         } catch (IOException e) {
             throw new RuntimeException("Unable to create site directory: " + directory.toString());
         }
-                
+
         return new WebsiteImpl(baseUri, baseDirectory, name, type);
     }
-    
+
     private Website clone(Website fromWebsite, Website toWebsite) {
         for(var assetName: fromWebsite.getAssets()) {
             toWebsite.putAsset(assetName, fromWebsite.getAsset(assetName).content());
-        }   
+        }
         return toWebsite;
     }
 }

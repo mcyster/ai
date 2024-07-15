@@ -10,13 +10,13 @@ import com.cyster.ai.weave.service.advisor.ToolException;
 
 public class SearchToolImpl<CONTEXT> implements SearchTool<CONTEXT> {
     public static final String NAME = "file_search";
-    
+
     private List<VectorStore> vectorStores;
-    
+
     public SearchToolImpl(List<VectorStore> vectorStores) {
-        this.vectorStores = vectorStores;    
+        this.vectorStores = vectorStores;
     }
-    
+
     @Override
     public String getName() {
         return NAME;

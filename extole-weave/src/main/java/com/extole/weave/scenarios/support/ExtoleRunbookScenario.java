@@ -12,7 +12,7 @@ import com.extole.weave.advisors.runbooks.ExtoleRunbookAdvisor;
 public class ExtoleRunbookScenario implements Scenario<Void, Void> {
     public static String NAME = "extoleRunbook";
 
-    private Advisor<Void> advisor; 
+    private Advisor<Void> advisor;
 
     ExtoleRunbookScenario(ExtoleRunbookAdvisor advisor) {
         this.advisor = advisor;
@@ -27,7 +27,7 @@ public class ExtoleRunbookScenario implements Scenario<Void, Void> {
     public String getDescription() {
         return "Find the best Runbook for the current prompt context";
     }
-    
+
     @Override
     public Class<Void> getParameterClass() {
         return Void.class;
@@ -37,7 +37,7 @@ public class ExtoleRunbookScenario implements Scenario<Void, Void> {
     public Class<Void> getContextClass() {
         return Void.class;
     }
- 
+
     @Override
     public Conversation createConversation(Void parameters, Void context) {
         return this.advisor.createConversation().start();

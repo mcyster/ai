@@ -94,11 +94,11 @@ public class Toolset<C> {
 
     private static String error(String message, String localMessage, Type errorType, Exception exception) {
         var response = new ToolError(message, errorType).toJsonString();
-        
+
         if (localMessage == null || localMessage.isBlank()) {
             logger.error("ToolError: " + response + localMessage, exception);
         } else {
-            logger.error("ToolError: " + response + " localMessage: " + localMessage, exception);            
+            logger.error("ToolError: " + response + " localMessage: " + localMessage, exception);
         }
 
         return response;

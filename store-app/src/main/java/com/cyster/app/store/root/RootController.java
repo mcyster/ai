@@ -7,13 +7,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class RootController {
 
-	@Autowired
-	public RootController() {
-	}
+    @Autowired
+    public RootController() {
+    }
 
-	@GetMapping("/")
-	public String index() {
-		return "Hello world\n";
-	}
+    @GetMapping("/")
+    public String index() {
+        return "Hello world\n";
+    }
 
 }

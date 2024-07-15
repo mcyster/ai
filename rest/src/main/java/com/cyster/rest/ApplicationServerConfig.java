@@ -56,12 +56,12 @@ public class ApplicationServerConfig {
         String applicationUrl;
         if (environment.getProperty("app.url") != null) {
             applicationUrl = environment.getProperty("app.url");
-        } else {      
+        } else {
             String domain = "localhost";
             if (environment.getProperty("server.domain") != null) {
                 domain = environment.getProperty("server.domain");
             }
-    
+
             String port = "8080";
             if (environment.getProperty("server.port") != null) {
                 port = environment.getProperty("server.port");
@@ -72,7 +72,7 @@ public class ApplicationServerConfig {
             }
             applicationUrl = protocol + "://" + domain + ":" + port + contextPath;
         }
-        
+
         return "Application '" + applicationName + "' listening on " + applicationUrl;
 
     }

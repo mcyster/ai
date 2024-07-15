@@ -18,11 +18,11 @@ public class WeatherAdvisor implements Advisor<Void> {
 
     private AdvisorService advisorService;
     private Optional<Advisor<Void>> advisor = Optional.empty();
-    
+
     public WeatherAdvisor(AdvisorService advisorService) {
       this.advisorService = advisorService;
     }
-    
+
     @Override
     public String getName() {
         return NAME;
@@ -32,22 +32,22 @@ public class WeatherAdvisor implements Advisor<Void> {
     public ConversationBuilder<Void> createConversation() {
         if (this.advisor.isEmpty()) {
             AdvisorBuilder<Void> builder = this.advisorService.getOrCreateAdvisor(NAME);
-                
+
             builder
                 .setInstructions("Get the current weather of a location")
                 .withTool(new WeatherTool());
-                
+
             this.advisor = Optional.of(builder.getOrCreate());
         }
         return this.advisor.get().createConversation();
     }
-    
-    
+
+
     public static class WeatherTool implements Tool<Weather, Void> {
-        
-        WeatherTool() {       
+
+        WeatherTool() {
         }
-        
+
         @Override
         public String getName() {
             return "get_weather";
@@ -69,11 +69,11 @@ public class WeatherAdvisor implements Advisor<Void> {
             if (weather.unit != null) {
                 unit = weather.unit;
             }
-            return new WeatherResponse(weather.location, unit, new Random().nextInt(50), "sunny");  
+            return new WeatherResponse(weather.location, unit, new Random().nextInt(50), "sunny");
         }
 
     }
-    
+
     public static class Weather {
         @JsonPropertyDescription("City and state, for example: Perth, Western Australia")
         @JsonProperty(required = true)

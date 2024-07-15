@@ -10,13 +10,13 @@ import com.cyster.weave.impl.advisors.SimpleAdvisor;
 @Component
 public class HtmlifyScenario implements Scenario<Void, Void> {
     private static final String NAME = "htmlify";
-        
+
     private Advisor<Void> advisor;
 
     HtmlifyScenario(SimpleAdvisor advisor) {
         this.advisor = advisor;
     }
-    
+
     @Override
     public String getName() {
         return NAME;
@@ -26,12 +26,12 @@ public class HtmlifyScenario implements Scenario<Void, Void> {
     public String getDescription() {
         return "Marks up text with html";
     }
-    
+
     @Override
     public Class<Void> getParameterClass() {
         return Void.class;
     }
-    
+
     @Override
     public Class<Void> getContextClass() {
         return Void.class;
@@ -44,12 +44,12 @@ Convert the input to a HTML marked up fragment.
 
 Everything should be included in <p></p> tags. If there are lists use <ul> or <ol> tags.
 
-Just returned the marked up fragment, nothing else.  
+Just returned the marked up fragment, nothing else.
 """;
 
         return this.advisor.createConversation()
             .setOverrideInstructions(instructions)
             .start();
     }
-            
+
 }

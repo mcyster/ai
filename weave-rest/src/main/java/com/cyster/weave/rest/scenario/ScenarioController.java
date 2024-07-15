@@ -37,7 +37,7 @@ public class ScenarioController {
         } catch (ScenarioException e) {
            throw new ScenarioNotFoundException("Not found: " + scenarioName);
         }
-        
+
         return new ScenarioResponse.Builder()
             .setName(scenario.getName())
             .setDescription(scenario.getDescription())

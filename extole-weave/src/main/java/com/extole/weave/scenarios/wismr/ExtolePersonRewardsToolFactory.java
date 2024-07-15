@@ -55,9 +55,9 @@ class ExtolePersonRewardsTool implements Tool<ExtolePersonRewardsToolParameters,
 
     @Override
     public Object execute(ExtolePersonRewardsToolParameters parameters, Void context) {
-        return this.getExecutor().apply((ExtolePersonRewardsToolParameters)parameters);   
+        return this.getExecutor().apply((ExtolePersonRewardsToolParameters)parameters);
     }
-    
+
     public Function<ExtolePersonRewardsToolParameters, Object> getExecutor() {
         return parameter -> loadRewards(parameter);
     }

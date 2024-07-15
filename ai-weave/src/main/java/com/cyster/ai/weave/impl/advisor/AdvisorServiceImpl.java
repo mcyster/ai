@@ -24,16 +24,16 @@ import com.cyster.ai.weave.service.advisor.Tool;
 public class AdvisorServiceImpl implements AdvisorService {
 
     private final OpenAiService openAiService;
-    
+
     public AdvisorServiceImpl(String openAiKey) {
         this.openAiService = new OpenAiService(openAiKey);
     }
-    
+
     public <C> AdvisorBuilder<C> getOrCreateAdvisor(String name) {
         // TODO support returning other advisor implementations: ChatAdvisor, TooledChatAdvisor
-        return new AssistantAdvisorImpl.Builder<C>(this.openAiService, name);    
+        return new AssistantAdvisorImpl.Builder<C>(this.openAiService, name);
     }
-     
+
     public <PARAMETERS, CONTEXT> Tool<PARAMETERS, CONTEXT> cachingTool(Tool<PARAMETERS, CONTEXT> tool) {
         return CachingTool.builder(tool).build();
     }
@@ -47,11 +47,11 @@ public class AdvisorServiceImpl implements AdvisorService {
     public <CONTEXT> CodeInterpreterTool.Builder<CONTEXT> codeToolBuilder() {
         return new CodeInterpreterToolBuilderImpl<CONTEXT>(this.openAiService);
     }
-    
+
     public static class Factory implements AdvisorServiceFactory {
-        public Factory() {    
+        public Factory() {
         }
-        
+
         @Override
         public AdvisorService createAdvisorService(String openAiApiKey) {
             return new AdvisorServiceImpl(openAiApiKey);

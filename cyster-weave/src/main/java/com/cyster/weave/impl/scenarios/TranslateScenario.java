@@ -39,12 +39,12 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
     public String getDescription() {
         return "Translates a message from one language to another";
     }
-    
+
     @Override
     public Class<Parameters> getParameterClass() {
         return Parameters.class;
     }
-    
+
     @Override
     public Class<Void> getContextClass() {
         return Void.class;
@@ -54,7 +54,7 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
     public Conversation createConversation(Parameters parameters, Void context) {
         return new Builder(this.advisor).setParameters(parameters).start();
     }
-    
+
     private static class LocalizeConversation implements Conversation {
         private Conversation conversation;
 
@@ -85,11 +85,11 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
     public class Builder {
         private Advisor<Void> advisor;
         private Parameters parameters;
-        
+
         Builder(Advisor<Void> advisor) {
             this.advisor = advisor;
         }
-        
+
         public Builder setParameters(Parameters parameters) {
             this.parameters = parameters;
             return this;
@@ -104,11 +104,11 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
             mustache.execute(messageWriter, this.parameters);
             messageWriter.flush();
             var instructions = messageWriter.toString();
-            
+
             Conversation conversation  = this.advisor.createConversation()
                 .setOverrideInstructions(instructions)
                 .start();
-            
+
             return new LocalizeConversation(conversation);
         }
     }

@@ -36,12 +36,12 @@ public class ChatScenario implements Scenario<Void, Void> {
     public String getDescription() {
         return "Chat with the AI";
     }
-    
+
     @Override
     public Class<Void> getParameterClass() {
         return Void.class;
     }
-    
+
     @Override
     public Class<Void> getContextClass() {
         return Void.class;
@@ -51,7 +51,7 @@ public class ChatScenario implements Scenario<Void, Void> {
     public Conversation createConversation(Void parameters, Void context) {
         return new Builder(this.advisor).start();
     }
-    
+
     private static class LocalizeConversation implements Conversation {
         private Conversation conversation;
 
@@ -80,11 +80,11 @@ public class ChatScenario implements Scenario<Void, Void> {
     public class Builder {
         private Advisor<Void> advisor;
         private Void parameters;
-        
+
         Builder(Advisor<Void> advisor) {
             this.advisor = advisor;
         }
-        
+
         public Builder setParameters(Void parameters) {
             this.parameters = parameters;
             return this;
@@ -99,11 +99,11 @@ public class ChatScenario implements Scenario<Void, Void> {
             mustache.execute(messageWriter, this.parameters);
             messageWriter.flush();
             var instructions = messageWriter.toString();
-            
+
             Conversation conversation  = this.advisor.createConversation()
                 .setOverrideInstructions(instructions)
                 .start();
-            
+
             return new LocalizeConversation(conversation);
         }
     }

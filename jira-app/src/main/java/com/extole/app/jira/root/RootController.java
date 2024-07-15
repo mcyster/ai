@@ -12,7 +12,7 @@ import org.springframework.web.servlet.view.RedirectView;
 @Controller
 public class RootController {
     private static final Logger logger = LogManager.getLogger(RootController.class);
-    
+
     @Autowired
     public RootController() {
     }
@@ -20,7 +20,7 @@ public class RootController {
     @GetMapping("/")
     public RedirectView index() throws IOException {
         logger.info("get /");
-        
+
         return new RedirectView("/sites/managed/sites/index.html");
     }
 }

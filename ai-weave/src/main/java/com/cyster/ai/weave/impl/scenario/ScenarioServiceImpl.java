@@ -19,7 +19,7 @@ public class ScenarioServiceImpl implements ScenarioService {
         for (var scenario : scenarios) {
             this.scenarios.put(scenario.getName(), scenario);
         }
-        
+
         for(var loader: scenarioLoaders) {
             for (var scenario : loader.getScenarios()) {
                 this.scenarios.put(scenario.getName(), scenario);
@@ -38,7 +38,7 @@ public class ScenarioServiceImpl implements ScenarioService {
             throw new ScenarioException("Scenario not found: " + name);
         }
     }
-    
+
     public static class Factory implements ScenarioServiceFactory {
         @Override
         public ScenarioService createScenarioService(List<ScenarioLoader> loaders, List<Scenario<?,?>> scenarios) {

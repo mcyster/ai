@@ -26,7 +26,7 @@ public class ExtoleCampaignCheckScenario implements Scenario<Parameters, Void> {
     public String getDescription() {
         return "Check a campaign given a campaignId";
     }
-    
+
     @Override
     public Class<Parameters> getParameterClass() {
         return Parameters.class;
@@ -39,26 +39,26 @@ public class ExtoleCampaignCheckScenario implements Scenario<Parameters, Void> {
 
     @Override
     public Conversation createConversation(Parameters parameters, Void context) {
-        String instructions = """ 
+        String instructions = """
 You are a member of the Support team at Extole, a SaaS marketing platform. You are tasked with checking the variables associated with campaigns
 
-Download the variables associated with the campaignId: %s 
+Download the variables associated with the campaignId: %s
 
 These variables contain multiple languages, the most common being English, Spanish and French.
 
-These values are used for things like setting the Subject/Body of emails, and messaging on the clients website.  
+These values are used for things like setting the Subject/Body of emails, and messaging on the clients website.
 
-Please be aware of the different languages and provide language specific suggestions if you think the translation may not be ideal. 
+Please be aware of the different languages and provide language specific suggestions if you think the translation may not be ideal.
 
-Please review to ensure values have no spelling errors, grammar errors and that there are no unexpected characters.  
+Please review to ensure values have no spelling errors, grammar errors and that there are no unexpected characters.
 
-If the prompt contains HTML markup it may be a HTML fragment, that is ok. 
-The prompt contains curly braces, these are variable replacements in the Mostache scripting language. 
+If the prompt contains HTML markup it may be a HTML fragment, that is ok.
+The prompt contains curly braces, these are variable replacements in the Mostache scripting language.
 
 For each variable that has a problem respond in json of the form: { "name": "VARIABLE_NAME", "problems": [ "PROLEM1", PROBLEM2"] }
 
 """;
-             
+
         return advisor.createConversation()
             .setOverrideInstructions(String.format(instructions, parameters.campaignId))
             .start();
@@ -68,5 +68,5 @@ For each variable that has a problem respond in json of the form: { "name": "VAR
         @JsonProperty(required = true)
         public String campaignId;
     }
-    
+
 }

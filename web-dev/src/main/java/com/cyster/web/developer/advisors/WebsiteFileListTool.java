@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 @Component
 class WebsiteFileListTool implements Tool<Request, Website> {
-    
+
     WebsiteFileListTool() {
     }
 
@@ -33,18 +33,18 @@ class WebsiteFileListTool implements Tool<Request, Website> {
     }
 
     @Override
-    public Object execute(Request request, Website context) throws ToolException {        
+    public Object execute(Request request, Website context) throws ToolException {
         return new Response(context.getAssets());
     }
 
     static record Request(
-        @JsonProperty(required = false)   
+        @JsonProperty(required = false)
         @JsonPropertyDescription("Filename glob pattern, defaults to *")
         String filenamePattern
     ) {}
-    
+
     static record Response(
         List<String> filenames
     ) {}
-    
+
 }

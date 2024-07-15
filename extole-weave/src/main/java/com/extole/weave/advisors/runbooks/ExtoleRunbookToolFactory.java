@@ -13,16 +13,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class ExtoleRunbookToolFactory {
-    
+
     private SearchTool<Void> searchTool;
-    
-    public ExtoleRunbookToolFactory(AdvisorService advisorService, 
+
+    public ExtoleRunbookToolFactory(AdvisorService advisorService,
             List<RunbookScenario> runbookScenarios, ExtoleRunbookOther defaultRunbook) {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        
+
         var documentStoreBuilder = advisorService.simpleDocumentStoreBuilder();
-        
+
         for(var runbook: runbookScenarios) {
             var book = new Runbook(runbook.getName(), runbook.getDescription(), runbook.getKeywords());
             String json;
@@ -31,7 +31,7 @@ public class ExtoleRunbookToolFactory {
             } catch (JsonProcessingException e) {
                 throw new RuntimeException("Unable to convert runbook to json");
             }
-            
+
             documentStoreBuilder.addDocument(runbook.getName() + ".json", json);
         }
 
@@ -39,33 +39,33 @@ public class ExtoleRunbookToolFactory {
         builder
             .withName("runbooks")
             .withDocumentStore(documentStoreBuilder.create());
-        
+
         this.searchTool = builder.create();
     }
-    
+
     public SearchTool<Void> getRunbookSearchTool() {
         return this.searchTool;
     }
-    
+
     public static class Runbook {
         private String name;
         private String description;
         private String keywords;
-        
+
         public Runbook(String name, String description, String keywords) {
             this.name = name;
             this.description = description;
             this.keywords = keywords;
         }
-        
+
         public String getName() {
             return this.name;
         }
-        
+
         public String getDescription() {
-            return this.description;    
+            return this.description;
         }
-        
+
         public String getKeywords() {
             return this.keywords;
         }

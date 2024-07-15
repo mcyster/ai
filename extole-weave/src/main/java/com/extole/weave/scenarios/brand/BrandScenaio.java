@@ -25,7 +25,7 @@ public class BrandScenaio implements Scenario<Void, Void> {
     public String getDescription() {
         return "Provides details about a Brand";
     }
-    
+
     @Override
     public Class<Void> getParameterClass() {
         return Void.class;
@@ -36,7 +36,7 @@ public class BrandScenaio implements Scenario<Void, Void> {
         return Void.class;
     }
 
-    
+
     @Override
     public Conversation createConversation(Void parameters, Void context) {
         return this.advisor.createConversation().start();

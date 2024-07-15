@@ -21,8 +21,8 @@ public class ExtoleTicketRunbookSelectingAdvisor implements Advisor<Void> {
     private List<Tool<?, Void>> tools = new ArrayList<>();
     private Optional<Advisor<Void>> advisor = Optional.empty();
     private String defaultRunbookName;
-    
-    public ExtoleTicketRunbookSelectingAdvisor(AdvisorService advisorService, ExtoleRunbookToolFactory runbookToolFactory, 
+
+    public ExtoleTicketRunbookSelectingAdvisor(AdvisorService advisorService, ExtoleRunbookToolFactory runbookToolFactory,
             SupportTicketGetTool ticketGetTool,
             ExtoleRunbookOther defaultRunbook) {
         this.advisorService = advisorService;
@@ -39,7 +39,7 @@ public class ExtoleTicketRunbookSelectingAdvisor implements Advisor<Void> {
     @Override
     public ConversationBuilder<Void> createConversation() {
         if (this.advisor.isEmpty()) {
-            String instructions = """ 
+            String instructions = """
 You are an Extole Support Team member handling an incoming ticket. Your task is to identify the most appropriate Runbook for resolving the ticket's issue.
 
 Ticket Information: Use the ticketGet to get the specified ticket
@@ -61,17 +61,17 @@ Runbook Selection:
 From the search results, choose the Runbook that best fits the ticket's needs.
 If no suitable Runbook is found, use the default "%s" Runbook.
 Response: Provide your answer in JSON format, like so:
-{ 
-  "ticket_number": "NUMBER", 
-  "runbook": "RUNBOOK_NAME", 
-  "query": "QUERY" 
+{
+  "ticket_number": "NUMBER",
+  "runbook": "RUNBOOK_NAME",
+  "query": "QUERY"
 }
 """;
 
             AdvisorBuilder<Void> builder = this.advisorService.getOrCreateAdvisor(NAME);
             builder
                 .setInstructions(String.format(instructions, this.defaultRunbookName));
-                
+
            for(var tool: tools) {
                 builder.withTool(tool);
            }

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public record ConversationRequest(
     String scenario,
     Map<String, Object> parameters) {
-    
+
     @Override
     public String toString() {
         ObjectMapper objectMapper = new ObjectMapper();

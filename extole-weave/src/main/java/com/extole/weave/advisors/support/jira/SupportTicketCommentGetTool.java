@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 @Component
 class SupportTicketCommentGetTool implements ExtoleSupportAdvisorTool<Request> {
     private JiraWebClientFactory jiraWebClientFactory;
-    
+
     SupportTicketCommentGetTool(JiraWebClientFactory jiraWebClientFactory) {
         this.jiraWebClientFactory = jiraWebClientFactory;
     }
@@ -40,10 +40,10 @@ class SupportTicketCommentGetTool implements ExtoleSupportAdvisorTool<Request> {
         if (request.key == null || request.key.isEmpty()) {
             throw new FatalToolException("Attribute ticket key not specified");
         }
-               
-        final String startAt = request.rowOffset != null ? String.valueOf(request.rowOffset) : "0";        
+
+        final String startAt = request.rowOffset != null ? String.valueOf(request.rowOffset) : "0";
         final String maxResults = request.rowLimit != null ? String.valueOf(request.rowLimit) : "15";
-        
+
         var result =  this.jiraWebClientFactory.getWebClient().get()
             .uri(uriBuilder -> uriBuilder
                 .path("/rest/api/3/issue/" + request.key + "/comment")
@@ -55,7 +55,7 @@ class SupportTicketCommentGetTool implements ExtoleSupportAdvisorTool<Request> {
             .retrieve()
             .bodyToMono(JsonNode.class)
             .block();
-                             
+
         return result;
     }
 
@@ -63,7 +63,7 @@ class SupportTicketCommentGetTool implements ExtoleSupportAdvisorTool<Request> {
         @JsonPropertyDescription("ticket key")
         @JsonProperty(required = true)
         public String key;
-        
+
         @JsonPropertyDescription("The index of the first comment in to return, default 0")
         @JsonProperty(required = false)
         public Integer rowOffset;

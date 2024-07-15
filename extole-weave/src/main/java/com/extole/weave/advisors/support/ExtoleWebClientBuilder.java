@@ -110,9 +110,9 @@ public class ExtoleWebClientBuilder {
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(payload)
                 .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response -> 
-                    response.bodyToMono(String.class).flatMap(errorBody -> 
-                        Mono.error(new ToolException("Invalid extoleManagedApiKey: " + getKeyPeek(superApiKey) + " or clientId: " + clientId, 
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response ->
+                    response.bodyToMono(String.class).flatMap(errorBody ->
+                        Mono.error(new ToolException("Invalid extoleManagedApiKey: " + getKeyPeek(superApiKey) + " or clientId: " + clientId,
                                 "Bad request code: " + response.statusCode() + " body: " + errorBody + " payload:" + payload.toString()))
                     )
                 )
@@ -128,7 +128,7 @@ public class ExtoleWebClientBuilder {
         if (!result.path("access_token").isEmpty()) {
             throw new ToolException("Internal error, failed to obtain Extole access_token for client");
         }
-        
+
         return result.path("access_token").asText();
     }
 

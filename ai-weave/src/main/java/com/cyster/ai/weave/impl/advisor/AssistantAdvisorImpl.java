@@ -106,7 +106,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
         private Optional<String> instructions = Optional.empty();
         private Toolset.Builder<C2> toolsetBuilder = new Toolset.Builder<C2>();
         private List<Path> filePaths = new ArrayList<Path>();
-        
+
         Builder(OpenAiService openAiService, String name) {
             this.openAiService = openAiService;
             this.name = name;
@@ -165,13 +165,13 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
                 .name(this.name)
                 .model(MODEL)
                 .metadata(metadata);
-            
+
             toolset.applyTools(requestBuilder);
-            
+
             if (this.instructions.isPresent()) {
                 requestBuilder.instructions(this.instructions.get());
             }
-            
+
             Assistant assistant = assistantsClient.createAssistant(requestBuilder.build());
 
             return assistant;
@@ -179,7 +179,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
 
         private Optional<Assistant> findAssistant(String hash) {
             AssistantsClient assistantsClient = this.openAiService.createClient(AssistantsClient.class);
-            
+
             PaginatedAssistants response = null;
             do {
                 PaginationQueryParameters.Builder queryBuilder = PaginationQueryParameters.newBuilder()

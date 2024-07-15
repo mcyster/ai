@@ -17,12 +17,12 @@ import com.cyster.ai.weave.service.advisor.DocumentStore;
 public class DirectoryDocumentStore implements DocumentStore {
     private Path directory;
     private Optional<String> hash;
-    
+
     private DirectoryDocumentStore(Path directory, String hash) {
         this.directory = directory;
         this.hash = Optional.ofNullable(hash);
     }
-    
+
     @Override
     public String getHash() {
         if (this.hash.isEmpty()) {
@@ -34,7 +34,7 @@ public class DirectoryDocumentStore implements DocumentStore {
     @Override
     public Stream<Document> stream() {
         Stream<Document> documents;
-        
+
         try (Stream<Path> paths = Files.walk(directory)) {
            documents = paths
                 .filter(Files::isRegularFile)
@@ -43,7 +43,7 @@ public class DirectoryDocumentStore implements DocumentStore {
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
-        
+
         return documents;
     }
 
@@ -57,7 +57,7 @@ public class DirectoryDocumentStore implements DocumentStore {
         }
         return false;
     }
-    
+
     public String hashDocuments() {
         MessageDigest digest;
         try {
@@ -85,7 +85,7 @@ public class DirectoryDocumentStore implements DocumentStore {
                 throw new RuntimeException(exception);
             }
         });
-     
+
         byte[] hashBytes = digest.digest();
         StringBuilder hashString = new StringBuilder();
         for (byte value : hashBytes) {
@@ -94,14 +94,14 @@ public class DirectoryDocumentStore implements DocumentStore {
 
         return hashString.toString();
     }
-    
+
     private static class FileDocument implements Document {
         private File file;
-        
+
         public FileDocument(File file) {
             this.file = file;
         }
-        
+
         @Override
         public String getName() {
             return file.getName();
@@ -112,9 +112,9 @@ public class DirectoryDocumentStore implements DocumentStore {
             try (InputStream inputStream = new FileInputStream(file)) {
                 stream.accept(inputStream);
             }
-        } 
+        }
     }
-    
+
     public static class Builder implements DirectoryDocumentStoreBuilder {
         private Path directory = null;
         private String hash = null;
@@ -125,13 +125,13 @@ public class DirectoryDocumentStore implements DocumentStore {
             this.directory = directory;
             return this;
         }
-        
+
         @Override
         public Builder withHash(String hash) {
             this.hash = hash;
             return this;
         }
-        
+
         @Override
         public DirectoryDocumentStore create() {
             return new DirectoryDocumentStore(this.directory, this.hash);

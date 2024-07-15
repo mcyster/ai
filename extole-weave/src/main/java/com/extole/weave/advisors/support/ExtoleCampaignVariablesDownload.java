@@ -38,7 +38,7 @@ class ExtoleCampaignVariablesGetTool implements ExtoleSupportAdvisorTool<Request
     @Override
     public Object execute(Request request, Void context) throws ToolException {
         JsonNode result;
-        
+
         try {
             result = this.extoleWebClientFactory.getWebClient(request.clientId).get()
                 .uri(uriBuilder -> uriBuilder

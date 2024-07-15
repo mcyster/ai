@@ -17,9 +17,9 @@ public interface Message {
     }
 
     Type getType();
-    
+
     String getContent();
-    
-    Operation operation();   
-       
+
+    Operation operation();
+
 }

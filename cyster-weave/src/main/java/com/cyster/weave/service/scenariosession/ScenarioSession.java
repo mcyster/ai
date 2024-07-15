@@ -5,10 +5,10 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 
 public interface ScenarioSession<PARAMETERS, CONTEXT> {
 
-	String getId();
+    String getId();
     Scenario<PARAMETERS,CONTEXT> getScenario();
-	PARAMETERS getParameters(); 
-	
-	Conversation getConversation();
-	
+    PARAMETERS getParameters();
+
+    Conversation getConversation();
+
 }

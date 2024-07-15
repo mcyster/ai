@@ -21,7 +21,7 @@ public class GlobalRestExceptionHandler {
         ObjectNode response = JsonNodeFactory.instance.objectNode();
         response.put("status_code", exception.getStatusCode().value());
         response.put("message", exception.getMessage());
-        
+
         return ResponseEntity
             .status(exception.getStatusCode())
             .body(response.toString());

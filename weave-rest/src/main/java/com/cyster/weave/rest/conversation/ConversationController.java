@@ -53,16 +53,16 @@ public class ConversationController {
     @GetMapping("/conversations")
     public List<ConversationResponse> index(@RequestParam Map<String, String> allParameters,
         @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level) {
-        
+
         var scenarioQueryBuilder = scenarioSessionStore.createQueryBuilder();
-        
-        allParameters.entrySet().stream()   
+
+        allParameters.entrySet().stream()
             .filter(entry -> entry.getKey().startsWith(PARAMETER_PREFIX))
             .forEach(entry -> {
-                String parameterName = entry.getKey().substring(PARAMETER_PREFIX.length()); 
+                String parameterName = entry.getKey().substring(PARAMETER_PREFIX.length());
                 scenarioQueryBuilder.withFilterParameter(parameterName, entry.getValue());
             });
-        
+
         return scenarioQueryBuilder.list().stream()
             .map(value -> new ConversationResponse.Builder(level)
                 .setId(value.getId())
@@ -79,7 +79,7 @@ public class ConversationController {
         @RequestHeader MultiValueMap<String, String> headers,
         @RequestBody ConversationRequest request)
         throws ScenarioNameNotSpecifiedRestException, ScenarioNameNotFoundRestException,ScenarioParametersException, ScenarioContextException {
-           
+
         if (request == null || request.scenario() == null || request.scenario().isBlank()) {
             throw new ScenarioNameNotSpecifiedRestException();
         }
@@ -90,7 +90,7 @@ public class ConversationController {
         } catch (ScenarioException exception) {
             throw new ScenarioNameNotFoundRestException(request.scenario());
         }
-        
+
         var session = createScenarioSession(scenario, request.parameters(), headers);
 
         var conversation = session.getConversation();
@@ -125,7 +125,7 @@ public class ConversationController {
             .setMessages(session.get().getConversation().getMessages())
             .build();
     }
-    
+
     @PostMapping("/conversations/messages")
     public ConvenienceConversationResponse startConversation(
         @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level,
@@ -143,7 +143,7 @@ public class ConversationController {
         } catch (ScenarioException exception) {
             throw new ScenarioNameNotFoundRestException(request.scenario());
         }
-            
+
         var session = createScenarioSession(scenario, request.parameters(), headers);
 
         var conversation = session.getConversation();
@@ -153,7 +153,7 @@ public class ConversationController {
         try {
             if (request.prompt() != null && !request.prompt().isBlank()) {
                 conversation.addMessage(Type.USER, request.prompt());
-                answer = conversation.respond();   
+                answer = conversation.respond();
             } else {
                 answer = conversation.respond();
             }
@@ -231,23 +231,23 @@ public class ConversationController {
             throw new ScenarioContextException("Unable to create ExtoleSessionContext expected Authorization header");
         }
         String authorizationHeader = headers.getFirst("authorization");
-        
+
         if (authorizationHeader != null) {
             var accessToken = authorizationHeader.replace("Bearer ", "");
             if (accessToken.length() > 0) {
                 return new ExtoleSessionContext(accessToken);
             }
         }
-        
+
         throw new ScenarioContextException("Unable to create ExtoleSessionContext, Authorization header exists but not token found");
     }
 
     @SuppressWarnings("unchecked")
     private <PARAMETERS, CONTEXT> ScenarioSession<PARAMETERS, CONTEXT> createScenarioSession(Scenario<PARAMETERS, CONTEXT> scenario,
-        Map<String, Object> parameterMap, 
-        MultiValueMap<String, String> headers) 
+        Map<String, Object> parameterMap,
+        MultiValueMap<String, String> headers)
         throws ScenarioParametersException, ScenarioContextException {
-        
+
         JsonNode parameterNode = objectMapper.valueToTree(parameterMap);
         PARAMETERS parameters;
         try {
@@ -265,10 +265,10 @@ public class ConversationController {
         }
 
         CONTEXT context = null;
-        if (scenario. getContextClass() == ExtoleSessionContext.class) {   
+        if (scenario. getContextClass() == ExtoleSessionContext.class) {
             context = (CONTEXT)getSessionContext(headers);
         }
-        
+
         return scenarioSessionStore.addSession(scenario, parameters, scenario.createConversation(parameters, context));
     }
 }

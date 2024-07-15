@@ -57,7 +57,7 @@ class SupportTicketCommentAddTool implements ExtoleSupportAdvisorTool<Request> {
         if (request.comment == null || request.comment.isEmpty()) {
             throw new ToolException("Attribute 'comment' must be specified");
         }
-        
+
         if (isAtlassianDocumentFormat(request.comment)) {
             throw new ToolException("Attribute 'comment' must be in markdown format");
         }
@@ -81,8 +81,8 @@ class SupportTicketCommentAddTool implements ExtoleSupportAdvisorTool<Request> {
             .contentType(MediaType.APPLICATION_JSON)
             .bodyValue(payload)
             .retrieve()
-            .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response -> 
-                response.bodyToMono(String.class).flatMap(errorBody -> 
+            .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response ->
+                response.bodyToMono(String.class).flatMap(errorBody ->
                     Mono.error(new ToolException("Problems posting comment to ticket", "Bad request code: " + response.statusCode() + " body: " + errorBody + " payload:" + payload.toString()))
                 )
             )
@@ -109,7 +109,7 @@ class SupportTicketCommentAddTool implements ExtoleSupportAdvisorTool<Request> {
             JsonNode rootNode = mapper.readTree(input);
 
             if (rootNode.has("type") && "doc".equals(rootNode.get("type").asText()) && rootNode.has("content")) {
-                return true; 
+                return true;
             }
         } catch (Exception e) {
             return false;

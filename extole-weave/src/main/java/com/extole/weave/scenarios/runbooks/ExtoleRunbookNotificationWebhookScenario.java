@@ -9,7 +9,7 @@ import com.extole.weave.advisors.support.ExtoleSupportAdvisor;
 @Component
 public class ExtoleRunbookNotificationWebhookScenario implements RunbookScenario {
     public static String NAME = "extoleRunbookNotificationWebhook";
-    private static String DESCRIPTION = "Analyzes and comments on webhook notification tickets";    
+    private static String DESCRIPTION = "Analyzes and comments on webhook notification tickets";
     private static String KEYWORDS = "notification webhook";
 
     private static String INSTRUCTIONS = """
@@ -51,7 +51,7 @@ Note the ticket number, and an extremely brief summary of the comment added to t
     public String getKeywords() {
         return KEYWORDS;
     }
-    
+
     @Override
     public Class<RunbookScenarioParameters> getParameterClass() {
         return RunbookScenarioParameters.class;
@@ -61,7 +61,7 @@ Note the ticket number, and an extremely brief summary of the comment added to t
     public Class<Void> getContextClass() {
         return Void.class;
     }
- 
+
     @Override
     public Conversation createConversation(RunbookScenarioParameters parameters, Void context) {
         return this.advisor.createConversation().setOverrideInstructions(INSTRUCTIONS).start();

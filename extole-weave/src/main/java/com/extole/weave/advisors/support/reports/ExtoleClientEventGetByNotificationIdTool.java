@@ -43,7 +43,7 @@ class ExtoleClientEventGetByNotificationIdTool implements ExtoleSupportAdvisorTo
     public Object execute(Request parameters, Void context) throws ToolException {
         return this.tool.execute(parameters, context);
     }
-    
+
     static class Request {
         @JsonProperty(required = true)
         public String clientId;
@@ -117,7 +117,7 @@ class UncachedClientEventGetTool implements ExtoleSupportAdvisorTool<Request> {
             throw new ToolException("notificationId " + request.notificationId +
                     " must be 18 to 20 characters and alphanumeric (lowercase alpha only)");
         }
-        
+
         return getClientEventByNotificationIdViaReport(request);
     }
 

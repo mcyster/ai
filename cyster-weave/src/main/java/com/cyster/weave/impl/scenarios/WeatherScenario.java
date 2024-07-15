@@ -19,9 +19,9 @@ import com.github.mustachejava.MustacheFactory;
 @Component
 public class WeatherScenario implements Scenario<Parameters, Void> {
     private static final String NAME = "weather";
-    
+
     private Advisor<Void> advisor;
-    
+
     WeatherScenario(WeatherAdvisor weatherAdvisor) {
         this.advisor = weatherAdvisor;
     }
@@ -35,7 +35,7 @@ public class WeatherScenario implements Scenario<Parameters, Void> {
     public String getDescription() {
         return "Gives a weather at a location";
     }
-    
+
     @Override
     public Class<Parameters> getParameterClass() {
         return Parameters.class;
@@ -56,13 +56,13 @@ public class WeatherScenario implements Scenario<Parameters, Void> {
         mustache.execute(messageWriter, parameters);
         messageWriter.flush();
         var instructions = messageWriter.toString();
-        
+
         var conversationBuilder  = this.advisor.createConversation()
             .setOverrideInstructions(instructions);
-               
+
         return conversationBuilder.start();
     }
-    
+
     public static class Parameters {
         @JsonPropertyDescription("City and state, for example: León, Guanajuato")
         public String location;

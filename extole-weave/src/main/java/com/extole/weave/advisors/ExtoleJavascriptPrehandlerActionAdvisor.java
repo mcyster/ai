@@ -20,7 +20,7 @@ public class ExtoleJavascriptPrehandlerActionAdvisor implements Advisor<AdminUse
     private AdvisorService advisorService;
     private Optional<Advisor<AdminUserToolContext>> advisor = Optional.empty();
     private ExtoleStore extoleStore;
-    
+
     public ExtoleJavascriptPrehandlerActionAdvisor(AdvisorService advisorService, ExtoleStore extoleStore) {
         this.advisorService = advisorService;
         this.extoleStore = extoleStore;
@@ -47,7 +47,7 @@ public class ExtoleJavascriptPrehandlerActionAdvisor implements Advisor<AdminUse
                 throw new RuntimeException("Unable to convert resourceUrl to URI");
             }
 
-            String instructions = """ 
+            String instructions = """
             The JavaScript code described here executes with a variable 'context' of type PrehandlerActionContext.
             It should create a processedRawEvent using the ProcessedRawEventBuilder available from the context.
 
@@ -61,14 +61,14 @@ public class ExtoleJavascriptPrehandlerActionAdvisor implements Advisor<AdminUse
             - ProcessedRawEventBuilder
 """;
             instructions = """
-A prehandler can modify a raw event before its processed by Extole. 
-The request is modified using the ProcessedRawEventBuilder available as getEventBuilder from the context variable. 
+A prehandler can modify a raw event before its processed by Extole.
+The request is modified using the ProcessedRawEventBuilder available as getEventBuilder from the context variable.
 
 A prehandler code snippet prehandler_javascript_code is executed in the following context.
 
 var context = PrehandlerActionContext(javaPrehandlerContext);
 (function(context) {
-  // ... prehandler_javascript_code here ... 
+  // ... prehandler_javascript_code here ...
 })(context)
 
 To understand how to use the 'context' you need explore the api for classes like:
@@ -79,7 +79,7 @@ To understand how to use the 'context' you need explore the api for classes like
  - ClientContext
  - GlobalServices
  - ProcessedRawEventBuilder
- 
+
  Where possible, link to interfaces and classes mentioned in your response.
 """;
 
@@ -88,7 +88,7 @@ To understand how to use the 'context' you need explore the api for classes like
             builder
                 .setInstructions(instructions)
                 .withFile(javascriptActionContextPath);
-            
+
             builder.withTool(extoleStore.createStoreTool());
 
             this.advisor = Optional.of(builder.getOrCreate());

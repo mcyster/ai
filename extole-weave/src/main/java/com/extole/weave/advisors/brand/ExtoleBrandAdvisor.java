@@ -31,20 +31,20 @@ public class ExtoleBrandAdvisor implements Advisor<Void> {
     @Override
     public ConversationBuilder<Void> createConversation() {
         if (this.advisor.isEmpty()) {
-            String instructions = """ 
+            String instructions = """
 You focus on find details on Company brands.
 """;
-                
+
             AdvisorBuilder<Void> builder = this.advisorService.getOrCreateAdvisor(NAME);
-            
+
             builder
                 .setInstructions(instructions)
                 .withTool(new BrandSearchTool(this.brandFetchApiKey))
                 .withTool(new BrandFetchTool(this.brandFetchApiKey));
-                
+
              this.advisor = Optional.of(builder.getOrCreate());
         }
-        
+
         return this.advisor.get().createConversation();
     }
 

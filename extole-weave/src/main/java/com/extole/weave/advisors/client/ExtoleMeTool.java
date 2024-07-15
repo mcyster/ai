@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 
 class ExtoleMeTool implements Tool<MeRequest, ExtoleClientAdvisor.Context> {
-    
+
     ExtoleMeTool() {
     }
 
@@ -32,7 +32,7 @@ class ExtoleMeTool implements Tool<MeRequest, ExtoleClientAdvisor.Context> {
     }
 
     @Override
-    public Object execute(MeRequest request, ExtoleClientAdvisor.Context context) throws ToolException {     
+    public Object execute(MeRequest request, ExtoleClientAdvisor.Context context) throws ToolException {
         var webClient = ExtoleWebClientBuilder.builder("https://api.extole.io/")
             .setApiKey(context.getUserAccessToken())
             .build();
@@ -48,15 +48,15 @@ class ExtoleMeTool implements Tool<MeRequest, ExtoleClientAdvisor.Context> {
                 .bodyToMono(JsonNode.class)
                 .block();
         } catch(WebClientResponseException.Forbidden exception) {
-            throw new FatalToolException("extole_token is invalid", exception); 
+            throw new FatalToolException("extole_token is invalid", exception);
         } catch(WebClientException exception) {
-            throw new ToolException("Internal tool error", exception); 
+            throw new ToolException("Internal tool error", exception);
         }
 
         if (resultNode == null || !resultNode.isObject()) {
             throw new ToolException(("Internal tool error, no results from request"));
         }
-        
+
         return resultNode;
     }
 

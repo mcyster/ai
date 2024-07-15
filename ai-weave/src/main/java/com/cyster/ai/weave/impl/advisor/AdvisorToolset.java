@@ -21,47 +21,47 @@ import io.github.stefanbratanov.jvm.openai.VectorStore;
 
 class AdvisorToolset<C> {
     private Toolset<C> toolset;
-    
+
     AdvisorToolset(Toolset<C> toolset) {
         this.toolset = toolset;
     }
 
     public void applyTools(CreateAssistantRequest.Builder requestBuilder) {
-        
+
         List<String> fileIds = null;
         String[] vectorStoreIds = null;
         for (var tool : this.toolset.getTools()) {
             if (tool.getDescription().equals(CodeInterpreterToolImpl.NAME)) {
                 requestBuilder.tool(new io.github.stefanbratanov.jvm.openai.Tool.CodeInterpreterTool());
-                
+
                 // TODO add type, create tools from AdvisorService, base type apply(requestBuilder)
                 @SuppressWarnings("unchecked")
-                var codeInterpreterTool = (CodeInterpreterToolImpl<C>)tool; 
-                
+                var codeInterpreterTool = (CodeInterpreterToolImpl<C>)tool;
+
                 fileIds = codeInterpreterTool.getFileIds();
             }
             else if (tool.getName().equals(SearchToolImpl.NAME)) {
                 requestBuilder.tool(new io.github.stefanbratanov.jvm.openai.Tool.FileSearchTool());
-                
+
                 // TODO add type, create tools from AdvisorService, base type apply(requestBuilder)
                 @SuppressWarnings("unchecked")
-                var searchTool = (SearchToolImpl<C>)tool; 
-                
+                var searchTool = (SearchToolImpl<C>)tool;
+
                 List<String> ids = searchTool.getVectorStores().stream()
                     .map(VectorStore::id)
                     .collect(Collectors.toList());
-                    
+
                 vectorStoreIds = ids.toArray(new String[0]);
-                
+
             } else {
                 var parameterSchema = getOpenAiToolParameterSchema(tool);
-    
+
                 var requestFunction = Function.newBuilder()
                     .name(tool.getName())
                     .description(tool.getDescription())
                     .parameters(parameterSchema)
                     .build();
-    
+
                 requestBuilder.tool(new io.github.stefanbratanov.jvm.openai.Tool.FunctionTool(requestFunction));
             }
         }
@@ -69,10 +69,10 @@ class AdvisorToolset<C> {
         if (fileIds != null && vectorStoreIds != null) {
             var resources = ToolResources.codeInterpreterAndFileSearchToolResources(fileIds, vectorStoreIds);
             requestBuilder.toolResources(resources);
-        } 
+        }
         else if (fileIds != null) {
             var resources = ToolResources.codeInterpreterToolResources(fileIds);
-            requestBuilder.toolResources(resources);     
+            requestBuilder.toolResources(resources);
         }
         else if (vectorStoreIds != null) {
             var resources = ToolResources.fileSearchToolResources(vectorStoreIds);

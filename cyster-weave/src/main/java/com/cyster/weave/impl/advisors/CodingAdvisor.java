@@ -17,11 +17,11 @@ public class CodingAdvisor implements Advisor<Void> {
 
     private AdvisorService advisorService;
     private Optional<Advisor<Void>> advisor = Optional.empty();
-    
+
     public CodingAdvisor(AdvisorService advisorService) {
       this.advisorService = advisorService;
     }
-    
+
     @Override
     public String getName() {
         return NAME;
@@ -34,7 +34,7 @@ public class CodingAdvisor implements Advisor<Void> {
             builder
                 .setInstructions("You are a highly experienced software engineer. You focus on creating simple, highly readable software");
                 // .withTool()
-                
+
             this.advisor = Optional.of(builder.getOrCreate());
         }
         return this.advisor.get().createConversation();

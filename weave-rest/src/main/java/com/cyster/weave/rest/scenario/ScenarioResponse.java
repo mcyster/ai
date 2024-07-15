@@ -25,11 +25,11 @@ public class ScenarioResponse {
     public String getDescription() {
         return this.description;
     }
-    
+
     public JsonSchema getParameters() {
         ObjectMapper mapper = new ObjectMapper();
         JsonSchemaGenerator schemaGenerator = new JsonSchemaGenerator(mapper);
-        
+
         try {
             return schemaGenerator.generateSchema(parameterClass);
         } catch (JsonMappingException exception) {
@@ -61,7 +61,7 @@ public class ScenarioResponse {
             this.description = description;
             return this;
         }
-        
+
         public Builder setParameterClass(Class<?> parameterClass) {
             this.parameterClass = parameterClass;
             return this;

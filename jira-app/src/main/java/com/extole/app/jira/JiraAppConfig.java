@@ -36,11 +36,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class JiraAppConfig implements WebMvcConfigurer {
     private Path sites;
     private URI applicationUri;
-    
-    public JiraAppConfig(ApplicationContext applicationContext, 
-        @Value("${AI_HOME}") String aiHome,  
+
+    public JiraAppConfig(ApplicationContext applicationContext,
+        @Value("${AI_HOME}") String aiHome,
         @Value("${app.url:}") String appUrl) {
-        
+
         if (appUrl != null && !appUrl.isBlank()) {
             try {
                 this.applicationUri = new URI(appUrl);
@@ -50,7 +50,7 @@ public class JiraAppConfig implements WebMvcConfigurer {
         } else {
             this.applicationUri = baseUri(applicationContext);
         }
-        
+
         if (aiHome == null || aiHome.isBlank()) {
             throw new IllegalArgumentException("AI_HOME not defined");
         }
@@ -60,11 +60,11 @@ public class JiraAppConfig implements WebMvcConfigurer {
         }
         if (!Files.isDirectory(directory)) {
             throw new IllegalArgumentException("AI_HOME (" + aiHome + ") is not a directory");
-        } 
-        
+        }
+
         this.sites = directory.resolve("sites");
     }
-    
+
     @Bean
     public AdvisorService getAdvisorService(@Value("${OPENAI_API_KEY}") String openAiApiKey) {
         if (!StringUtils.hasText(openAiApiKey)) {
@@ -73,17 +73,17 @@ public class JiraAppConfig implements WebMvcConfigurer {
 
         return new AdvisorServiceImpl.Factory().createAdvisorService(openAiApiKey);
     }
-    
+
     @Bean
     public ScenarioService getScenarioService(List<ScenarioLoader> scenarioLoaders, List<Scenario<?,?>> scenarios) {
         return new ScenarioServiceImpl.Factory().createScenarioService(scenarioLoaders, scenarios);
     }
-    
-    @Bean 
+
+    @Bean
     public WebsiteService getWebsiteService() {
-        return new WebsiteServiceImpl(applicationUri.resolve("/sites"), sites); 
+        return new WebsiteServiceImpl(applicationUri.resolve("/sites"), sites);
     }
-    
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String resourcePath = "file:" + sites.toAbsolutePath().toString() + "/";
@@ -92,11 +92,11 @@ public class JiraAppConfig implements WebMvcConfigurer {
                 .setCachePeriod(0)
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver());
-        
+
         registry.addResourceHandler("/**")
             .addResourceLocations("classpath:/static/");
     }
-    
+
     private static URI baseUri(ApplicationContext context) {
         Environment environment = context.getEnvironment();
 

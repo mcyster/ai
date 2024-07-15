@@ -8,13 +8,13 @@ import com.cyster.ai.weave.service.advisor.ToolException;
 
 public class CodeInterpreterToolImpl<CONTEXT> implements CodeInterpreterTool<CONTEXT> {
     public static final String NAME = "code_interpreter";
-    
+
     private List<String> fileIds;
-    
+
     public CodeInterpreterToolImpl(List<String> fileIds) {
         this.fileIds = fileIds;
     }
-    
+
     @Override
     public String getName() {
         return NAME;

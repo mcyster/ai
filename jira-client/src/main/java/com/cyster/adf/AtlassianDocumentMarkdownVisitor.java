@@ -31,66 +31,66 @@ class AtlassianDocumentMarkdownVisitor {
     private AtlassianDocumentBuilder builder = new AtlassianDocumentBuilder();
     private NodeVisitor visitor = new NodeVisitor() {
         {
-            addHandler(new VisitHandler<Document>(Document.class, new DocumentVisitor()));        
+            addHandler(new VisitHandler<Document>(Document.class, new DocumentVisitor()));
             addHandler(new VisitHandler<Paragraph>(Paragraph.class, new ParagraphVisitor()));
             addHandler(new VisitHandler<Heading>(Heading.class, new HeadingVisitor()));
-            addHandler(new VisitHandler<Code>(Code.class, new CodeVisitor()));        
+            addHandler(new VisitHandler<Code>(Code.class, new CodeVisitor()));
             addHandler(new VisitHandler<Emphasis>(Emphasis.class, new EmphasisVisitor()));
             addHandler(new VisitHandler<StrongEmphasis>(StrongEmphasis.class, new StrongEmphasisVisitor()));
             addHandler(new VisitHandler<AutoLink>(AutoLink.class, new AutoLinkVisitor()));
-            addHandler(new VisitHandler<BlockQuote>(BlockQuote.class, new BlockQuoteVisitor()));        
-            addHandler(new VisitHandler<FencedCodeBlock>(FencedCodeBlock.class, new FencedCodeBlockVisitor()));        
-            addHandler(new VisitHandler<CodeBlock>(CodeBlock.class, new CodeBlockVisitor()));        
-            addHandler(new VisitHandler<BulletList>(BulletList.class, new BulletListVisitor()));        
-            addHandler(new VisitHandler<BulletListItem>(BulletListItem.class, new BulletListItemVisitor()));        
-            addHandler(new VisitHandler<OrderedList>(OrderedList.class, new OrderedListVisitor()));        
-            addHandler(new VisitHandler<OrderedListItem>(OrderedListItem.class, new OrderedListItemVisitor()));        
+            addHandler(new VisitHandler<BlockQuote>(BlockQuote.class, new BlockQuoteVisitor()));
+            addHandler(new VisitHandler<FencedCodeBlock>(FencedCodeBlock.class, new FencedCodeBlockVisitor()));
+            addHandler(new VisitHandler<CodeBlock>(CodeBlock.class, new CodeBlockVisitor()));
+            addHandler(new VisitHandler<BulletList>(BulletList.class, new BulletListVisitor()));
+            addHandler(new VisitHandler<BulletListItem>(BulletListItem.class, new BulletListItemVisitor()));
+            addHandler(new VisitHandler<OrderedList>(OrderedList.class, new OrderedListVisitor()));
+            addHandler(new VisitHandler<OrderedListItem>(OrderedListItem.class, new OrderedListItemVisitor()));
 
             addHandler(new VisitHandler<Link>(Link.class, new LinkVisitor()));
-            addHandler(new VisitHandler<SoftLineBreak>(SoftLineBreak.class, new SoftLineBreakVisitor()));        
-            addHandler(new VisitHandler<Text>(Text.class, new TextVisitor()));       
+            addHandler(new VisitHandler<SoftLineBreak>(SoftLineBreak.class, new SoftLineBreakVisitor()));
+            addHandler(new VisitHandler<Text>(Text.class, new TextVisitor()));
         }
     };
-    
+
     JsonNode generate(String markdown) {
         this.builder = new AtlassianDocumentBuilder();
- 
+
         Parser parser = Parser.builder().build();
         Node document = parser.parse(markdown);
-        
+
         visitor.visit(document);
-        
+
         return builder.getDocument();
     }
 
     public String asVisitTree(String markdown) {
         this.builder = new AtlassianDocumentBuilder();
-        
+
         Parser parser = Parser.builder().build();
         Node document = parser.parse(markdown);
-        
-        return dumpToString(document, 0);  
+
+        return dumpToString(document, 0);
     }
-    
+
     private String dumpToString(Node node, int depth) {
         String value = "";
-        do {            
+        do {
             value = value + " ".repeat(depth) + "<" + node.getNodeName() + ">\n";
-            
+
             if (node.getNodeName().equalsIgnoreCase("text")) {
                 value = value + " ".repeat(depth + 1) + node.getChars().unescape() + "\n";
             }
             if (node.getNodeName().equalsIgnoreCase("AutoLink")) {
                 value = value + " ".repeat(depth + 1) + node.getChars().unescape() + "\n";
-            }            
+            }
             if (node.hasChildren()) {
                 value = value + dumpToString(node.getFirstChild(), depth + 1);
             }
             value = value + " ".repeat(depth) + "</" + node.getNodeName() + ">\n";
-            
+
             node = node.getNext();
         } while(node != null);
-          
+
         return value;
     }
 
@@ -102,7 +102,7 @@ class AtlassianDocumentMarkdownVisitor {
         }
     }
 
-    public class ParagraphVisitor implements Visitor<Paragraph> {        
+    public class ParagraphVisitor implements Visitor<Paragraph> {
         @Override
         public void visit(Paragraph node) {
             AtlassianDocumentMarkdownVisitor.this.builder.startParagraph();
@@ -111,7 +111,7 @@ class AtlassianDocumentMarkdownVisitor {
         }
     }
 
-    public class HeadingVisitor implements Visitor<Heading> {        
+    public class HeadingVisitor implements Visitor<Heading> {
         @Override
         public void visit(Heading node) {
             AtlassianDocumentMarkdownVisitor.this.builder.startHeading(node.getLevel());
@@ -119,7 +119,7 @@ class AtlassianDocumentMarkdownVisitor {
             AtlassianDocumentMarkdownVisitor.this.builder.endHeading();
         }
     }
-    
+
     public class CodeVisitor implements Visitor<Code> {
         @Override
         public void visit(Code node) {
@@ -128,7 +128,7 @@ class AtlassianDocumentMarkdownVisitor {
             AtlassianDocumentMarkdownVisitor.this.builder.endCode();
         }
     }
-    
+
     public class EmphasisVisitor implements Visitor<Emphasis> {
         @Override
         public void visit(Emphasis node) {
@@ -180,16 +180,16 @@ class AtlassianDocumentMarkdownVisitor {
         public void visit(FencedCodeBlock node) {
             String language = node.getInfo().unescape();
             if (language == null || language.isEmpty()) {
-                AtlassianDocumentMarkdownVisitor.this.builder.startCodeBlock();                
+                AtlassianDocumentMarkdownVisitor.this.builder.startCodeBlock();
             } else {
-                AtlassianDocumentMarkdownVisitor.this.builder.startCodeBlock(node.getInfo().unescape());                
+                AtlassianDocumentMarkdownVisitor.this.builder.startCodeBlock(node.getInfo().unescape());
             }
             AtlassianDocumentMarkdownVisitor.this.builder.addText(
                 node.getContentChars().toString().replaceAll("\\n+$", ""));
             AtlassianDocumentMarkdownVisitor.this.builder.endCodeBlock();
         }
     }
-    
+
     public class CodeBlockVisitor implements Visitor<CodeBlock> {
         @Override
         public void visit(CodeBlock node) {
@@ -219,11 +219,11 @@ class AtlassianDocumentMarkdownVisitor {
             AtlassianDocumentMarkdownVisitor.this.builder.endListItem();
         }
     }
-    
+
     public class OrderedListVisitor implements Visitor<OrderedList> {
         @Override
         public void visit(OrderedList node) {
-            AtlassianDocumentMarkdownVisitor.this.builder.startOrderedList(); 
+            AtlassianDocumentMarkdownVisitor.this.builder.startOrderedList();
             AtlassianDocumentMarkdownVisitor.this.visitor.visitChildren(node);
             AtlassianDocumentMarkdownVisitor.this.builder.endOrderedList();
         }
@@ -237,14 +237,14 @@ class AtlassianDocumentMarkdownVisitor {
             AtlassianDocumentMarkdownVisitor.this.builder.endListItem();
         }
     }
-    
+
     public class SoftLineBreakVisitor implements Visitor<SoftLineBreak> {
-    	 @Override
+         @Override
          public void visit(SoftLineBreak node) {
              AtlassianDocumentMarkdownVisitor.this.builder.addBreak();
          }
     }
-    
+
     public class TextVisitor implements Visitor<Text> {
         @Override
         public void visit(Text node) {
@@ -252,6 +252,6 @@ class AtlassianDocumentMarkdownVisitor {
             AtlassianDocumentMarkdownVisitor.this.visitor.visitChildren(node);
         }
     }
- 
-    
+
+
 }

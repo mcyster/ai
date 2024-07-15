@@ -14,11 +14,11 @@ public class SimpleAdvisor implements Advisor<Void> {
 
     private AdvisorService advisorService;
     private Optional<Advisor<Void>> advisor = Optional.empty();
-    
+
     public SimpleAdvisor(AdvisorService advisorService) {
       this.advisorService = advisorService;
     }
-    
+
     @Override
     public String getName() {
         return NAME;
@@ -30,7 +30,7 @@ public class SimpleAdvisor implements Advisor<Void> {
             AdvisorBuilder<Void> builder = this.advisorService.getOrCreateAdvisor(NAME);
             builder
                 .setInstructions("You are a helpful assistant.");
-            
+
                 this.advisor = Optional.of(builder.getOrCreate());
         }
         return this.advisor.get().createConversation();

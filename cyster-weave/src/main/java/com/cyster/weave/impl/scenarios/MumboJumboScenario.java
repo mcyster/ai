@@ -25,7 +25,7 @@ public class MumboJumboScenario implements Scenario<Void, Void> {
     public String getDescription() {
         return "Mumbo Jumbo stuff";
     }
-    
+
     @Override
     public Class<Void> getParameterClass() {
         return Void.class;
@@ -39,11 +39,11 @@ public class MumboJumboScenario implements Scenario<Void, Void> {
     @Override
     public Conversation createConversation(Void parameters, Void context) {
         String instructions = "Generate 10 made up words and their definitions";
-        
+
         return this.advisor.createConversation()
             .setOverrideInstructions(instructions)
             .start();
     }
 
- 
+
 }

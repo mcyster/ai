@@ -30,45 +30,45 @@ public class SiteController {
     @GetMapping("/pages")
     public List<WebsiteResponse> getSites() {
         List<WebsiteResponse> websites = new ArrayList<>();
-        
+
         for(var site: sites.getSites()) {
             websites.add(new WebsiteResponse(site.getId(), site.getType(), site.getUri()));
         }
-        
+
         return websites;
     }
 
     @PostMapping("/pages/{name}")
     public WebsiteResponse getSite(
         @PathVariable("name") String name) {
-           
+
         var site = sites.getSite(name);
-        
+
         return new WebsiteResponse(site.getId(), site.getType(), site.getUri());
     }
-    
+
     @PostMapping("/pages/{name}/copy")
     public WebsiteResponse copySite(
         @PathVariable("name") String name) {
-           
-        var site = sites.getSite(name); 
+
+        var site = sites.getSite(name);
         Website newSite = sites.copy(site);
-        
+
         return new WebsiteResponse(newSite.getId(), newSite.getType(), newSite.getUri());
     }
 
     @PutMapping("/pages/{name}")
     public WebsiteResponse nameSite(
-        @PathVariable("name") String name, 
+        @PathVariable("name") String name,
         @RequestBody NameRequest request){
-           
-        var site = sites.getSite(name); 
+
+        var site = sites.getSite(name);
         Website newSite = sites.name(site, request.name());
-        
+
         return new WebsiteResponse(newSite.getId(), newSite.getType(), newSite.getUri());
     }
 
-    
+
     static record WebsiteResponse (String name, Website.Type type, URI uri) {};
     static record NameRequest (String name) {};
 

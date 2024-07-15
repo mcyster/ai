@@ -59,9 +59,9 @@ public class HttpClientLogger extends HttpClient {
                 });
     }
 
-    private void logRequest(HttpRequest request) {        
+    private void logRequest(HttpRequest request) {
         Map<String, List<String>> headers = new HashMap<>(request.headers().map());
-        
+
         Optional<List<String>> authorizationHeader = Optional.ofNullable(headers.get("Authorization"));
         authorizationHeader.ifPresent(headerValues -> {
             List<String> maskedHeaderValues = headerValues.stream()
@@ -69,7 +69,7 @@ public class HttpClientLogger extends HttpClient {
                 .collect(Collectors.toList());
             headers.put("Authorization", maskedHeaderValues);
         });
-   
+
         logger.log("Request", new Request(request.uri(), request.method()));
         logger.log(Operation.Level.Debug, "details", new RequestDetails(headers));
 
@@ -84,7 +84,7 @@ public class HttpClientLogger extends HttpClient {
 
     }
 
-    
+
     private static String maskToken(String token) {
         if (token == null || token.length() <= 4) {
             return token;
@@ -92,7 +92,7 @@ public class HttpClientLogger extends HttpClient {
         String maskedPart = "*".repeat(token.length() - 4);
         return maskedPart + token.substring(token.length() - 4);
     }
-    
+
     private <T> HttpResponse.BodyHandler<T> loggingBodyHandler(HttpResponse.BodyHandler<T> bodyHandler) {
         return responseInfo -> {
             HttpResponse.BodySubscriber<T> bodySubscriber = bodyHandler.apply(responseInfo);
@@ -177,7 +177,7 @@ public class HttpClientLogger extends HttpClient {
         public LoggingSubscriber(OperationLogger logger) {
             this.logger = logger;
         }
-        
+
         @Override
         public void onSubscribe(Subscription subscription) {
             subscription.request(Long.MAX_VALUE);
@@ -210,7 +210,7 @@ public class HttpClientLogger extends HttpClient {
             PushPromiseHandler<T> pushPromiseHandler) {
         return delegate.sendAsync(request, responseBodyHandler);
     }
-    
+
     public static record Request(URI uri, String method) {
         @Override
         public String toString() {
@@ -234,7 +234,7 @@ public class HttpClientLogger extends HttpClient {
             }
         }
     }
-    
+
     public static record Response(int code) {
         @Override
         public String toString() {

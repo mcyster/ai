@@ -16,20 +16,20 @@ public class ExtoleSupportAdvisor implements Advisor<Void> {
     public final String NAME = "extoleSupport";
 
     private AdvisorService advisorService;
-    private Map<String, ExtoleSupportAdvisorTool<?>> tools = new HashMap<>();    
+    private Map<String, ExtoleSupportAdvisorTool<?>> tools = new HashMap<>();
     private Optional<Advisor<Void>> advisor = Optional.empty();
 
     public ExtoleSupportAdvisor(AdvisorService advisorService, List<ExtoleSupportAdvisorToolLoader> toolLoaders, List<ExtoleSupportAdvisorTool<?>> tools) {
         this.advisorService = advisorService;
-        
+
         for(var tool: tools) {
             this.tools.put(tool.getName(), tool);
         }
-        
+
         for(var loader: toolLoaders) {
             for(var tool: loader.getTools()) {
                 this.tools.put(tool.getName(), tool);
-            }            
+            }
         }
     }
 
@@ -41,7 +41,7 @@ public class ExtoleSupportAdvisor implements Advisor<Void> {
     @Override
     public ConversationBuilder<Void> createConversation() {
         if (this.advisor.isEmpty()) {
-            String instructions = """ 
+            String instructions = """
 You are an advisor the support team at Extole a SaaS marketing platform.
 
 Keep answers brief, and where possible in point form.
@@ -51,7 +51,7 @@ When referring to a client, use the client short_name.
             AdvisorBuilder<Void> builder = this.advisorService.getOrCreateAdvisor(NAME);
             builder
                 .setInstructions(instructions);
-                
+
            for(var tool: tools.values()) {
                 builder.withTool(tool);
            }

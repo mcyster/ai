@@ -11,7 +11,7 @@ public interface Advisor<C> {
     interface ConversationBuilder<C> {
 
         ConversationBuilder<C> withContext(C context);
-        
+
         ConversationBuilder<C> setOverrideInstructions(String instruction);
 
         ConversationBuilder<C> addMessage(String message);

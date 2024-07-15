@@ -49,8 +49,8 @@ public class SageAppConfig implements WebMvcConfigurer {
 
     public SageAppConfig(ApplicationContext applicationContext,
         @Value("${AI_HOME}") String aiHome,
-        @Value("${app.url:}") String appUrl) {    
-        
+        @Value("${app.url:}") String appUrl) {
+
         if (appUrl != null && !appUrl.isBlank()) {
             try {
                 this.applicationUri = new URI(appUrl);
@@ -60,7 +60,7 @@ public class SageAppConfig implements WebMvcConfigurer {
         } else {
             this.applicationUri = baseUri(applicationContext);
         }
-        
+
         if (aiHome == null || aiHome.isBlank()) {
             throw new IllegalArgumentException("AI_HOME not defined");
         }
@@ -70,31 +70,31 @@ public class SageAppConfig implements WebMvcConfigurer {
         }
         if (!Files.isDirectory(directory)) {
             throw new IllegalArgumentException("AI_HOME (" + aiHome + ") is not a directory");
-        } 
-        
+        }
+
         this.sites = directory.resolve("sites");
     }
-    
+
     @Bean
-    public AdvisorService getAdvisorService(@Value("${OPENAI_API_KEY}") String openAiApiKey) {    
+    public AdvisorService getAdvisorService(@Value("${OPENAI_API_KEY}") String openAiApiKey) {
         if (!StringUtils.hasText(openAiApiKey)) {
             throw new IllegalArgumentException("OPENAI_API_KEY not defined");
         }
 
         return new AdvisorServiceImpl.Factory().createAdvisorService(openAiApiKey);
     }
-    
+
     @Bean
     public ScenarioService getScenarioService(List<ScenarioLoader> scenarioLoaders, List<Scenario<?,?>> scenarios) {
         return new ScenarioServiceImpl.Factory().createScenarioService(scenarioLoaders, scenarios);
         //return loadScenarioService(scenarioLoaders, scenarios)
     }
-    
-    @Bean 
+
+    @Bean
     public WebsiteService getWebsiteService() {
         return new WebsiteServiceImpl(applicationUri.resolve("/sites"), sites);
     }
-    
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         String resourcePath = "file:" + sites.toAbsolutePath().toString() + "/";
@@ -103,11 +103,11 @@ public class SageAppConfig implements WebMvcConfigurer {
             .setCachePeriod(0)
             .resourceChain(true)
             .addResolver(new PathResourceResolver());
-        
+
         registry.addResourceHandler("/**")
             .addResourceLocations("classpath:/static/");
     }
-    
+
     private AdvisorService loadAdvisorService(String openAiApiKey) {
         System.out.println("!!!!!!!!!!!!!!!! sage app config 1");
         try {
@@ -119,33 +119,33 @@ public class SageAppConfig implements WebMvcConfigurer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
+
         System.out.println("!!!!!!!!!!!!!!!! sage app config 2");
 
         ServiceLoader<AdvisorServiceFactory> serviceLoader = ServiceLoader.load(AdvisorServiceFactory.class);
         serviceLoader.forEach(factory -> {
             System.out.println("!!!!! Found factory: " + factory.getClass().getName());
         });
-        
+
         var factory = serviceLoader.findFirst();
         if (factory.isEmpty()) {
             throw new IllegalStateException("No implementation of: " + AdvisorServiceFactory.class.getSimpleName());
         }
-        
+
         return factory.get().createAdvisorService(openAiApiKey);
     }
-    
+
     private ScenarioService loadScenarioService(List<ScenarioLoader> scenarioLoaders, List<Scenario<?,?>> scenarios) {
         var serviceLoader = ServiceLoader.load(ScenarioServiceFactory.class);
         var factory = serviceLoader.findFirst();
         if (factory.isEmpty()) {
             throw new IllegalStateException("No implementation of: " + ScenarioServiceFactory.class.getSimpleName());
         }
-        
+
         return factory.get().createScenarioService(scenarioLoaders, scenarios);
     }
-    
-    
+
+
     private static URI baseUri(ApplicationContext context) {
         Environment environment = context.getEnvironment();
 

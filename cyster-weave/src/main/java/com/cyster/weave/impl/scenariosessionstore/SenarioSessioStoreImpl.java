@@ -53,7 +53,7 @@ public class SenarioSessioStoreImpl implements ScenarioSessionStore {
         int offset = 0;
         int limit = 100;
         Map<String, String> filterParameters = new HashMap<>();
-        
+
         QueryBuilderImpl(Map<String, ScenarioSession<?,?>> store) {
             this.store = store;
         }
@@ -62,10 +62,10 @@ public class SenarioSessioStoreImpl implements ScenarioSessionStore {
         @Override
         public QueryBuilder withFilterParameter(String name, String value) {
             filterParameters.put(name,  value);
-            
+
             return this;
         }
-        
+
         public QueryBuilder setOffset(int offset) {
             this.offset = offset;
             return this;
@@ -80,10 +80,10 @@ public class SenarioSessioStoreImpl implements ScenarioSessionStore {
             return this.store.entrySet().stream().filter(this::filterByParameters).skip(this.offset).limit(this.limit).map(Map.Entry::getValue)
                 .collect(Collectors.toList());
         }
-        
+
         private Boolean filterByParameters(Map.Entry<String,ScenarioSession<?,?>> sessionEntry) {
             Boolean match = true;
-            
+
             Object parameters = sessionEntry.getValue().getParameters();
             for (Map.Entry<String, String> filter : filterParameters.entrySet()) {
                 try {
@@ -91,7 +91,7 @@ public class SenarioSessioStoreImpl implements ScenarioSessionStore {
                         match = false;
                         break;
                     }
-                    
+
                     Field field = parameters.getClass().getDeclaredField(filter.getKey());
                     field.setAccessible(true);
                     Object fieldValue = field.get(parameters);
@@ -107,8 +107,8 @@ public class SenarioSessioStoreImpl implements ScenarioSessionStore {
                     throw new RuntimeException("Unable to access filter parameter");
                 }
             }
-            
+
             return match;
         }
-    } 
+    }
 }

@@ -9,7 +9,7 @@ import com.extole.weave.advisors.support.ExtoleSupportAdvisor;
 @Component
 public class ExtoleRunbookNotificationEmailRender implements RunbookScenario {
     public static String NAME = "extoleRunbookNotificationEmailRender";
-    private static String DESCRIPTION = "Analyzes and comments on email notification tickets";    
+    private static String DESCRIPTION = "Analyzes and comments on email notification tickets";
     private static String KEYWORDS = "notification  email render";
 
     private static String INSTRUCTIONS = """
@@ -24,8 +24,8 @@ From the notification get the campaign_id and zone_name and person_id (sender_pe
 
 Add a comment to the ticket providing:
 - summarizing the notification and attempt to identify the problem with the email
-- mention the zone name 
-- link to the campaign https://my.extole.com/campaign/edit/?client_id=$client_id#/$campaign_id 
+- mention the zone name
+- link to the campaign https://my.extole.com/campaign/edit/?client_id=$client_id#/$campaign_id
 - link to the person https://my.extole.com/profiles/view?client_id=$client_id#$person_id
 - link to the notification
 - include the number of times the related client event has occurred, including the report link
@@ -53,7 +53,7 @@ Note the ticket number, and an extremely brief summary of the comment added to t
     public String getKeywords() {
         return KEYWORDS;
     }
-    
+
     @Override
     public Class<RunbookScenarioParameters> getParameterClass() {
         return RunbookScenarioParameters.class;
@@ -63,7 +63,7 @@ Note the ticket number, and an extremely brief summary of the comment added to t
     public Class<Void> getContextClass() {
         return Void.class;
     }
- 
+
     @Override
     public Conversation createConversation(RunbookScenarioParameters parameters, Void context) {
         return this.advisor.createConversation().setOverrideInstructions(INSTRUCTIONS).start();

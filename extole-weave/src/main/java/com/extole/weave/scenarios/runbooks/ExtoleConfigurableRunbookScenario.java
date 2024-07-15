@@ -39,7 +39,7 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
     public String getKeywords() {
         return this.keywords;
     }
-    
+
     @Override
     public Class<RunbookScenarioParameters> getParameterClass() {
         return RunbookScenarioParameters.class;
@@ -49,7 +49,7 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
     public Class<Void> getContextClass() {
         return Void.class;
     }
- 
+
     @Override
     public Conversation createConversation(RunbookScenarioParameters parameters, Void context) {
         MustacheFactory mostacheFactory = new DefaultMustacheFactory();
@@ -57,10 +57,10 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
         var messageWriter = new StringWriter();
         mustache.execute(messageWriter, parameters);
         messageWriter.flush();
-        
+
         return this.advisor.createConversation().setOverrideInstructions(messageWriter.toString()).start();
     }
-    
+
     public static class Configuration {
         private String name;
         private String description;
@@ -69,16 +69,16 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
 
         @JsonCreator
         public Configuration(
-                @JsonProperty("name") String name, 
-                @JsonProperty("description") String description, 
-                @JsonProperty("keywords") String keywords, 
+                @JsonProperty("name") String name,
+                @JsonProperty("description") String description,
+                @JsonProperty("keywords") String keywords,
                 @JsonProperty("instructions") String instructions) {
             setName(name);
             setDescription(description);
             setKeywords(keywords);
             setInstructions(instructions);
         }
-        
+
         public String getName() {
              return name;
         }
@@ -89,7 +89,7 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
             if (!name.matches("[a-zA-Z0-9]+")) {
                 throw new IllegalArgumentException("name must only contain alphanumeric characters");
             }
- 
+
             this.name = "extoleRunbook" + name.substring(0, 1).toUpperCase() + name.substring(1);
 
         }
@@ -120,12 +120,12 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
             validateString(instructions, "instructions");
             this.instructions = instructions;
         }
-        
+
         private void validateString(String value, String fieldName) {
             if (value == null || value.trim().isEmpty()) {
                 throw new IllegalArgumentException(fieldName + " cannot be null or empty");
             }
-        } 
-    }    
+        }
+    }
 }
 

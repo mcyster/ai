@@ -13,9 +13,9 @@ public class AtlassianDocumentMapper {
 
     public JsonNode fromMarkdown(String markdown) {
         var visitor = new AtlassianDocumentMarkdownVisitor();
-  
+
         JsonNode document = visitor.generate(markdown);
-        
+
         return document;
     }
 }

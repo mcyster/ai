@@ -22,6 +22,6 @@ public class JacksonConfig {
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
         return builder.build();
     }
- 
+
 }
 

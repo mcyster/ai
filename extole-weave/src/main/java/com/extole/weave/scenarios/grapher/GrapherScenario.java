@@ -48,7 +48,7 @@ public class GrapherScenario implements Scenario<Parameters, Void> {
     public String getDescription() {
         return "Build a webpage to graphical represent a report";
     }
-    
+
     @Override
     public Class<Parameters> getParameterClass() {
         return Parameters.class;
@@ -61,7 +61,7 @@ public class GrapherScenario implements Scenario<Parameters, Void> {
 
     @Override
     public Conversation createConversation(Parameters parameters, Void context) {
-        
+
         String indexHtml = loadAsset("/extole/web/graph/simple/index.html");
         String dataJs = loadAsset("/extole/web/graph/simple/data.js");
 
@@ -71,18 +71,18 @@ public class GrapherScenario implements Scenario<Parameters, Void> {
         } catch (ToolException exception) {
            throw new RuntimeException(exception);
         }
-        
+
         String data = report.toPrettyString();
-        
+
         Website website = this.websiteService.create();
-                
+
         website.putAsset("index.html", indexHtml);
         website.putAsset("data.js", dataJs);
-        
-        String instructions = """ 
-There is a web page at %s?report_id=%s 
+
+        String instructions = """
+There is a web page at %s?report_id=%s
 - don't forget to include the report_id parameter when you mention the url
-- we're in developer mode, so localhost is ok 
+- we're in developer mode, so localhost is ok
 
 The page is supported by the following assets:
 
@@ -98,16 +98,16 @@ The promise will provide a data object of the form:
 ```
 
 If there are no explicit instructions, use the file tool to put a script.js file that shows the data.
-Tell the user the Url of the web page.  
+Tell the user the Url of the web page.
 Then ask the user how they would like to see the data, and update script.js to reflect their requests.
 """;
-        
+
         return advisor.createConversation()
             .withContext(website)
             .setOverrideInstructions(String.format(instructions,
                     website.getUri().toString(),
                     parameters.reportId,
-                    indexHtml.replace("```", "&#96;&#96;&#96;"), 
+                    indexHtml.replace("```", "&#96;&#96;&#96;"),
                     getFirstFewLines(data).replace("```", "&#96;&#96;&#96;")))
             .start();
     }
@@ -135,10 +135,10 @@ Then ask the user how they would like to see the data, and update script.js to r
         } catch (WebClientException exception) {
             throw new ToolException("Internal error, unable to get report");
         }
- 
+
         return result;
     }
-    
+
     public static String loadAsset(String assetPath) {
         InputStream stream = GrapherScenario.class.getResourceAsStream(assetPath);
         if (stream == null) {
@@ -150,10 +150,10 @@ Then ask the user how they would like to see the data, and update script.js to r
         } catch (IOException exception) {
             throw new RuntimeException("Error unable to read resource: /extole/web/graph/simple/index.html", exception);
         }
-        
-        return new String(bytes, StandardCharsets.UTF_8);        
+
+        return new String(bytes, StandardCharsets.UTF_8);
     }
-    
+
     public static String getFirstFewLines(String input) {
         try (BufferedReader reader = new BufferedReader(new StringReader(input))) {
             List<String> lines = reader.lines()
@@ -168,5 +168,5 @@ Then ask the user how they would like to see the data, and update script.js to r
         @JsonProperty(required = true)
         public String reportId;
     }
-    
+
 }

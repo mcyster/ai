@@ -10,9 +10,9 @@ import com.cyster.weave.impl.advisors.CodingAdvisor;
 @Component
 public class CodeScenario implements Scenario<Void, Void> {
     private static final String NAME = "code";
-    
+
     private Advisor<Void> advisor;
-    
+
     CodeScenario(CodingAdvisor codingAdvisor) {
         this.advisor = codingAdvisor;
     }
@@ -26,7 +26,7 @@ public class CodeScenario implements Scenario<Void, Void> {
     public String getDescription() {
         return "Not sure what this does";
     }
-    
+
     @Override
     public Class<Void> getParameterClass() {
         return Void.class;

@@ -19,12 +19,12 @@ public class ChatAdvisorConversation implements Conversation {
 
     private OpenAI openAi;
     private List<Message> messages;
-    
+
     ChatAdvisorConversation(OpenAI openAi, List<Message> messages) {
-        this.openAi = openAi;   
+        this.openAi = openAi;
         this.messages = messages;
     }
-    
+
     @Override
     public Message addMessage(Type type, String content) {
         Message message = new MessageImpl(type, content);
@@ -36,7 +36,7 @@ public class ChatAdvisorConversation implements Conversation {
     public Message respond() throws ConversationException {
         ChatClient chatClient = this.openAi.chatClient();
 
-        var chatMessages = new ArrayList<ChatMessage>(); 
+        var chatMessages = new ArrayList<ChatMessage>();
 
         for (var message : this.messages) {
             if (message.getType() == Message.Type.SYSTEM) {
@@ -58,12 +58,12 @@ public class ChatAdvisorConversation implements Conversation {
         if (choices.size() == 0) {
             messages.add(new MessageImpl(Message.Type.ERROR, "No responses"));
             throw new ConversationException("No Reponses");
-        } 
+        }
         if (choices.size() > 1) {
             messages.add(new MessageImpl(Message.Type.ERROR, "Multiple responses (ignored)"));
             throw new ConversationException("Multiple Reponses");
         }
-        
+
         var message = new MessageImpl(Message.Type.AI, choices.get(0).message().content());
         messages.add(message);
         return message;

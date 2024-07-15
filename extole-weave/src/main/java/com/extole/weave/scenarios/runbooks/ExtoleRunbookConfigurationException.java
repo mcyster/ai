@@ -2,7 +2,7 @@ package com.extole.weave.scenarios.runbooks;
 
 import org.springframework.core.io.Resource;
 
-public class ExtoleRunbookConfigurationException extends Exception {    
+public class ExtoleRunbookConfigurationException extends Exception {
     public ExtoleRunbookConfigurationException(Resource resource, String message) {
         super(buildMessage(resource, message));
     }
@@ -10,7 +10,7 @@ public class ExtoleRunbookConfigurationException extends Exception {
     public ExtoleRunbookConfigurationException(Resource resource, String message, Throwable cause) {
         super(buildMessage(resource, message), cause);
     }
-    
+
     private static String buildMessage(Resource resource, String message) {
         return message + " for resource: " + resource.toString();
     }

@@ -22,8 +22,8 @@ public class ExtoleStore {
     private static String remoteJavaApiRepository = "git@github.com:extole/java-api.git";
     private static File localJavaApiRepository = new File("/tmp/extole/java-api");
     private AdvisorService advisorService;
-    
-    ExtoleStore(AdvisorService advisorService) {  
+
+    ExtoleStore(AdvisorService advisorService) {
         this.advisorService = advisorService;
     }
 
@@ -35,22 +35,22 @@ public class ExtoleStore {
           .withDirectory(localJavaApiRepository.toPath())
           .withHash(hash)
           .create();
-        
+
         @SuppressWarnings("unchecked")  // TBD
         SearchTool.Builder<CONTEXT> builder = (SearchTool.Builder<CONTEXT>) advisorService.searchToolBuilder()
             .withName("extole-store")
             .withDocumentStore(documentStore);
-        
+
         return builder.create();
     }
-   
+
     private String loadOrUpdateLocalRepository() {
         if (!localJavaApiRepository.exists()) {
-            try {                                       
+            try {
                 Git.cloneRepository()
                     .setURI(remoteJavaApiRepository)
                     .setDirectory(localJavaApiRepository)
-                    .call();                
+                    .call();
             } catch (GitAPIException exception) {
                 logger.error("Unable to clone the java api repository: " + remoteJavaApiRepository, exception);
             }
@@ -76,7 +76,7 @@ public class ExtoleStore {
         } catch (IOException | GitAPIException exception) {
             logger.error("Unable to update the java api repository: " + localJavaApiRepository, exception);
         }
-        
+
         return latestCommitHash;
     }
 }

@@ -10,7 +10,7 @@ import com.extole.weave.session.ExtoleSessionContext;
 @Component
 public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> {
     public static String NAME = "extoleHelp";
-    
+
     private ExtoleClientAdvisor advisor;
 
     ExtoleHelpScenario(ExtoleClientAdvisor advisor) {
@@ -26,12 +26,12 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
     public String getDescription() {
         return "Helps using the Extole Platform";
     }
-    
+
     @Override
     public Class<Void> getParameterClass() {
         return Void.class;
     }
-    
+
 
     @Override
     public Class<ExtoleSessionContext> getContextClass() {
@@ -42,7 +42,7 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
     @Override
     public Conversation createConversation(Void parameters, ExtoleSessionContext context) {
         var advisorContext = new ExtoleClientAdvisor.Context(context.getAccessToken());
-        
+
         return advisor.createConversation().withContext(advisorContext).start();
     }
 }

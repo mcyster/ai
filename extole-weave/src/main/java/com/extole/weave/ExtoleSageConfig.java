@@ -10,12 +10,12 @@ import com.cyster.jira.client.JiraWebClientFactory;
 
 @Configuration
 public class ExtoleSageConfig {
-  
+
     @Bean
     public JiraWebClientFactory getJiraWebClientFactory(
         @Value("${JIRA_API_KEY}") String jiraApiKey,
         @Value("https://extole.atlassian.net/") String jiraBaseUri) {
-        
+
         if (!StringUtils.hasText(jiraApiKey)) {
             throw new IllegalArgumentException("JIRA_API_KEY not defined");
         }

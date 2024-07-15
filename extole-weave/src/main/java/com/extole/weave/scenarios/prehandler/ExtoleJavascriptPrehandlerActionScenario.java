@@ -18,7 +18,7 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
     ExtoleJavascriptPrehandlerActionScenario(ExtoleJavascriptPrehandlerActionAdvisor advisor) {
         this.advisor = advisor;
     }
-    
+
     @Override
     public String getName() {
         return NAME;
@@ -28,12 +28,12 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
     public String getDescription() {
         return "Helps with writing and debugging prehandlers";
     }
-    
+
     @Override
     public Class<Void> getParameterClass() {
         return Void.class;
     }
-    
+
     @Override
     public Class<ExtoleSessionContext> getContextClass() {
         return ExtoleSessionContext.class;

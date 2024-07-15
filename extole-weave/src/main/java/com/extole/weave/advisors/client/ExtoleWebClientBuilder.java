@@ -9,36 +9,36 @@ import reactor.core.publisher.Mono;
 
 public class ExtoleWebClientBuilder {
     WebClient.Builder webClientBuilder;
-    
+
     private static final Logger logger = LogManager.getLogger(ExtoleWebClientBuilder.class);
 
     ExtoleWebClientBuilder(String baseJiraUrl) {
         this.webClientBuilder = WebClient.builder()
             .baseUrl(baseJiraUrl);
-    }        
-     
+    }
+
     public static ExtoleWebClientBuilder builder(String baseJiraUrl) {
         return new ExtoleWebClientBuilder(baseJiraUrl);
     }
-    
+
     public ExtoleWebClientBuilder setApiKey(String apiKey) {
-        this.webClientBuilder.defaultHeaders(headers -> 
-                headers.add("Authorization", "Bearer " + apiKey)); 
+        this.webClientBuilder.defaultHeaders(headers ->
+                headers.add("Authorization", "Bearer " + apiKey));
         return this;
     }
-    
+
     public ExtoleWebClientBuilder enableLogging() {
         this.webClientBuilder.filter(logRequest());
         this.webClientBuilder.filter(logResponse());
-        
+
         return this;
     }
-    
-    
+
+
     public WebClient build() {
         return this.webClientBuilder.build();
     }
-    
+
     private static ExchangeFilterFunction logRequest() {
         return (clientRequest, next) -> {
             logger.info("Request: " + clientRequest.method() + " " + clientRequest.url());

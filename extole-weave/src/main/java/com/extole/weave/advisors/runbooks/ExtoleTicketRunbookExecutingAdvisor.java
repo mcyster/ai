@@ -33,16 +33,16 @@ public class ExtoleTicketRunbookExecutingAdvisor implements Advisor<Void> {
     @Override
     public ConversationBuilder<Void> createConversation() {
         if (this.advisor.isEmpty()) {
-            String instructions = """ 
-Given the ticket execute the Runbook. 
-Respond with the ticket_number followed by a colon then a summary of your analysis, i.e: 
+            String instructions = """
+Given the ticket execute the Runbook.
+Respond with the ticket_number followed by a colon then a summary of your analysis, i.e:
 TICKET_NUMBER: SUMMARY
 """;
 
             AdvisorBuilder<Void> builder = this.advisorService.getOrCreateAdvisor(NAME);
             builder
                 .setInstructions(instructions);
-                
+
            for(var tool: tools) {
                 builder.withTool(tool);
            }

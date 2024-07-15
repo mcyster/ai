@@ -41,12 +41,12 @@ class SupportTicketSearchTool implements ExtoleSupportAdvisorTool<Request> {
 
     @Override
     public Object execute(Request searchRequest, Void context) throws ToolException {
-        
+
         String jql = "project = SUP";
         if (searchRequest.query != null && !searchRequest.query.isEmpty()) {
             jql = searchRequest.query;
         }
-                
+
         ObjectNode payload = JsonNodeFactory.instance.objectNode();
         {
           payload.putArray("expand");
@@ -80,7 +80,7 @@ class SupportTicketSearchTool implements ExtoleSupportAdvisorTool<Request> {
             throw new ToolException("Search failed with unexpected internal error");
         }
         JsonNode issuesNode = resultNode.path("issues");
-                
+
         // TODO more robust pattern to refine result
         ObjectNode results = JsonNodeFactory.instance.objectNode();
         {
@@ -90,21 +90,21 @@ class SupportTicketSearchTool implements ExtoleSupportAdvisorTool<Request> {
                 ObjectNode ticket = tickets.addObject();
                 ticket.put("key", issueNode.path("key").asText());
                 ticket.put("summary", issueNode.path("fields").path("summary").asText());
-                
+
                 JsonNode assignee = issueNode.path("fields").path("assignee");
                 if (!assignee.isMissingNode()) {
                     ticket.put("assignee", assignee.path("emailAddress").asText());
                 } else {
-                    ticket.putNull("assignee"); 
+                    ticket.putNull("assignee");
                 }
-                
+
                 JsonNode status = issueNode.path("fields").path("status");
                 if (!status.isMissingNode()) {
                     ticket.put("status", status.path("name").asText());
                 } else {
                     ticket.putNull("status");
                 }
-                
+
                 JsonNode parent = issueNode.path("fields").path("parent");
                 if (!parent.isMissingNode()) {
                     ticket.put("classification", parent.path("fields").path("summary").asText());
@@ -118,7 +118,7 @@ class SupportTicketSearchTool implements ExtoleSupportAdvisorTool<Request> {
                 } else {
                     ticket.putNull("client");
                 }
-                
+
                 ticket.put("createdDate", issueNode.path("fields").path("created").asText());
                 ticket.put("updatedDate", issueNode.path("fields").path("updated").asText());
 
@@ -130,7 +130,7 @@ class SupportTicketSearchTool implements ExtoleSupportAdvisorTool<Request> {
                 }
                 rowCount++;
             }
-            
+
             results.put("totalRowCount", resultNode.path("total").asInt());
 
             ObjectNode page = results.putObject("page");
@@ -139,10 +139,10 @@ class SupportTicketSearchTool implements ExtoleSupportAdvisorTool<Request> {
             page.put("rowCount", rowCount);
             page.put("rowLimit", resultNode.path("maxResults").asInt());
         }
-        
+
         return results;
     }
-    
+
     static class Request {
         @JsonPropertyDescription("JQL query for tickets, always prefix query with: project = SUP, if you have a clientId do a contains operation with the field name \"Client Id Calculated\"")
         @JsonProperty(required = false)

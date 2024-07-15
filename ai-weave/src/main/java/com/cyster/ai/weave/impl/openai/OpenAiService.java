@@ -25,13 +25,13 @@ import io.github.stefanbratanov.jvm.openai.VectorStoreFilesClient;
 import io.github.stefanbratanov.jvm.openai.VectorStoresClient;
 
 public class OpenAiService {
-  
+
     private String apiKey;
-    
+
     public OpenAiService() {
-        this(System.getenv("OPENAI_API_KEY"));            
+        this(System.getenv("OPENAI_API_KEY"));
     }
-    
+
     public OpenAiService(String apiKey) {
         this.apiKey = apiKey;
     }
@@ -40,24 +40,24 @@ public class OpenAiService {
         HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(20))
             .build();
-             
+
         return client(clientClass,  OpenAI.newBuilder(apiKey)
             .httpClient(httpClient)
-            .build());             
+            .build());
     }
-    
+
     public <T> T createClient(Class<T> clientClass, OperationLogger operationLogger) {
         OperationLogger logger = operationLogger.childLogger(clientClass.getSimpleName());
-        
+
         HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(20))
             .build();
-             
+
         return client(clientClass, OpenAI.newBuilder(apiKey)
             .httpClient(new HttpClientLogger(httpClient, logger))
-            .build());             
+            .build());
     }
-    
+
     private <T> T client(Class<T> clientClass,   OpenAI openAiClient) {
         if (clientClass == AudioClient.class) {
             return clientClass.cast(openAiClient.audioClient());

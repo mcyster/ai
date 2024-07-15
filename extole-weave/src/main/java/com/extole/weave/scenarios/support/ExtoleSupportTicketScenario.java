@@ -29,7 +29,7 @@ public class ExtoleSupportTicketScenario implements Scenario<Parameters, Void> {
     public String getDescription() {
         return "Analyzes and comment on Extole Support Tickets";
     }
-    
+
     @Override
     public Class<Parameters> getParameterClass() {
         return Parameters.class;
@@ -39,13 +39,13 @@ public class ExtoleSupportTicketScenario implements Scenario<Parameters, Void> {
     public Class<Void> getContextClass() {
         return Void.class;
     }
- 
+
     @Override
     public Conversation createConversation(Parameters parameters, Void context) {
         if (parameters == null || parameters.ticketNumber == null || parameters.ticketNumber.isBlank()) {
             throw new IllegalArgumentException("No ticketNumber specified"); // TODO not runtime
         }
-                
+
         return this.advisor.createConversation().addMessage("Ticket: " + parameters.ticketNumber).start();
     }
 

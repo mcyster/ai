@@ -13,5 +13,5 @@ public interface Operation {
     Level getLevel();
     String getDescription();
     List<Operation> children();
-    Optional<Object> context(); 
+    Optional<Object> context();
 }

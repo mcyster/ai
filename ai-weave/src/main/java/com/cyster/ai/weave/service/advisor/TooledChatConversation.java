@@ -6,11 +6,11 @@ import com.cyster.ai.weave.service.conversation.Conversation;
 public interface TooledChatConversation extends Conversation {
 
     TooledChatConversation addUserMessage(String content);
-    
+
     TooledChatConversation addSystemMessage(String content) ;
-    
+
     TooledChatConversation addAiMessage(String content);
-    
+
     <T> TooledChatConversation addTool(Tool<T, Void> tool);
-    
+
 }

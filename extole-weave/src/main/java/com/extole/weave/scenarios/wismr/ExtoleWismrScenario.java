@@ -17,7 +17,7 @@ import com.extole.weave.session.ExtoleSessionContext;
 @Component
 public class ExtoleWismrScenario implements Scenario<Void, ExtoleSessionContext> {
     private static final String NAME = "extoleWismr";
-    
+
     private AdvisorService advisorService;
     private ExtolePersonFindToolFactory extolePersonFindToolFactory;
     private ExtolePersonRewardsToolFactory extolePersonRewardsToolFactory;
@@ -45,12 +45,12 @@ public class ExtoleWismrScenario implements Scenario<Void, ExtoleSessionContext>
     public String getDescription() {
         return "Extole tool to help find the reward of a person";
     }
-    
+
     @Override
     public Class<Void> getParameterClass() {
         return Void.class;
     }
-    
+
     @Override
     public Class<ExtoleSessionContext> getContextClass() {
         return ExtoleSessionContext.class;
@@ -63,8 +63,8 @@ public class ExtoleWismrScenario implements Scenario<Void, ExtoleSessionContext>
 You are a customer service representative for the Extole SaaS marketing platform.
 You specialize in helping people find a reward they expected to receive from the Extole platform.
 
-Step 1: Identify the person and check if they have any rewards. 
-The best way to start is to try and load and review the persons profile base on a key we might have, 
+Step 1: Identify the person and check if they have any rewards.
+The best way to start is to try and load and review the persons profile base on a key we might have,
 such as email, partner_user_id or order_id.
 
 Step 2: Person has rewards
@@ -87,9 +87,9 @@ If there are steps, show the steps and we are done.
 
         Optional<String> accessToken = Optional.empty();
         accessToken = Optional.of(context.getAccessToken());
-        
+
         var conversation = advisorService.getOrCreateAdvisor("wismr")
-            .setInstructions(messageWriter.toString()) 
+            .setInstructions(messageWriter.toString())
             //.withTool(this.extolePersonFindToolFactory.create(accessToken))
             //.withTool(this.extolePersonRewardsToolFactory.create(accessToken))
             //.withTool(this.extolePersonStepsToolFactory.create(accessToken))
@@ -98,5 +98,5 @@ If there are steps, show the steps and we are done.
 
         return conversation;
     }
-  
+
 }

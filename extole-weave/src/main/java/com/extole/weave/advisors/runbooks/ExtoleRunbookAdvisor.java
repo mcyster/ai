@@ -20,13 +20,13 @@ public class ExtoleRunbookAdvisor implements Advisor<Void> {
     private List<Tool<?, Void>> tools = new ArrayList<>();
     private Optional<Advisor<Void>> advisor = Optional.empty();
     private String defaultRunbookName;
-    
-    public ExtoleRunbookAdvisor(AdvisorService advisorService, 
-            ExtoleRunbookToolFactory runbookToolFactory, 
+
+    public ExtoleRunbookAdvisor(AdvisorService advisorService,
+            ExtoleRunbookToolFactory runbookToolFactory,
             ExtoleRunbookOther defaultRunbook) {
         this.advisorService = advisorService;
         this.defaultRunbookName = defaultRunbook.getName();
-        
+
         tools.add(runbookToolFactory.getRunbookSearchTool());
     }
 
@@ -38,28 +38,28 @@ public class ExtoleRunbookAdvisor implements Advisor<Void> {
     @Override
     public ConversationBuilder<Void> createConversation() {
         if (this.advisor.isEmpty()) {
-            String instructions = """ 
+            String instructions = """
 Interpret the prompt as keywords and use it to create a query
 - fix any grammar
 - remove duplicate words
 - remove PII, URLs, company names
-- remove stop words (common words like \"this\", \"is\", \"in\", \"by\", \"with\" etc), 
+- remove stop words (common words like \"this\", \"is\", \"in\", \"by\", \"with\" etc),
 - normalize the text (convert to lower case and remove special characters)
 - keep to 20 words or less.
- 
-Search for the best runbook. 
- 
+
+Search for the best runbook.
+
 Respond in json in the following form { "runbook": "RUNBOOK_NAME" }
 """;
 
             AdvisorBuilder<Void> builder = this.advisorService.getOrCreateAdvisor(NAME);
             builder
                 .setInstructions(String.format(instructions, this.defaultRunbookName));
-                
+
            for(var tool: tools) {
                 builder.withTool(tool);
            }
-           
+
             this.advisor = Optional.of(builder.getOrCreate());
         }
         return this.advisor.get().createConversation();

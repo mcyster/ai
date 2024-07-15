@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 public record PromptedConversationRequest(
-    String scenario, 
-    Map<String, Object> parameters, 
+    String scenario,
+    Map<String, Object> parameters,
     String prompt) {
 
     @Override

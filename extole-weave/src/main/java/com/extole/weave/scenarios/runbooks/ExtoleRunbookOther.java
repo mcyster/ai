@@ -9,7 +9,7 @@ import com.extole.weave.advisors.support.ExtoleSupportAdvisor;
 @Component
 public class ExtoleRunbookOther implements RunbookScenario {
     public static String NAME = "extoleRunbookOther";
-    private static String DESCRIPTION = "Analyzes and comments on tickets that could not be classfied more specifically";    
+    private static String DESCRIPTION = "Analyzes and comments on tickets that could not be classfied more specifically";
     private static String KEYWORDS = "nothing";
 
     private static String INSTRUCTIONS = """
@@ -38,7 +38,7 @@ Note the ticket number, and note its classified as "other".
     public String getKeywords() {
         return KEYWORDS;
     }
-    
+
     @Override
     public Class<RunbookScenarioParameters> getParameterClass() {
         return RunbookScenarioParameters.class;
@@ -48,7 +48,7 @@ Note the ticket number, and note its classified as "other".
     public Class<Void> getContextClass() {
         return Void.class;
     }
- 
+
     @Override
     public Conversation createConversation(RunbookScenarioParameters parameters, Void context) {
         return this.advisor.createConversation().setOverrideInstructions(INSTRUCTIONS).start();

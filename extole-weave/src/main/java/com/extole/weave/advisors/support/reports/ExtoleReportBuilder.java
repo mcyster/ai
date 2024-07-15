@@ -79,7 +79,7 @@ public class ExtoleReportBuilder {
         this.limit = limit;
         return this;
     }
-    
+
     public ExtoleReportBuilder withWaitForResult(boolean wait) {
         this.waitForResult = wait;
         return this;
@@ -93,8 +93,8 @@ public class ExtoleReportBuilder {
         this.maxAge = duration;
         return this;
     }
-    
-    
+
+
     public ObjectNode build() throws ToolException {
         WebClient webClient;
         if (this.clientId.isPresent()) {
@@ -102,13 +102,13 @@ public class ExtoleReportBuilder {
         } else {
             webClient = this.webClientFactory.getSuperUserWebClient();
         }
-        
+
         var reportTag = "ai-" + reportHash(payload);
         var tags = this.payload.putArray("tags");
         tags.add(reportTag);
 
         JsonNode report = getReportByTag(reportTag, maxAge);
-        if (report == null) {        
+        if (report == null) {
             report = webClient.post()
                 .uri(uriBuilder -> uriBuilder
                     .path("/v4/reports")
@@ -119,22 +119,22 @@ public class ExtoleReportBuilder {
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
-    
+
             if (report == null || !report.path("report_id").isEmpty()) {
                 throw new ToolException("Internal error, failed to generate report");
             }
         }
-        
+
         ObjectNode enrichedResult = JsonNodeFactory.instance.objectNode();
         enrichedResult.put("report_id", report.path("report_id").asText());
         enrichedResult.put("download_uri", report.path("download_uri").asText());
         enrichedResult.put("view_uri", "https://my.extole.com/reports/view?client_id=" + this.clientId.get() + "#"
             + report.path("report_id").asText());
-        
-        
-        if (this.waitForResult) {    
+
+
+        if (this.waitForResult) {
             var reportId = report.path("report_id").asText();
-    
+
             while (!report.path("status").asText().equalsIgnoreCase("DONE")) {
                 report = webClient.get()
                     .uri(uriBuilder -> uriBuilder
@@ -144,14 +144,14 @@ public class ExtoleReportBuilder {
                     .retrieve()
                     .bodyToMono(JsonNode.class)
                     .block();
-    
+
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException exception) {
                     throw new RuntimeException("Interrupt while waiting for report to finish", exception);
                 }
             }
-    
+
             var info = webClient.get()
                 .uri(uriBuilder -> uriBuilder
                     .path("/v4/reports/" + reportId + "/info")
@@ -159,13 +159,13 @@ public class ExtoleReportBuilder {
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
-    
+
 
             enrichedResult.put("total_rows", info.path("total_rows").asInt());
-    
+
             ObjectNode page = enrichedResult.putObject("page");
             page.put("row_start", this.offset);
-    
+
             if (this.format.equalsIgnoreCase("json")) {
                 ArrayNode result = webClient.get()
                     .uri(uriBuilder -> uriBuilder
@@ -177,7 +177,7 @@ public class ExtoleReportBuilder {
                     .retrieve()
                     .bodyToMono(ArrayNode.class)
                     .block();
-    
+
                 page.put("row_count", result.size());
                 enrichedResult.putArray("data").addAll(result);
             } else if (this.format.equalsIgnoreCase("csv")) {
@@ -191,24 +191,24 @@ public class ExtoleReportBuilder {
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
-    
+
                 page.put("row_count", csv.split("\r?\n").length);
                 enrichedResult.put("data", csv);
             } else {
                 throw new RuntimeException("format not supported");
             }
         }
-        
+
         return enrichedResult;
     }
-    
+
     private JsonNode getReportByTag(String reportTag, Duration maxAge) throws ToolException {
         if (!this.clientId.isPresent()) {
             return null;
         }
-        
+
         WebClient webClient = this.webClientFactory.getWebClient(this.clientId.get());
-        
+
         JsonNode reports = webClient.get()
             .uri(uriBuilder -> uriBuilder
                 .path("/v4/reports")
@@ -219,26 +219,26 @@ public class ExtoleReportBuilder {
             .retrieve()
             .bodyToMono(JsonNode.class)
             .block();
-        
+
         if (!reports.isArray() || reports.size() == 0) {
             return null;
         }
         var report = reports.get(0);
-        
+
         if (!report.has("created_date") || !report.has("report_id")) {
             return null;
         }
-        
-        var createdDate = Instant.parse(report.path("created_date").asText());        
+
+        var createdDate = Instant.parse(report.path("created_date").asText());
         Duration age = Duration.between(createdDate, Instant.now());
-        
-        if (age.compareTo(maxAge) > 0) { 
+
+        if (age.compareTo(maxAge) > 0) {
             return null;
         }
-        
+
         return report;
     }
-    
+
     private static String reportHash(ObjectNode payload) {
         MessageDigest digest;
         try {
@@ -247,7 +247,7 @@ public class ExtoleReportBuilder {
             throw new RuntimeException("Unable to load message digest", exception);
         }
         digest.update(payload.toString().getBytes());
-        
+
         byte[] digestBytes = digest.digest();
         StringBuilder hexString = new StringBuilder();
         for (int i = 0; i < digestBytes.length; i++) {

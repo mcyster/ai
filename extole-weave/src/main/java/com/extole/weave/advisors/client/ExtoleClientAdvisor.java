@@ -14,7 +14,7 @@ public class ExtoleClientAdvisor implements Advisor<ExtoleClientAdvisor.Context>
 
     private AdvisorService advisorService;
     private Optional<Advisor<ExtoleClientAdvisor.Context>> advisor = Optional.empty();
-    
+
     public ExtoleClientAdvisor(AdvisorService advisorService) {
         this.advisorService = advisorService;
     }
@@ -26,38 +26,38 @@ public class ExtoleClientAdvisor implements Advisor<ExtoleClientAdvisor.Context>
 
     @Override
     public ConversationBuilder<ExtoleClientAdvisor.Context> createConversation() {
-        
+
         if (this.advisor.isEmpty()) {
-            String instructions = """ 
+            String instructions = """
 You help with questions around using the Extole SaaS Marketing platform.
 """;
 
-            AdvisorBuilder<ExtoleClientAdvisor.Context> builder = 
+            AdvisorBuilder<ExtoleClientAdvisor.Context> builder =
                 this.advisorService.getOrCreateAdvisor(NAME);
-            
+
             builder
                 .setInstructions(instructions)
                 .withTool(new ExtoleMeTool())
                 .withTool(new ExtoleClientTool())
                 .withTool(new ExtoleMyAuthorizationsTool())
                 .withTool(new ExtoleClientTimelineTool());
-            
+
             this.advisor = Optional.of(builder.getOrCreate());
         }
-        
+
         return this.advisor.get().createConversation();
     }
-    
+
     public static class Context {
-        private String userAccessToken; 
-        
+        private String userAccessToken;
+
         public Context(String userAccessToken) {
             this.userAccessToken = userAccessToken;
         }
-        
+
         public String getUserAccessToken() {
             return this.userAccessToken;
         }
     }
-    
+
 }

@@ -49,18 +49,18 @@ class ExtoleClientEventSearchTool implements ExtoleSupportAdvisorTool<Request> {
         if (request.tags != null) {
             tags = request.tags;
         }
-        
+
         if (request.likeNotificationId != null) {
             if (!request.likeNotificationId.matches(NOTIFICATION_ID_PATTERN)) {
                 throw new ToolException("likeNotificationId " + request.likeNotificationId +
                         " must be 18 to 20 characters and alphanumeric (lowercase alpha only)");
             }
-            
+
             var notificationRequest = new com.extole.weave.advisors.support.reports.ExtoleNotificationGetTool.Request();
             notificationRequest.clientId = request.clientId;
             notificationRequest.userId = request.userId;
             notificationRequest.notificationId = request.likeNotificationId;
-            
+
             JsonNode notification = (JsonNode)this.extoleNotificationGetTool.execute(notificationRequest, null);
 
             JsonNode tagsNode = new ObjectMapper().createArrayNode();
@@ -97,12 +97,12 @@ class ExtoleClientEventSearchTool implements ExtoleSupportAdvisorTool<Request> {
 
         var reportBuilder = new ExtoleReportBuilder(this.extoleWebClientFactory)
             .withClientId(request.clientId)
-            .withLimit(2) 
+            .withLimit(2)
             .withName("client_events")
             .withDisplayName("Client Events - tags:" +  tags)
             .withParameters(parameters)
             .withWaitForResult(false);
-        
+
         return reportBuilder.build();
     }
 
@@ -118,8 +118,8 @@ class ExtoleClientEventSearchTool implements ExtoleSupportAdvisorTool<Request> {
         @JsonPropertyDescription("Query for client events caused by user_id")
         @JsonProperty(required = false)
         public String userId;
-        
-        
+
+
         @JsonPropertyDescription("Query client events by tags, a comma seperated list of tags.")
         @JsonProperty(required = false)
         public String tags;

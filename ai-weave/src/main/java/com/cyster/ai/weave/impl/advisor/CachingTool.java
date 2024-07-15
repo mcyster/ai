@@ -15,7 +15,7 @@ import com.google.common.cache.CacheBuilder;
 public class CachingTool<Request, Context> implements Tool<Request, Context> {
     private final Tool<Request, Context> tool;
     private final Cache<Key<Request, Context>, Object> cache;
-    
+
     private CachingTool(Tool<Request, Context> tool, Cache<Key<Request, Context>, Object> cache) {
         this.tool = tool;
         this.cache = cache;
@@ -43,35 +43,35 @@ public class CachingTool<Request, Context> implements Tool<Request, Context> {
     @Override
     public Object execute(Request request, Context context) throws ToolException {
         Key<Request, Context> key = new Key<Request, Context>(this.tool, request, context);
-        
+
         try {
             return cache.get(key, () -> execute(key));
         } catch(ExecutionException exception) {
             Throwable cause = exception.getCause();
             if (cause instanceof ToolException) {
-                throw (ToolException)cause;         
-            } 
-            else { 
+                throw (ToolException)cause;
+            }
+            else {
                throw new RuntimeException("Unexpected exception while executing tool: " + this.tool.getName(), exception);
             }
-        }        
+        }
     }
-  
+
     private static <Request, Context> Object execute(Key<Request, Context> key) throws ToolException {
         return key.getTool().execute(key.getRequest(), key.getContext());
     }
-    
+
     private static class Key<Request, Context> {
         private Request request;
         private Context context;
         private Tool<Request, Context> tool;
-        
+
         Key(Tool<Request, Context> tool, Request request, Context context) {
             this.tool = tool;
             this.request = request;
             this.context = context;
         }
-        
+
         @JsonProperty
         Tool<Request, Context> getTool() {
             return this.tool;
@@ -81,21 +81,21 @@ public class CachingTool<Request, Context> implements Tool<Request, Context> {
         Request getRequest() {
             return this.request;
         }
-        
+
         @JsonProperty
         Context getContext() {
             return this.context;
         }
-        
+
         @Override
         public boolean equals(Object object) {
             if (this == object) {
                 return true;
             }
-            if (object == null || getClass() != object.getClass()) { 
+            if (object == null || getClass() != object.getClass()) {
                 return false;
             }
-            
+
             Key<?, ?> key = (Key<?, ?>) object;
             return Objects.equals(request, key.request) &&
                    Objects.equals(context, key.context);
@@ -104,8 +104,8 @@ public class CachingTool<Request, Context> implements Tool<Request, Context> {
         @Override
         public int hashCode() {
             return Objects.hash(request, context);
-        }   
-        
+        }
+
         @Override
         public String toString() {
             ObjectMapper mapper = new ObjectMapper();
@@ -116,25 +116,25 @@ public class CachingTool<Request, Context> implements Tool<Request, Context> {
             }
         }
     }
-    
+
     public static class Builder<Request, Context> {
         private final Tool<Request, Context> tool;
         private int size = 1000;
         private long duration = 1;
         private TimeUnit durationUnit = TimeUnit.HOURS;
-        
+
         private Builder(Tool<Request, Context> tool) {
             this.tool = tool;
         }
-        
+
         public CachingTool<Request, Context> build() {
             Cache<Key<Request, Context>, Object> cache = CacheBuilder.newBuilder()
                 .maximumSize(size)
-                .expireAfterWrite(this.duration, this.durationUnit)  
+                .expireAfterWrite(this.duration, this.durationUnit)
                 .build();
-            
+
             return new CachingTool<Request, Context>(this.tool, cache);
         }
- 
+
     }
 }

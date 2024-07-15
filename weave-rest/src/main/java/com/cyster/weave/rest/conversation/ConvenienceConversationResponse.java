@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public record ConvenienceConversationResponse(
-    ConversationResponse conversationResponse, 
+    ConversationResponse conversationResponse,
     String response) {
 
     public ConvenienceConversationResponse {
@@ -39,5 +39,5 @@ public record ConvenienceConversationResponse(
             throw new RuntimeException(e);
         }
     }
-    
+
 }

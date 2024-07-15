@@ -50,7 +50,7 @@ class ExtolePersonStepsTool implements Tool<ExtolePersonStepsToolParameters, Voi
         this.accessToken = accessToken;
         this.webClientBuilder = builder;
     }
-    
+
     @Override
     public String getName() {
         return "person_steps";
@@ -68,9 +68,9 @@ class ExtolePersonStepsTool implements Tool<ExtolePersonStepsToolParameters, Voi
 
     @Override
     public Object execute(ExtolePersonStepsToolParameters parameters, Void context) {
-        return this.getExecutor().apply((ExtolePersonStepsToolParameters)parameters);   
+        return this.getExecutor().apply((ExtolePersonStepsToolParameters)parameters);
     }
-    
+
     public Function<ExtolePersonStepsToolParameters, Object> getExecutor() {
         return parameter -> loadSteps(parameter);
     }

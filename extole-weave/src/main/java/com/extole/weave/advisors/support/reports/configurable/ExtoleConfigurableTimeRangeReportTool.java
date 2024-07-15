@@ -191,7 +191,7 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvi
                 JsonNode jsonNode = mapper.valueToTree(value);
                 parameters.set(key, jsonNode);
             });
-            
+
             if (request.timeRange != null && !request.timeRange.isBlank()) {
                 parameters.put(PARAMETER_NAME_TIME_RANGE, request.timeRange);
             }

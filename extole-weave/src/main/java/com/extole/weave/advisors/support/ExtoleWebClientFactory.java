@@ -76,7 +76,7 @@ public class ExtoleWebClientFactory {
         Optional<String> token = this.extoleSuperUserApiKey.updateAndGet(key -> refreshSuperApiKey(key));
         logger.info("Refreshed Extole super user key: " + getKeyPeek(token));
     }
-    
+
     private Optional<String> refreshSuperApiKey(Optional<String> superApiKey) {
         JsonNode response = null;
         try {

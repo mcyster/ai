@@ -12,11 +12,11 @@ public class ExtoleAdvisor implements Advisor<Void> {
 
     private AdvisorService advisorService;
     private Optional<Advisor<Void>> advisor = Optional.empty();
-    
+
     public ExtoleAdvisor(AdvisorService advisorService) {
         this.advisorService = advisorService;
     }
-    
+
     @Override
     public String getName() {
         return NAME;
@@ -31,7 +31,7 @@ public class ExtoleAdvisor implements Advisor<Void> {
         }
         return this.advisor.get().createConversation();
     }
-    
-    
+
+
 
 }

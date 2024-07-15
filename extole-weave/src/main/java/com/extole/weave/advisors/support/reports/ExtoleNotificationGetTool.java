@@ -52,7 +52,7 @@ public class ExtoleNotificationGetTool implements ExtoleSupportAdvisorTool<Reque
     public Object execute(Request parameters, Void context) throws ToolException {
         return this.tool.execute(parameters, context);
     }
-    
+
     static class Request {
         @JsonProperty(required = true)
         public String clientId;
@@ -135,14 +135,14 @@ class UncachedNotificationGetTool implements ExtoleSupportAdvisorTool<Request> {
             throw new ToolException("notificationId " + request.notificationId +
                     " must be 18 to 20 characters and alphanumeric (lowercase alpha only)");
         }
-        
-        
+
+
         if (request.userId != null && !request.userId.isBlank()) {
             if (!request.userId.matches(USER_ID_PATTERN)) {
-                throw new ToolException("userId must be 1 or more numeric characters");  
+                throw new ToolException("userId must be 1 or more numeric characters");
             }
-                       
-            
+
+
             notification = getClientEventByNotificationIdAndUserId(request);
         }
         if (notification == null) {
@@ -169,7 +169,7 @@ class UncachedNotificationGetTool implements ExtoleSupportAdvisorTool<Request> {
         } catch (WebClientException exception) {
             if (exception.getCause() instanceof DataBufferLimitException) {
                 logger.warn("Buffer overflow while getting notifications for user: " + request.userId + " at client: " + request.clientId);
-                response = null;        
+                response = null;
             } else {
                 throw new ToolException("Internal error, unable to get notications for user: " + request.userId + " at client: " + request.clientId, exception);
             }

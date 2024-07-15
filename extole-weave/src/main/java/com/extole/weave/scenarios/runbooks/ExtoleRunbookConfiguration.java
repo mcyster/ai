@@ -22,11 +22,11 @@ import java.util.List;
 
 @Configuration
 public class ExtoleRunbookConfiguration implements ScenarioLoader {
-    private static final Logger logger = LogManager.getLogger(ExtoleRunbookConfiguration.class); 
+    private static final Logger logger = LogManager.getLogger(ExtoleRunbookConfiguration.class);
 
     private ExtoleSupportAdvisor advisor;
     private List<Scenario<?,?>> scenarios = new ArrayList<>();
-    
+
     public ExtoleRunbookConfiguration(ExtoleSupportAdvisor advisor, ApplicationContext context) throws IOException, ExtoleRunbookConfigurationException {
         this.advisor = advisor;
         registerRunbooks(context);
@@ -36,26 +36,26 @@ public class ExtoleRunbookConfiguration implements ScenarioLoader {
     public List<Scenario<?, ?>> getScenarios() {
         return scenarios;
     }
-    
+
     private void registerRunbooks(ApplicationContext context) throws IOException, ExtoleRunbookConfigurationException {
         if (context instanceof ConfigurableApplicationContext) {
             ConfigurableApplicationContext configurableContext = (ConfigurableApplicationContext) context;
             PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-            
+
             Resource[] resources = resolver.getResources("classpath:/extole/runbooks/*.yml");
-            
+
             ObjectMapper mapper = new YAMLMapper();
-            
+
             for (Resource resource : resources) {
                 logger.info("Loading Extole Runbook: " + resource.getURI().toString());
-                  
-                try (InputStream inputStream = resource.getInputStream()) {                   
+
+                try (InputStream inputStream = resource.getInputStream()) {
                     var configuration = mapper.readValue(inputStream, ExtoleConfigurableRunbookScenario.Configuration.class);
-                    
+
                     logger.info("Loaded Extole Runbook: " + configuration.getName());
-                    
+
                     var runbook= new  ExtoleConfigurableRunbookScenario(configuration, advisor);
-                    
+
                     configurableContext.getBeanFactory().registerSingleton(runbook.getName(), runbook);
                     scenarios.add(runbook);
                 } catch (IOException exception) {
@@ -63,7 +63,7 @@ public class ExtoleRunbookConfiguration implements ScenarioLoader {
                 }
             }
         }
-          
+
     }
 
 }

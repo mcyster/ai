@@ -54,9 +54,9 @@ class ExtoleReportConfigurationTool implements Tool<ExtoleReportConfigurationToo
 
     @Override
     public Object execute(ExtoleReportConfigurationToolParameters parameters, Void context) {
-        return this.getExecutor().apply((ExtoleReportConfigurationToolParameters)parameters);   
+        return this.getExecutor().apply((ExtoleReportConfigurationToolParameters)parameters);
     }
-    
+
     public Function<ExtoleReportConfigurationToolParameters, Object> getExecutor() {
         return reportHandle -> reportConfigurationLoader(reportHandle);
     }

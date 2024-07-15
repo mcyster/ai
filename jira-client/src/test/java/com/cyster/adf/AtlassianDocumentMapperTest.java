@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 // https://commonmark.org/help/
 
 public class AtlassianDocumentMapperTest {
-    
-    @Test    
+
+    @Test
     public void testText() {
         var expectedResult = """
 {
@@ -28,11 +28,11 @@ public class AtlassianDocumentMapperTest {
 """;
         var markdown = "This is Sparta ";
 
-        checkResult(markdown, expectedResult);  
+        checkResult(markdown, expectedResult);
     }
-    
 
-    @Test    
+
+    @Test
     public void testHeading1() {
         var expectedResult = """
                 {
@@ -58,10 +58,10 @@ public class AtlassianDocumentMapperTest {
 """;
         var markdown = "# Title\ntest";
 
-        checkResult(markdown, expectedResult);  
+        checkResult(markdown, expectedResult);
     }
-    
-    @Test    
+
+    @Test
     public void testHeading3() {
         var expectedResult = """
                 {
@@ -87,11 +87,11 @@ public class AtlassianDocumentMapperTest {
 """;
         var markdown = "### Title\ntest";
 
-        checkResult(markdown, expectedResult);  
+        checkResult(markdown, expectedResult);
     }
-    
-    @Test    
-    public void testWithEmphasisAndStrongEmphasis() {   
+
+    @Test
+    public void testWithEmphasisAndStrongEmphasis() {
         var expectedResult = """
 {
   "version" : 1,
@@ -145,10 +145,10 @@ public class AtlassianDocumentMapperTest {
 """;
         var markdown = "text *emphasis* after **bold** and *crazy **both** emphasis*";
 
-        checkResult(markdown, expectedResult);        
+        checkResult(markdown, expectedResult);
     }
-    
-    @Test    
+
+    @Test
     public void testCode() {
         var expectedResult = """
 {
@@ -169,13 +169,13 @@ public class AtlassianDocumentMapperTest {
   } ]
 }
 """;
-        
+
         var markdown = "Check this out: `alert(\"testing\");`";
 
-        checkResult(markdown, expectedResult);                
+        checkResult(markdown, expectedResult);
     }
-    
-    @Test    
+
+    @Test
     public void testCodeBlock() {
         var expectedResult = """
 {
@@ -196,19 +196,19 @@ public class AtlassianDocumentMapperTest {
   } ]
 }
 """;
-   
+
         var markdown = """
-Check this out: 
+Check this out:
 ```
 alert("testing");
 ```
 """;
 
 
-        checkResult(markdown, expectedResult);                    
+        checkResult(markdown, expectedResult);
     }
-    
-    @Test    
+
+    @Test
     public void testFencedCodeBlock() {
         var expectedResult = """
 {
@@ -232,20 +232,20 @@ alert("testing");
   } ]
 }
 """;
-   
+
         var markdown = """
-Check this out: 
+Check this out:
 ```javascript
 alert("testing");
 ```
 """;
 
 
-        checkResult(markdown, expectedResult);                    
+        checkResult(markdown, expectedResult);
     }
-    
-    @Test    
-    public void testLink() {        
+
+    @Test
+    public void testLink() {
         var expectedResult = """
 {
   "version" : 1,
@@ -275,7 +275,7 @@ Check this link: <https://github.com/mcyster/ai>
         checkResult(markdown, expectedResult);
     }
 
-    @Test    
+    @Test
     public void testFormattedLink() {
         var expectedResult = """
 {
@@ -303,12 +303,12 @@ Check this link: <https://github.com/mcyster/ai>
 Check this [AI Cyster](https://github.com/mcyster/ai)
 """;
 
-        checkResult(markdown, expectedResult);       
+        checkResult(markdown, expectedResult);
     }
-    
-    @Test    
-    public void testBlockQuote() { 
-    	// nested block quotes - perhaps ADF doesn't support?   			
+
+    @Test
+    public void testBlockQuote() {
+        // nested block quotes - perhaps ADF doesn't support?
         var expectedResult = """
 {
   "version" : 1,
@@ -346,15 +346,15 @@ Check this [AI Cyster](https://github.com/mcyster/ai)
 Some block quotes
 > First line
 > Second Line
-> 
+>
 > List Line
 """;
 
-        checkResult(markdown, expectedResult);       
+        checkResult(markdown, expectedResult);
     }
-    
-    @Test    
-    public void testBulletList() {     			
+
+    @Test
+    public void testBulletList() {
         var expectedResult = """
 {
   "version" : 1,
@@ -405,11 +405,11 @@ List:
 * item3
 """;
 
-        checkResult(markdown, expectedResult);       
+        checkResult(markdown, expectedResult);
     }
-    
-    @Test    
-    public void testOrderedList() {     			
+
+    @Test
+    public void testOrderedList() {
         var expectedResult = """
 {
   "version" : 1,
@@ -461,31 +461,31 @@ List:
 1. item3
 """;
 
-        checkResult(markdown, expectedResult);       
+        checkResult(markdown, expectedResult);
     }
-    
+
     private void checkResult(String markdown, String expectedResult) {
         dump(markdown);
-        
+
         ObjectMapper jsonMapper = new ObjectMapper();
         AtlassianDocumentMapper mapper = new AtlassianDocumentMapper();
 
         var result = mapper.fromMarkdown(markdown);
-        
+
         System.out.println(result.toPrettyString());
-        
+
         try {
             assertTrue(result.equals(jsonMapper.readTree(expectedResult)), "Generated Json did not match expected result");
         } catch (JsonProcessingException exception) {
             fail("Failed to parse expectedResult", exception);
         }
     }
-    
+
     private void dump(String markdown) {
         var visitor = new AtlassianDocumentMarkdownVisitor();
-        
+
         System.out.println("\n");
         System.out.println(markdown + "\n\n");
-        System.out.println(visitor.asVisitTree(markdown) + "\n");        
+        System.out.println(visitor.asVisitTree(markdown) + "\n");
     }
 }

@@ -16,17 +16,17 @@ import com.cyster.ai.weave.service.advisor.DocumentStore;
 public class SimpleDocumentStore implements DocumentStore {
     List<Document> documents;
     Optional<String> hash = Optional.empty();
-    
+
     private SimpleDocumentStore(List<Document> documents) {
         this.documents = documents;
     }
-    
+
     @Override
     public String getHash() {
         if (hash.isEmpty()) {
             hash = Optional.of(hashDocuments(this.documents));
         }
-        
+
         return this.hash.get();
     }
 
@@ -46,7 +46,7 @@ public class SimpleDocumentStore implements DocumentStore {
         try {
             for (Document document : documents) {
                 digest.update(document.getName().getBytes());
-    
+
                 document.read(inputStream -> {
                     byte[] buffer = new byte[1024];
                     int read;
@@ -62,7 +62,7 @@ public class SimpleDocumentStore implements DocumentStore {
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
-        
+
         byte[] hashBytes = digest.digest();
         StringBuilder hashString = new StringBuilder();
         for (byte value : hashBytes) {
@@ -71,16 +71,16 @@ public class SimpleDocumentStore implements DocumentStore {
 
         return hashString.toString();
     }
-    
+
     static class SimpleDocument implements Document {
         private final String name;
         private final String content;
-        
+
         SimpleDocument(String name, String content) {
             this.name = name;
             this.content = content;
         }
-        
+
         @Override
         public String getName() {
             return this.name;
@@ -91,18 +91,18 @@ public class SimpleDocumentStore implements DocumentStore {
             try (InputStream inputStream = new ByteArrayInputStream(content.getBytes())) {
                 stream.accept(inputStream);
             }
-        }   
+        }
     }
-    
+
     public static class Builder implements SimpleDocumentStoreBuilder {
         private List<Document> documents = new ArrayList<>();
 
         @Override
         public Builder addDocument(String name, String content) {
-            documents.add(new SimpleDocument(name, content));  
+            documents.add(new SimpleDocument(name, content));
             return this;
         }
-        
+
         @Override
         public SimpleDocumentStore create() {
             return new SimpleDocumentStore(documents);

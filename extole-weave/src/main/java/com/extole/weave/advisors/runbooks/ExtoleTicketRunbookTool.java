@@ -25,7 +25,7 @@ import com.extole.weave.scenarios.runbooks.RunbookScenarioParameters;
 class ExtoleTicketRunbookTool implements Tool<Request, Void> {
     private ExtoleTicketRunbookSelectingAdvisor extoleTicketRunbookSelectingAdvisor;
     Map<String, RunbookScenario> runbookScenarios;
-    
+
     ExtoleTicketRunbookTool(ExtoleTicketRunbookSelectingAdvisor extoleTicketRunbookAdvisor, List<RunbookScenario> runbookScenarios) {
         this.extoleTicketRunbookSelectingAdvisor = extoleTicketRunbookAdvisor;
         this.runbookScenarios = runbookScenarios.stream()
@@ -50,9 +50,9 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
     @Override
     public Object execute(Request request, Void context) throws ToolException {
         Conversation conversation = extoleTicketRunbookSelectingAdvisor.createConversation().start();
-                
+
         // TODO support adding conversation as sub-context on run info message
-        
+
         Message message;
         try {
             conversation.addMessage(Type.USER, request.ticket_number);
@@ -60,37 +60,37 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
         } catch (ConversationException exception) {
            throw new ToolException("extoleTicketRunbookSelectingAdvisor failed to start conversation", exception);
         }
-        
+
         System.out.println("! extoleTicketRunbookSelectingAdvisor " + message.getContent());
-        
+
         Optional<String> json = extractJson(message.getContent());
         if (json.isEmpty()) {
             throw new ToolException("extoleTicketRunbookSelectingAdvisor did not respond with json");
         }
         ObjectMapper objectMapper = new ObjectMapper();
-        
-        
+
+
         JsonNode result;
         try {
             result = objectMapper.readTree(json.get());
         } catch (JsonProcessingException exception) {
             throw new ToolException("extoleTicketRunbookSelectingAdvisor did not respond with invalid json", exception);
         }
-        
+
         String ticketNumber = result.path("ticket_number").asText();
         if (ticketNumber == null || ticketNumber.isBlank()) {
-            throw new ToolException("extoleTicketRunbookSelectingAdvisor responded with no ticket. json: " + json.get());        
+            throw new ToolException("extoleTicketRunbookSelectingAdvisor responded with no ticket. json: " + json.get());
         }
-        
+
         String runbookName = result.path("runbook").asText();
         if (!runbookScenarios.containsKey(runbookName)) {
-            throw new ToolException("extoleTicketRunbookSelectingAdvisor responded with unknown runbook. json:" + json.get());    
+            throw new ToolException("extoleTicketRunbookSelectingAdvisor responded with unknown runbook. json:" + json.get());
         }
-        
+
         var scenario = runbookScenarios.get(runbookName);
         var parameters = new RunbookScenarioParameters(ticketNumber);
         Conversation conversation2 = scenario.createConversation(parameters, null);
-        
+
         Message message2;
         try {
             conversation2.addMessage(Type.USER, ticketNumber);
@@ -98,7 +98,7 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
         } catch (ConversationException e) {
             throw new ToolException("rubookScenarion[" + runbookName + "] failed to start conversation");
         }
-        
+
         return message2.getContent();
     }
 
@@ -106,7 +106,7 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
         @JsonProperty(required = false)
         public String ticket_number;
     }
-    
+
     public static Optional<String> extractJson(String input) {
         int braceCounter = 0;
         int startIndex = -1;
@@ -121,7 +121,7 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
             } else if (input.charAt(i) == '}') {
                 braceCounter--;
                 if (braceCounter == 0 && startIndex != -1) {
-                    endIndex = i; 
+                    endIndex = i;
                     break;
                 }
             }
@@ -134,5 +134,5 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
         }
     }
 
-   
+
 }

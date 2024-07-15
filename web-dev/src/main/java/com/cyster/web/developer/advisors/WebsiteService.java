@@ -12,26 +12,26 @@ public interface WebsiteService {
 
     interface Website {
         String getId();
-        
+
         Type getType();
-        
+
         URI getUri();
-    
+
         List<String> getAssets();
-        
+
         Asset putAsset(String name, String content);
         Asset getAsset(String name);
-        
+
         interface Asset {
             String filename();
             String content();
         }
-        
+
         enum Type {
-            Temporary, 
+            Temporary,
             Named,
             Managed
         }
     }
-        
+
 }

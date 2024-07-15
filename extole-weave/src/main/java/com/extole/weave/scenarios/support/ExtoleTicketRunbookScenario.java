@@ -30,7 +30,7 @@ public class ExtoleTicketRunbookScenario implements Scenario<Parameters, Void> {
     public String getDescription() {
         return "Find the best Runbook for an Extole ticket";
     }
-    
+
     @Override
     public Class<Parameters> getParameterClass() {
         return Parameters.class;
@@ -40,15 +40,15 @@ public class ExtoleTicketRunbookScenario implements Scenario<Parameters, Void> {
     public Class<Void> getContextClass() {
         return Void.class;
     }
- 
+
     @Override
     public Conversation createConversation(Parameters parameters, Void context) {
         if (parameters == null || parameters.ticketNumber == null || parameters.ticketNumber.isBlank()) {
             throw new IllegalArgumentException("No ticketNumber specified"); // TODO not runtime
         }
-        
+
         String prompt = "ticket: " + parameters.getTicketNumber();
-            
+
         return this.advisor.createConversation().addMessage(prompt).start();
     }
 

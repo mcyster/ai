@@ -26,7 +26,7 @@ public class ChatFunctionToolset<C> {
         ObjectMapper objectMapper = new ObjectMapper();
 
         Object value = toolset.execute(functionToolCall.function().name(), functionToolCall.function().arguments(), this.context);
-        
+
         JsonNode result = objectMapper.valueToTree(value);
 
         String json;

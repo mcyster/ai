@@ -33,12 +33,12 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 
 @RestController
 @RequestMapping("/support")
-public class SupportTicketsController {    
+public class SupportTicketsController {
     private JiraWebClientFactory jiraWebClientFactory;
     private Path tempDirectory;
     private final ObjectMapper objectMapper;
-    
-    public SupportTicketsController(@Value("${AI_HOME}") String aiHome, JiraWebClientFactory jiraWebClientFactory, 
+
+    public SupportTicketsController(@Value("${AI_HOME}") String aiHome, JiraWebClientFactory jiraWebClientFactory,
         ObjectMapper objectMapper) {
         Path directory = Paths.get(aiHome);
         if (!Files.exists(directory)) {
@@ -61,18 +61,18 @@ public class SupportTicketsController {
     }
 
     @GetMapping("/tickets")
-    public List<SupportTicketResponse> getTickets(@RequestParam Optional<Integer> limit) {       
+    public List<SupportTicketResponse> getTickets(@RequestParam Optional<Integer> limit) {
         return loadTickets(limit);
     }
-    
+
     @Scheduled(initialDelayString = "PT30M", fixedRateString = "PT1H")
     public void performScheduledTask() {
         loadTickets(Optional.empty());
     }
-    
+
     private List<SupportTicketResponse> loadTickets(Optional<Integer> limit) {
         List<SupportTicketResponse> tickets;
-        
+
         Path cacheFilename = getCacheFilename(getHash(limit));
         if (Files.exists(cacheFilename)) {
             String json;
@@ -81,7 +81,7 @@ public class SupportTicketsController {
             } catch (IOException exception) {
                 throw new RuntimeException(exception);
             }
-            
+
             try {
                 tickets = objectMapper.readValue(json, new TypeReference<List<SupportTicketResponse>>(){});
             } catch (JsonProcessingException exception) {
@@ -96,10 +96,10 @@ public class SupportTicketsController {
                 throw new RuntimeException(exception);
             }
         }
-        
+
         return tickets;
     }
-    
+
     private List<SupportTicketResponse> fetchTickets(Optional<Integer> limit) {
 
        List<String> fields = new ArrayList<>() {{
@@ -124,23 +124,23 @@ public class SupportTicketsController {
            add("customfield_11320");
            add("aggregatetimespent");
        }};
-       
+
        String query = "project in (\"SUP\", \"LAUNCH\", \"SPEED\")"
            + " AND (created > startOfMonth(\"-7M\") OR resolved > startOfMonth(\"-7M\"))"
-           //+ " AND created >= -1w" 
+           //+ " AND created >= -1w"
            + " AND type in (Bug, Task, Story)"
            + " ORDER BY CREATED ASC";
-        
+
         int maxResultsPerRequest = 100;
         if (limit.isPresent() && maxResultsPerRequest > limit.get()) {
             maxResultsPerRequest = limit.get();
         }
-        
+
         List<SupportTicketResponse> tickets = new ArrayList<>();
-        do {     
+        do {
             JsonNode response;
             try {
-                int maxResults = maxResultsPerRequest;  
+                int maxResults = maxResultsPerRequest;
                 response = this.jiraWebClientFactory.getWebClient().get()
                     .uri(uriBuilder -> uriBuilder
                         .path("/rest/api/3/search")
@@ -153,7 +153,7 @@ public class SupportTicketsController {
                   .retrieve()
                   .bodyToMono(JsonNode.class)
                   .block();
-                
+
                 if (response == null || !response.has("issues")) {
                     throw new IllegalArgumentException("Jira search failed with unexpected response");
                 }
@@ -161,17 +161,17 @@ public class SupportTicketsController {
                 if (!issues.isArray()) {
                     throw new IllegalArgumentException("Jira search failed with unexpected response");
                 }
-                
+
                 tickets.addAll(issuesToTicketResponses((ArrayNode)issues));
-                
+
                 if (limit.isPresent() && tickets.size() >= limit.get()) {
                     break;
                 }
-                
+
                 if (tickets.size() >= response.path("total").asInt()) {
                     break;
                 }
- 
+
             } catch (WebClientResponseException exception) {
                 if (exception.getCause() instanceof DataBufferLimitException)
                 if (maxResultsPerRequest <= 1) {
@@ -182,18 +182,18 @@ public class SupportTicketsController {
                     maxResultsPerRequest = 1;
                 }
             }
-        } while (true);    
-      
+        } while (true);
+
         return tickets;
     }
 
     private Path getCacheFilename(String uniqueHash) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String date = formatter.format(new Date());
-        
+
         return tempDirectory.resolve("tickets-" + uniqueHash + "-" + date + ".json");
     }
-    
+
     public static String getHash(Object... parameters) {
         StringBuilder concatenated = new StringBuilder();
         for (Object parameter : parameters) {
@@ -228,10 +228,10 @@ public class SupportTicketsController {
             return parameter.toString();
         }
     }
-    
+
     private static List<SupportTicketResponse> issuesToTicketResponses(ArrayNode issues) {
         List<SupportTicketResponse> tickets = new ArrayList<>();
-        
+
         for(JsonNode issue: issues) {
             JsonNode fields = issue.path("fields");
 
@@ -240,8 +240,8 @@ public class SupportTicketsController {
             if (value != null && !value.trim().isEmpty()) {
                 client = value.split("-")[0].trim();
             }
-            
-            var ticketBuilder = SupportTicketResponse.newBuilder();            
+
+            var ticketBuilder = SupportTicketResponse.newBuilder();
             ticketBuilder.key(issue.path("key").asText());
             ticketBuilder.project(fields.path("project").path("key").asText());
             ticketBuilder.created(fields.path("created").asText());
@@ -261,13 +261,13 @@ public class SupportTicketsController {
             ticketBuilder.pairSupport(fields.path("customfield_11376").path("emailAddress").asText(null));
             ticketBuilder.clientPriority(fields.path("customfield_11373").asText(null));
             ticketBuilder.timeSeconds(fields.path("aggregatetimespent").asInt());
-            
+
             tickets.add(ticketBuilder.build());
         }
-        
+
         return tickets;
     }
-    
+
     public static record SupportTicketResponse (
             String key,
             String project,
@@ -411,8 +411,8 @@ public class SupportTicketsController {
 
             public SupportTicketResponse build() {
                 return new SupportTicketResponse(
-                    key, project, created, type, status, statusChanged, category, resolved, due, 
-                    priority, reporter, assignee, client, clientId, pod, pairCsm, pairSupport, 
+                    key, project, created, type, status, statusChanged, category, resolved, due,
+                    priority, reporter, assignee, client, clientId, pod, pairCsm, pairSupport,
                     clientPriority, timeSeconds
                 );
             }

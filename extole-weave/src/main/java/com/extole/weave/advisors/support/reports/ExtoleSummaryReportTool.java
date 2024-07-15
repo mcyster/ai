@@ -41,7 +41,7 @@ class ExtoleSummaryReportTool implements ExtoleSupportAdvisorTool<Request> {
 
     @Override
     public Object execute(Request request, Void context) throws ToolException {
-        
+
         ObjectNode parameters = JsonNodeFactory.instance.objectNode();
         {
             parameters.put("container", "production");
@@ -52,7 +52,7 @@ class ExtoleSummaryReportTool implements ExtoleSupportAdvisorTool<Request> {
             }
             parameters.put("period", period);
 
-            var timeRange = "LAST_QUARTER";   
+            var timeRange = "LAST_QUARTER";
             if (request.timeRange != null && !request.timeRange.isBlank()) {
                 timeRange = request.timeRange;
             }
@@ -79,14 +79,14 @@ class ExtoleSummaryReportTool implements ExtoleSupportAdvisorTool<Request> {
 
         var reportBuilder = new ExtoleReportBuilder(this.extoleWebClientFactory)
                 .withClientId(request.clientId)
-                .withLimit(12) 
+                .withLimit(12)
                 .withName("summary")
                 .withDisplayName("Summary Simple - AI")
                 .withParameters(parameters);
-        
+
         return reportBuilder.build();
     }
-    
+
     static class Request {
         @JsonProperty(required = true)
         public String clientId;
@@ -102,16 +102,16 @@ class ExtoleSummaryReportTool implements ExtoleSupportAdvisorTool<Request> {
         @JsonPropertyDescription("period for each row in the report, defaults to WEEK, Support periods include: HOUR, DAY, WEEK")
         @JsonProperty(required = false)
         public String period;
-        
+
         @Override
         public boolean equals(Object object) {
             if (this == object) {
                 return true;
             }
-            if (object == null || getClass() != object.getClass()) { 
+            if (object == null || getClass() != object.getClass()) {
                 return false;
             }
-            
+
             Request value = (Request) object;
             return Objects.equals(clientId, value.clientId) &&
                    Objects.equals(dimensions, value.dimensions) &&
@@ -123,8 +123,8 @@ class ExtoleSummaryReportTool implements ExtoleSupportAdvisorTool<Request> {
         @Override
         public int hashCode() {
             return Objects.hash(clientId, dimensions, timeRange, period);
-        }   
-        
+        }
+
         @Override
         public String toString() {
             ObjectMapper mapper = new ObjectMapper();

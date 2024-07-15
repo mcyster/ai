@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @Component
 public class SupportTicketGetTool implements ExtoleSupportAdvisorTool<Request> {
     private JiraWebClientFactory jiraWebClientFactory;
-    
+
     SupportTicketGetTool(JiraWebClientFactory jiraWebClientFactory) {
         this.jiraWebClientFactory = jiraWebClientFactory;
     }
@@ -42,43 +42,43 @@ public class SupportTicketGetTool implements ExtoleSupportAdvisorTool<Request> {
 
     @Override
     public Object execute(Request request, Void context) throws ToolException {
-        
+
         if (request.key != null && request.key.isEmpty()) {
             throw new FatalToolException("Attribute ticket key not specified");
         }
-                
+
         var resultNode =  this.jiraWebClientFactory.getWebClient().get()
             .uri(uriBuilder -> uriBuilder.path("/rest/api/3/issue/" + request.key).build())
             .accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .bodyToMono(JsonNode.class)
             .block();
-                
+
         if (resultNode == null || !resultNode.has("key") || resultNode.path("key").asText().isEmpty()) {
             throw new ToolException("Jira search failed with unexpected response");
         }
         var issueNode = resultNode;
-        
+
         // TODO more robust pattern to refine result
         ObjectNode ticket = JsonNodeFactory.instance.objectNode();
         {
             ticket.put("key", issueNode.path("key").asText());
             ticket.put("summary", issueNode.path("fields").path("summary").asText());
-          
+
             JsonNode assignee = issueNode.path("fields").path("assignee");
             if (!assignee.isMissingNode()) {
                 ticket.put("assignee", assignee.path("emailAddress").asText());
             } else {
-                ticket.putNull("assignee"); 
+                ticket.putNull("assignee");
             }
-                
+
             JsonNode status = issueNode.path("fields").path("status");
             if (!status.isMissingNode()) {
                 ticket.put("status", status.path("name").asText());
             } else {
                 ticket.putNull("status");
             }
-                
+
             JsonNode parent = issueNode.path("fields").path("parent");
             if (!parent.isMissingNode()) {
                 ticket.put("classification", parent.path("fields").path("summary").asText());
@@ -92,7 +92,7 @@ public class SupportTicketGetTool implements ExtoleSupportAdvisorTool<Request> {
             } else {
                 ticket.putNull("client");
             }
-                
+
             ticket.put("createdDate", issueNode.path("fields").path("created").asText());
             ticket.put("updatedDate", issueNode.path("fields").path("updated").asText());
 
@@ -126,7 +126,7 @@ public class SupportTicketGetTool implements ExtoleSupportAdvisorTool<Request> {
                 ticket.put("description", content);
             }
         }
-        
+
         return ticket;
     }
 

@@ -9,12 +9,12 @@ import java.util.stream.Stream;
 public interface DocumentStore {
     String getHash();
     Stream<Document> stream();
-    
+
     public static interface Document {
       String getName();
       void read(Consumer<InputStream> stream) throws IOException;
     }
-    
+
     public static interface SimpleDocumentStoreBuilder {
         SimpleDocumentStoreBuilder addDocument(String name, String content);
         DocumentStore create();

@@ -18,38 +18,38 @@ import com.extole.weave.scenarios.support.ExtoleSupportTicketScenario;
 @Service
 @EnableAsync
 public class TicketCommenter {
-    private static final Logger logger = LogManager.getLogger(TicketCommenter.class);    
+    private static final Logger logger = LogManager.getLogger(TicketCommenter.class);
     private static final Logger ticketLogger = LogManager.getLogger("tickets");
 
     private ExtoleSupportTicketScenario supportTicketScenario;
 
     public TicketCommenter(ExtoleSupportTicketScenario supportTicketScenario) {
-        this.supportTicketScenario = supportTicketScenario; 
+        this.supportTicketScenario = supportTicketScenario;
     }
 
     @Async("ticketCommentTaskExecutor")
     public void process(String ticketNumber) {
         processMessage(ticketNumber, Optional.empty());
-    }    
-        
+    }
+
     @Async("ticketCommentTaskExecutor")
     public void process(String ticketNumber, String prompt) {
         processMessage(ticketNumber, Optional.of(prompt));
-    } 
-    
+    }
+
     void processMessage(String ticketNumber, Optional<String> prompt) {
         logger.info("Ticket - processing " + ticketNumber + " asynchronously on thread " + Thread.currentThread().getName());
-        
+
         var parameters = new ExtoleSupportTicketScenario.Parameters(ticketNumber);
-        
+
         Message response;
         try {
             var conversation = supportTicketScenario.createConversation(parameters, null);
-                  
+
             if (prompt.isPresent()) {
                 conversation.addMessage(Type.USER, prompt.get());
             }
-                    
+
             response = conversation.respond();
         } catch (ConversationException exception) {
             logger.error("Problem processing ticket: " + ticketNumber, exception);
@@ -60,7 +60,7 @@ public class TicketCommenter {
 
         ticketLogger.info(ticketNumber + " " + response.toString());
     }
-    
+
     @Bean(name = "ticketCommentTaskExecutor")
     public ThreadPoolTaskExecutor getTaskExecutor() {
         var taskExecutor = new ThreadPoolTaskExecutor();
@@ -69,7 +69,7 @@ public class TicketCommenter {
         taskExecutor.setQueueCapacity(120);
         taskExecutor.setThreadNamePrefix("TicketCommenter-");
         taskExecutor.initialize();
-        
+
         return taskExecutor;
     }
 }

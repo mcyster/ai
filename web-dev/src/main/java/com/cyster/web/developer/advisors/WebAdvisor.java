@@ -17,15 +17,15 @@ public class WebAdvisor implements Advisor<Website> {
     public final String NAME = "websiteBuilder";
 
     private AdvisorService advisorService;
-    private Map<String, Tool<?, Website>> tools = new HashMap<>();    
+    private Map<String, Tool<?, Website>> tools = new HashMap<>();
     private Optional<Advisor<Website>> advisor = Optional.empty();
-    
+
     public WebAdvisor(AdvisorService advisorService,
         WebsiteFileListTool websiteFileListTool,
         WebsiteFileGetTool websiteFileGetTool,
         WebsiteFilePutTool websiteFilePutTool) {
         this.advisorService = advisorService;
-        
+
         this.tools.put(websiteFileListTool.getName(), websiteFileListTool);
         this.tools.put(websiteFileGetTool.getName(), websiteFileGetTool);
         this.tools.put(websiteFilePutTool.getName(), websiteFilePutTool);
@@ -41,14 +41,14 @@ public class WebAdvisor implements Advisor<Website> {
     @Override
     public ConversationBuilder<Website> createConversation() {
         if (this.advisor.isEmpty()) {
-            String instructions = """ 
+            String instructions = """
 You are web developer that has the ability to modify the associated website, by listing, updating or adding files sing your website tools
 """;
 
             AdvisorBuilder<Website> builder = this.advisorService.getOrCreateAdvisor(NAME);
             builder
                 .setInstructions(instructions);
-                
+
            for(var tool: tools.values()) {
                builder.withTool(tool);
            }
