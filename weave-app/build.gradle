@@ -24,7 +24,7 @@ dependencies {
     implementation project(':ai-weave')
     implementation project(':store')
     implementation project(':rest')
-    implementation project(':sage-cyster')
+    implementation project(':cyster-weave')
     implementation project(':extole-tickets-rest')
     implementation project(':extole-weave')
     implementation project(':weave-rest')

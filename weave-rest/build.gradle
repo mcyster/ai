@@ -19,7 +19,7 @@ dependencies {
     implementation project(':ai-weave')
     implementation project(':store')
     implementation project(':rest')
-    implementation project(':sage-cyster')   // for scenario-session, should move to here
+    implementation project(':cyster-weave')   // for scenario-session, should move to here
     implementation project(':extole-weave')   // for extole-session context TBD
 
     testImplementation('org.springframework.boot:spring-boot-starter-test')

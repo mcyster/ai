@@ -25,7 +25,7 @@ dependencies {
     implementation project(':store')
     implementation project(':rest')
     implementation project(':extole-tickets-rest')
-    implementation project(':sage-cyster')
+    implementation project(':cyster-weave')
     implementation project(':extole-weave')
     implementation project(':weave-rest')
     implementation project(':web-dev')
