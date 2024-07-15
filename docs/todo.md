@@ -64,3 +64,82 @@ Use modules to declare public classes etc rather than separate builds
 Testing here
 - https://github.com/mcyster/jpms
 
+# Merge Agent and Scenario
+
+public interface Scenario<PARAMETERS, CONTEXT> {
+	String getName();
+	String getDescription();
+  Class<PARAMETERS> getParameterClass();
+  Class<CONTEXT> getContextClass();
+	Conversation createConversation(PARAMETERS parameters, CONTEXT context);
+}
+
+public interface Advisor<C> {
+    String getName();
+    ConversationBuilder<C> createConversation();
+    interface ConversationBuilder<C> {
+        ConversationBuilder<C> withContext(C context);
+        ConversationBuilder<C> setOverrideInstructions(String instruction);
+        ConversationBuilder<C> addMessage(String message);
+        Conversation start();
+    }
+}
+
+public interface AdvisorService { 
+    <C> AdvisorBuilder<C> getOrCreateAdvisor(String name);
+    <PARAMETERS, CONTEXT> Tool<PARAMETERS, CONTEXT> cachingTool(Tool<PARAMETERS, CONTEXT> tool);
+    <CONTEXT> SearchTool.Builder<CONTEXT> searchToolBuilder();
+    <CONTEXT> CodeInterpreterTool.Builder<CONTEXT> codeToolBuilder();    
+    SimpleDocumentStoreBuilder simpleDocumentStoreBuilder();
+    DirectoryDocumentStoreBuilder directoryDocumentStoreBuilder();
+}
+
+public interface AdvisorBuilder<C> {
+    AdvisorBuilder<C> setInstructions(String instruction);
+    <T> AdvisorBuilder<C> withTool(Tool<T, C> tool);
+    AdvisorBuilder<C> withFile(Path path);
+    Advisor<C> getOrCreate();
+}
+
+public interface ScenarioService {
+    Set<Scenario<?,?>> getScenarios();
+    Scenario<?,?> getScenario(String name) throws ScenarioException;
+}
+
+
+merge concepts
+
+AiWeaveService {
+  // move set of Scenarios out to spring
+  
+  <P, C> AssistantScenarioBuilder<P, C> getOrCreateAssistantScenario(String name)
+  
+  // Special tools ...
+  // <PARAMETERS, CONTEXT> Tool<PARAMETERS, CONTEXT> cachingTool(Tool<PARAMETERS, CONTEXT> tool);
+  // <CONTEXT> SearchTool.Builder<CONTEXT> searchToolBuilder();
+}
+
+  
+public interface Scenario<PARAMETERS, CONTEXT> {
+  String getName();
+  String getDescription();
+  Class<PARAMETERS> getParameterClass();
+  Class<CONTEXT> getContextClass();
+  
+  ConversationBuilder createConversation(PARAMETERS parameters, CONTEXT context);
+
+   interface ConversationBuilder {
+        ConversationBuilder setOverrideInstructions(String instruction);
+        ConversationBuilder addMessage(String message);
+        Conversation start();
+    }
+}
+
+public interface AssistantScenarioBuilder<P,C> implements Scenario {
+    AssistantScenarioBuilder<P,C> setInstructions(String instruction);
+    <T> AssistantScenarioBuilder<P, C> withTool(Tool<T, C> tool);
+    AssistantScenario<P,C> getOrCreate();
+}
+
+
+

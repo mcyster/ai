@@ -16,7 +16,6 @@ import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.conversation.Operation;
-import com.cyster.ai.weave.service.scenario.Scenario;
 
 import io.github.stefanbratanov.jvm.openai.CreateMessageRequest;
 import io.github.stefanbratanov.jvm.openai.CreateRunRequest;

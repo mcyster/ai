@@ -1,4 +1,11 @@
 
+
+2024-7-15
+- ai-weave, cyster-weave, extole-weave
+
+2024-7-1
+- web-dev
+
 2024-6-2
 - abstracted concept of DocumentStore
 - got githib running as a source for documents

@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.impl.advisor.MessageImpl;
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;

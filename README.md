@@ -111,3 +111,8 @@ ai-up
 ```
 
 
+# Resources
+
+## OpenAi Assistants
+- https://platform.openai.com/assistants
+
