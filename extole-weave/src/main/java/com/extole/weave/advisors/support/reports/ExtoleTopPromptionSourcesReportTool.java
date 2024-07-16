@@ -5,7 +5,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.weave.advisors.support.ExtoleSupportAdvisorTool;
+import com.extole.weave.advisors.support.ExtoleSupportTool;
 import com.extole.weave.advisors.support.ExtoleWebClientFactory;
 import com.extole.weave.advisors.support.reports.ExtoleTopPromptionSourcesReportTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
-class ExtoleTopPromptionSourcesReportTool implements ExtoleSupportAdvisorTool<Request> {
+class ExtoleTopPromptionSourcesReportTool implements ExtoleSupportTool<Request> {
     private ExtoleWebClientFactory extoleWebClientFactory;
 
     ExtoleTopPromptionSourcesReportTool(ExtoleWebClientFactory extoleWebClientFactory) {

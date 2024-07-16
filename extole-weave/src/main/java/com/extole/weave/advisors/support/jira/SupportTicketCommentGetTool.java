@@ -6,14 +6,14 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.jira.client.JiraWebClientFactory;
-import com.extole.weave.advisors.support.ExtoleSupportAdvisorTool;
+import com.extole.weave.advisors.support.ExtoleSupportTool;
 import com.extole.weave.advisors.support.jira.SupportTicketCommentGetTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
-class SupportTicketCommentGetTool implements ExtoleSupportAdvisorTool<Request> {
+class SupportTicketCommentGetTool implements ExtoleSupportTool<Request> {
     private JiraWebClientFactory jiraWebClientFactory;
 
     SupportTicketCommentGetTool(JiraWebClientFactory jiraWebClientFactory) {

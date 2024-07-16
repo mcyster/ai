@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
-class ExtoleCampaignVariablesGetTool implements ExtoleSupportAdvisorTool<Request> {
+class ExtoleCampaignVariablesGetTool implements ExtoleSupportTool<Request> {
     private ExtoleWebClientFactory extoleWebClientFactory;
 
     ExtoleCampaignVariablesGetTool(ExtoleWebClientFactory extoleWebClientFactory) {

@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
-class ExtolePrehandlerGetTool implements ExtoleSupportAdvisorTool<Request> {
+class ExtolePrehandlerGetTool implements ExtoleSupportTool<Request> {
     private static final Logger logger = LogManager.getLogger(ExtoleWebClientFactory.class);
 
     private ExtoleWebClientFactory extoleWebClientFactory;

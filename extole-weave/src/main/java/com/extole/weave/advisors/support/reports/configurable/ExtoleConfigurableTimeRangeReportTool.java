@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.weave.advisors.support.ExtoleSupportAdvisorTool;
+import com.extole.weave.advisors.support.ExtoleSupportTool;
 import com.extole.weave.advisors.support.ExtoleWebClientFactory;
 import com.extole.weave.advisors.support.reports.ExtoleReportBuilder;
 import com.extole.weave.advisors.support.reports.configurable.UncachedExtoleConfigurableTimeRangeReportTool.Request;
@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvisorTool<Request> {
+class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool<Request> {
     Tool<Request, Void> tool;
 
     ExtoleConfigurableTimeRangeReportTool(Configuration configuration, ExtoleWebClientFactory extoleWebClientFactory) {
@@ -139,7 +139,7 @@ class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvisorTool<
 }
 
 
-class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportAdvisorTool<Request> {
+class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool<Request> {
     private static final String PARAMETER_NAME_TIME_RANGE = "time_range";
     private static final String DEFAULT_TIME_RANGE = "LAST_MONTH";
     private ExtoleWebClientFactory extoleWebClientFactory;

@@ -5,7 +5,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.weave.advisors.support.ExtoleSupportAdvisorTool;
+import com.extole.weave.advisors.support.ExtoleSupportTool;
 import com.extole.weave.advisors.support.ExtoleWebClientFactory;
 import com.extole.weave.advisors.support.reports.ExtoleClientEventSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
-class ExtoleClientEventSearchTool implements ExtoleSupportAdvisorTool<Request> {
+class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
     private static final String NOTIFICATION_ID_PATTERN = "[a-z0-9]{18,20}";
 
     private ExtoleWebClientFactory extoleWebClientFactory;

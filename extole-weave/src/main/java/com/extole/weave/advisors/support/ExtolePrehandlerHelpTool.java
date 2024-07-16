@@ -9,9 +9,9 @@ import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message.Type;
-import com.extole.weave.advisors.ExtoleJavascriptPrehandlerActionAdvisor;
-import com.extole.weave.advisors.ExtoleJavascriptPrehandlerActionAdvisor.AdminUserToolContext;
 import com.extole.weave.advisors.support.ExtolePrehandlerHelpTool.Request;
+import com.extole.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionScenario;
+import com.extole.weave.session.ExtoleSessionContext;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,13 +19,13 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
-class ExtolePrehandlerHelpTool implements ExtoleSupportAdvisorTool<Request> {
-    private ExtoleJavascriptPrehandlerActionAdvisor advisor;
+class ExtolePrehandlerHelpTool implements ExtoleSupportTool<Request> {
+    private ExtoleJavascriptPrehandlerActionScenario scenario;
     private ExtoleWebClientFactory extoleWebClientFactory;
 
-    ExtolePrehandlerHelpTool(ExtoleJavascriptPrehandlerActionAdvisor advisor,
+    ExtolePrehandlerHelpTool(ExtoleJavascriptPrehandlerActionScenario scenario,
         ExtoleWebClientFactory extoleWebClientFactory) {
-        this.advisor = advisor;
+        this.scenario = scenario;
         this.extoleWebClientFactory = extoleWebClientFactory;
     }
 
@@ -73,10 +73,10 @@ class ExtolePrehandlerHelpTool implements ExtoleSupportAdvisorTool<Request> {
             throw new ToolException("Unable to get client specific access token");
         }
 
-        var prehandlerContext = new AdminUserToolContext(result.path("access_token").asText());
+        var prehandlerContext = new ExtoleSessionContext(result.path("access_token").asText());
 
         try {
-            var conversation = advisor.createConversation().withContext(prehandlerContext).start();
+            var conversation = scenario.createConversationBuilder(null, prehandlerContext).start();
             conversation.addMessage(Type.USER, request.question);
             return conversation.respond();
         } catch (ConversationException exception) {

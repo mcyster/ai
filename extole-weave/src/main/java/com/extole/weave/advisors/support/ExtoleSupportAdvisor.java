@@ -16,10 +16,10 @@ public class ExtoleSupportAdvisor implements Advisor<Void> {
     public final String NAME = "extoleSupport";
 
     private AdvisorService advisorService;
-    private Map<String, ExtoleSupportAdvisorTool<?>> tools = new HashMap<>();
+    private Map<String, ExtoleSupportTool<?>> tools = new HashMap<>();
     private Optional<Advisor<Void>> advisor = Optional.empty();
 
-    public ExtoleSupportAdvisor(AdvisorService advisorService, List<ExtoleSupportAdvisorToolLoader> toolLoaders, List<ExtoleSupportAdvisorTool<?>> tools) {
+    public ExtoleSupportAdvisor(AdvisorService advisorService, List<ExtoleSupportAdvisorToolLoader> toolLoaders, List<ExtoleSupportTool<?>> tools) {
         this.advisorService = advisorService;
 
         for(var tool: tools) {

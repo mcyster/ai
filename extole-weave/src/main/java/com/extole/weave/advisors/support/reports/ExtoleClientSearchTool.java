@@ -7,7 +7,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.weave.advisors.support.ExtoleSupportAdvisorTool;
+import com.extole.weave.advisors.support.ExtoleSupportTool;
 import com.extole.weave.advisors.support.ExtoleWebClientFactory;
 import com.extole.weave.advisors.support.reports.ExtoleClientSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 @Component
-class ExtoleClientSearchTool implements ExtoleSupportAdvisorTool<Request> {
+class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
     private ExtoleWebClientFactory extoleWebClientFactory;
 
     ExtoleClientSearchTool(ExtoleWebClientFactory extoleWebClientFactory) {

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.jira.client.JiraWebClientFactory;
-import com.extole.weave.advisors.support.ExtoleSupportAdvisorTool;
+import com.extole.weave.advisors.support.ExtoleSupportTool;
 import com.extole.weave.advisors.support.jira.SupportTicketGetTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
-public class SupportTicketGetTool implements ExtoleSupportAdvisorTool<Request> {
+public class SupportTicketGetTool implements ExtoleSupportTool<Request> {
     private JiraWebClientFactory jiraWebClientFactory;
 
     SupportTicketGetTool(JiraWebClientFactory jiraWebClientFactory) {

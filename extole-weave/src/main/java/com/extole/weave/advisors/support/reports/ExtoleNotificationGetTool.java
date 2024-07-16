@@ -14,7 +14,7 @@ import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.advisor.AdvisorService;
-import com.extole.weave.advisors.support.ExtoleSupportAdvisorTool;
+import com.extole.weave.advisors.support.ExtoleSupportTool;
 import com.extole.weave.advisors.support.ExtoleWebClientFactory;
 import com.extole.weave.advisors.support.reports.ExtoleNotificationGetTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
-public class ExtoleNotificationGetTool implements ExtoleSupportAdvisorTool<Request> {
+public class ExtoleNotificationGetTool implements ExtoleSupportTool<Request> {
     private Tool<Request, Void> tool;
 
     ExtoleNotificationGetTool(ExtoleWebClientFactory extoleWebClientFactory, AdvisorService advisorService) {
@@ -96,11 +96,11 @@ public class ExtoleNotificationGetTool implements ExtoleSupportAdvisorTool<Reque
     }
 }
 
-class UncachedNotificationGetTool implements ExtoleSupportAdvisorTool<Request> {
+class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
     private static final String NOTIFICATION_ID_PATTERN = "[a-z0-9]{18,20}";
     private static final String USER_ID_PATTERN = "\\d+";
 
-    private static final Logger logger = LogManager.getLogger(ExtoleSupportAdvisorTool.class);
+    private static final Logger logger = LogManager.getLogger(ExtoleSupportTool.class);
 
     private ExtoleWebClientFactory extoleWebClientFactory;
 

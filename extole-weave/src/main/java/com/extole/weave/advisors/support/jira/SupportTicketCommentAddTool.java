@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import com.cyster.adf.AtlassianDocumentMapper;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.jira.client.JiraWebClientFactory;
-import com.extole.weave.advisors.support.ExtoleSupportAdvisorTool;
+import com.extole.weave.advisors.support.ExtoleSupportTool;
 import com.extole.weave.advisors.support.jira.SupportTicketCommentAddTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import reactor.core.publisher.Mono;
 
 @Component
-class SupportTicketCommentAddTool implements ExtoleSupportAdvisorTool<Request> {
+class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
     private static final Logger logger = LogManager.getLogger(SupportTicketCommentAddTool.class);
 
     private JiraWebClientFactory jiraWebClientFactory;

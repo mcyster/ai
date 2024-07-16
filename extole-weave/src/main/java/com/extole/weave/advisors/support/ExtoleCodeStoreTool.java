@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 @Component
-class ExtoleCodeStoreTool implements ExtoleSupportAdvisorTool<Request> {
+class ExtoleCodeStoreTool implements ExtoleSupportTool<Request> {
 
     ExtoleCodeStoreTool(SimpleVectorStoreService storeService) {
         // TODO verify and warn if empty, perhaps also in tool.execute
