@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
-import com.cyster.web.developer.scenarios.WebsiteService;
+import com.cyster.web.weave.scenarios.WebsiteService;
 
 @Configuration
 public class WebRestConfig {

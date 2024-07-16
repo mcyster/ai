@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cyster.web.developer.scenarios.WebsiteService.Website;
 import com.cyster.web.rest.WebsiteServiceImpl;
+import com.cyster.web.weave.scenarios.WebsiteService.Website;
 
 @RestController
 public class SiteController {

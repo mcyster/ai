@@ -1,4 +1,4 @@
-package com.cyster.web.developer.scenarios;
+package com.cyster.web.weave.scenarios;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.web.developer.scenarios.WebsiteService.Website;
+import com.cyster.web.weave.scenarios.WebsiteService.Website;
 
 @Component
 public class WebsiteBuilderScenario implements Scenario<Void, Website> {

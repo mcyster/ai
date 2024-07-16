@@ -15,8 +15,8 @@ import com.cyster.rest.CysterRestScan;
 import com.cyster.store.CysterStoreScan;
 import com.cyster.weave.CysterSageScan;
 import com.cyster.weave.rest.WeaveRestScan;
-import com.cyster.web.developer.WebDeveloperScan;
 import com.cyster.web.rest.WebSiteScan;
+import com.cyster.web.weave.WebDeveloperScan;
 import com.extole.tickets.rest.ExtoleTicketsScan;
 import com.extole.weave.ExtoleSageScan;
 

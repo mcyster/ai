@@ -1,4 +1,4 @@
-package com.cyster.web.developer.scenarios;
+package com.cyster.web.weave.scenarios;
 
 import java.net.URI;
 import java.util.List;
