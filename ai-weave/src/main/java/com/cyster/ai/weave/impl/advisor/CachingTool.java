@@ -4,8 +4,8 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import com.cyster.ai.weave.service.advisor.Tool;
-import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.ToolException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

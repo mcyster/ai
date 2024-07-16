@@ -16,7 +16,7 @@ public class BrandScenario implements Scenario<Void, Void> {
     private final String DESCRIPTION = "Provides details about company brands";
     private AiWeaveService aiWeaveService;
     private Optional<String> brandFetchApiKey;
-    private Optional<Scenario<Void, Void>> brandScenario = Optional.empty();
+    private Optional<Scenario<Void, Void>> scenario = Optional.empty();
     
 
     public BrandScenario(AiWeaveService aiWeaveService,
@@ -51,8 +51,12 @@ public class BrandScenario implements Scenario<Void, Void> {
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Void parameters, Void context) {
-        if (this.brandScenario.isEmpty()) {
+    public ConversationBuilder createConversationBuilder(Void parameters, Void context) {        
+        return this.getScenario().createConversationBuilder(parameters, context);
+    }
+
+    private Scenario<Void, Void> getScenario() {
+        if (this.scenario.isEmpty()) {
             var instructions = """
                 You focus on find details on Company brands.
                 """;
@@ -64,10 +68,9 @@ public class BrandScenario implements Scenario<Void, Void> {
                 .withTool(new BrandSearchTool(this.brandFetchApiKey))
                 .withTool(new BrandFetchTool(this.brandFetchApiKey));
             
-            this.brandScenario = Optional.of(builder.getOrCreate());
+            this.scenario = Optional.of(builder.getOrCreate());
         }
-        
-        return this.brandScenario.get().createConversationBuilder(parameters, context);
+        return this.scenario.get();
     }
-
 }
+

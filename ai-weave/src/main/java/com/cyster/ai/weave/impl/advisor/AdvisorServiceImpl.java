@@ -5,14 +5,14 @@ import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.impl.store.DirectoryDocumentStore;
 import com.cyster.ai.weave.impl.store.SearchToolBuilderImpl;
 import com.cyster.ai.weave.impl.store.SimpleDocumentStore;
+import com.cyster.ai.weave.service.CodeInterpreterTool;
+import com.cyster.ai.weave.service.SearchTool;
+import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.DocumentStore.DirectoryDocumentStoreBuilder;
+import com.cyster.ai.weave.service.DocumentStore.SimpleDocumentStoreBuilder;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.advisor.AdvisorService;
 import com.cyster.ai.weave.service.advisor.AdvisorServiceFactory;
-import com.cyster.ai.weave.service.advisor.CodeInterpreterTool;
-import com.cyster.ai.weave.service.advisor.DocumentStore.DirectoryDocumentStoreBuilder;
-import com.cyster.ai.weave.service.advisor.DocumentStore.SimpleDocumentStoreBuilder;
-import com.cyster.ai.weave.service.advisor.SearchTool;
-import com.cyster.ai.weave.service.advisor.Tool;
 
 // https://platform.openai.com/docs/assistants/overview
 // https://platform.openai.com/docs/assistants/tools/code-interpreter

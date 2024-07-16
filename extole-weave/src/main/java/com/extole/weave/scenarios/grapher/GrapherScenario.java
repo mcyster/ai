@@ -15,8 +15,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.cyster.ai.weave.service.advisor.FatalToolException;
-import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.ai.weave.service.FatalToolException;
+import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.web.developer.advisors.WebAdvisor;

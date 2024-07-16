@@ -9,8 +9,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.cyster.ai.weave.service.advisor.FatalToolException;
-import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.ai.weave.service.FatalToolException;
+import com.cyster.ai.weave.service.ToolException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;

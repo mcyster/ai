@@ -10,9 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cyster.ai.weave.impl.advisor.ToolError.Type;
-import com.cyster.ai.weave.service.advisor.FatalToolException;
-import com.cyster.ai.weave.service.advisor.Tool;
-import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.ai.weave.service.FatalToolException;
+import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.ToolException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

@@ -1,6 +1,6 @@
 package com.cyster.ai.weave.impl.advisor;
 
-import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.ai.weave.service.ToolException;
 
 public class BadParametersToolException extends ToolException {
 

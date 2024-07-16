@@ -1,4 +1,4 @@
-package com.extole.weave.advisors.runbooks;
+package com.extole.weave.scenarios.runbook;
 
 import java.util.List;
 import java.util.Map;
@@ -7,27 +7,25 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.cyster.ai.weave.service.advisor.Tool;
-import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
-import com.extole.weave.advisors.runbooks.ExtoleTicketRunbookTool.Request;
 import com.extole.weave.scenarios.runbooks.RunbookScenario;
 import com.extole.weave.scenarios.runbooks.RunbookScenarioParameters;
 
 @Component
-class ExtoleTicketRunbookTool implements Tool<Request, Void> {
-    private ExtoleTicketRunbookSelectingAdvisor extoleTicketRunbookSelectingAdvisor;
+class ExtoleTicketRunbookTool implements Tool<RunbookScenarioParameters, Void> {
+    private ExtoleSupportTicketRunbookScenario extoleTicketRunbookScenario;
     Map<String, RunbookScenario> runbookScenarios;
 
-    ExtoleTicketRunbookTool(ExtoleTicketRunbookSelectingAdvisor extoleTicketRunbookAdvisor, List<RunbookScenario> runbookScenarios) {
-        this.extoleTicketRunbookSelectingAdvisor = extoleTicketRunbookAdvisor;
+    ExtoleTicketRunbookTool(ExtoleSupportTicketRunbookScenario extoleTicketRunbookScenario, List<RunbookScenario> runbookScenarios) {
+        this.extoleTicketRunbookScenario = extoleTicketRunbookScenario;
         this.runbookScenarios = runbookScenarios.stream()
             .collect(Collectors.toMap(RunbookScenario::getName, runbook -> runbook));
     }
@@ -43,19 +41,19 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
     }
 
     @Override
-    public Class<Request> getParameterClass() {
-        return Request.class;
+    public Class<RunbookScenarioParameters> getParameterClass() {
+        return RunbookScenarioParameters.class;
     }
 
     @Override
-    public Object execute(Request request, Void context) throws ToolException {
-        Conversation conversation = extoleTicketRunbookSelectingAdvisor.createConversation().start();
+    public Object execute(RunbookScenarioParameters request, Void context) throws ToolException {
+        Conversation conversation = extoleTicketRunbookScenario.createConversationBuilder(request, context).start();
 
         // TODO support adding conversation as sub-context on run info message
 
         Message message;
         try {
-            conversation.addMessage(Type.USER, request.ticket_number);
+            conversation.addMessage(Type.USER, request.getTicketNumber());
             message = conversation.respond();
         } catch (ConversationException exception) {
            throw new ToolException("extoleTicketRunbookSelectingAdvisor failed to start conversation", exception);
@@ -100,11 +98,6 @@ class ExtoleTicketRunbookTool implements Tool<Request, Void> {
         }
 
         return message2.getContent();
-    }
-
-    static class Request {
-        @JsonProperty(required = false)
-        public String ticket_number;
     }
 
     public static Optional<String> extractJson(String input) {

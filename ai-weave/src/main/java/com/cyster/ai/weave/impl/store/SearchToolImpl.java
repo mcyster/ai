@@ -5,8 +5,8 @@ import java.util.List;
 
 import io.github.stefanbratanov.jvm.openai.VectorStore;
 
-import com.cyster.ai.weave.service.advisor.SearchTool;
-import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.ai.weave.service.SearchTool;
+import com.cyster.ai.weave.service.ToolException;
 
 public class SearchToolImpl<CONTEXT> implements SearchTool<CONTEXT> {
     public static final String NAME = "file_search";

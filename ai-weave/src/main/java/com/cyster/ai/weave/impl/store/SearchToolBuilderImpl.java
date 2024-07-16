@@ -7,12 +7,14 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.cyster.ai.weave.impl.openai.OpenAiService;
-import com.cyster.ai.weave.service.advisor.DocumentStore;
-import com.cyster.ai.weave.service.advisor.SearchTool;
+import com.cyster.ai.weave.service.DocumentStore;
+import com.cyster.ai.weave.service.SearchTool;
 
 import io.github.stefanbratanov.jvm.openai.CreateVectorStoreFileBatchRequest;
 import io.github.stefanbratanov.jvm.openai.CreateVectorStoreRequest;
@@ -116,10 +118,14 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
             int end = Math.min(totalFileCount, i + batchSize);
             List<String> fileBatch = files.subList(i, end);
             if (vectorStore == null) {
+                Map<String, String> metadata = new HashMap<>() {{
+                    put(METADATA_HASH, documentStore.getHash());
+                }};
+                
                 var request = CreateVectorStoreRequest.newBuilder()
                         .name(this.name)
                         .fileIds(fileBatch)
-                        //.metadata(null)
+                        .metadata(metadata)
                         .expiresAfter(ExpiresAfter.lastActiveAt(7))
                         .build();
 
@@ -137,13 +143,11 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
     }
 
     public SearchTool<CONTEXT> createStore(VectorStore vectorStore) {
-        return new SearchToolImpl<CONTEXT>( new ArrayList<>(Arrays.asList(vectorStore)));
+        return new SearchToolImpl<CONTEXT>(new ArrayList<>(Arrays.asList(vectorStore)));
     }
 
     private Optional<VectorStore> findVectorStore() {
         VectorStoresClient vectorStoresClient = this.openAiService.createClient(VectorStoresClient.class);
-
-        VectorStore newestVectorStore = null;
 
         PaginatedVectorStores response = null;
         do {
@@ -156,23 +160,17 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
 
             for (var vectorStore : response.data()) {
                 if (!isVectorStoreExpired(vectorStore)) {
-                    if (vectorStore.name() != null && vectorStore.name().equals(this.name)) {
-                        if (newestVectorStore == null || vectorStore.createdAt() > newestVectorStore.createdAt()) {
-                            newestVectorStore = vectorStore;
-                        }
-
-                        if (checkStoreIsLatest(vectorStore)) {
-                            return Optional.of(vectorStore);
-                        }
+                    if (checkStoreMatches(vectorStore)) {
+                        return Optional.of(vectorStore);
                     }
                 }
             }
         } while (response.hasMore());
 
-        return Optional.ofNullable(newestVectorStore);
+        return Optional.empty();
     }
 
-    public boolean checkStoreIsLatest(VectorStore vectorStore) {
+    public boolean checkStoreMatches(VectorStore vectorStore) {
         if (vectorStore.name() == null || !vectorStore.name().equals(this.name)) {
             return false;
         }

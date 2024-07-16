@@ -6,10 +6,10 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.advisor.AdvisorService;
-import com.cyster.ai.weave.service.advisor.Tool;
 import com.cyster.web.developer.advisors.WebsiteService.Website;
 
 @Component

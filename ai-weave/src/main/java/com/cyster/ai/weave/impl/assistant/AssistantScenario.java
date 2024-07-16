@@ -57,7 +57,8 @@ public class AssistantScenario<PARAMETERS, CONTEXT> implements Scenario<PARAMETE
         ConversationBuilderImpl(Advisor.AdvisorConversationBuilder<?> advisorConversationBuilder) {
             this.advisorConversationBuilder = advisorConversationBuilder;
         }
-        
+
+        @Override
         public ConversationBuilder setOverrideInstructions(String instructions) {
             this.advisorConversationBuilder.setOverrideInstructions(instructions);
             return this;
@@ -71,6 +72,8 @@ public class AssistantScenario<PARAMETERS, CONTEXT> implements Scenario<PARAMETE
         public Conversation start() {
             return this.advisorConversationBuilder.start();
         }
+
+
     }
 
 }

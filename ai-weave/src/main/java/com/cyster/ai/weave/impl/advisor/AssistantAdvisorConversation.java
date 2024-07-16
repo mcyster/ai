@@ -161,6 +161,7 @@ public class AssistantAdvisorConversation<C> implements Conversation {
             }
 
             if (run.status().equals("failed")) {
+                System.out.println("!!!Run Failed: " + run);
                 throw new AdvisorConversationException("Run.failed");
             }
 

@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.ai.weave.service.advisor.FatalToolException;
-import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.ai.weave.service.FatalToolException;
+import com.cyster.ai.weave.service.ToolException;
 import com.extole.weave.advisors.support.ExtoleSupportAdvisorTool;
 import com.extole.weave.advisors.support.ExtoleWebClientFactory;
 import com.extole.weave.advisors.support.reports.ExtoleClientSearchTool.Request;

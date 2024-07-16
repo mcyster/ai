@@ -1,6 +1,5 @@
 package com.cyster.ai.weave.service;
 
-import com.cyster.ai.weave.service.advisor.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 
 public interface AssistantScenarioBuilder<PARAMETERS, CONTEXT> {

@@ -1,5 +1,6 @@
 package com.cyster.ai.weave.service.advisor;
 
+import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.conversation.Conversation;
 
 // TODO TooledChatAdvisor is the generic form of this - remove one

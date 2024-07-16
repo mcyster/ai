@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.advisor.Tool;
-import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.ToolException;
 import com.cyster.web.developer.advisors.WebsiteFileListTool.Request;
 import com.cyster.web.developer.advisors.WebsiteService.Website;
 import com.fasterxml.jackson.annotation.JsonProperty;

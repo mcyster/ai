@@ -1,11 +1,11 @@
-package com.extole.weave.advisors.runbooks;
+package com.extole.weave.scenarios.runbook;
 
 import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.advisor.AdvisorService;
-import com.cyster.ai.weave.service.advisor.SearchTool;
+import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.SearchTool;
 import com.extole.weave.scenarios.runbooks.ExtoleRunbookOther;
 import com.extole.weave.scenarios.runbooks.RunbookScenario;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,12 +16,12 @@ public class ExtoleRunbookToolFactory {
 
     private SearchTool<Void> searchTool;
 
-    public ExtoleRunbookToolFactory(AdvisorService advisorService,
+    public ExtoleRunbookToolFactory(AiWeaveService aiWeaveService,
             List<RunbookScenario> runbookScenarios, ExtoleRunbookOther defaultRunbook) {
         ObjectMapper objectMapper = new ObjectMapper();
 
 
-        var documentStoreBuilder = advisorService.simpleDocumentStoreBuilder();
+        var documentStoreBuilder = aiWeaveService.simpleDocumentStoreBuilder();
 
         for(var runbook: runbookScenarios) {
             var book = new Runbook(runbook.getName(), runbook.getDescription(), runbook.getKeywords());
@@ -35,7 +35,7 @@ public class ExtoleRunbookToolFactory {
             documentStoreBuilder.addDocument(runbook.getName() + ".json", json);
         }
 
-        SearchTool.Builder<Void> builder = advisorService.searchToolBuilder();
+        SearchTool.Builder<Void> builder = aiWeaveService.searchToolBuilder();
         builder
             .withName("runbooks")
             .withDocumentStore(documentStoreBuilder.create());

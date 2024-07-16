@@ -9,8 +9,8 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.advisor.AdvisorService;
-import com.cyster.ai.weave.service.advisor.SearchTool;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

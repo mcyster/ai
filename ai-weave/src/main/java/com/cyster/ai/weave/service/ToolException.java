@@ -1,4 +1,4 @@
-package com.cyster.ai.weave.service.advisor;
+package com.cyster.ai.weave.service;
 
 public class ToolException extends Exception {
     private String localMessage = "";

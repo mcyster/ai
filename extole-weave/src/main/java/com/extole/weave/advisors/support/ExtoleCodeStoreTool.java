@@ -4,7 +4,7 @@ import java.util.Collections;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.ai.weave.service.ToolException;
 import com.cyster.store.SimpleVectorStoreService;
 import com.extole.weave.advisors.support.ExtoleCodeStoreTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;

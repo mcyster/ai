@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import com.cyster.ai.weave.impl.code.CodeInterpreterToolImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiSchema;
 import com.cyster.ai.weave.impl.store.SearchToolImpl;
-import com.cyster.ai.weave.service.advisor.Tool;
+import com.cyster.ai.weave.service.Tool;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

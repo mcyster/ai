@@ -5,8 +5,8 @@ import java.util.Iterator;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.advisor.FatalToolException;
-import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.ai.weave.service.FatalToolException;
+import com.cyster.ai.weave.service.ToolException;
 import com.cyster.jira.client.JiraWebClientFactory;
 import com.extole.weave.advisors.support.ExtoleSupportAdvisorTool;
 import com.extole.weave.advisors.support.jira.SupportTicketGetTool.Request;

@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import com.cyster.ai.weave.service.advisor.DocumentStore;
+import com.cyster.ai.weave.service.DocumentStore;
 
 public class DirectoryDocumentStore implements DocumentStore {
     private Path directory;

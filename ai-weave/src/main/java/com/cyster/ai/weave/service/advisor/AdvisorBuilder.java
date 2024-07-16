@@ -2,6 +2,8 @@ package com.cyster.ai.weave.service.advisor;
 
 import java.nio.file.Path;
 
+import com.cyster.ai.weave.service.Tool;
+
 public interface AdvisorBuilder<C> {
 
     AdvisorBuilder<C> setInstructions(String instruction);

@@ -21,9 +21,9 @@ public class TicketCommenter {
     private static final Logger logger = LogManager.getLogger(TicketCommenter.class);
     private static final Logger ticketLogger = LogManager.getLogger("tickets");
 
-    private ExtoleSupportTicketScenario supportTicketScenario;
+    private ExtoleSupportTicketRunbookScenario supportTicketScenario;
 
-    public TicketCommenter(ExtoleSupportTicketScenario supportTicketScenario) {
+    public TicketCommenter(ExtoleSupportTicketRunbookScenario supportTicketScenario) {
         this.supportTicketScenario = supportTicketScenario;
     }
 
@@ -40,7 +40,7 @@ public class TicketCommenter {
     void processMessage(String ticketNumber, Optional<String> prompt) {
         logger.info("Ticket - processing " + ticketNumber + " asynchronously on thread " + Thread.currentThread().getName());
 
-        var parameters = new ExtoleSupportTicketScenario.Parameters(ticketNumber);
+        var parameters = new ExtoleSupportTicketRunbookScenario.Parameters(ticketNumber);
 
         Message response;
         try {

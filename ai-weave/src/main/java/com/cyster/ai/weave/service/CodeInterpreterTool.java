@@ -1,4 +1,4 @@
-package com.cyster.ai.weave.service.advisor;
+package com.cyster.ai.weave.service;
 
 import java.io.IOException;
 import java.io.InputStream;

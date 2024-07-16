@@ -9,7 +9,7 @@ import java.util.Optional;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.ai.weave.service.ToolException;
 import com.extole.weave.advisors.support.ExtoleWebClientFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
