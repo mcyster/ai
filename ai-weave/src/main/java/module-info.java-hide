@@ -10,13 +10,8 @@ module com.cyster.ai.weave {
     
     requires com.cyster.adf;
     
-    exports com.cyster.ai.weave.service.advisor;
+    exports com.cyster.ai.weave.service
     exports com.cyster.ai.weave.service.conversation;
     exports com.cyster.ai.weave.service.scenario;
     
-    exports com.cyster.ai.weave.impl.advisor;
-    
-    uses com.cyster.ai.weave.service.advisor.AdvisorServiceFactory;
-    provides com.cyster.ai.weave.service.advisor.AdvisorServiceFactory
-        with com.cyster.ai.weave.impl.advisor.AdvisorServiceImpl.Factory;
 }
