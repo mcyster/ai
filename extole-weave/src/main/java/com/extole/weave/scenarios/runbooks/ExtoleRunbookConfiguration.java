@@ -9,7 +9,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
-import com.extole.weave.scenarios.support.tools.ExtoleSupportAdvisor;
+import com.extole.weave.scenarios.support.ExtoleSupportHelpScenario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
@@ -24,11 +24,11 @@ import java.util.List;
 public class ExtoleRunbookConfiguration implements ScenarioLoader {
     private static final Logger logger = LogManager.getLogger(ExtoleRunbookConfiguration.class);
 
-    private ExtoleSupportAdvisor advisor;
+    private ExtoleSupportHelpScenario helpScenario;
     private List<Scenario<?,?>> scenarios = new ArrayList<>();
 
-    public ExtoleRunbookConfiguration(ExtoleSupportAdvisor advisor, ApplicationContext context) throws IOException, ExtoleRunbookConfigurationException {
-        this.advisor = advisor;
+    public ExtoleRunbookConfiguration(ExtoleSupportHelpScenario helpScenario, ApplicationContext context) throws IOException, ExtoleRunbookConfigurationException {
+        this.helpScenario = helpScenario;
         registerRunbooks(context);
     }
 
@@ -54,7 +54,7 @@ public class ExtoleRunbookConfiguration implements ScenarioLoader {
 
                     logger.info("Loaded Extole Runbook: " + configuration.getName());
 
-                    var runbook= new  ExtoleConfigurableRunbookScenario(configuration, advisor);
+                    var runbook= new  ExtoleConfigurableRunbookScenario(configuration, helpScenario);
 
                     configurableContext.getBeanFactory().registerSingleton(runbook.getName(), runbook);
                     scenarios.add(runbook);

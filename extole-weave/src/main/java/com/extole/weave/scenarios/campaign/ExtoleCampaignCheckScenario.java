@@ -6,15 +6,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.weave.scenarios.campaign.ExtoleCampaignCheckScenario.Parameters;
-import com.extole.weave.scenarios.support.tools.ExtoleSupportAdvisor;
+import com.extole.weave.scenarios.support.ExtoleSupportHelpScenario;
 
 @Component
 public class ExtoleCampaignCheckScenario implements Scenario<Parameters, Void> {
-    private static final String NAME = "extoleCampaignVerify";
-    private ExtoleSupportAdvisor advisor;
+    public static final String NAME = "extoleCampaignVerify";
+    private static final String DESCRIPTION = "Check a campaign given a campaignId";
+    
+    private ExtoleSupportHelpScenario helpScenario;
 
-    ExtoleCampaignCheckScenario(ExtoleSupportAdvisor advisor) {
-        this.advisor = advisor;
+    ExtoleCampaignCheckScenario(ExtoleSupportHelpScenario helpScenario) {
+        this.helpScenario = helpScenario;
     }
 
     @Override
@@ -24,7 +26,7 @@ public class ExtoleCampaignCheckScenario implements Scenario<Parameters, Void> {
 
     @Override
     public String getDescription() {
-        return "Check a campaign given a campaignId";
+        return DESCRIPTION;
     }
 
     @Override
@@ -39,6 +41,11 @@ public class ExtoleCampaignCheckScenario implements Scenario<Parameters, Void> {
 
     @Override
     public Conversation createConversation(Parameters parameters, Void context) {
+        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
+    }
+
+    @Override
+    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
         String instructions = """
 You are a member of the Support team at Extole, a SaaS marketing platform. You are tasked with checking the variables associated with campaigns
 
@@ -59,9 +66,8 @@ For each variable that has a problem respond in json of the form: { "name": "VAR
 
 """;
 
-        return advisor.createConversation()
-            .setOverrideInstructions(String.format(instructions, parameters.campaignId))
-            .start();
+        return helpScenario.createConversationBuilder(null, null)
+            .setOverrideInstructions(String.format(instructions, parameters.campaignId));
     }
 
     public static class Parameters {
@@ -69,10 +75,5 @@ For each variable that has a problem respond in json of the form: { "name": "VAR
         public String campaignId;
     }
 
-    @Override
-    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
 }

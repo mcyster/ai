@@ -1,10 +1,15 @@
 package com.extole.weave.scenarios.runbooks;
 
+import java.io.StringReader;
+import java.io.StringWriter;
+
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.conversation.Conversation;
-import com.extole.weave.scenarios.support.tools.ExtoleSupportAdvisor;
+import com.extole.weave.scenarios.support.ExtoleSupportHelpScenario;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 
 @Component
 public class ExtoleRunbookNotificationWebhookScenario implements RunbookScenario {
@@ -31,11 +36,10 @@ Add a comment to the ticket providing:
 Note the ticket number, and an extremely brief summary of the comment added to the ticket.
 """;
 
+    private ExtoleSupportHelpScenario helpScenario;
 
-    private Advisor<Void> advisor;
-
-    ExtoleRunbookNotificationWebhookScenario(ExtoleSupportAdvisor advisor) {
-        this.advisor = advisor;
+    ExtoleRunbookNotificationWebhookScenario(ExtoleSupportHelpScenario helpScenario) {
+        this.helpScenario = helpScenario;
     }
 
     @Override
@@ -64,13 +68,20 @@ Note the ticket number, and an extremely brief summary of the comment added to t
 
     @Override
     public Conversation createConversation(RunbookScenarioParameters parameters, Void context) {
-        return this.advisor.createConversation().setOverrideInstructions(INSTRUCTIONS).start();
+        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
     }
 
     @Override
     public ConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters, Void context) {
-        // TODO Auto-generated method stub
-        return null;
+        MustacheFactory mostacheFactory = new DefaultMustacheFactory();
+        Mustache mustache = mostacheFactory.compile(new StringReader(INSTRUCTIONS), "instructions");
+        var messageWriter = new StringWriter();
+        mustache.execute(messageWriter, parameters);
+        messageWriter.flush();
+        
+        var instructions = messageWriter.toString();
+        
+        return this.helpScenario.createConversationBuilder(null, null).setOverrideInstructions(instructions);
     }
 }
 
