@@ -48,11 +48,6 @@ public class ExtoleSupportTicketScenario implements Scenario<RunbookScenarioPara
     }
 
     @Override
-    public Conversation createConversation(RunbookScenarioParameters parameters, Void context) {
-        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
-    }
-    
-    @Override
     public ConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters, Void context) {        
         return this.getScenario().createConversationBuilder(parameters, context)
             .addMessage("Ticket: " + parameters.getTicketNumber());

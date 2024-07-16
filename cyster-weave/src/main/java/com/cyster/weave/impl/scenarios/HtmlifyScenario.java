@@ -36,11 +36,6 @@ public class HtmlifyScenario implements Scenario<Void, Void> {
     }
 
     @Override
-    public Conversation createConversation(Void parameters, Void context) {
-        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
-    }
-
-    @Override
     public ConversationBuilder createConversationBuilder(Void parameters, Void context) {
         String instructions = """
 Convert the input to a marked up HTML fragment.

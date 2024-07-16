@@ -54,11 +54,6 @@ Note the ticket number, and note its classified as "other".
     }
 
     @Override
-    public Conversation createConversation(RunbookScenarioParameters parameters, Void context) {
-        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
-    }
-
-    @Override
     public ConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters, Void context) {
         MustacheFactory mostacheFactory = new DefaultMustacheFactory();
         Mustache mustache = mostacheFactory.compile(new StringReader(INSTRUCTIONS), "instructions");

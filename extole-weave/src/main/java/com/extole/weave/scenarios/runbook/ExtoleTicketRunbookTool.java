@@ -87,7 +87,7 @@ class ExtoleTicketRunbookTool implements Tool<RunbookScenarioParameters, Void> {
 
         var scenario = runbookScenarios.get(runbookName);
         var parameters = new RunbookScenarioParameters(ticketNumber);
-        Conversation conversation2 = scenario.createConversation(parameters, null);
+        Conversation conversation2 = scenario.createConversationBuilder(parameters, null).start();
 
         Message message2;
         try {

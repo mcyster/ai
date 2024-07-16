@@ -43,12 +43,6 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
     public Class<Void> getContextClass() {
         return Void.class;
     }
-
-    @Override
-    public Conversation createConversation(Parameters parameters, Void context) {
-        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
-    }
-
     
     @Override
     public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {

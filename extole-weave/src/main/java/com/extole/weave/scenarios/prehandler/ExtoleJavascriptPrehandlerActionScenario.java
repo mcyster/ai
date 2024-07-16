@@ -48,11 +48,6 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
     }
 
     @Override
-    public Conversation createConversation(Void parameters, ExtoleSessionContext context) {
-        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
-    }
-
-    @Override
     public com.cyster.ai.weave.service.scenario.Scenario.ConversationBuilder createConversationBuilder(Void parameters,
         ExtoleSessionContext context) {
         return this.getScenario().createConversationBuilder(parameters, context);

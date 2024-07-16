@@ -47,11 +47,6 @@ public class WebDeveloperScenario implements Scenario<Parameters, Void> {
     }
 
     @Override
-    public Conversation createConversation(Parameters parameters, Void context) {
-        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
-    }
-
-    @Override
     public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {        
         Website website;
         if (parameters != null && parameters.siteName() != null && !parameters.siteName().isBlank()) {

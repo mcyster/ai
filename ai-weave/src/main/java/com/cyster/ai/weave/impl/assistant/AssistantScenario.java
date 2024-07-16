@@ -42,11 +42,6 @@ public class AssistantScenario<PARAMETERS, CONTEXT> implements Scenario<PARAMETE
     }
 
     @Override
-    public Conversation createConversation(PARAMETERS parameters, CONTEXT context) {
-        return createConversationBuilder(parameters, context).start();
-    }
-
-    @Override
     public ConversationBuilder createConversationBuilder(PARAMETERS parameters, CONTEXT context) {
         return new ConversationBuilderImpl(this.advisor.createConversation().withContext(context));
     }

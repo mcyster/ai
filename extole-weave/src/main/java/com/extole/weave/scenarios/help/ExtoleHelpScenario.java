@@ -47,12 +47,6 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
         return ExtoleSessionContext.class;
     }
 
-
-    @Override
-    public Conversation createConversation(Void parameters, ExtoleSessionContext context) {
-        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
-    }
-
     @Override
     public ConversationBuilder createConversationBuilder(Void parameters, ExtoleSessionContext context) {
         return this.getScenario().createConversationBuilder(parameters, context);

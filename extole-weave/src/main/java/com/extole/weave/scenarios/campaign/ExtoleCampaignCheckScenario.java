@@ -40,11 +40,6 @@ public class ExtoleCampaignCheckScenario implements Scenario<Parameters, Void> {
     }
 
     @Override
-    public Conversation createConversation(Parameters parameters, Void context) {
-        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
-    }
-
-    @Override
     public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
         String instructions = """
 You are a member of the Support team at Extole, a SaaS marketing platform. You are tasked with checking the variables associated with campaigns

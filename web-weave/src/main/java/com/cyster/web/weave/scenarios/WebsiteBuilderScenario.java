@@ -64,12 +64,7 @@ Use the web_developer_file_put tool to create or update the website as requested
     public Class<Website> getContextClass() {
         return Website.class;
     }
-    
-    @Override
-    public Conversation createConversation(Void parameters, Website context) {
-        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
-    }
-    
+
     @Override
     public ConversationBuilder createConversationBuilder(Void parameters, Website context) {        
         String message = "There is a web page at %s (we're in developer mode, so localhost is ok)";

@@ -48,11 +48,6 @@ public class ExtoleReportScenario implements Scenario<Parameters, ExtoleSessionC
         return ExtoleSessionContext.class;
     }
 
-    @Override
-    public Conversation createConversation(Parameters parameters, ExtoleSessionContext context) {
-        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
-    }
-
     public static class Parameters {
         @JsonProperty(required = true)
         public String report_id;
