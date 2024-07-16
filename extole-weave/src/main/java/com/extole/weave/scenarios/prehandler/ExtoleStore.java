@@ -9,8 +9,8 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.SearchTool;
-import com.cyster.ai.weave.service.advisor.AdvisorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,23 +21,23 @@ public class ExtoleStore {
 
     private static String remoteJavaApiRepository = "git@github.com:extole/java-api.git";
     private static File localJavaApiRepository = new File("/tmp/extole/java-api");
-    private AdvisorService advisorService;
+    private AiWeaveService aiWeaveService;
 
-    ExtoleStore(AdvisorService advisorService) {
-        this.advisorService = advisorService;
+    ExtoleStore(AiWeaveService aiWeaveService) {
+        this.aiWeaveService = aiWeaveService;
     }
 
     public <CONTEXT> SearchTool<CONTEXT> createStoreTool() {
 
         String hash = loadOrUpdateLocalRepository();
 
-        var documentStore = advisorService.directoryDocumentStoreBuilder()
+        var documentStore = aiWeaveService.directoryDocumentStoreBuilder()
           .withDirectory(localJavaApiRepository.toPath())
           .withHash(hash)
           .create();
 
         @SuppressWarnings("unchecked")  // TBD
-        SearchTool.Builder<CONTEXT> builder = (SearchTool.Builder<CONTEXT>) advisorService.searchToolBuilder()
+        SearchTool.Builder<CONTEXT> builder = (SearchTool.Builder<CONTEXT>) aiWeaveService.searchToolBuilder()
             .withName("extole-store")
             .withDocumentStore(documentStore);
 
