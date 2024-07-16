@@ -18,9 +18,9 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
 
-import com.cyster.ai.weave.impl.advisor.AdvisorServiceImpl;
+import com.cyster.ai.weave.impl.AiWeaveServiceImpl;
 import com.cyster.ai.weave.impl.scenario.ScenarioServiceImpl;
-import com.cyster.ai.weave.service.advisor.AdvisorService;
+import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
 import com.cyster.ai.weave.service.scenario.ScenarioService;
@@ -63,12 +63,12 @@ public class JiraAppConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public AdvisorService getAdvisorService(@Value("${OPENAI_API_KEY}") String openAiApiKey) {
+    public AiWeaveService getAiWeaveService(@Value("${OPENAI_API_KEY}") String openAiApiKey) {
         if (!StringUtils.hasText(openAiApiKey)) {
             throw new IllegalArgumentException("OPENAI_API_KEY not defined");
         }
 
-        return new AdvisorServiceImpl.Factory().createAdvisorService(openAiApiKey);
+        return new AiWeaveServiceImpl(openAiApiKey);
     }
 
     @Bean

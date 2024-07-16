@@ -1,13 +1,9 @@
 package com.cyster.weave.app;
 
 import com.cyster.ai.weave.impl.AiWeaveServiceImpl;
-import com.cyster.ai.weave.impl.advisor.AdvisorServiceImpl;
-
 
 import com.cyster.ai.weave.impl.scenario.ScenarioServiceImpl;
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.advisor.AdvisorService;
-import com.cyster.ai.weave.service.advisor.AdvisorServiceFactory;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
 import com.cyster.ai.weave.service.scenario.ScenarioService;
@@ -30,25 +26,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.util.StringUtils;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.context.ApplicationContext;
 
 @Configuration
 @EnableWebMvc
-public class SageAppConfig implements WebMvcConfigurer {
+public class WeaveAppConfig implements WebMvcConfigurer {
     private Path sites;
     private URI applicationUri;
 
-    public SageAppConfig(ApplicationContext applicationContext,
+    public WeaveAppConfig(ApplicationContext applicationContext,
         @Value("${AI_HOME}") String aiHome,
         @Value("${app.url:}") String appUrl) {
 
@@ -85,17 +77,6 @@ public class SageAppConfig implements WebMvcConfigurer {
         return new AiWeaveServiceImpl(openAiApiKey);
     }
 
-    
-    
-    @Bean
-    public AdvisorService getAdvisorService(@Value("${OPENAI_API_KEY}") String openAiApiKey) {
-        if (!StringUtils.hasText(openAiApiKey)) {
-            throw new IllegalArgumentException("OPENAI_API_KEY not defined");
-        }
-
-        return new AdvisorServiceImpl.Factory().createAdvisorService(openAiApiKey);
-    }
-
     @Bean
     public ScenarioService getScenarioService(List<ScenarioLoader> scenarioLoaders, List<Scenario<?,?>> scenarios) {
         return new ScenarioServiceImpl.Factory().createScenarioService(scenarioLoaders, scenarios);
@@ -119,44 +100,6 @@ public class SageAppConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/**")
             .addResourceLocations("classpath:/static/");
     }
-
-    private AdvisorService loadAdvisorService(String openAiApiKey) {
-        System.out.println("!!!!!!!!!!!!!!!! sage app config 1");
-        try {
-            Enumeration<URL> resources = getClass().getClassLoader().getResources("META-INF/services/" + AdvisorServiceFactory.class.getName());
-            while (resources.hasMoreElements()) {
-                URL url = resources.nextElement();
-                System.out.println("Found resource: " + url);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("!!!!!!!!!!!!!!!! sage app config 2");
-
-        ServiceLoader<AdvisorServiceFactory> serviceLoader = ServiceLoader.load(AdvisorServiceFactory.class);
-        serviceLoader.forEach(factory -> {
-            System.out.println("!!!!! Found factory: " + factory.getClass().getName());
-        });
-
-        var factory = serviceLoader.findFirst();
-        if (factory.isEmpty()) {
-            throw new IllegalStateException("No implementation of: " + AdvisorServiceFactory.class.getSimpleName());
-        }
-
-        return factory.get().createAdvisorService(openAiApiKey);
-    }
-
-    private ScenarioService loadScenarioService(List<ScenarioLoader> scenarioLoaders, List<Scenario<?,?>> scenarios) {
-        var serviceLoader = ServiceLoader.load(ScenarioServiceFactory.class);
-        var factory = serviceLoader.findFirst();
-        if (factory.isEmpty()) {
-            throw new IllegalStateException("No implementation of: " + ScenarioServiceFactory.class.getSimpleName());
-        }
-
-        return factory.get().createScenarioService(scenarioLoaders, scenarios);
-    }
-
 
     private static URI baseUri(ApplicationContext context) {
         Environment environment = context.getEnvironment();

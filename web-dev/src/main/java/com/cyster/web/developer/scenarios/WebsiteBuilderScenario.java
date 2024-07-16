@@ -9,13 +9,8 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
-import com.cyster.ai.weave.service.advisor.Advisor;
-import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
-import com.cyster.ai.weave.service.advisor.AdvisorService;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.ai.weave.service.scenario.Scenario.ConversationBuilder;
-import com.cyster.web.developer.scenarios.WebDeveloperScenario.Parameters;
 import com.cyster.web.developer.scenarios.WebsiteService.Website;
 
 @Component
