@@ -48,7 +48,7 @@ public class AssistantScenario<PARAMETERS, CONTEXT> implements Scenario<PARAMETE
 
     @Override
     public ConversationBuilder createConversationBuilder(PARAMETERS parameters, CONTEXT context) {
-        return new ConversationBuilderImpl(this.advisor.createConversation());
+        return new ConversationBuilderImpl(this.advisor.createConversation().withContext(context));
     }
     
     private static class ConversationBuilderImpl implements ConversationBuilder {
