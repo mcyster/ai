@@ -10,10 +10,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
-import com.cyster.ai.weave.service.advisor.AdvisorService;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.weave.scenarios.support.tools.ExtoleWebClientFactory;
 import com.extole.weave.scenarios.support.tools.reports.ExtoleNotificationGetTool.Request;
@@ -29,8 +29,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class ExtoleNotificationGetTool implements ExtoleSupportTool<Request> {
     private Tool<Request, Void> tool;
 
-    ExtoleNotificationGetTool(ExtoleWebClientFactory extoleWebClientFactory, AdvisorService advisorService) {
-        this.tool = advisorService.cachingTool(new UncachedNotificationGetTool(extoleWebClientFactory));
+    ExtoleNotificationGetTool(ExtoleWebClientFactory extoleWebClientFactory, AiWeaveService aiWeaveService) {
+        this.tool = aiWeaveService.cachingTool(new UncachedNotificationGetTool(extoleWebClientFactory));
     }
 
     @Override

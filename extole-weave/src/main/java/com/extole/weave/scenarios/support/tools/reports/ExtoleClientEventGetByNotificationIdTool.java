@@ -2,9 +2,9 @@ package com.extole.weave.scenarios.support.tools.reports;
 
 import java.util.Objects;
 
+import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
-import com.cyster.ai.weave.service.advisor.AdvisorService;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.weave.scenarios.support.tools.ExtoleWebClientFactory;
 import com.extole.weave.scenarios.support.tools.reports.ExtoleClientEventGetByNotificationIdTool.Request;
@@ -20,8 +20,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 class ExtoleClientEventGetByNotificationIdTool implements ExtoleSupportTool<Request> {
     Tool<Request, Void> tool;
 
-    ExtoleClientEventGetByNotificationIdTool(ExtoleWebClientFactory extoleWebClientFactory, AdvisorService advisorService) {
-        this.tool = advisorService.cachingTool(new UncachedClientEventGetTool(extoleWebClientFactory));
+    ExtoleClientEventGetByNotificationIdTool(ExtoleWebClientFactory extoleWebClientFactory, AiWeaveService aiWeaveService) {
+        this.tool = aiWeaveService.cachingTool(new UncachedClientEventGetTool(extoleWebClientFactory));
     }
 
     @Override
