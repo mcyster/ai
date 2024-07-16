@@ -4,9 +4,11 @@ import com.cyster.ai.weave.impl.advisor.AdvisorService;
 import com.cyster.ai.weave.impl.advisor.assistant.AdvisorServiceImpl;
 import com.cyster.ai.weave.impl.assistant.AssistantScenarioBuilderImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
+import com.cyster.ai.weave.impl.scenario.ScenarioSetBuilderImpl;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.scenario.ScenarioSetBuilder;
 import com.cyster.ai.weave.service.DocumentStore.DirectoryDocumentStoreBuilder;
 import com.cyster.ai.weave.service.DocumentStore.SimpleDocumentStoreBuilder;
 import com.cyster.ai.weave.service.SearchTool.Builder;
@@ -50,6 +52,11 @@ public class AiWeaveServiceImpl implements AiWeaveService {
     @Override
     public DirectoryDocumentStoreBuilder directoryDocumentStoreBuilder() {
         return advisorService.directoryDocumentStoreBuilder();
+    }
+
+    @Override
+    public ScenarioSetBuilder senarioSetBuilder() {
+        return new ScenarioSetBuilderImpl();
     }
 
 }

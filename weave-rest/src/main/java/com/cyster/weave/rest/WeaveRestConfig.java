@@ -9,11 +9,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
 import com.cyster.ai.weave.impl.AiWeaveServiceImpl;
-import com.cyster.ai.weave.impl.scenario.ScenarioServiceImpl;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
-import com.cyster.ai.weave.service.scenario.ScenarioService;
+import com.cyster.ai.weave.service.scenario.ScenarioSet;
 
 @Configuration
 public class WeaveRestConfig {
@@ -31,8 +30,11 @@ public class WeaveRestConfig {
     }
 
     @Bean
-    public ScenarioService getScenarioService(List<ScenarioLoader> scenarioLoaders, List<Scenario<?,?>> scenarios) {
-        return new ScenarioServiceImpl.Factory().createScenarioService(scenarioLoaders, scenarios);
+    public ScenarioSet getScenarioService(AiWeaveService aiWeaveService, List<ScenarioLoader> scenarioLoaders, List<Scenario<?,?>> scenarios) {
+        return aiWeaveService.senarioSetBuilder()
+            .addScenarioLoaders(scenarioLoaders)
+            .addScenarios(scenarios)
+            .create();
     }
 
 }

@@ -2,7 +2,7 @@ package com.cyster.ai.weave.service.scenario;
 
 import java.util.Set;
 
-public interface ScenarioService {
+public interface ScenarioSet {
 
     Set<Scenario<?,?>> getScenarios();
 

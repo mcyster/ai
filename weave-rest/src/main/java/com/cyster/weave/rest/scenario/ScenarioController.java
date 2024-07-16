@@ -9,14 +9,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
-import com.cyster.ai.weave.service.scenario.ScenarioService;
+import com.cyster.ai.weave.service.scenario.ScenarioSet;
 
 @RestController
 public class ScenarioController {
 
-    private ScenarioService scenarioStore;
+    private ScenarioSet scenarioStore;
 
-    public ScenarioController(ScenarioService scenarioStore) {
+    public ScenarioController(ScenarioSet scenarioStore) {
         this.scenarioStore = scenarioStore;
     }
 
