@@ -1,4 +1,4 @@
-package com.extole.weave.advisors.client;
+package com.extole.weave.scenarios.help;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClientException;
@@ -7,41 +7,42 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.extole.weave.session.ExtoleSessionContext;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 
-class ExtoleMyAuthorizationsTool implements Tool<MyAuthorizationsRequest, ExtoleClientAdvisor.Context> {
+class ExtoleMeTool implements Tool<MeRequest, ExtoleSessionContext> {
 
-    ExtoleMyAuthorizationsTool() {
+    ExtoleMeTool() {
     }
 
     @Override
     public String getName() {
-        return "extoleMeAuthorizations";
+        return "extoleMe";
     }
 
     @Override
     public String getDescription() {
-        return "Describes your authorization / scopes / access level.";
+        return "Gets your user_id and associated client_id";
     }
 
     @Override
-    public Class<MyAuthorizationsRequest> getParameterClass() {
-        return MyAuthorizationsRequest.class;
+    public Class<MeRequest> getParameterClass() {
+        return MeRequest.class;
     }
 
     @Override
-    public Object execute(MyAuthorizationsRequest request, ExtoleClientAdvisor.Context context) throws ToolException {
+    public Object execute(MeRequest request, ExtoleSessionContext context) throws ToolException {
         var webClient = ExtoleWebClientBuilder.builder("https://api.extole.io/")
-            .setApiKey(context.getUserAccessToken())
+            .setApiKey(context.getAccessToken())
             .build();
 
         JsonNode resultNode;
         try {
             resultNode = webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                    .path("/v4/tokens")
+                    .path("/v2/me")
                     .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -62,7 +63,7 @@ class ExtoleMyAuthorizationsTool implements Tool<MyAuthorizationsRequest, Extole
 
 }
 
-class MyAuthorizationsRequest {
+class MeRequest {
     @JsonPropertyDescription("Get more detailed information")
     @JsonProperty(required = false)
     public boolean extended;

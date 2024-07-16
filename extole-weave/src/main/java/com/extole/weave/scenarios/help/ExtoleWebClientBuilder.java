@@ -1,4 +1,4 @@
-package com.extole.weave.advisors.client;
+package com.extole.weave.scenarios.help;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

@@ -1,20 +1,25 @@
 package com.extole.weave.scenarios.help;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.extole.weave.advisors.client.ExtoleClientAdvisor;
 import com.extole.weave.session.ExtoleSessionContext;
 
 @Component
 public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> {
     public static String NAME = "extoleHelp";
+    private final String DESCRIPTION = "Helps using the Extole Platform";
 
-    private ExtoleClientAdvisor advisor;
+    private AiWeaveService aiWeaveService;
+    private Optional<Scenario<Void, ExtoleSessionContext>> scenario = Optional.empty();
 
-    ExtoleHelpScenario(ExtoleClientAdvisor advisor) {
-        this.advisor = advisor;
+    ExtoleHelpScenario(AiWeaveService aiWeaveService) {
+        this.aiWeaveService = aiWeaveService;
     }
 
     @Override
@@ -24,7 +29,7 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
 
     @Override
     public String getDescription() {
-        return "Helps using the Extole Platform";
+        return DESCRIPTION;
     }
 
     @Override
@@ -41,14 +46,32 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
 
     @Override
     public Conversation createConversation(Void parameters, ExtoleSessionContext context) {
-        var advisorContext = new ExtoleClientAdvisor.Context(context.getAccessToken());
-
-        return advisor.createConversation().withContext(advisorContext).start();
+        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
     }
 
     @Override
     public ConversationBuilder createConversationBuilder(Void parameters, ExtoleSessionContext context) {
-        // TODO Auto-generated method stub
-        return null;
+        return this.getScenario().createConversationBuilder(parameters, context);
+    }
+    
+    private Scenario<Void, ExtoleSessionContext> getScenario() {
+
+        if (this.scenario.isEmpty()) {
+            String instructions = """
+You help with questions around using the Extole SaaS Marketing platform.
+""";
+
+            AssistantScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
+
+            builder
+                .setInstructions(instructions)
+                .withTool(new ExtoleMeTool())
+                .withTool(new ExtoleClientTool())
+                .withTool(new ExtoleMyAuthorizationsTool())
+                .withTool(new ExtoleClientTimelineTool());
+
+            this.scenario = Optional.of(builder.getOrCreate());
+        }
+        return this;
     }
 }

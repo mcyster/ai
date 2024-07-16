@@ -1,4 +1,4 @@
-package com.extole.weave.advisors.client;
+package com.extole.weave.scenarios.help;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClientException;
@@ -7,54 +7,55 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.extole.weave.session.ExtoleSessionContext;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 
-class ExtoleClientTool implements Tool<ExtoleClientRequest, ExtoleClientAdvisor.Context> {
+class ExtoleMyAuthorizationsTool implements Tool<MyAuthorizationsRequest, ExtoleSessionContext> {
 
-    ExtoleClientTool() {
+    ExtoleMyAuthorizationsTool() {
     }
 
     @Override
     public String getName() {
-        return "extoleClient";
+        return "extoleMeAuthorizations";
     }
 
     @Override
     public String getDescription() {
-        return "Gets details about the current client, including client name and client_short_name";
+        return "Describes your authorization / scopes / access level.";
     }
 
     @Override
-    public Class<ExtoleClientRequest> getParameterClass() {
-        return ExtoleClientRequest.class;
+    public Class<MyAuthorizationsRequest> getParameterClass() {
+        return MyAuthorizationsRequest.class;
     }
 
     @Override
-    public Object execute(ExtoleClientRequest request, ExtoleClientAdvisor.Context context) throws ToolException {
+    public Object execute(MyAuthorizationsRequest request, ExtoleSessionContext context) throws ToolException {
         var webClient = ExtoleWebClientBuilder.builder("https://api.extole.io/")
-            .setApiKey(context.getUserAccessToken())
+            .setApiKey(context.getAccessToken())
             .build();
 
         JsonNode resultNode;
         try {
             resultNode = webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                    .path("/v4/clients/" + request.clientId)
+                    .path("/v4/tokens")
                     .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
-        } catch (WebClientResponseException.Forbidden exception) {
+        } catch(WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extole_token is invalid", exception);
-        } catch (WebClientException exception) {
+        } catch(WebClientException exception) {
             throw new ToolException("Internal tool error", exception);
         }
 
         if (resultNode == null || !resultNode.isObject()) {
-            throw new ToolException("Internal tool error, no result");
+            throw new ToolException(("Internal tool error, no results from request"));
         }
 
         return resultNode;
@@ -62,8 +63,8 @@ class ExtoleClientTool implements Tool<ExtoleClientRequest, ExtoleClientAdvisor.
 
 }
 
-class ExtoleClientRequest {
-    @JsonPropertyDescription("the client_id associated with the current client")
-    @JsonProperty(required = true)
-    public String clientId;
+class MyAuthorizationsRequest {
+    @JsonPropertyDescription("Get more detailed information")
+    @JsonProperty(required = false)
+    public boolean extended;
 }
