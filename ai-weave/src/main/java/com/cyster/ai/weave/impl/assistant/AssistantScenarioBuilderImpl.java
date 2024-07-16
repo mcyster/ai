@@ -34,8 +34,7 @@ public class AssistantScenarioBuilderImpl<PARAMETERS, CONTEXT> implements Assist
     }
 
     @Override
-    public <TOOL_PARAMETERS> AssistantScenarioBuilder<PARAMETERS, CONTEXT> withTool(
-        Tool<TOOL_PARAMETERS, CONTEXT> tool) {
+    public AssistantScenarioBuilder<PARAMETERS, CONTEXT> withTool(Tool<?, CONTEXT> tool) {
         this.advisorBuilder.withTool(tool);
         return this;
     }

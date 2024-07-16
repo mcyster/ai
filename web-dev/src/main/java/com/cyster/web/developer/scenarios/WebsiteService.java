@@ -1,4 +1,4 @@
-package com.cyster.web.developer.advisors;
+package com.cyster.web.developer.scenarios;
 
 import java.net.URI;
 import java.util.List;

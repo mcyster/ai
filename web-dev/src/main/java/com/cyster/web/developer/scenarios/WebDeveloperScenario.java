@@ -10,20 +10,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.web.developer.advisors.WebAdvisor;
-import com.cyster.web.developer.advisors.WebsiteService;
-import com.cyster.web.developer.advisors.WebsiteService.Website;
 import com.cyster.web.developer.scenarios.WebDeveloperScenario.Parameters;
+import com.cyster.web.developer.scenarios.WebsiteService.Website;
 
 @Component
 public class WebDeveloperScenario implements Scenario<Parameters, Void> {
-    private static final String NAME = "webDeveloper";
-    private WebAdvisor advisor;
-    private WebsiteService websiteService;
+    public static final String NAME = "webDeveloper";
+    private static final String DESCRIPTION = "Build a website";
 
-    WebDeveloperScenario(WebAdvisor advisor, WebsiteService websiteService) {
-        this.advisor = advisor;
+    private WebsiteService websiteService;
+    private WebsiteBuilderScenario builderScenario;
+
+    WebDeveloperScenario(WebsiteService websiteService, WebsiteBuilderScenario builderScenario) {
         this.websiteService = websiteService;
+        this.builderScenario = builderScenario;
     }
 
     @Override
@@ -33,7 +33,7 @@ public class WebDeveloperScenario implements Scenario<Parameters, Void> {
 
     @Override
     public String getDescription() {
-        return "Build a website";
+        return DESCRIPTION;
     }
 
     @Override
@@ -48,7 +48,11 @@ public class WebDeveloperScenario implements Scenario<Parameters, Void> {
 
     @Override
     public Conversation createConversation(Parameters parameters, Void context) {
+        throw new UnsupportedOperationException("Method is deprectated and being removed from interface");
+    }
 
+    @Override
+    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {        
         Website website;
         if (parameters != null && parameters.siteName() != null && !parameters.siteName().isBlank()) {
             website = this.websiteService.getSite(parameters.siteName());
@@ -61,27 +65,10 @@ public class WebDeveloperScenario implements Scenario<Parameters, Void> {
                 .putAsset("index.html", indexHtml);
         }
 
-        String instructions = """
-There is a web page at %s
-- we're in developer mode, so localhost is ok
-
-Use the associated website tools, by listing and getting files to understand what the website does.
-The web page will serve the file index.html, so you should read the context of that file with the webdeveloper_file_get tool
-
-Unless explicitly asked, do not show the user source code, just update or create files as needed.
-
-Tell the user the Url of the web page.
-Then ask the user how they would like to modify the website.
-Use the web_developer_file_put tool to create or update the website as requested by the user.
-""";
-
-        return advisor.createConversation()
-            .withContext(website)
-            .setOverrideInstructions(String.format(instructions, website.getUri().toString()))
-            .start();
+        return builderScenario.createConversationBuilder(null, website);
     }
-
-    public static String loadAsset(String assetPath) {
+    
+    private static String loadAsset(String assetPath) {
         InputStream stream = WebDeveloperScenario.class.getResourceAsStream(assetPath);
         if (stream == null) {
             throw new RuntimeException("Error unable to load resource:/extole/web/graph/simple/index.html");
@@ -95,13 +82,7 @@ Use the web_developer_file_put tool to create or update the website as requested
 
         return new String(bytes, StandardCharsets.UTF_8);
     }
-
+    
     public record Parameters(@JsonProperty(required = false) String siteName) {}
-
-    @Override
-    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
 }

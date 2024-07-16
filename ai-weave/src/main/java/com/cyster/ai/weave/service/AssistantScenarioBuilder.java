@@ -6,7 +6,7 @@ public interface AssistantScenarioBuilder<PARAMETERS, CONTEXT> {
     
     AssistantScenarioBuilder<PARAMETERS, CONTEXT> setInstructions(String instruction);
 
-    <TOOL_PARAMETERS> AssistantScenarioBuilder<PARAMETERS, CONTEXT> withTool(Tool<TOOL_PARAMETERS, CONTEXT> tool);
+    AssistantScenarioBuilder<PARAMETERS, CONTEXT> withTool(Tool<?, CONTEXT> tool);
 
     Scenario<PARAMETERS, CONTEXT> getOrCreate();
 }

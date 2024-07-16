@@ -12,8 +12,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.cyster.web.developer.advisors.WebsiteService;
-import com.cyster.web.developer.advisors.WebsiteService.Website.Type;
+import com.cyster.web.developer.scenarios.WebsiteService;
+import com.cyster.web.developer.scenarios.WebsiteService.Website.Type;
 
 import java.nio.file.attribute.FileTime;
 import java.util.Comparator;

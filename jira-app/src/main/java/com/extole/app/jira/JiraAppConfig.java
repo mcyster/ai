@@ -24,7 +24,7 @@ import com.cyster.ai.weave.service.advisor.AdvisorService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
 import com.cyster.ai.weave.service.scenario.ScenarioService;
-import com.cyster.web.developer.advisors.WebsiteService;
+import com.cyster.web.developer.scenarios.WebsiteService;
 import com.cyster.web.rest.WebsiteServiceImpl;
 
 

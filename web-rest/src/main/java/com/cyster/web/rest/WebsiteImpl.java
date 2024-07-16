@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.cyster.web.developer.advisors.WebsiteService.Website;
+import com.cyster.web.developer.scenarios.WebsiteService.Website;
 
 class WebsiteImpl implements Website {
     private final URI uri;

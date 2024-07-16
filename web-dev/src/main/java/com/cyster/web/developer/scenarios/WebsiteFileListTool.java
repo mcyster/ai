@@ -1,4 +1,4 @@
-package com.cyster.web.developer.advisors;
+package com.cyster.web.developer.scenarios;
 
 import java.util.List;
 
@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
-import com.cyster.web.developer.advisors.WebsiteFileListTool.Request;
-import com.cyster.web.developer.advisors.WebsiteService.Website;
+import com.cyster.web.developer.scenarios.WebsiteFileListTool.Request;
+import com.cyster.web.developer.scenarios.WebsiteService.Website;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
