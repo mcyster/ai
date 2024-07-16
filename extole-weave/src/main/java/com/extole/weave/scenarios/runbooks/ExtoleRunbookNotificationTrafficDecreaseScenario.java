@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.conversation.Conversation;
-import com.extole.weave.advisors.support.ExtoleSupportAdvisor;
+import com.extole.weave.scenarios.support.tools.ExtoleSupportAdvisor;
 
 @Component
 public class ExtoleRunbookNotificationTrafficDecreaseScenario implements RunbookScenario {

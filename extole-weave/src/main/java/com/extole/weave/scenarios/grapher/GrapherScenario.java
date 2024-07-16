@@ -22,8 +22,8 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.web.developer.advisors.WebAdvisor;
 import com.cyster.web.developer.advisors.WebsiteService;
 import com.cyster.web.developer.advisors.WebsiteService.Website;
-import com.extole.weave.advisors.support.ExtoleWebClientFactory;
 import com.extole.weave.scenarios.grapher.GrapherScenario.Parameters;
+import com.extole.weave.scenarios.support.tools.ExtoleWebClientFactory;
 
 
 @Component

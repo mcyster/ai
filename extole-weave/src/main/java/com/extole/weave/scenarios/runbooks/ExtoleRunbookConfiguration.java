@@ -9,7 +9,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
-import com.extole.weave.advisors.support.ExtoleSupportAdvisor;
+import com.extole.weave.scenarios.support.tools.ExtoleSupportAdvisor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 

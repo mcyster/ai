@@ -4,7 +4,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 import com.cyster.ai.weave.service.conversation.Conversation;
-import com.extole.weave.advisors.support.ExtoleSupportAdvisor;
+import com.extole.weave.scenarios.support.tools.ExtoleSupportAdvisor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.mustachejava.DefaultMustacheFactory;

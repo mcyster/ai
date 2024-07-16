@@ -38,7 +38,7 @@ It is also possible to configure Runbooks using YAML, by putting .yml files in t
 - name - name of the runbook (extoleRunbook is automatically prefixed)
 - description - description of where the runbook should be applied
 - keywords - words that would appear in a ticket that would match this runbook
-- instructions - instructions to the advisor on what to do.
+- instructions - instructions to the scenario on what to do.
 
 Restart weave-app and check your runbook is loaded with:
 ```

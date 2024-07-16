@@ -11,9 +11,9 @@ import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.extole.weave.advisors.support.jira.SupportTicketGetTool;
 import com.extole.weave.scenarios.runbooks.ExtoleRunbookOther;
 import com.extole.weave.scenarios.runbooks.RunbookScenarioParameters;
+import com.extole.weave.scenarios.support.tools.jira.SupportTicketGetTool;
 
 @Component
 public class ExtoleSupportTicketRunbookScenario implements Scenario<RunbookScenarioParameters, Void> {

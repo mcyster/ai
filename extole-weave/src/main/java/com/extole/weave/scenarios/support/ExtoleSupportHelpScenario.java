@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.extole.weave.advisors.support.ExtoleSupportAdvisor;
+import com.extole.weave.scenarios.support.tools.ExtoleSupportAdvisor;
 
 @Component
 public class ExtoleSupportHelpScenario implements Scenario<Void, Void> {
