@@ -1,4 +1,4 @@
-package com.cyster.ai.weave.impl.advisor;
+package com.cyster.ai.weave.impl.advisor.assistant;
 
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;

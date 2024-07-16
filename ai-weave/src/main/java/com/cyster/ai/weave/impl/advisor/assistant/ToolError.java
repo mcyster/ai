@@ -1,4 +1,4 @@
-package com.cyster.ai.weave.impl.advisor;
+package com.cyster.ai.weave.impl.advisor.assistant;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;

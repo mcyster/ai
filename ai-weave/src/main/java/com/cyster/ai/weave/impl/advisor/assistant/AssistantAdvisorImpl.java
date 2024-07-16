@@ -1,4 +1,4 @@
-package com.cyster.ai.weave.impl.advisor;
+package com.cyster.ai.weave.impl.advisor.assistant;
 
 import java.nio.file.Path;
 import java.security.MessageDigest;
@@ -8,10 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import com.cyster.ai.weave.impl.advisor.Advisor;
+import com.cyster.ai.weave.impl.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.Tool;
-import com.cyster.ai.weave.service.advisor.Advisor;
-import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 

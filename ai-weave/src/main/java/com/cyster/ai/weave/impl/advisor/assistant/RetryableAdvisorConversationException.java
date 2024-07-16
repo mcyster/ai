@@ -1,4 +1,4 @@
-package com.cyster.ai.weave.impl.advisor;
+package com.cyster.ai.weave.impl.advisor.assistant;
 
 public class RetryableAdvisorConversationException extends AdvisorConversationException {
     public RetryableAdvisorConversationException(String message) {

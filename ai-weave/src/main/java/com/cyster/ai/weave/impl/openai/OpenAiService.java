@@ -3,7 +3,7 @@ package com.cyster.ai.weave.impl.openai;
 import java.net.http.HttpClient;
 import java.time.Duration;
 
-import com.cyster.ai.weave.impl.advisor.OperationLogger;
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 
 import io.github.stefanbratanov.jvm.openai.AssistantsClient;
 import io.github.stefanbratanov.jvm.openai.AudioClient;

@@ -1,5 +1,8 @@
-package com.cyster.ai.weave.impl.advisor;
+package com.cyster.ai.weave.impl.advisor.assistant;
 
+import com.cyster.ai.weave.impl.advisor.AdvisorBuilder;
+import com.cyster.ai.weave.impl.advisor.AdvisorService;
+import com.cyster.ai.weave.impl.advisor.AdvisorServiceFactory;
 import com.cyster.ai.weave.impl.code.CodeInterpreterToolBuilderImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.impl.store.DirectoryDocumentStore;
@@ -10,9 +13,6 @@ import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.DocumentStore.DirectoryDocumentStoreBuilder;
 import com.cyster.ai.weave.service.DocumentStore.SimpleDocumentStoreBuilder;
-import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
-import com.cyster.ai.weave.service.advisor.AdvisorService;
-import com.cyster.ai.weave.service.advisor.AdvisorServiceFactory;
 
 // https://platform.openai.com/docs/assistants/overview
 // https://platform.openai.com/docs/assistants/tools/code-interpreter

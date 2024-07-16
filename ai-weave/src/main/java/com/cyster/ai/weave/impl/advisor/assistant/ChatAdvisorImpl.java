@@ -1,10 +1,10 @@
-package com.cyster.ai.weave.impl.advisor;
+package com.cyster.ai.weave.impl.advisor.assistant;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.cyster.ai.weave.service.advisor.Advisor;
+import com.cyster.ai.weave.impl.advisor.Advisor;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.Message;
 
@@ -51,7 +51,7 @@ public class ChatAdvisorImpl<C> implements Advisor<C> {
         }
 
         @Override
-        public com.cyster.ai.weave.service.advisor.Advisor.AdvisorConversationBuilder<C> addMessage(String message) {
+        public com.cyster.ai.weave.impl.advisor.Advisor.AdvisorConversationBuilder<C> addMessage(String message) {
             // TODO Auto-generated method stub
             return null;
         }

@@ -1,6 +1,6 @@
-package com.cyster.ai.weave.impl.advisor;
+package com.cyster.ai.weave.impl.advisor.assistant;
 
-import com.cyster.ai.weave.impl.advisor.ToolError.Type;
+import com.cyster.ai.weave.impl.advisor.assistant.ToolError.Type;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

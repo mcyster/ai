@@ -1,6 +1,6 @@
 package com.cyster.ai.weave.impl.assistant;
 
-import com.cyster.ai.weave.service.advisor.Advisor;
+import com.cyster.ai.weave.impl.advisor.Advisor;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 

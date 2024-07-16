@@ -2,11 +2,11 @@ package com.cyster.ai.weave.impl.assistant;
 
 import java.util.Optional;
 
-import com.cyster.ai.weave.impl.advisor.AssistantAdvisorImpl;
+import com.cyster.ai.weave.impl.advisor.AdvisorBuilder;
+import com.cyster.ai.weave.impl.advisor.assistant.AssistantAdvisorImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
-import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 
 public class AssistantScenarioBuilderImpl<PARAMETERS, CONTEXT> implements AssistantScenarioBuilder<PARAMETERS, CONTEXT> {

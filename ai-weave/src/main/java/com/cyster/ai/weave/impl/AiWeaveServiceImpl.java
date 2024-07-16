@@ -1,6 +1,7 @@
 package com.cyster.ai.weave.impl;
 
-import com.cyster.ai.weave.impl.advisor.AdvisorServiceImpl;
+import com.cyster.ai.weave.impl.advisor.AdvisorService;
+import com.cyster.ai.weave.impl.advisor.assistant.AdvisorServiceImpl;
 import com.cyster.ai.weave.impl.assistant.AssistantScenarioBuilderImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.AiWeaveService;
@@ -9,7 +10,6 @@ import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.DocumentStore.DirectoryDocumentStoreBuilder;
 import com.cyster.ai.weave.service.DocumentStore.SimpleDocumentStoreBuilder;
 import com.cyster.ai.weave.service.SearchTool.Builder;
-import com.cyster.ai.weave.service.advisor.AdvisorService;
 
 public class AiWeaveServiceImpl implements AiWeaveService {
     private OpenAiService openAiService;
