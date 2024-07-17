@@ -33,7 +33,7 @@ public class SupportTicketGetTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getDescription() {
-        return "Retrieve tickets from the extole Jira support ticket tracking system";
+        return "Retrieve tickets from the Extole Jira support ticket tracking system";
     }
 
     @Override
@@ -91,9 +91,9 @@ public class SupportTicketGetTool implements ExtoleSupportTool<Request> {
 
             JsonNode customField11312 = issueNode.path("fields").path("customfield_11312");
             if (!customField11312.isMissingNode()) {
-                ticket.put("client", customField11312.path("value").asText());
+                ticket.put("clientId", customField11312.path("value").asText());
             } else {
-                ticket.putNull("client");
+                ticket.putNull("clientId");
             }
 
             ticket.put("createdDate", issueNode.path("fields").path("created").asText());
