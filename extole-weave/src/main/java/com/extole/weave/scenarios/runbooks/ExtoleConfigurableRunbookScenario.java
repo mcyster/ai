@@ -4,7 +4,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 import com.cyster.ai.weave.service.conversation.Conversation;
-import com.extole.weave.advisors.support.ExtoleSupportAdvisor;
+import com.extole.weave.scenarios.support.ExtoleSupportHelpScenario;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.mustachejava.DefaultMustacheFactory;
@@ -16,14 +16,15 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
     private String description;
     private String keywords;
     private String instructions;
-    private ExtoleSupportAdvisor advisor;
+    
+    private ExtoleSupportHelpScenario helpScenario;
 
-    ExtoleConfigurableRunbookScenario(Configuration configuration, ExtoleSupportAdvisor advisor) {
+    ExtoleConfigurableRunbookScenario(Configuration configuration, ExtoleSupportHelpScenario helpScenario) {
         this.name = configuration.getName();
         this.description = configuration.getDescription();
         this.keywords = configuration.getKeywords();
         this.instructions = configuration.getInstructions();
-        this.advisor = advisor;
+        this.helpScenario = helpScenario;
     }
 
     @Override
@@ -51,16 +52,19 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
     }
 
     @Override
-    public Conversation createConversation(RunbookScenarioParameters parameters, Void context) {
+    public ConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters, Void context) {
         MustacheFactory mostacheFactory = new DefaultMustacheFactory();
-        Mustache mustache = mostacheFactory.compile(new StringReader(instructions), "advisor_instructions");
+        Mustache mustache = mostacheFactory.compile(new StringReader(instructions), "instructions");
         var messageWriter = new StringWriter();
         mustache.execute(messageWriter, parameters);
         messageWriter.flush();
 
-        return this.advisor.createConversation().setOverrideInstructions(messageWriter.toString()).start();
-    }
+        var instructions = messageWriter.toString();
 
+        return this.helpScenario.createConversationBuilder(null, null).setOverrideInstructions(instructions);
+    }
+    
+    
     public static class Configuration {
         private String name;
         private String description;
@@ -127,5 +131,7 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
             }
         }
     }
+
+
 }
 

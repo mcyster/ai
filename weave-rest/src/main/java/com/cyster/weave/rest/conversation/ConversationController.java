@@ -22,7 +22,7 @@ import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
-import com.cyster.ai.weave.service.scenario.ScenarioService;
+import com.cyster.ai.weave.service.scenario.ScenarioSet;
 import com.cyster.weave.service.scenariosession.ScenarioSession;
 import com.cyster.weave.service.scenariosession.ScenarioSessionStore;
 import com.extole.weave.session.ExtoleSessionContext;
@@ -38,12 +38,12 @@ public class ConversationController {
     private static final String PARAMETER_PREFIX = "parameter.";
 
     private ScenarioSessionStore scenarioSessionStore;
-    private ScenarioService scenarioStore;
+    private ScenarioSet scenarioStore;
     private ObjectMapper objectMapper;
 
     private static final Logger logger = LogManager.getLogger(ConversationController.class);
 
-    public ConversationController(ScenarioSessionStore scenarioSessionStore, ScenarioService scenarioStore) {
+    public ConversationController(ScenarioSessionStore scenarioSessionStore, ScenarioSet scenarioStore) {
         this.scenarioSessionStore = scenarioSessionStore;
         this.scenarioStore = scenarioStore;
         this.objectMapper = new ObjectMapper();
@@ -269,6 +269,6 @@ public class ConversationController {
             context = (CONTEXT)getSessionContext(headers);
         }
 
-        return scenarioSessionStore.addSession(scenario, parameters, scenario.createConversation(parameters, context));
+        return scenarioSessionStore.addSession(scenario, parameters, scenario.createConversationBuilder(parameters, context).start());
     }
 }

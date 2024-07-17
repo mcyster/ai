@@ -3,8 +3,8 @@ package com.cyster.ai.weave.impl.code;
 import java.util.Collections;
 import java.util.List;
 
-import com.cyster.ai.weave.service.advisor.CodeInterpreterTool;
-import com.cyster.ai.weave.service.advisor.ToolException;
+import com.cyster.ai.weave.service.CodeInterpreterTool;
+import com.cyster.ai.weave.service.ToolException;
 
 public class CodeInterpreterToolImpl<CONTEXT> implements CodeInterpreterTool<CONTEXT> {
     public static final String NAME = "code_interpreter";

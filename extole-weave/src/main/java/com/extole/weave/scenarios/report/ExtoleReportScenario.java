@@ -12,18 +12,20 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.extole.weave.advisors.client.ExtoleClientAdvisor;
+import com.extole.weave.scenarios.help.ExtoleHelpScenario;
 import com.extole.weave.scenarios.report.ExtoleReportScenario.Parameters;
 import com.extole.weave.session.ExtoleSessionContext;
 
 
 @Component
 public class ExtoleReportScenario implements Scenario<Parameters, ExtoleSessionContext> {
-    private static final String NAME = "extoleReport";
-    private ExtoleClientAdvisor advisor;
+    public static final String NAME = "extoleReport";
+    private static final String DESCRIPTION = "Describe an extole report given its report_id";
 
-    ExtoleReportScenario(ExtoleClientAdvisor advisor) {
-        this.advisor = advisor;
+    private ExtoleHelpScenario helpScenario;
+
+    ExtoleReportScenario(ExtoleHelpScenario helpScenario) {
+        this.helpScenario = helpScenario;
     }
 
     @Override
@@ -33,7 +35,7 @@ public class ExtoleReportScenario implements Scenario<Parameters, ExtoleSessionC
 
     @Override
     public String getDescription() {
-        return "Describe an extole report given its report_id";
+        return DESCRIPTION;
     }
 
     @Override
@@ -46,24 +48,23 @@ public class ExtoleReportScenario implements Scenario<Parameters, ExtoleSessionC
         return ExtoleSessionContext.class;
     }
 
+    public static class Parameters {
+        @JsonProperty(required = true)
+        public String report_id;
+    }
+
     @Override
-    public Conversation createConversation(Parameters parameters, ExtoleSessionContext context) {
-        String systemPrompt = "You are a customer service representative for the Extole SaaS marketing platform. You are looking at the report with id: {{report_id}}";
+    public ConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSessionContext context) {
+        String message = "You are looking at the report with id: {{report_id}}";
 
         MustacheFactory mostacheFactory = new DefaultMustacheFactory();
-        Mustache mustache = mostacheFactory.compile(new StringReader(systemPrompt), "system_prompt");
+        Mustache mustache = mostacheFactory.compile(new StringReader(message), "message");
         var messageWriter = new StringWriter();
         mustache.execute(messageWriter, parameters);
         messageWriter.flush();
 
-        var advisorContext = new ExtoleClientAdvisor.Context(context.getAccessToken());
-
-        return advisor.createConversation().setOverrideInstructions(messageWriter.toString()).withContext(advisorContext).start();
-    }
-
-    public static class Parameters {
-        @JsonProperty(required = true)
-        public String report_id;
+        return this.helpScenario.createConversationBuilder(null, context)
+            .addMessage(messageWriter.toString());
     }
 
 }

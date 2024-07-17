@@ -27,9 +27,8 @@ dependencies {
     implementation project(':cyster-weave')
     implementation project(':extole-tickets-rest')
     implementation project(':extole-weave')
+    implementation project(':web-weave')
     implementation project(':weave-rest')
-    
-    implementation project(':web-dev')
     implementation project(':web-rest')
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

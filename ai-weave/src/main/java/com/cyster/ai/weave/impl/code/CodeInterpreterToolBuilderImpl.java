@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.cyster.ai.weave.impl.openai.OpenAiService;
-import com.cyster.ai.weave.service.advisor.CodeInterpreterTool;
-import com.cyster.ai.weave.service.advisor.CodeInterpreterTool.Asset;
+import com.cyster.ai.weave.service.CodeInterpreterTool;
+import com.cyster.ai.weave.service.CodeInterpreterTool.Asset;
 
 import io.github.stefanbratanov.jvm.openai.FilesClient;
 import io.github.stefanbratanov.jvm.openai.UploadFileRequest;

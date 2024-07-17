@@ -11,6 +11,13 @@ public interface Scenario<PARAMETERS, CONTEXT> {
     Class<PARAMETERS> getParameterClass();
 
     Class<CONTEXT> getContextClass();
+    
+    ConversationBuilder createConversationBuilder(PARAMETERS parameters, CONTEXT context);
 
-    Conversation createConversation(PARAMETERS parameters, CONTEXT context);
+    interface ConversationBuilder {
+        ConversationBuilder setOverrideInstructions(String instructions);
+        // TODO ConversationBuilder addInstruction(String instruction);  
+        ConversationBuilder addMessage(String message);
+        Conversation start();
+    }
 }
