@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boids Simulation</title>
+    <style>
+        #boidContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #f0f0f0;
+        }
+        .boid {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: black;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+    </style>
+    <script src="/sites/managed/chat/chat.js" data-scenario="webDeveloper" data-href-site-name="/([^/]+)/[^/]+$"></script>
+</head>
+<body>
+    <div id="boidContainer"></div>
+    <script>
+        class Boid {
+            constructor(container, x, y) {
+                this.container = container;
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.element = document.createElement('div');
+                this.element.className = 'boid';
+                this.container.appendChild(this.element);
+                this.updatePosition();
+            }
+
+            updatePosition() {
+                this.element.style.transform = `translate(${this.x}px, ${this.y}px) rotate(${Math.atan2(this.vy, this.vx) * 180 / Math.PI}deg)`;
+            }
+
+            move(boids) {
+                const alignment = this.align(boids);
+                const cohesion = this.cohere(boids);
+                const separation = this.separate(boids);
+
+                this.vx += alignment.vx + cohesion.vx + separation.vx;
+                this.vy += alignment.vy + cohesion.vy + separation.vy;
+
+                const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+                if (speed > 2) {
+                    this.vx = (this.vx / speed) * 2;
+                    this.vy = (this.vy / speed) * 2;
+                }
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0) this.x = this.container.clientWidth;
+                if (this.y < 0) this.y = this.container.clientHeight;
+                if (this.x > this.container.clientWidth) this.x = 0;
+                if (this.y > this.container.clientHeight) this.y = 0;
+
+                this.updatePosition();
+            }
+
+            align(boids) {
+                const perceptionRadius = 50;
+                let total = 0;
+                let avgVx = 0;
+                let avgVy = 0;
+                boids.forEach(boid => {
+                    const d = Math.hypot(boid.x - this.x, boid.y - this.y);
+                    if (boid !== this && d < perceptionRadius) {
+                        avgVx += boid.vx;
+                        avgVy += boid.vy;
+                        total++;
+                    }
+                });
+                if (total > 0) {
+                    avgVx /= total;
+                    avgVy /= total;
+                    return { vx: (avgVx - this.vx) * 0.1, vy: (avgVy - this.vy) * 0.1 };
+                }
+                return { vx: 0, vy: 0 };
+            }
+
+            cohere(boids) {
+                const perceptionRadius = 100;
+                let total = 0;
+                let centerX = 0;
+                let centerY = 0;
+                boids.forEach(boid => {
+                    const d = Math.hypot(boid.x - this.x, boid.y - this.y);
+                    if (boid !== this && d < perceptionRadius) {
+                        centerX += boid.x;
+                        centerY += boid.y;
+                        total++;
+                    }
+                });
+                if (total > 0) {
+                    centerX /= total;
+                    centerY /= total;
+                    return { vx: (centerX - this.x) * 0.01, vy: (centerY - this.y) * 0.01 };
+                }
+                return { vx: 0, vy: 0 };
+            }
+
+            separate(boids) {
+                const perceptionRadius = 30;
+                let total = 0;
+                let moveX = 0;
+                let moveY = 0;
+                boids.forEach(boid => {
+                    const d = Math.hypot(boid.x - this.x, boid.y - this.y);
+                    if (boid !== this && d < perceptionRadius) {
+                        moveX += this.x - boid.x;
+                        moveY += this.y - boid.y;
+                        total++;
+                    }
+                });
+                if (total > 0) {
+                    moveX /= total;
+                    moveY /= total;
+                    return { vx: moveX * 0.1, vy: moveY * 0.1 };
+                }
+                return { vx: 0, vy: 0 };
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const container = document.getElementById('boidContainer');
+            const boids = Array.from({ length: 100 }, () => new Boid(container, Math.random() * container.clientWidth, Math.random() * container.clientHeight));
+
+            function animate() {
+                boids.forEach(boid => boid.move(boids));
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        });
+    </script>
+</body>
+</html>
