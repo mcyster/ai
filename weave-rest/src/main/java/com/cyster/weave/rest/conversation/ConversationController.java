@@ -127,7 +127,7 @@ public class ConversationController {
     }
 
     @PostMapping("/conversations/messages")
-    public ConvenienceConversationResponse startConversation(
+    public ConvenienceMessageResponse startConversation(
         @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level,
         @RequestHeader MultiValueMap<String, String> headers,
         @RequestBody PromptedConversationRequest request)
@@ -161,14 +161,10 @@ public class ConversationController {
             throw new ConversationRestException(session.getId(), exception);
         }
 
-        var response = new ConversationResponse.Builder(level)
-            .setId(session.getId())
-            .setScenario(scenario.getName())
-            .setParameters(session.getParameters())
-            .setMessages(session.getConversation().getMessages()).build();
-
-        var conveneinceReponse = new ConvenienceConversationResponse(response, answer.getContent());
-        return conveneinceReponse;
+        MessageResponse messageResponse = new MessageResponse.Builder(level)
+          .create(answer.getType().toString(), answer.getContent(), answer.operation());
+       
+        return new ConvenienceMessageResponse(session.getId(), messageResponse);
     }
 
     @GetMapping("/conversations/{id}/messages")

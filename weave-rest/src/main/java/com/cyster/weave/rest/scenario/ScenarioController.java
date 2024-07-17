@@ -1,6 +1,9 @@
 package com.cyster.weave.rest.scenario;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,11 +25,14 @@ public class ScenarioController {
 
     @GetMapping("/scenarios")
     public Set<ScenarioResponse> index() {
-        return scenarioStore.getScenarios().stream().map(scenario -> new ScenarioResponse.Builder()
-            .setName(scenario.getName())
-            .setDescription(scenario.getDescription())
-            .setParameterClass(scenario.getParameterClass())
-            .build()).collect(Collectors.toSet());
+        return scenarioStore.getScenarios().stream()
+            .map(scenario -> new ScenarioResponse.Builder()
+                .setName(scenario.getName())
+                .setDescription(scenario.getDescription())
+                .setParameterClass(scenario.getParameterClass())
+                .build())
+            .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(ScenarioResponse::getName))));
+
     }
 
     @GetMapping("/scenarios/{scenario_name}")
