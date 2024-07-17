@@ -1,4 +1,6 @@
 
+2024-7-17
+- ai-weave just exposes Scenarios (remove advisor/assitant special case)
 
 2024-7-15
 - ai-weave, cyster-weave, extole-weave
