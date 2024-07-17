@@ -1,7 +1,9 @@
 package com.cyster.web.rest;
 
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -66,6 +68,13 @@ public class WebRestConfig {
         }
 
         String domain = "localhost";
+        try {
+            InetAddress inetAddress = InetAddress.getLocalHost();
+            domain = inetAddress.getHostAddress();
+        } catch (UnknownHostException e) {
+            domain = "localhost";
+        }
+        
         if (environment.getProperty("server.domain") != null) {
             domain = environment.getProperty("server.domain");
         }

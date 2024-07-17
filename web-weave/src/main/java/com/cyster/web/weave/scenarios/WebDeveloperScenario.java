@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.web.weave.scenarios.WebDeveloperScenario.Parameters;
 import com.cyster.web.weave.scenarios.WebsiteService.Website;
