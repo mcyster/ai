@@ -20,7 +20,6 @@ public class ExtoleRunbookToolFactory {
             List<RunbookScenario> runbookScenarios, ExtoleRunbookOther defaultRunbook) {
         ObjectMapper objectMapper = new ObjectMapper();
 
-
         var documentStoreBuilder = aiWeaveService.simpleDocumentStoreBuilder();
 
         for(var runbook: runbookScenarios) {

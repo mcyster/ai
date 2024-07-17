@@ -47,23 +47,33 @@ class ExtoleTicketRunbookTool implements Tool<RunbookScenarioParameters, Void> {
 
     @Override
     public Object execute(RunbookScenarioParameters request, Void context) throws ToolException {
-        Conversation conversation = extoleTicketRunbookScenario.createConversationBuilder(request, context).start();
-
         // TODO support adding conversation as sub-context on run info message
+
+        var runbookName = findRunbook(request);
+        
+        System.out.println("!!! findRunbook: " + runbookName);
+
+        return executeRunbook(request, runbookName);
+    }
+    
+    
+    private String findRunbook(RunbookScenarioParameters request) throws ToolException {
+        Conversation conversation = extoleTicketRunbookScenario.createConversationBuilder(request, null)
+            .addMessage("Ticket Number: " + request.getTicketNumber())
+            .start();
 
         Message message;
         try {
-            conversation.addMessage(Type.USER, request.getTicketNumber());
             message = conversation.respond();
         } catch (ConversationException exception) {
-           throw new ToolException("extoleTicketRunbookSelectingAdvisor failed to start conversation", exception);
+           throw new ToolException("findRunbook failed to start conversation", exception);
         }
 
-        System.out.println("! extoleTicketRunbookSelectingAdvisor " + message.getContent());
-
+        System.out.println("!!! findRunbook convo: " + message);
+        
         Optional<String> json = extractJson(message.getContent());
         if (json.isEmpty()) {
-            throw new ToolException("extoleTicketRunbookSelectingAdvisor did not respond with json");
+            throw new ToolException("findRunbook responce not json");
         }
         ObjectMapper objectMapper = new ObjectMapper();
 
@@ -72,34 +82,41 @@ class ExtoleTicketRunbookTool implements Tool<RunbookScenarioParameters, Void> {
         try {
             result = objectMapper.readTree(json.get());
         } catch (JsonProcessingException exception) {
-            throw new ToolException("extoleTicketRunbookSelectingAdvisor did not respond with invalid json", exception);
+            throw new ToolException("findRunbook did not recieve valid json", exception);
         }
 
         String ticketNumber = result.path("ticket_number").asText();
         if (ticketNumber == null || ticketNumber.isBlank()) {
-            throw new ToolException("extoleTicketRunbookSelectingAdvisor responded with no ticket. json: " + json.get());
+            throw new ToolException("findRunbook with no ticket. json: " + json.get());
         }
 
         String runbookName = result.path("runbook").asText();
         if (!runbookScenarios.containsKey(runbookName)) {
-            throw new ToolException("extoleTicketRunbookSelectingAdvisor responded with unknown runbook. json:" + json.get());
+            throw new ToolException("findRunbook unknown runbook. json:" + json.get());
         }
+        
+        return runbookName;
+    }
 
+    private String executeRunbook(RunbookScenarioParameters request, String runbookName) throws ToolException {
+        var ticketNumber = request.getTicketNumber();
         var scenario = runbookScenarios.get(runbookName);
         var parameters = new RunbookScenarioParameters(ticketNumber);
-        Conversation conversation2 = scenario.createConversationBuilder(parameters, null).start();
+        Conversation conversation = scenario.createConversationBuilder(parameters, null).start();
 
-        Message message2;
+        Message message;
         try {
-            conversation2.addMessage(Type.USER, ticketNumber);
-            message2 = conversation2.respond();
+            conversation.addMessage(Type.USER, ticketNumber);
+            message = conversation.respond();
         } catch (ConversationException e) {
             throw new ToolException("rubookScenarion[" + runbookName + "] failed to start conversation");
         }
 
-        return message2.getContent();
-    }
+        System.out.println("!!! executedRunbook: " + message.getContent());
 
+        return message.getContent();
+    }
+    
     public static Optional<String> extractJson(String input) {
         int braceCounter = 0;
         int startIndex = -1;

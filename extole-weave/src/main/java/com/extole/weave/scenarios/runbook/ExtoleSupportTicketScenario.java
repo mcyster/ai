@@ -57,8 +57,8 @@ public class ExtoleSupportTicketScenario implements Scenario<RunbookScenarioPara
         if (this.scenario.isEmpty()) {
             String defaultInstruction = """
 For the given ticket find and execute the Runbook.
-Respond with the ticket_number followed by a colon then a summary of your analysis, i.e:
-TICKET_NUMBER: SUMMARY
+Respond with the ticket_number followed by a selected runbook in brackets and then a brief summary of your analysis, i.e:
+TICKET_NUMBER (RUNBOOK): SUMMARY
 """;
             AssistantScenarioBuilder<RunbookScenarioParameters, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
                 

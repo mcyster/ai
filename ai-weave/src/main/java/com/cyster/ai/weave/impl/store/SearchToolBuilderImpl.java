@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +56,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
             return createStore();
         }
 
-        return createStore(store.get());
+        return useStore(store.get());
     }
 
     public SearchTool<CONTEXT> createStore() {
@@ -139,11 +138,11 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
             }
         }
 
-        return new SearchToolImpl<CONTEXT>( new ArrayList<>(Arrays.asList(vectorStore)));
+        return new SearchToolImpl<CONTEXT>(this.openAiService, vectorStore);
     }
 
-    public SearchTool<CONTEXT> createStore(VectorStore vectorStore) {
-        return new SearchToolImpl<CONTEXT>(new ArrayList<>(Arrays.asList(vectorStore)));
+    public SearchTool<CONTEXT> useStore(VectorStore vectorStore) {
+        return new SearchToolImpl<CONTEXT>(this.openAiService, vectorStore);
     }
 
     private Optional<VectorStore> findVectorStore() {

@@ -1,5 +1,6 @@
 package com.cyster.ai.weave.impl.advisor.assistant;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,7 +28,6 @@ class AdvisorToolset<C> {
     }
 
     public void applyTools(CreateAssistantRequest.Builder requestBuilder) {
-
         List<String> fileIds = null;
         String[] vectorStoreIds = null;
         for (var tool : this.toolset.getTools()) {
@@ -47,10 +47,9 @@ class AdvisorToolset<C> {
                 @SuppressWarnings("unchecked")
                 var searchTool = (SearchToolImpl<C>)tool;
 
-                List<String> ids = searchTool.getVectorStores().stream()
-                    .map(VectorStore::id)
-                    .collect(Collectors.toList());
-
+                List<String> ids = new ArrayList<>();
+                ids.add(searchTool.getVectorStore().id());
+                
                 vectorStoreIds = ids.toArray(new String[0]);
 
             } else {

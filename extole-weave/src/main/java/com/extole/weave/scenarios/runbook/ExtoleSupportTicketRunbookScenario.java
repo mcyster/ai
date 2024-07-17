@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
@@ -24,7 +25,8 @@ public class ExtoleSupportTicketRunbookScenario implements Scenario<RunbookScena
     private Optional<Scenario<RunbookScenarioParameters, Void>> scenario = Optional.empty();
     private List<Tool<?, Void>> tools = new ArrayList<>();
     private String defaultRunbookName;
-
+    private SearchTool<Void> searchTool;
+    
     public ExtoleSupportTicketRunbookScenario(AiWeaveService aiWeaveService, ExtoleRunbookToolFactory runbookToolFactory,
             SupportTicketGetTool ticketGetTool,
             ExtoleRunbookOther defaultRunbook) {
@@ -32,6 +34,7 @@ public class ExtoleSupportTicketRunbookScenario implements Scenario<RunbookScena
         this.tools.add(runbookToolFactory.getRunbookSearchTool());
         this.tools.add(ticketGetTool);
         this.defaultRunbookName = defaultRunbook.getName();
+        this.searchTool = runbookToolFactory.getRunbookSearchTool();
     }
 
     @Override
@@ -59,6 +62,11 @@ public class ExtoleSupportTicketRunbookScenario implements Scenario<RunbookScena
             throw new IllegalArgumentException("No ticketNumber specified");
         }
 
+        if (!searchTool.isReady()) {
+            // Still seem to have to wait a bit sometimes, even when its ready here
+            System.out.println("!!!!!!!!!! search tool - vector store not ready !!!");
+        }
+        
         return getScenario().createConversationBuilder(parameters, context)
             .addMessage("Ticket: " + parameters.getTicketNumber());
     }

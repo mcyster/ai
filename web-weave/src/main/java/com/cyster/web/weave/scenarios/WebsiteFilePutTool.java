@@ -11,7 +11,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
 class WebsiteFilePutTool implements Tool<Request, Website> {
-
+    private static final String CHAT_INCLUDE = "<script src=\"/sites/managed/chat/chat.js\" data-scenario=\"webDeveloper\" data-href-site-name=\"/([^/]+)/[^/]+$\"></script>";
+    
     WebsiteFilePutTool() {
     }
 
@@ -40,6 +41,9 @@ class WebsiteFilePutTool implements Tool<Request, Website> {
             throw new FatalToolException("No content specified");
         }
 
+        if (!request.content().contains(CHAT_INCLUDE)) {
+            throw new FatalToolException("Do not remove the script tag: " + CHAT_INCLUDE);
+        }
         context.putAsset(request.filename(), request.content());
 
         return context;

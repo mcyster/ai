@@ -1,20 +1,23 @@
 package com.cyster.ai.weave.impl.store;
 
 import java.util.Collections;
-import java.util.List;
 
 import io.github.stefanbratanov.jvm.openai.VectorStore;
+import io.github.stefanbratanov.jvm.openai.VectorStoresClient;
 
+import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.ToolException;
 
 public class SearchToolImpl<CONTEXT> implements SearchTool<CONTEXT> {
     public static final String NAME = "file_search";
 
-    private List<VectorStore> vectorStores;
+    private OpenAiService openAiService;
+    private VectorStore vectorStore;
 
-    public SearchToolImpl(List<VectorStore> vectorStores) {
-        this.vectorStores = vectorStores;
+    public SearchToolImpl(OpenAiService openAiService, VectorStore vectorStore) {
+        this.openAiService = openAiService;
+        this.vectorStore = vectorStore;
     }
 
     @Override
@@ -38,7 +41,14 @@ public class SearchToolImpl<CONTEXT> implements SearchTool<CONTEXT> {
         return Collections.emptyMap();
     }
 
-    public List<VectorStore> getVectorStores() {
-        return this.vectorStores;
+    @Override
+    public boolean isReady() {
+        var updatedVectorStore = this.openAiService.createClient(VectorStoresClient.class).retrieveVectorStore(vectorStore.id());
+                
+        return updatedVectorStore.status().equals("completed");
+    }
+    
+    public VectorStore getVectorStore() {
+        return this.vectorStore;
     }
 }
