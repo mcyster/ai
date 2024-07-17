@@ -22,6 +22,8 @@
 
 - expose report api
 - create page endpoint to create an initial listing page to develop from
+- scenario to read a ticket
+
 
 ## Cyster Weave
 
@@ -33,6 +35,9 @@ From ticket expose
 - client id
 - comments
 - support comment to self, to re-evaluate in future (or do in another service)
+- turn ticket get to markdown
+
+Sperate out a ExtoleJira project, return a fluent ticket description with markdwon for content and well named attributes (currently in seperate projeects. Then use for jira endpoints and extole support tool
 
 ## AI Weave Concepts
 
