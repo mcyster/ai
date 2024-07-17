@@ -1,8 +1,7 @@
-name: NotificationTrafficIncrease
 description: Analyze and comment on traffic increase notification ticket
 keywords: notification traffic ncrease automatic change percentage alerts
 instructions: |
-    Load the support ticket {{ticket_number}}
+    Load the support ticket {{ticketNumber}}
 
     Determine the client_id, notification_id (aka event_id) and user_id from https://my.extole.com/notifications?client_id={{client_id}}&user_id={{user_id}}#/view/{{notification_id}}
 

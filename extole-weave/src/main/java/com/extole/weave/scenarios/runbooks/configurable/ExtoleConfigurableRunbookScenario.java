@@ -21,8 +21,8 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
     
     private ExtoleSupportHelpScenario helpScenario;
 
-    ExtoleConfigurableRunbookScenario(Configuration configuration, ExtoleSupportHelpScenario helpScenario) {
-        this.name = configuration.getName();
+    ExtoleConfigurableRunbookScenario(String name, Configuration configuration, ExtoleSupportHelpScenario helpScenario) {
+        this.name = name;
         this.description = configuration.getDescription();
         this.keywords = configuration.getKeywords();
         this.instructions = configuration.getInstructions();
@@ -61,43 +61,27 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
         mustache.execute(messageWriter, parameters);
         messageWriter.flush();
 
+        var interpretedInstructions = messageWriter.toString();
+                
+        System.out.println("!!!! Runbook: " + this.name + " instructions" + interpretedInstructions);
         var instructions = messageWriter.toString();
 
-        return this.helpScenario.createConversationBuilder(null, null).setOverrideInstructions(instructions);
+        return this.helpScenario.createConversationBuilder(null, null).setOverrideInstructions(interpretedInstructions);
     }
     
-    
     public static class Configuration {
-        private String name;
         private String description;
         private String keywords;
         private String instructions;
 
         @JsonCreator
         public Configuration(
-                @JsonProperty("name") String name,
                 @JsonProperty("description") String description,
                 @JsonProperty("keywords") String keywords,
                 @JsonProperty("instructions") String instructions) {
-            setName(name);
             setDescription(description);
             setKeywords(keywords);
             setInstructions(instructions);
-        }
-
-        public String getName() {
-             return name;
-        }
-
-        private void setName(String name) {
-            validateString(name, "name");
-
-            if (!name.matches("[a-zA-Z0-9]+")) {
-                throw new IllegalArgumentException("name must only contain alphanumeric characters");
-            }
-
-            this.name = "extoleRunbook" + name.substring(0, 1).toUpperCase() + name.substring(1);
-
         }
 
         public String getDescription() {

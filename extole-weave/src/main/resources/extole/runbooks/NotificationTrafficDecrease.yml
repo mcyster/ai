@@ -1,8 +1,7 @@
-name: NotificationTrafficDecrease
 description: Analyzes and comment on traffic decrease notification ticket
 keywords: notification traffic decrease automatic change percentage alerts
 instructions: |
-    Load the support ticket {{ticket_number}}
+    Load the support ticket {{ticketNumber}}
 
     Determine the client_id, notification_id (aka event_id) and user_id from https://my.extole.com/notifications/view
 

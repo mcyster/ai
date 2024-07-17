@@ -1,8 +1,7 @@
-name: NotificationPrehandler
 description: Analyzes and comments on prehandler notification tickets
 keywords: notification prehandler
 instructions: |
-    Load the support ticket {{ticket_number}}
+    Load the support ticket {{ticketNumber}}
 
     Determine the client_id, notification_id (aka event_id) and user_id from https://my.extole.com/notifications/view
 

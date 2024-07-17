@@ -1,8 +1,7 @@
-name: Joke
 description: Test stuff by telling a joke
 keywords: ai, test, joke
 instructions: |
     Look at the recent context and write a cynical joke.
     If there is no content, just tell a joke.
-    Add the joke as a comment to the ticket
+    Add the joke as a comment to the ticket {{ticketNumber}}
 

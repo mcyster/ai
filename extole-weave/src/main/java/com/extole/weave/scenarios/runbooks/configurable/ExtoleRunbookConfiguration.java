@@ -48,13 +48,21 @@ public class ExtoleRunbookConfiguration implements ScenarioLoader {
 
             for (Resource resource : resources) {
                 logger.info("Loading Extole Runbook: " + resource.getURI().toString());
-
+                var name = capitalize(removeExtension(resource.getFilename()));
+                if (name.isBlank()) {
+                    throw new ExtoleRunbookConfigurationException(resource, "Runbook without filename");
+                }
+                if (!name.matches("[a-zA-Z0-9]+")) {
+                    throw new ExtoleRunbookConfigurationException(resource, "Runbook name must only contain alphanumeric characters: " + name);                    
+                }
+                name = "extoleRunbook" + name;
+                
                 try (InputStream inputStream = resource.getInputStream()) {
                     var configuration = mapper.readValue(inputStream, ExtoleConfigurableRunbookScenario.Configuration.class);
 
-                    logger.info("Loaded Extole Runbook: " + configuration.getName());
+                    logger.info("Loaded Extole Runbook: " + name);
 
-                    var runbook= new ExtoleConfigurableRunbookScenario(configuration, helpScenario);
+                    var runbook= new ExtoleConfigurableRunbookScenario(name, configuration, helpScenario);
 
                     configurableContext.getBeanFactory().registerSingleton(runbook.getName(), runbook);
                     scenarios.add(runbook);
@@ -64,6 +72,39 @@ public class ExtoleRunbookConfiguration implements ScenarioLoader {
             }
         }
 
+    }
+
+    private static String capitalize(String input) {
+        if (input == null || input.isEmpty()) {
+            return "";
+        }
+
+        String snakeCase = input.replaceAll("([a-z])([A-Z])", "$1_$2");
+        snakeCase = snakeCase.replace("-", "_");
+        String[] words = snakeCase.split("_");
+
+        StringBuilder capitalizedWords = new StringBuilder();
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                capitalizedWords.append(word.substring(0, 1).toUpperCase())
+                    .append(word.substring(1).toLowerCase());
+            }
+        }
+
+        return capitalizedWords.toString().trim();
+    }
+
+    public static String removeExtension(String filename) {
+        if (filename == null || filename.isEmpty()) {
+            return "";
+        }
+
+        int lastDotIndex = filename.lastIndexOf('.');
+        if (lastDotIndex == -1) {
+            return filename;
+        }
+
+        return filename.substring(0, lastDotIndex);
     }
 
 }
