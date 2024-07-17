@@ -1,4 +1,4 @@
-package com.extole.weave.scenarios.runbook;
+package com.extole.weave.scenarios.runbooks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +12,6 @@ import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.extole.weave.scenarios.runbooks.ExtoleRunbookOther;
-import com.extole.weave.scenarios.runbooks.RunbookScenarioParameters;
 import com.extole.weave.scenarios.support.tools.jira.SupportTicketGetTool;
 
 @Component
@@ -29,7 +27,7 @@ public class ExtoleSupportTicketRunbookScenario implements Scenario<RunbookScena
     
     public ExtoleSupportTicketRunbookScenario(AiWeaveService aiWeaveService, ExtoleRunbookToolFactory runbookToolFactory,
             SupportTicketGetTool ticketGetTool,
-            ExtoleRunbookOther defaultRunbook) {
+            ExtoleRunbookDefault defaultRunbook) {
         this.aiWeaveService = aiWeaveService;
         this.tools.add(runbookToolFactory.getRunbookSearchTool());
         this.tools.add(ticketGetTool);

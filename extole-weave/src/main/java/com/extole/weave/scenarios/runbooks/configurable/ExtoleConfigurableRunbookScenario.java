@@ -1,9 +1,11 @@
-package com.extole.weave.scenarios.runbooks;
+package com.extole.weave.scenarios.runbooks.configurable;
 
 import java.io.StringReader;
 import java.io.StringWriter;
 
 import com.cyster.ai.weave.service.conversation.Conversation;
+import com.extole.weave.scenarios.runbooks.RunbookScenario;
+import com.extole.weave.scenarios.runbooks.RunbookScenarioParameters;
 import com.extole.weave.scenarios.support.ExtoleSupportHelpScenario;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

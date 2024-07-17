@@ -1,4 +1,4 @@
-package com.extole.weave.scenarios.runbooks;
+package com.extole.weave.scenarios.runbooks.configurable;
 
 import org.springframework.core.io.Resource;
 

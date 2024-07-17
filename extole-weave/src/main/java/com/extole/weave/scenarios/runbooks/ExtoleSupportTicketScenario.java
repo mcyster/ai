@@ -1,4 +1,4 @@
-package com.extole.weave.scenarios.runbook;
+package com.extole.weave.scenarios.runbooks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,6 @@ import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.extole.weave.scenarios.runbooks.RunbookScenarioParameters;
 
 @Component
 public class ExtoleSupportTicketScenario implements Scenario<RunbookScenarioParameters, Void> {

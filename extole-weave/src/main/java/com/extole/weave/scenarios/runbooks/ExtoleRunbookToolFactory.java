@@ -1,4 +1,4 @@
-package com.extole.weave.scenarios.runbook;
+package com.extole.weave.scenarios.runbooks;
 
 import java.util.List;
 
@@ -6,8 +6,6 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.SearchTool;
-import com.extole.weave.scenarios.runbooks.ExtoleRunbookOther;
-import com.extole.weave.scenarios.runbooks.RunbookScenario;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -17,7 +15,7 @@ public class ExtoleRunbookToolFactory {
     private SearchTool<Void> searchTool;
 
     public ExtoleRunbookToolFactory(AiWeaveService aiWeaveService,
-            List<RunbookScenario> runbookScenarios, ExtoleRunbookOther defaultRunbook) {
+            List<RunbookScenario> runbookScenarios, ExtoleRunbookDefault defaultRunbook) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         var documentStoreBuilder = aiWeaveService.simpleDocumentStoreBuilder();

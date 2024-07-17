@@ -12,34 +12,20 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 
 @Component
-public class ExtoleRunbookNotificationTrafficIncreaseScenario implements RunbookScenario {
-    public static final String NAME = "extoleRunbookNotificationTrafficIncrease";
-    private static final String DESCRIPTION = "Analyzes and comments on traffic increase notification tickets";
-    private static final String KEYWORDS = "notification traffic increase automatic change percentage alerts";
+public class ExtoleRunbookDefault implements RunbookScenario {
+    public static String NAME = "extoleRunbookOther";
+    private static String DESCRIPTION = "Analyzes and comments on tickets that could not be classfied more specifically";
+    private static String KEYWORDS = "nothing";
 
-    private static final String INSTRUCTIONS = """
+    private static String INSTRUCTIONS = """
 Load the support ticket {{ticket_number}}
 
-Determine the client_id, notification_id (aka event_id) and user_id from https://my.extole.com/notifications?client_id={{client_id}}&user_id={{user_id}}#/view/{{notification_id}}
-
-Get the notification using the notification_id and user_id to determine its associated attributes.
-Get similar client events by searching for client events by user_id and like_notification_id.
-Get the traffic to the top promotion sources.
-Run all the activity insight tools.
-
-Add a comment to the ticket providing:
-- a summarization the description, group by program with a sublist of the fields and the amount by which each field changed
-- a link to the notification
-- the number of times the related client event has occurred, including the report link
-- the traffic to the to top promotion sources, including the report link
-- list the links returned by the the activity insight tools.
-
-Note the ticket number, and an extremely brief summary of the comment added to the ticket.
+Note the ticket number, and note its classified as "other".
 """;
 
     private ExtoleSupportHelpScenario helpScenario;
 
-    ExtoleRunbookNotificationTrafficIncreaseScenario(ExtoleSupportHelpScenario helpScenario) {
+    ExtoleRunbookDefault(ExtoleSupportHelpScenario helpScenario) {
         this.helpScenario = helpScenario;
     }
 

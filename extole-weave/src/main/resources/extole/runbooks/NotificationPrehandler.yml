@@ -1,0 +1,20 @@
+name: NotificationPrehandler
+description: Analyzes and comments on prehandler notification tickets
+keywords: notification prehandler
+instructions: |
+    Load the support ticket {{ticket_number}}
+
+    Determine the client_id, notification_id (aka event_id) and user_id from https://my.extole.com/notifications/view
+
+    Get the notification using the notification_id and user_id to determine its associated attributes.
+    Get similar client events by searching for client events by user_id and like_noticication_id.
+
+    Load the Prehandler.
+
+    Add a comment to the ticket providing:
+    - summarizing the notification and attempt to identify the problem with the prehandler
+    - a link to the prehandler page https://my.extole.com/labs/prehandlers?client_id=$client_id
+    - a link to the notification
+    - the number of times the related client event has occurred, including the report link
+
+    Note the ticket number, and an extremely brief summary of the comment added to the ticket.

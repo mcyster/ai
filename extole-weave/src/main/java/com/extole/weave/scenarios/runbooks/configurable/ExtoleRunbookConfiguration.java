@@ -1,4 +1,4 @@
-package com.extole.weave.scenarios.runbooks;
+package com.extole.weave.scenarios.runbooks.configurable;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -54,7 +54,7 @@ public class ExtoleRunbookConfiguration implements ScenarioLoader {
 
                     logger.info("Loaded Extole Runbook: " + configuration.getName());
 
-                    var runbook= new  ExtoleConfigurableRunbookScenario(configuration, helpScenario);
+                    var runbook= new ExtoleConfigurableRunbookScenario(configuration, helpScenario);
 
                     configurableContext.getBeanFactory().registerSingleton(runbook.getName(), runbook);
                     scenarios.add(runbook);

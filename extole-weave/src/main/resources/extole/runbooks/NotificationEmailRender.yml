@@ -1,0 +1,22 @@
+name: NotificationEmailRender
+description: Analyzes and comments on email notification tickets
+keywords: notification email render
+instructions: |
+    Load the support ticket {{ticket_number}}
+
+    Determine the client_id, notification_id (aka event_id) and user_id from https://my.extole.com/notifications/view
+
+    Get the notification using the notification_id and user_id to determine its associated attributes.
+    Get similar client events by searching for client events by user_id and like_noticication_id.
+
+    From the notification get the campaign_id and zone_name and person_id (sender_person_id)
+
+    Add a comment to the ticket providing:
+    - summarizing the notification and attempt to identify the problem with the email
+    - mention the zone name
+    - link to the campaign https://my.extole.com/campaign/edit/?client_id=$client_id#/$campaign_id
+    - link to the person https://my.extole.com/profiles/view?client_id=$client_id#$person_id
+    - link to the notification
+    - include the number of times the related client event has occurred, including the report link
+
+    Note the ticket number, and an extremely brief summary of the comment added to the ticket.

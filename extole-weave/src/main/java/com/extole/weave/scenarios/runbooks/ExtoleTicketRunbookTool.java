@@ -1,4 +1,4 @@
-package com.extole.weave.scenarios.runbook;
+package com.extole.weave.scenarios.runbooks;
 
 import java.util.List;
 import java.util.Map;
@@ -16,8 +16,6 @@ import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
-import com.extole.weave.scenarios.runbooks.RunbookScenario;
-import com.extole.weave.scenarios.runbooks.RunbookScenarioParameters;
 
 @Component
 class ExtoleTicketRunbookTool implements Tool<RunbookScenarioParameters, Void> {
