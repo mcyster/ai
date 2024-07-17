@@ -1,4 +1,4 @@
-package com.cyster.adf;
+package com.cyster.adf.writer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

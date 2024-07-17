@@ -64,7 +64,6 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
         var interpretedInstructions = messageWriter.toString();
                 
         System.out.println("!!!! Runbook: " + this.name + " instructions" + interpretedInstructions);
-        var instructions = messageWriter.toString();
 
         return this.helpScenario.createConversationBuilder(null, null).setOverrideInstructions(interpretedInstructions);
     }

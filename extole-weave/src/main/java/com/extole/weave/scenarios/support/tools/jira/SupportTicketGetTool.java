@@ -5,6 +5,7 @@ import java.util.Iterator;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
+import com.cyster.adf.reader.MarkDownDocumentMapper;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.jira.client.JiraWebClientFactory;
@@ -48,7 +49,9 @@ public class SupportTicketGetTool implements ExtoleSupportTool<Request> {
         }
 
         var resultNode =  this.jiraWebClientFactory.getWebClient().get()
-            .uri(uriBuilder -> uriBuilder.path("/rest/api/3/issue/" + request.key).build())
+            .uri(uriBuilder -> uriBuilder.path("/rest/api/3/issue/" + request.key)
+                .queryParam("expand", "renderedFields,comment")
+                .build())
             .accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .bodyToMono(JsonNode.class)
@@ -105,25 +108,54 @@ public class SupportTicketGetTool implements ExtoleSupportTool<Request> {
 
             JsonNode descriptionNode = issueNode.path("fields").path("description");
             if (descriptionNode.isMissingNode()) {
-                ticket.putNull("description");
-            } else {
-                String content = "TESTING 1";
-                Iterator<JsonNode> contentNodes = descriptionNode.path("content").elements();
-                while (contentNodes.hasNext()) {
-                    content = content + " 2";
-                    JsonNode contentNode = contentNodes.next();
-                    if (contentNode.path("type").asText().equals("paragraph")) {
-                        content = content + " 3";
-                        var subContentNodes = contentNode.path("content").elements();
-                        while (subContentNodes.hasNext()) {
-                            var subContentNode = subContentNodes.next();
-                            if (subContentNode.path("type").asText().equals("text")) {
-                                content = content + subContentNode.path("text").asText() + "\n";
-                            }
-                        }
-                    }
-                }
+                ticket.put("description", "");
+            } else {                
+                String content = new MarkDownDocumentMapper().fromAtlassianDocumentFormat(descriptionNode);
                 ticket.put("description", content);
+            }
+
+            JsonNode renderedFieldsNode = issueNode.path("renderedFields");
+            if (renderedFieldsNode.isMissingNode()) {
+                ticket.putArray("comments"); 
+            } 
+            else {
+                JsonNode commentContainerNode = renderedFieldsNode.path("comment");
+                if (commentContainerNode.isMissingNode()) {
+                    ticket.putArray("comments"); 
+                } 
+                else { 
+                    ArrayNode commentsNode = (ArrayNode)commentContainerNode.path("comments");
+    
+                    if (commentsNode.isMissingNode() || commentsNode.isEmpty()) {
+                        ticket.putArray("comments");
+                    } 
+                    else {
+                        var comments = ticket.putArray("comments");
+                        
+                        for(JsonNode commentNode: commentsNode) {
+                            ObjectNode comment = JsonNodeFactory.instance.objectNode();
+                            {
+                                JsonNode author = commentNode.path("author");
+                                if (!author.isMissingNode()) {
+                                    comment.put("author", assignee.path("emailAddress").asText());
+                                } else {
+                                    comment.putNull("author");
+                                }
+                                JsonNode bodyNode = commentNode.path("body");
+                                if (bodyNode.isMissingNode()) {
+                                    comment.put("content", "");
+                                } else {                
+                                    String content = new MarkDownDocumentMapper().fromAtlassianDocumentFormat(bodyNode);
+                                    comment.put("description", content);
+                                }
+             
+                                comment.put("createdDate", issueNode.path("created").asText());
+                                comment.put("updatedDate", issueNode.path("updated").asText());
+                            }
+                            comments.add(comment);
+                        }
+                    } 
+                }
             }
         }
 
