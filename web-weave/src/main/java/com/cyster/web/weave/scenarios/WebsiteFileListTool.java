@@ -19,7 +19,7 @@ class WebsiteFileListTool implements Tool<Request, Website> {
 
     @Override
     public String getName() {
-        return "web_developer_file_list";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override

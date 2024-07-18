@@ -1,6 +1,7 @@
 package com.cyster.ai.weave.impl.advisor.assistant;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -96,6 +97,10 @@ class AdvisorToolset<C> {
     private static <C> Map<String, Object> getOpenAiToolParameterSchema(Tool<?, C> tool) {
         ObjectMapper mapper = new ObjectMapper();
 
+        if (tool.getParameterClass() == java.lang.Void.class) {
+            return Collections.emptyMap();
+        }
+        
         var schema = new OpenAiSchema(getToolParameterSchema(tool));
 
         var schemaNode = schema.toJsonNode();

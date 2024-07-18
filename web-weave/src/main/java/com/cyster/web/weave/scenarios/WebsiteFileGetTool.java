@@ -18,7 +18,7 @@ class WebsiteFileGetTool implements Tool<Request, Website> {
 
     @Override
     public String getName() {
-        return "web_developer_file_get";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override

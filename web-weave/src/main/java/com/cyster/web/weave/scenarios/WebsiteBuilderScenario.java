@@ -38,11 +38,13 @@ Use the web_developer_file_put tool to create or update the website as requested
     private Map<String, Tool<?, Website>> tools = new HashMap<>();
 
     public WebsiteBuilderScenario(AiWeaveService aiWeaveService,
+        WebsiteCopyTool websiteCopyTool,
         WebsiteFileListTool websiteFileListTool,
         WebsiteFileGetTool websiteFileGetTool,
         WebsiteFilePutTool websiteFilePutTool) {
         this.aiWeaveService = aiWeaveService;
 
+        this.tools.put(websiteCopyTool.getName(), websiteCopyTool);
         this.tools.put(websiteFileListTool.getName(), websiteFileListTool);
         this.tools.put(websiteFileGetTool.getName(), websiteFileGetTool);
         this.tools.put(websiteFilePutTool.getName(), websiteFilePutTool);
@@ -82,6 +84,8 @@ Use the web_developer_file_put tool to create or update the website as requested
             
             builder.setInstructions(INSTRUCTIONS);
             for(var tool: tools.values()) {
+                System.out.println("XXXXXXXXXXXXXXXXX tool.name: " + tool.getName());
+
                 builder.withTool(tool);
             }
 
