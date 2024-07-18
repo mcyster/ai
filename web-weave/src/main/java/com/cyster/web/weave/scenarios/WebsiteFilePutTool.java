@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
 class WebsiteFilePutTool implements Tool<Request, Website> {
-    private static final String CHAT_INCLUDE = "<script src=\"/sites/managed/chat/chat.js\" data-scenario=\"webDeveloper\" data-href-site-name=\"/([^/]+)/[^/]+$\"></script>";
+    private static final String CHAT_INCLUDE = "<script src=\"/sites/managed/chat/chat.js\" data-scenario=\"WebDeveloper\" data-href-site-name=\"/([^/]+)/[^/]+$\"></script>";
     
     WebsiteFilePutTool() {
     }
