@@ -56,10 +56,6 @@ public class ManagedWebsites {
 
         name = document.title();
 
-        if (website.getType() == Type.Managed) {
-            tags.add("managed");
-        }
-        
         Element metaTags = document.selectFirst("meta[name=tags]");
         if (metaTags != null) {
             String tagsContent = metaTags.attr("content");
@@ -69,7 +65,10 @@ public class ManagedWebsites {
                 .collect(Collectors.toList());
         }
         
-
+        if (website.getType() == Type.Managed) {
+            tags.add("managed");
+        }
+        
         return new ManagedWebsite(website, name, tags);
     }
         
