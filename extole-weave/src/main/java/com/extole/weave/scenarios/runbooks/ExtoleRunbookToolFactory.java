@@ -1,5 +1,6 @@
 package com.extole.weave.scenarios.runbooks;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -14,13 +15,19 @@ public class ExtoleRunbookToolFactory {
 
     private SearchTool<Void> searchTool;
 
-    public ExtoleRunbookToolFactory(AiWeaveService aiWeaveService,
-            List<RunbookScenario> runbookScenarios, ExtoleRunbookDefault defaultRunbook) {
+    public ExtoleRunbookToolFactory(AiWeaveService aiWeaveService, 
+            List<RunbookScenario> runbookScenarios, 
+            ExtoleRunbookScenarioLoader runbookScenarioLoader,
+            ExtoleRunbookDefault defaultRunbook) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         var documentStoreBuilder = aiWeaveService.simpleDocumentStoreBuilder();
 
-        for(var runbook: runbookScenarios) {
+        List<RunbookScenario> scenarios = new ArrayList<>();
+        scenarios.addAll(runbookScenarios);
+        scenarios.addAll(runbookScenarioLoader.getRunbookScenarios());
+
+        for(var runbook: scenarios) {
             var book = new Runbook(runbook.getName(), runbook.getDescription(), runbook.getKeywords());
             String json;
             try {
@@ -31,7 +38,7 @@ public class ExtoleRunbookToolFactory {
 
             documentStoreBuilder.addDocument(runbook.getName() + ".json", json);
         }
-
+        
         SearchTool.Builder<Void> builder = aiWeaveService.searchToolBuilder();
         builder
             .withName("runbooks")

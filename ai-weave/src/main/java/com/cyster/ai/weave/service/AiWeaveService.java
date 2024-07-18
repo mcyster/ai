@@ -19,4 +19,8 @@ public interface AiWeaveService {
     DirectoryDocumentStoreBuilder directoryDocumentStoreBuilder();
     
     ScenarioSetBuilder senarioSetBuilder();
+    
+    // TODO make a ScenarioDecoratingTool/Builder
+    String getJsonSchema(Class<?> clazz);
+    <RESPONSE> RESPONSE extractResponse(Class<RESPONSE> response, String input) throws ToolException;
 }

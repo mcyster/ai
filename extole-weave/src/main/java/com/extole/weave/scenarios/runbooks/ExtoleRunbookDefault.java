@@ -5,7 +5,6 @@ import java.io.StringWriter;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.conversation.Conversation;
 import com.extole.weave.scenarios.support.ExtoleSupportHelpScenario;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;

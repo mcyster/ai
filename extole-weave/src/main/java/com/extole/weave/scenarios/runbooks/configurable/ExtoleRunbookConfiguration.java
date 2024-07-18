@@ -9,6 +9,8 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
+import com.extole.weave.scenarios.runbooks.ExtoleRunbookScenarioLoader;
+import com.extole.weave.scenarios.runbooks.RunbookScenario;
 import com.extole.weave.scenarios.support.ExtoleSupportHelpScenario;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -21,17 +23,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
-public class ExtoleRunbookConfiguration implements ScenarioLoader {
+public class ExtoleRunbookConfiguration implements ExtoleRunbookScenarioLoader {
     private static final Logger logger = LogManager.getLogger(ExtoleRunbookConfiguration.class);
 
     private ExtoleSupportHelpScenario helpScenario;
-    private List<Scenario<?,?>> scenarios = new ArrayList<>();
+    private List<RunbookScenario> runbookScenarios = new ArrayList<>();
+    private List<Scenario<?, ?>> scenarios = new ArrayList<>();
 
     public ExtoleRunbookConfiguration(ExtoleSupportHelpScenario helpScenario, ApplicationContext context) throws IOException, ExtoleRunbookConfigurationException {
         this.helpScenario = helpScenario;
         registerRunbooks(context);
     }
 
+    @Override
+    public List<RunbookScenario> getRunbookScenarios() {
+        return runbookScenarios;
+    }
+    
     @Override
     public List<Scenario<?, ?>> getScenarios() {
         return scenarios;
@@ -66,6 +74,7 @@ public class ExtoleRunbookConfiguration implements ScenarioLoader {
 
                     configurableContext.getBeanFactory().registerSingleton(runbook.getName(), runbook);
                     scenarios.add(runbook);
+                    runbookScenarios.add(runbook);
                 } catch (IOException exception) {
                     logger.error("Failed to load resource as a ExtoleConfigurableTimeRangeReportTool.Configuration from " + resource.getDescription(), exception);
                 }
@@ -106,6 +115,7 @@ public class ExtoleRunbookConfiguration implements ScenarioLoader {
 
         return filename.substring(0, lastDotIndex);
     }
+
 
 }
 

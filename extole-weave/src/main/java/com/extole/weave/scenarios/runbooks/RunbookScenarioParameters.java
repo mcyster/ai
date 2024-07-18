@@ -1,18 +1,10 @@
 package com.extole.weave.scenarios.runbooks;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class RunbookScenarioParameters {
-    private String ticketNumber;
-
-    @JsonCreator
-    public RunbookScenarioParameters(@JsonProperty("ticketNumber") String ticketNumber) {
-        this.ticketNumber = ticketNumber;
-    }
-
-    @JsonProperty(required = true)
-    public String getTicketNumber() {
-        return this.ticketNumber;
-    }
-}
+public record RunbookScenarioParameters(
+    @JsonProperty(required = true) String ticketNumber,
+    @JsonProperty(required = true) String runbookName,
+    @JsonProperty(required = true) String clientId,
+    @JsonProperty(required = true) String clientShortName
+) {}

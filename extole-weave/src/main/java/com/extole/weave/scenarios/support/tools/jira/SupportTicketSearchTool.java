@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.jira.client.JiraWebClientFactory;
@@ -67,14 +68,19 @@ class SupportTicketSearchTool implements ExtoleSupportTool<Request> {
           payload.put("startAt", 0);
         }
 
-        var resultNode = this.jiraWebClientFactory.getWebClient().post()
-            .uri(uriBuilder -> uriBuilder.path("/rest/api/3/search").build())
-            .accept(MediaType.APPLICATION_JSON)
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(payload)
-            .retrieve()
-            .bodyToMono(JsonNode.class)
-            .block();
+        JsonNode resultNode;
+        try {
+            resultNode = this.jiraWebClientFactory.getWebClient().post()
+                .uri(uriBuilder -> uriBuilder.path("/rest/api/3/search").build())
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(payload)
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+        } catch (WebClientResponseException exception) {
+            throw new ToolException("Search failed with error. Payload: " + payload, exception);
+        }
 
         if (resultNode == null || resultNode.path("issues").isEmpty()) {
             throw new ToolException("Search failed with unexpected internal error");

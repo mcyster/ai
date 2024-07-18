@@ -13,6 +13,8 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.weave.scenarios.support.tools.jira.SupportTicketGetTool;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.extole.weave.scenarios.support.tools.ExtoleClientGetTool;
+
 import com.extole.weave.scenarios.runbooks.ExtoleSupportTicketClientScenario.Parameters;
 
 @Component
@@ -23,12 +25,20 @@ public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, V
     private AiWeaveService aiWeaveService;
     private Optional<Scenario<Parameters, Void>> scenario = Optional.empty();
     private List<Tool<?, Void>> tools = new ArrayList<>();
+    private SupportTicketGetTool ticketGetTool;
+    private ExtoleClientGetTool extoleClientGetTool;
     
-    public ExtoleSupportTicketClientScenario(AiWeaveService aiWeaveService, ExtoleRunbookToolFactory runbookToolFactory,
-            SupportTicketGetTool ticketGetTool) {
+    public ExtoleSupportTicketClientScenario(AiWeaveService aiWeaveService, 
+        ExtoleRunbookToolFactory runbookToolFactory,
+        SupportTicketGetTool ticketGetTool,
+        ExtoleClientGetTool extoleClientGetTool) {
         this.aiWeaveService = aiWeaveService;
         this.tools.add(runbookToolFactory.getRunbookSearchTool());
         this.tools.add(ticketGetTool);
+        this.tools.add(extoleClientGetTool);
+        
+        this.ticketGetTool = ticketGetTool;
+        this.extoleClientGetTool = extoleClientGetTool;
     }
 
     @Override
@@ -61,40 +71,51 @@ public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, V
     }
     
     private Scenario<Parameters, Void> getScenario() {
+         // TODO: Instruct it to search for clients by name: https://extole.atlassian.net/browse/ENG-23072
+        
         if (this.scenario.isEmpty()) {
-            String instructions = """
+            String templateInstructions = """
 You are an Extole Support Team member handling an incoming ticket. Your task is to identify the Extole client associated with the ticket.
 
-Use the ticketGet to get the specified ticket
+Use the %s to get the specified ticket
 
 If the ticket has a non null clientId use that. 
 
 If the ticket does not have an associated clientId look in the content for a clientId.
 In urls its often often in the form client_id=CLIENT_ID
 
-From the search results, choose the Runbook that best fits the ticket's needs.
+Verify the clientId and get the client name and short name using the %s
 
-If no clientId is found use NOT_FOUND
+If no clientId is found use NOT_FOUND for unknown values.
 
-Response: Provide your answer in JSON format, like so:
-{
-  "ticket_number": "NUMBER",
-  "clientId": "CLIENT_ID",
-}
+Provide your answer in JSON format as describe by this schema:
+%s
 """;
-           AssistantScenarioBuilder<Parameters, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
-           builder.setInstructions(instructions);
+            var schema = aiWeaveService.getJsonSchema(Response.class);
 
-           for(var tool: tools) {
-               builder.withTool(tool);
-           }
+            var instructions = String.format(templateInstructions, ticketGetTool.getName(), extoleClientGetTool.getName(), schema);
+            
+            AssistantScenarioBuilder<Parameters, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
+            builder.setInstructions(instructions);
+
+            for(var tool: tools) {
+                builder.withTool(tool);
+            }
 
             this.scenario = Optional.of(builder.getOrCreate());
         }
         return this.scenario.get();
     }
 
-    public record Parameters(@JsonProperty(required = false) String ticketNumber) {}
-
+    public record Parameters(
+        @JsonProperty(required = true) String ticketNumber
+     ) {}
+    
+    public record Response (
+        @JsonProperty(required = true) String ticketNumber,
+        @JsonProperty(required = true) String clientId,
+        @JsonProperty(required = true) String clientShortName,
+        @JsonProperty(required = true) String clientName
+    ) {}
 }
 
