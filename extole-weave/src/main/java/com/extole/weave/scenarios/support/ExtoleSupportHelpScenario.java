@@ -16,7 +16,6 @@ import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 
 @Component
 public class ExtoleSupportHelpScenario implements Scenario<Void, Void> {
-    public static String NAME = "extoleSupportHelp";
     private static String DESCRIPTION = "Help with the Extole platform for members of the Extole Support Team";
     
     private AiWeaveService aiWeaveService;
@@ -39,7 +38,7 @@ public class ExtoleSupportHelpScenario implements Scenario<Void, Void> {
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override
@@ -71,7 +70,7 @@ Keep answers brief, and where possible in point form.
 When referring to a client, use the client short_name.
 """;
 
-            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
+            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
             
             builder.setInstructions(instructions);
             for(var tool: tools.values()) {

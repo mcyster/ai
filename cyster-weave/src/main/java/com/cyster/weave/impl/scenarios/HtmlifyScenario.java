@@ -7,8 +7,6 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 
 @Component
 public class HtmlifyScenario implements Scenario<Void, Void> {
-    private static final String NAME = "htmlify";
-
     private ChatScenario chatScenario;
 
     HtmlifyScenario(ChatScenario chatScenario) {
@@ -17,7 +15,7 @@ public class HtmlifyScenario implements Scenario<Void, Void> {
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override

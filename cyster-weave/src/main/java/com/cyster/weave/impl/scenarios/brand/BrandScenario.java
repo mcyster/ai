@@ -12,7 +12,6 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 
 @Component
 public class BrandScenario implements Scenario<Void, Void> {
-    public final String NAME = "brand";
     private final String DESCRIPTION = "Provides details about company brands";
     private AiWeaveService aiWeaveService;
     private Optional<String> brandFetchApiKey;
@@ -27,7 +26,7 @@ public class BrandScenario implements Scenario<Void, Void> {
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override
@@ -56,7 +55,7 @@ public class BrandScenario implements Scenario<Void, Void> {
                 You focus on find details on Company brands.
                 """;
 
-            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
+            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
             
             builder.setInstructions("You find details on company brands.")
                 .setInstructions(instructions)

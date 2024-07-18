@@ -16,8 +16,6 @@ import com.extole.weave.session.ExtoleSessionContext;
 
 @Component
 public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, ExtoleSessionContext> {
-    public static String NAME = "extoleJavascriptPrehandlerAction";
-
     private AiWeaveService aiWeaveService;
     private Optional<Scenario<Void, ExtoleSessionContext>> scenario = Optional.empty();
     private ExtoleStore extoleStore;
@@ -29,7 +27,7 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override
@@ -104,7 +102,7 @@ To understand how to use the 'context' you need explore the api for classes like
  Where possible, link to interfaces and classes mentioned in your response.
 """;
 
-            AssistantScenarioBuilder<Void, ExtoleSessionContext>  builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
+            AssistantScenarioBuilder<Void, ExtoleSessionContext>  builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
 
             builder
                 .setInstructions(instructions);

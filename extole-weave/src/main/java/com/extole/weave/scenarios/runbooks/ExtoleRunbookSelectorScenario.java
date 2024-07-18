@@ -109,7 +109,7 @@ public class ExtoleRunbookSelectorScenario implements Scenario<Void, Void> {
 
             System.out.println("!!!!!!!! extole support ticket instructions: " + instructions);
             
-            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
+            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
             builder.setInstructions(instructions);
 
             for(var tool: tools) {

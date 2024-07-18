@@ -17,7 +17,6 @@ import com.github.mustachejava.MustacheFactory;
 
 @Component
 public class TranslateScenario implements Scenario<Parameters, Void> {
-    private static final String NAME = "translate";
     private ChatScenario chatScenario;
 
     TranslateScenario(ChatScenario chatScenario) {
@@ -26,7 +25,7 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override

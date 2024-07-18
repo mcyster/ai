@@ -17,7 +17,6 @@ import com.extole.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorSce
 
 @Component
 public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Parameters, Void> {
-    public final String NAME = "extoleSupportTicketRunbookSelector";
     private final String DESCRIPTION = "Find the best Runbook for the specified ticket";
 
     private AiWeaveService aiWeaveService;
@@ -38,7 +37,7 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
     @Override
     public String getDescription() {
@@ -126,7 +125,7 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
 
             System.out.println("!!!!!!!! extole support ticket instructions: " + instructions);
             
-            AssistantScenarioBuilder<Parameters, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
+            AssistantScenarioBuilder<Parameters, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
             builder.setInstructions(instructions);
 
             for(var tool: tools) {

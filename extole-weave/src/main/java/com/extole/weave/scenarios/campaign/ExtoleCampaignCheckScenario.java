@@ -10,7 +10,6 @@ import com.extole.weave.scenarios.support.ExtoleSupportHelpScenario;
 
 @Component
 public class ExtoleCampaignCheckScenario implements Scenario<Parameters, Void> {
-    public static final String NAME = "extoleCampaignVerify";
     private static final String DESCRIPTION = "Check a campaign given a campaignId";
     
     private ExtoleSupportHelpScenario helpScenario;
@@ -21,7 +20,7 @@ public class ExtoleCampaignCheckScenario implements Scenario<Parameters, Void> {
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override

@@ -12,7 +12,6 @@ import com.github.mustachejava.MustacheFactory;
 
 @Component
 public class ExtoleRunbookDefault implements RunbookScenario {
-    public static String NAME = "extoleRunbookOther";
     private static String DESCRIPTION = "Analyzes and comments on tickets that could not be classfied more specifically";
     private static String KEYWORDS = "nothing";
 
@@ -30,7 +29,7 @@ Note the ticket number, and note its classified as "other".
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override

@@ -12,7 +12,6 @@ import com.extole.weave.session.ExtoleSessionContext;
 
 @Component
 public class ExtoleWismrScenario implements Scenario<Void, ExtoleSessionContext> {
-    public static final String NAME = "extoleWismr";
     private static final String DESCRIPTION = "Extole tool to help find the reward of a person";
     
     private AiWeaveService aiWeaveService;
@@ -28,7 +27,7 @@ public class ExtoleWismrScenario implements Scenario<Void, ExtoleSessionContext>
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override
@@ -73,7 +72,7 @@ public class ExtoleWismrScenario implements Scenario<Void, ExtoleSessionContext>
     
     """;
 
-            AssistantScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
+            AssistantScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
 
             builder
                 .setInstructions(instructions);

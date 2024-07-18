@@ -15,7 +15,6 @@ import com.cyster.web.weave.scenarios.WebsiteService.Website;
 
 @Component
 public class WebsiteBuilderScenario implements Scenario<Void, Website> {
-    public static final String NAME = "websiteBuilder";
     private static final String DESCRIPTION = "Build a website";
     private static final String INSTRUCTIONS = """
 You are a sklled web page developer.
@@ -49,7 +48,7 @@ Use the web_developer_file_put tool to create or update the website as requested
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override
@@ -77,7 +76,7 @@ Use the web_developer_file_put tool to create or update the website as requested
     
     private Scenario<Void, Website> getScenario() {
         if (this.scenario.isEmpty()) {
-            AssistantScenarioBuilder<Void, Website> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
+            AssistantScenarioBuilder<Void, Website> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
             
             builder.setInstructions(INSTRUCTIONS);
             for(var tool: tools.values()) {

@@ -11,7 +11,6 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 
 @Component
 public class ChatScenario implements Scenario<Void, Void> {
-    public final String NAME = "chat";
     private final String DESCRIPTION = "A helpful assistant";
 
     private AiWeaveService aiWeaveService;
@@ -23,7 +22,7 @@ public class ChatScenario implements Scenario<Void, Void> {
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override
@@ -48,7 +47,7 @@ public class ChatScenario implements Scenario<Void, Void> {
     
     private Scenario<Void, Void> getScenario() {
         if (this.scenario.isEmpty()) {
-            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
+            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
             
             builder.setInstructions("You are a helpful assistant.");
             

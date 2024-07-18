@@ -16,7 +16,6 @@ import com.extole.weave.session.ExtoleSessionContext;
 
 @Component
 public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> {
-    public static String NAME = "extoleHelp";
     private final String DESCRIPTION = "Helps using the Extole Platform";
 
     private AiWeaveService aiWeaveService;
@@ -28,7 +27,7 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override
@@ -59,7 +58,7 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
 You help with questions around using the Extole SaaS Marketing platform.
 """;
 
-            AssistantScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
+            AssistantScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
 
             builder
                 .setInstructions(instructions)

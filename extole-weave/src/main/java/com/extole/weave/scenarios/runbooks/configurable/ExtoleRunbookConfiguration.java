@@ -63,7 +63,7 @@ public class ExtoleRunbookConfiguration implements ExtoleRunbookScenarioLoader {
                 if (!name.matches("[a-zA-Z0-9]+")) {
                     throw new ExtoleRunbookConfigurationException(resource, "Runbook name must only contain alphanumeric characters: " + name);                    
                 }
-                name = "extoleRunbook" + name;
+                name = "ExtoleRunbook" + name;
                 
                 try (InputStream inputStream = resource.getInputStream()) {
                     var configuration = mapper.readValue(inputStream, ExtoleConfigurableRunbookScenario.Configuration.class);

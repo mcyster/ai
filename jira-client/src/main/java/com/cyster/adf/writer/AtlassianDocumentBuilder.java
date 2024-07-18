@@ -276,9 +276,24 @@ public class AtlassianDocumentBuilder {
     private ObjectNode addMark(Mark mark) {
         ObjectNode node = JsonNodeFactory.instance.objectNode();
         node.put("type", mark.toString());
-        marks.add(node);
+        
+        if (!codeMarkExists()) {
+            // code mark must exist by itself 
+            System.out.println("Warning: MD-> ADF: attempt to add code marker with other marker is not supported, ignoring");
+            marks.add(node);
+        }
 
         return node;
+    }
+
+    private boolean codeMarkExists() {
+        for (Iterator<JsonNode> iterator = marks.iterator(); iterator.hasNext(); ) {
+            JsonNode currentNode = iterator.next();
+            if (currentNode.has("type") && currentNode.get("type").textValue().equals(Mark.code.toString())) {
+                return true;
+            }
+        }   
+        return false;
     }
 
     private void removeMark(Mark mark) {

@@ -19,7 +19,6 @@ import com.extole.weave.session.ExtoleSessionContext;
 
 @Component
 public class ExtoleReportScenario implements Scenario<Parameters, ExtoleSessionContext> {
-    public static final String NAME = "extoleReport";
     private static final String DESCRIPTION = "Describe an extole report given its report_id";
 
     private ExtoleHelpScenario helpScenario;
@@ -30,7 +29,7 @@ public class ExtoleReportScenario implements Scenario<Parameters, ExtoleSessionC
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override

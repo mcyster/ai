@@ -19,7 +19,6 @@ import com.extole.weave.scenarios.runbooks.ExtoleSupportTicketClientScenario.Par
 
 @Component
 public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, Void> {
-    public final String NAME = "extoleSupportTicketClient";
     private final String DESCRIPTION = "Find the Extole client id associated for the specified ticket";
 
     private AiWeaveService aiWeaveService;
@@ -43,7 +42,7 @@ public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, V
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
     @Override
     public String getDescription() {
@@ -95,7 +94,7 @@ Provide your answer in JSON format as describe by this schema:
 
             var instructions = String.format(templateInstructions, ticketGetTool.getName(), extoleClientGetTool.getName(), schema);
             
-            AssistantScenarioBuilder<Parameters, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(NAME);
+            AssistantScenarioBuilder<Parameters, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
             builder.setInstructions(instructions);
 
             for(var tool: tools) {

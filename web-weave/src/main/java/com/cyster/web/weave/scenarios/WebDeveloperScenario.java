@@ -14,7 +14,6 @@ import com.cyster.web.weave.scenarios.WebsiteService.Website;
 
 @Component
 public class WebDeveloperScenario implements Scenario<Parameters, Void> {
-    public static final String NAME = "webDeveloper";
     private static final String DESCRIPTION = "Build a website";
 
     private WebsiteService websiteService;
@@ -27,7 +26,7 @@ public class WebDeveloperScenario implements Scenario<Parameters, Void> {
 
     @Override
     public String getName() {
-        return NAME;
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override
