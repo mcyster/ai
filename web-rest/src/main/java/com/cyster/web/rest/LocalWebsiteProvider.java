@@ -12,17 +12,17 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.cyster.web.weave.scenarios.WebsiteService;
-import com.cyster.web.weave.scenarios.WebsiteService.Website.Type;
+import com.cyster.web.weave.scenarios.WebsiteProvider;
+import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Type;
 
 import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
 
-public class WebsiteServiceImpl implements WebsiteService {
+public class LocalWebsiteProvider implements WebsiteProvider {
     private URI baseUri;
     private Path baseDirectory;
 
-    public WebsiteServiceImpl(URI baseUri, Path baseDirectory) {
+    public LocalWebsiteProvider(URI baseUri, Path baseDirectory) {
         this.baseUri = baseUri;
         this.baseDirectory = baseDirectory;
     }

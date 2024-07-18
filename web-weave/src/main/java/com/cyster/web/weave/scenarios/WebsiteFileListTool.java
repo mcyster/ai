@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.web.weave.scenarios.WebsiteFileListTool.Request;
-import com.cyster.web.weave.scenarios.WebsiteService.Website;
+import com.cyster.web.weave.scenarios.WebsiteProvider.Website;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 

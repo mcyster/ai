@@ -3,7 +3,7 @@ package com.cyster.web.weave.scenarios;
 import java.net.URI;
 import java.util.List;
 
-public interface WebsiteService {
+public interface WebsiteProvider {
     List<Website> getSites();
     Website getSite(String name);
     Website create();

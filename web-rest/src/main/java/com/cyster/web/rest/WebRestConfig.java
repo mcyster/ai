@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
-import com.cyster.web.weave.scenarios.WebsiteService;
+import com.cyster.web.weave.scenarios.WebsiteProvider;
 
 @Configuration
 public class WebRestConfig {
@@ -50,8 +50,8 @@ public class WebRestConfig {
     }
 
     @Bean
-    public WebsiteService getWebsiteService() {
-        return new WebsiteServiceImpl(applicationUri.resolve("/sites"), sites);
+    public WebsiteProvider getWebsiteService() {
+        return new LocalWebsiteProvider(applicationUri.resolve("/sites"), sites);
     }
 
     @Bean

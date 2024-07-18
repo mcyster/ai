@@ -16,6 +16,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema-jakarta'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
 
+    implementation 'org.jsoup:jsoup:1.18.1'
+
     implementation project(':ai-weave')
     implementation project(':cyster-weave')
 

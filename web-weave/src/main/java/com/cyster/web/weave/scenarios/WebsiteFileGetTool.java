@@ -6,8 +6,8 @@ import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.web.weave.scenarios.WebsiteFileGetTool.Request;
-import com.cyster.web.weave.scenarios.WebsiteService.Website;
-import com.cyster.web.weave.scenarios.WebsiteService.Website.Asset;
+import com.cyster.web.weave.scenarios.WebsiteProvider.Website;
+import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Asset;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component

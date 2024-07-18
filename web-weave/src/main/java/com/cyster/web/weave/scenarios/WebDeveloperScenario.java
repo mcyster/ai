@@ -10,17 +10,17 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.web.weave.scenarios.WebDeveloperScenario.Parameters;
-import com.cyster.web.weave.scenarios.WebsiteService.Website;
+import com.cyster.web.weave.scenarios.WebsiteProvider.Website;
 
 @Component
 public class WebDeveloperScenario implements Scenario<Parameters, Void> {
     private static final String DESCRIPTION = "Build a website";
 
-    private WebsiteService websiteService;
+    private WebsiteProvider websiteProvider;
     private WebsiteBuilderScenario builderScenario;
 
-    WebDeveloperScenario(WebsiteService websiteService, WebsiteBuilderScenario builderScenario) {
-        this.websiteService = websiteService;
+    WebDeveloperScenario(WebsiteProvider websiteService, WebsiteBuilderScenario builderScenario) {
+        this.websiteProvider = websiteService;
         this.builderScenario = builderScenario;
     }
 
@@ -48,12 +48,12 @@ public class WebDeveloperScenario implements Scenario<Parameters, Void> {
     public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {        
         Website website;
         if (parameters != null && parameters.siteName() != null && !parameters.siteName().isBlank()) {
-            website = this.websiteService.getSite(parameters.siteName());
+            website = this.websiteProvider.getSite(parameters.siteName());
         }
         else {
             String indexHtml = loadAsset("/web/simple/index.html");
 
-            website = this.websiteService.create();
+            website = this.websiteProvider.create();
             website
                 .putAsset("index.html", indexHtml);
         }
