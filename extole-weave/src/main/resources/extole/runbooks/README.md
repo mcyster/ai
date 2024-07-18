@@ -10,6 +10,11 @@ Test with
 curl -s -H 'Content-Type: application/json' 'http://localhost:8090/conversations/messages' -d '{"scenario":"extoleSupportTicketRunbookSelector", "parameters": { "ticketNumber": "SUP-NNNN" }}' | jq .
 ```
 
+You can also test the search more directly with:
+```
+curl -s -H 'Content-Type: application/json' 'http://localhost:8090/conversations/messages' -d '{"scenario":"ExtoleRunbookSelector", "prompt": "words to search for in vector store go here"}' | jq .
+```
+
 ## Instrucions
 
 Instructions are followed by the AI to execute the Runbook against a ticket
@@ -34,3 +39,9 @@ The instructions support a mustache expression with the following variables aval
 - runbookName
 - clientId
 - clientShortName
+
+Execute your runbook against a ticket with
+```
+curl -s -H 'Content-Type: application/json' 'http://localhost:8090/conversations/messages' -d '{"scenario":"extoleSupportTicket", "parameters": { "ticketNumber": "SUP-NNNNN" }}' | jq .
+```
+
