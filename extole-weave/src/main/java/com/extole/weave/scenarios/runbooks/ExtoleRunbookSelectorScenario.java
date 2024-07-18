@@ -59,30 +59,46 @@ public class ExtoleRunbookSelectorScenario implements Scenario<Void, Void> {
     private Scenario<Void, Void> getScenario() {
         if (this.scenario.isEmpty()) {
             String instructionsTemplate = """
-You are an Extole Support Team member handling an incoming ticket. Your task is to identify the most appropriate Runbook from a prompt.
-
-Construct a query string from the prompt.
-- Remove any personally identifiable information (PII).
-- Remove any company names.
-- Remove any URLs.
-- Remove duplicate words. 
-- Remove common stop words (e.g., "this", "is", "in").
-- Remove special characters
-- Convert all text to lowercase.
-- Limit the query to 20 words or fewer.
-
-Search in your vector store with the prepared query.
-
-We are not looking for an exact match!
-
-Take the first result, that is the selected Runbook.
-
-If no Runbook is found, use the default "%s" Runbook as a last resort.
-
-If you have choosen the default Runbook, limit the query to 5 words and try again.
-
-Provide your answer in JSON format as describe by this schema:
-%s
+{
+  "instructions": [
+    {
+      "step": "Construct a detailed query string",
+      "description": [
+        "Remove PII, company names, and URLs.",
+        "Remove duplicate words and common stop words.",
+        "Remove special characters and convert all text to lowercase.",
+        "Limit the query to 20 words or fewer."
+      ]
+    },
+    {
+      "step": "Search using the detailed query."
+      "description": [
+        "Look for an approximate match, choose the first result."
+      ]
+    },
+    {
+      "step": "Issue multiple detailed queries if no Runbook is found.",
+      "description": [
+        "Focus on different keywords and combinations from the original prompt."
+      ]
+    },
+    {
+      "step": "Use synonyms or related industry terms if initial queries yield no results."
+    },
+    {
+      "step": "Shorten the original query to 10 words or fewer and try variations.",
+      "condition": "If still no Runbook is found."
+    },
+    {
+      "step": "Evaluate multiple search results for closest context before defaulting to %s.",
+      "condition": "Only use as a last resort."
+    }
+    {
+      "step": "Provide your answer in JSON format",
+      "schema": %s
+    }
+  ]
+}
 """;
     
             var schema = aiWeaveService.getJsonSchema(Response.class);
