@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
-import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.web.weave.scenarios.WebsiteProvider.Website;
 
@@ -84,8 +83,6 @@ Use the web_developer_file_put tool to create or update the website as requested
             
             builder.setInstructions(INSTRUCTIONS);
             for(var tool: tools.values()) {
-                System.out.println("XXXXXXXXXXXXXXXXX tool.name: " + tool.getName());
-
                 builder.withTool(tool);
             }
 

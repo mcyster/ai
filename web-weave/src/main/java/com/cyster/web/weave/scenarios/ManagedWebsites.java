@@ -39,10 +39,6 @@ public class ManagedWebsites {
         return create(websiteProvider.create());
     }
     
-    public ManagedWebsite name(ManagedWebsite website, String name) {
-        return create(websiteProvider.name(website.site(), name));
-    }
-    
     public ManagedWebsite copy(ManagedWebsite website) {
         return create(websiteProvider.copy(website.site));
     }

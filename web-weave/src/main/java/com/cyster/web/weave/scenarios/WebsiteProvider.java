@@ -7,7 +7,6 @@ public interface WebsiteProvider {
     List<Website> getSites();
     Website getSite(String name);
     Website create();
-    Website name(Website website, String name);
     Website copy(Website site);
 
     interface Website {
@@ -28,9 +27,8 @@ public interface WebsiteProvider {
         }
 
         enum Type {
-            Temporary,
-            Named,
-            Managed
+            Managed,
+            Unmanaged
         }
     }
 

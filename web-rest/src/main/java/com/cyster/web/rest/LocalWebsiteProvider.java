@@ -79,23 +79,7 @@ public class LocalWebsiteProvider implements WebsiteProvider {
     @Override
     public Website create() {
         String name = UUID.randomUUID().toString();
-        return create(Type.Temporary, name);
-    }
-
-    @Override
-    public Website name(Website website, String name) {
-        Path directory = baseDirectory.resolve(Type.Named.toString().toLowerCase()).resolve(name);
-        if (Files.exists(directory)) {
-            throw new RuntimeException("Wesbite with that name already exists: " + name);
-        }
-
-        var namedWebsite = create(Type.Named, name);
-
-        for(var assetName: website.getAssets()) {
-            namedWebsite.putAsset(assetName, website.getAsset(assetName).content());
-        }
-
-        return namedWebsite;
+        return create(Type.Unmanaged, name);
     }
 
     @Override
@@ -125,4 +109,5 @@ public class LocalWebsiteProvider implements WebsiteProvider {
         }
         return toWebsite;
     }
+
 }

@@ -28,5 +28,4 @@ bin/
 /.idea/
 */out/
 
-/sites/named
-/sites/temporary
+/sites/unmanaged

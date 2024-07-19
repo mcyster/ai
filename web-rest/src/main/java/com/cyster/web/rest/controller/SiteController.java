@@ -9,8 +9,6 @@ import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,32 +51,10 @@ public class SiteController {
         return create(site);
     }
 
-    @PostMapping("/pages/{name}/copy")
-    public WebsiteResponse copySite(
-        @PathVariable("name") String name) {
-
-        var site = managedWebsites.getSite(name);
-        var newSite = managedWebsites.copy(site);
-
-        return create(newSite);
-    }
-
-    @PutMapping("/pages/{name}")
-    public WebsiteResponse nameSite(
-        @PathVariable("name") String name,
-        @RequestBody NameRequest request){
-
-        var site = managedWebsites.getSite(name);
-        var newSite = managedWebsites.name(site, request.name());
-
-        return create(newSite);
-    }
-
     private static WebsiteResponse create(ManagedWebsite website) {
         return new WebsiteResponse(website.site().getId(), website.name(), website.tags(), website.site().getType(), website.site().getUri());
     }
     
     static record WebsiteResponse (String id, String name, List<String> tags, Website.Type type, URI uri) {};
-    static record NameRequest (String name) {};
 
 }
