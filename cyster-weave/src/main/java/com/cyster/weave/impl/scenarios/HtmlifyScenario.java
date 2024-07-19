@@ -2,7 +2,6 @@ package com.cyster.weave.impl.scenarios;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 
 @Component

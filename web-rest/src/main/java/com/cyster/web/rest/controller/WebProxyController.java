@@ -2,7 +2,6 @@ package com.cyster.web.rest.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,10 +13,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.cyster.rest.RestException;
 
-import javax.servlet.http.HttpServletRequest;
 import reactor.core.publisher.Mono;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -76,14 +73,6 @@ public class WebProxyController {
         System.out.println("HERE9");
 
         return response;
-    }
-
-    private URI buildUri(String baseUrl, Map<String, String> parameters) {
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
-
-        parameters.forEach(uriBuilder::queryParam);
-
-        return uriBuilder.build().toUri();
     }
     
 }

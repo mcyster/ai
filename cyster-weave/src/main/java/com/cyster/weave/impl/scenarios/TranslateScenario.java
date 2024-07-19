@@ -2,11 +2,9 @@ package com.cyster.weave.impl.scenarios;
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.weave.impl.scenarios.TranslateScenario.Parameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
