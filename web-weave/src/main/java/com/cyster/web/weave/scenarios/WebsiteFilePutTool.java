@@ -41,7 +41,7 @@ class WebsiteFilePutTool implements Tool<Request, Website> {
             throw new FatalToolException("No content specified");
         }
 
-        if (!request.content().contains(CHAT_INCLUDE)) {
+        if (request.filename() == "index.html" && !request.content().contains(CHAT_INCLUDE)) {
             throw new FatalToolException("Do not remove the script tag: " + CHAT_INCLUDE);
         }
         context.putAsset(request.filename(), request.content());

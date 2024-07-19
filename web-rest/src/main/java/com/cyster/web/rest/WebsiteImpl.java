@@ -95,7 +95,7 @@ class WebsiteImpl implements Website {
         }
 
         Path file = directory.resolve(name);
-        if (!Files.exists(file)) {
+        if (!Files.exists(file)) {            
             throw new RuntimeException("Unable to find file: " + name);
         }
 

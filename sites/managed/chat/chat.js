@@ -387,29 +387,29 @@ function initializeApp() {
                     if (this.newMessage.trim() !== '') {
                         // Add the new message to the chat
                         this.messages.push({ text: this.newMessage, html: marked.parse(this.newMessage) });
-            
+
                         // Store the current message
                         const messageToSend = this.newMessage;
-            
+
                         // Clear the input field
                         this.newMessage = '';
-            
+
                         await nextTick();
                         this.scrollToBottom();
-            
+
                         try {
                             await this.loadOrStartConversation();
-            
+
                             // Add message to the created or found conversation
                             const messageResponse = await this.addMessageToConversation(messageToSend);
                             this.messages.push({ text: messageResponse.content, html: marked.parse(messageResponse.content) });
-            
+
                             await nextTick();
                             this.scrollToBottom();
                         } catch (error) {
                             console.error('Error sending message:', error);
                             this.messages.push({ text: 'Error: Could not send message', html: 'Error: Could not send message' });
-            
+
                             await nextTick();
                             this.scrollToBottom();
                         }
@@ -426,8 +426,16 @@ function initializeApp() {
                 },
                 handleKeydown(event) {
                     if (event.key === 'Enter') {
-                        if (event.shiftKey || event.metaKey) {
-                            this.newMessage += '\n';
+                        if (event.shiftKey || event.metaKey || event.ctrlKey) {
+                            // Get the cursor position
+                            const start = event.target.selectionStart;
+                            const end = event.target.selectionEnd;
+                            // Set the value with the new line at the cursor position
+                            this.newMessage = `${this.newMessage.substring(0, start)}\n${this.newMessage.substring(end)}`;
+                            // Set the cursor position after the new line
+                            this.$nextTick(() => {
+                                event.target.selectionStart = event.target.selectionEnd = start + 1;
+                            });
                         } else {
                             this.sendMessage();
                         }
