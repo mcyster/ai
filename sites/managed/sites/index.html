@@ -19,10 +19,6 @@
         li {
             margin: 5px 0;
         }
-        .button {
-            margin-left: 10px;
-            cursor: pointer;
-        }
         .flash {
             animation: flashAnimation 1.5s ease-in-out 3;
         }
@@ -30,26 +26,34 @@
             0%, 100% { background-color: yellow; }
             50% { background-color: transparent; }
         }
-        #tagsList {
+        #tagsContainer {
             margin-bottom: 20px;
         }
         .tag-checkbox {
             margin-left: 5px;
         }
-        .site-tags {
-            margin-top: 5px;
+        .site-tags, .filter-tag {
             font-size: 0.9em;
             color: #555;
         }
-        .site-tag {
+        .site-tag, .filter-tag {
             cursor: pointer;
             margin-right: 5px;
+        }
+        .filter-tag {
+            display: inline-block;
+            background-color: #eee;
+            padding: 2px 5px;
+            border-radius: 3px;
         }
     </style>
 </head>
 <body>
     <h2>Websites</h2>
-    <div id="tagsList"></div>
+    <div id="tagsContainer">
+        <span>Tags:</span>
+        <div id="tagsList" style="display: inline;"></div>
+    </div>
     <ul id="websiteList"></ul>
 
     <script>
@@ -81,26 +85,6 @@
                 link.textContent = website.name;
                 listItem.appendChild(link);
 
-                const copyButton = document.createElement('button');
-                copyButton.textContent = 'copy';
-                copyButton.className = 'button';
-                copyButton.onclick = () => copyWebsite(website.name);
-                listItem.appendChild(copyButton);
-
-                if (website.type === 'Temporary') {
-                    const editButton = document.createElement('button');
-                    editButton.textContent = 'edit';
-                    editButton.className = 'button';
-                    editButton.onclick = () => editWebsite(website.type, website.name);
-                    listItem.appendChild(editButton);
-
-                    const nameButton = document.createElement('button');
-                    nameButton.textContent = 'name';
-                    nameButton.className = 'button';
-                    nameButton.onclick = () => nameWebsitePrompt(website.name);
-                    listItem.appendChild(nameButton);
-                }
-
                 // Display site tags
                 if (website.tags && website.tags.length > 0) {
                     const tagsContainer = document.createElement('div');
@@ -127,8 +111,9 @@
             if (tags) {
                 const tagsArray = tags.split(',');
                 tagsArray.forEach(tag => {
-                    const tagLabel = document.createElement('label');
-                    tagLabel.textContent = tag;
+                    const tagSpan = document.createElement('span');
+                    tagSpan.className = 'filter-tag';
+                    tagSpan.textContent = tag;
 
                     const tagCheckbox = document.createElement('input');
                     tagCheckbox.type = 'checkbox';
@@ -136,8 +121,8 @@
                     tagCheckbox.checked = true;
                     tagCheckbox.onchange = () => updateTags(tag);
 
-                    tagLabel.appendChild(tagCheckbox);
-                    tagsList.appendChild(tagLabel);
+                    tagSpan.appendChild(tagCheckbox);
+                    tagsList.appendChild(tagSpan);
                 });
             }
         }
@@ -166,58 +151,6 @@
 
             const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
             window.location.href = newUrl;
-        }
-
-        async function copyWebsite(name) {
-            try {
-                const response = await fetch(`/pages/${name}/copy`, { method: 'POST' });
-                const newWebsite = await response.json();
-                fetchWebsites();
-                setTimeout(() => flashNewWebsite(newWebsite.uri), 100); 
-            } catch (error) {
-                console.error('Error copying website:', error);
-            }
-        }
-
-        function editWebsite(type, name) {
-            const typePath = type.toLowerCase();
-            const url = `/sites/${typePath}/${name}/index.html`;
-            window.location.href = url;
-        }
-
-        async function nameWebsite(name, newName) {
-            try {
-                const response = await fetch(`/pages/${name}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ name: newName })
-                });
-                const namedWebsite = await response.json();
-                fetchWebsites();
-                setTimeout(() => flashNewWebsite(namedWebsite.uri), 100); 
-            } catch (error) {
-                console.error('Error naming website:', error);
-            }
-        }
-
-        function nameWebsitePrompt(name) {
-            const newName = prompt('Enter the new name for the website:');
-            if (newName) {
-                nameWebsite(name, newName);
-            }
-        }
-
-        function flashNewWebsite(uri) {
-            const linkElements = document.querySelectorAll(`a[href='${uri}']`);
-            linkElements.forEach(link => {
-                const listItem = link.parentElement;
-                listItem.classList.add('flash');
-                setTimeout(() => {
-                    listItem.classList.remove('flash');
-                }, 4500); 
-            });
         }
 
         window.onload = fetchWebsites;
