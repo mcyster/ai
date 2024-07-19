@@ -1,27 +1,26 @@
 package com.cyster.web.weave.scenarios;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.scenario.Scenario;
+import com.cyster.web.weave.scenarios.WebsiteDeveloperScenario.Request;
 import com.cyster.web.weave.scenarios.WebDeveloperScenario.Parameters;
-import com.cyster.web.weave.scenarios.WebsiteProvider.Website;
 
 @Component
 public class WebDeveloperScenario implements Scenario<Parameters, Void> {
     private static final String DESCRIPTION = "Build a website";
 
-    private WebsiteProvider websiteProvider;
-    private WebsiteBuilderScenario builderScenario;
-
-    WebDeveloperScenario(WebsiteProvider websiteService, WebsiteBuilderScenario builderScenario) {
-        this.websiteProvider = websiteService;
-        this.builderScenario = builderScenario;
+    private WebsiteDeveloperScenario websiteDeveloperScenario;
+    private ManagedWebsites managedWebsites;
+    private Optional<Scenario<Request, ManagedWebsites>> scenario = Optional.empty();
+    
+    WebDeveloperScenario(AiWeaveService aiWeaveService, WebsiteProvider websiteProvider, WebsiteDeveloperScenario builderScenario) {
+        this.managedWebsites = new ManagedWebsites(websiteProvider);
+        this.websiteDeveloperScenario = builderScenario;
     }
 
     @Override
@@ -45,37 +44,12 @@ public class WebDeveloperScenario implements Scenario<Parameters, Void> {
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {        
-        Website website;
-        if (parameters != null && parameters.siteName() != null && !parameters.siteName().isBlank()) {
-            website = this.websiteProvider.getSite(parameters.siteName());
-        }
-        else {
-            String indexHtml = loadAsset("/web/simple/index.html");
-
-            website = this.websiteProvider.create();
-            website
-                .putAsset("index.html", indexHtml);
-        }
-
-        return builderScenario.createConversationBuilder(null, website);
+    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
+       var request = new WebsiteDeveloperScenario.Request(parameters.websiteId());
+       return websiteDeveloperScenario.createConversationBuilder(request, managedWebsites);
     }
     
-    private static String loadAsset(String assetPath) {
-        InputStream stream = WebDeveloperScenario.class.getResourceAsStream(assetPath);
-        if (stream == null) {
-            throw new RuntimeException("Error unable to load resource:/extole/web/graph/simple/index.html");
-        }
-        byte[] bytes;
-        try {
-            bytes = stream.readAllBytes();
-        } catch (IOException exception) {
-            throw new RuntimeException("Error unable to read resource: /extole/web/graph/simple/index.html", exception);
-        }
-
-        return new String(bytes, StandardCharsets.UTF_8);
-    }
-    
-    public record Parameters(@JsonProperty(required = false) String siteName) {}
-
+    public static record Parameters(
+        @JsonProperty(required = true) String websiteId
+    ) {}
 }

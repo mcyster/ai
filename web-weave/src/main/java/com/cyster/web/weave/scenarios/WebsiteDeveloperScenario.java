@@ -1,6 +1,7 @@
 package com.cyster.web.weave.scenarios;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -11,9 +12,12 @@ import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.web.weave.scenarios.WebsiteProvider.Website;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
+import com.cyster.web.weave.scenarios.WebsiteDeveloperScenario.Request;
 
 @Component
-public class WebsiteBuilderScenario implements Scenario<Void, Website> {
+public class WebsiteDeveloperScenario implements Scenario<Request, ManagedWebsites> {
     private static final String DESCRIPTION = "Build a website";
     private static final String INSTRUCTIONS = """
 You are a sklled web page developer.
@@ -33,20 +37,15 @@ Use the web_developer_file_put tool to create or update the website as requested
 """;
     
     private AiWeaveService aiWeaveService;
-    private Optional<Scenario<Void, Website>> scenario = Optional.empty();    
-    private Map<String, Tool<?, Website>> tools = new HashMap<>();
+    private Optional<Scenario<Void, ManagedWebsites>> scenario = Optional.empty();    
+    private Map<String, WebsiteDeveloperTool<?>> tools = new HashMap<>();
 
-    public WebsiteBuilderScenario(AiWeaveService aiWeaveService,
-        WebsiteCopyTool websiteCopyTool,
-        WebsiteFileListTool websiteFileListTool,
-        WebsiteFileGetTool websiteFileGetTool,
-        WebsiteFilePutTool websiteFilePutTool) {
+    public WebsiteDeveloperScenario(AiWeaveService aiWeaveService, List<WebsiteDeveloperTool<?>> tools) {
         this.aiWeaveService = aiWeaveService;
 
-        this.tools.put(websiteCopyTool.getName(), websiteCopyTool);
-        this.tools.put(websiteFileListTool.getName(), websiteFileListTool);
-        this.tools.put(websiteFileGetTool.getName(), websiteFileGetTool);
-        this.tools.put(websiteFilePutTool.getName(), websiteFilePutTool);
+        for(var tool: tools) {
+            this.tools.put(tool.getName(), tool);
+        }
     }
 
     @Override
@@ -60,26 +59,30 @@ Use the web_developer_file_put tool to create or update the website as requested
     }
 
     @Override
-    public Class<Void> getParameterClass() {
-       return Void.class;
+    public Class<Request> getParameterClass() {
+       return Request.class;
     }
 
     @Override
-    public Class<Website> getContextClass() {
-        return Website.class;
+    public Class<ManagedWebsites> getContextClass() {
+        return ManagedWebsites.class;
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Void parameters, Website context) {        
-        String message = "There is a web page at %s (we're in developer mode, so localhost is ok)";
+    public ConversationBuilder createConversationBuilder(Request parameters, ManagedWebsites context) {        
+        String messageTemplate = "There is a website with id %s at %s (we're in developer mode, so localhost is ok)";
         
-        return this.getScenario().createConversationBuilder(parameters, context)
-            .addMessage(String.format(message, context.getUri()));
+        ManagedWebsite website = context.getSite(parameters.websiteId());
+
+        String message = String.format(messageTemplate, website.site().getId(), website.site().getUri());
+                    
+        return this.getScenario().createConversationBuilder(null, context)
+            .addMessage(message);
     }
     
-    private Scenario<Void, Website> getScenario() {
+    private Scenario<Void, ManagedWebsites> getScenario() {
         if (this.scenario.isEmpty()) {
-            AssistantScenarioBuilder<Void, Website> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
+            AssistantScenarioBuilder<Void, ManagedWebsites> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
             
             builder.setInstructions(INSTRUCTIONS);
             for(var tool: tools.values()) {
@@ -92,4 +95,7 @@ Use the web_developer_file_put tool to create or update the website as requested
         return this.scenario.get();
     }
     
+    public static record Request(
+        @JsonProperty(required = true) String websiteId
+    ) {}
 }

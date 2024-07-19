@@ -2,15 +2,18 @@ package com.cyster.web.weave.scenarios;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.impl.openai.HttpClientLogger.Response;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
 import com.cyster.web.weave.scenarios.WebsiteFilePutTool.Request;
 import com.cyster.web.weave.scenarios.WebsiteProvider.Website;
+import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Asset;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
-class WebsiteFilePutTool implements Tool<Request, Website> {
+class WebsiteFilePutTool implements WebsiteDeveloperTool<Request> {
     private static final String CHAT_INCLUDE = "<script src=\"/sites/managed/chat/chat.js\" data-scenario=\"WebDeveloper\" data-href-site-name=\"/([^/]+)/[^/]+$\"></script>";
     
     WebsiteFilePutTool() {
@@ -32,27 +35,29 @@ class WebsiteFilePutTool implements Tool<Request, Website> {
     }
 
     @Override
-    public Object execute(Request request, Website context) throws ToolException {
+    public Object execute(Request request, ManagedWebsites context) throws ToolException {
 
-        if (request.filename() == null || request.filename().isBlank()) {
-            throw new FatalToolException("No filename specified");
-        }
-        if (request.content() == null) {
-            throw new FatalToolException("No content specified");
-        }
-
+        ManagedWebsite website = context.getSite(request.websiteId);
+        
         if (request.filename() == "index.html" && !request.content().contains(CHAT_INCLUDE)) {
             throw new FatalToolException("Do not remove the script tag: " + CHAT_INCLUDE);
         }
-        context.putAsset(request.filename(), request.content());
+        
+        Asset asset = website.site().putAsset(request.filename(), request.content());
 
-        return context;
+        return new Response(website.site().getId(), asset.filename(), asset.content());
     }
 
     static record Request(
+        @JsonProperty(required = true) String websiteId,
         @JsonProperty(required = true) String filename,
         @JsonProperty(required = true) String content
     ) {}
 
+    static record Response(
+        @JsonProperty(required = true) String websiteId,
+        @JsonProperty(required = true) String filename,
+        @JsonProperty(required = true) String content
+    ) {}
 
 }

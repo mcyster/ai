@@ -2,16 +2,14 @@ package com.cyster.web.weave.scenarios;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.FatalToolException;
-import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
 import com.cyster.web.weave.scenarios.WebsiteFileGetTool.Request;
-import com.cyster.web.weave.scenarios.WebsiteProvider.Website;
 import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Asset;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
-class WebsiteFileGetTool implements Tool<Request, Website> {
+class WebsiteFileGetTool implements WebsiteDeveloperTool<Request>  {
 
     WebsiteFileGetTool() {
     }
@@ -32,22 +30,22 @@ class WebsiteFileGetTool implements Tool<Request, Website> {
     }
 
     @Override
-    public Object execute(Request request, Website context) throws ToolException {
+    public Object execute(Request request, ManagedWebsites context) throws ToolException {
 
-        if (request.filename() == null || request.filename().isBlank()) {
-            throw new FatalToolException("No filename specified");
-        }
+        ManagedWebsite website = context.getSite(request.websiteId);
 
-        Asset asset = context.getAsset(request.filename());
+        Asset asset = website.site().getAsset(request.filename());
 
-        return new Response(asset.filename(), asset.content());
+        return new Response(request.websiteId, asset.filename(), asset.content());
     }
 
     static record Request(
+        @JsonProperty(required = true) String websiteId,
         @JsonProperty(required = true) String filename
     ) {}
 
     static record Response(
+        String websiteId,
         String filename,
         String content
     ) {}

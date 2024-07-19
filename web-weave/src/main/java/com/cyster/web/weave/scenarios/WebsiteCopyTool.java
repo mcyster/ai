@@ -5,13 +5,14 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.web.weave.scenarios.WebsiteProvider.Website;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
+import com.cyster.web.weave.scenarios.WebsiteCopyTool.Request;
 
 @Component
-public class WebsiteCopyTool implements Tool<Void, Website> {
-    private WebsiteProvider websiteProvider;
+public class WebsiteCopyTool implements WebsiteDeveloperTool<Request> {
     
-    WebsiteCopyTool(WebsiteProvider websiteProvider) {
-        this.websiteProvider = websiteProvider;
+    WebsiteCopyTool() {
     }
 
     @Override
@@ -25,17 +26,26 @@ public class WebsiteCopyTool implements Tool<Void, Website> {
     }
 
     @Override
-    public Class<Void> getParameterClass() {
-        return Void.class;
+    public Class<Request> getParameterClass() {
+        return Request.class;
     }
 
     @Override
-    public Object execute(Void request, Website context) throws ToolException {
+    public Object execute(Request request, ManagedWebsites context) throws ToolException {
 
-        Website newWebsite = websiteProvider.copy(context);
+        ManagedWebsite website = context.getSite(request.websiteId);
+        ManagedWebsite newWebsite = context.copy(website);
         
         return newWebsite;
     }
+
+    static record Request(
+        @JsonProperty(required = true) String websiteId
+    ) {}
+
+    static record Response(
+        @JsonProperty(required = true) String newWebsiteId
+    ) {}
 
 
 }
