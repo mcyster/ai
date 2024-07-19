@@ -1,7 +1,13 @@
 
 async function getData(reportId, extoleToken) {
+    if (!reportId || !extoleToken) {
+        return null;
+    }
+
+    var uri = `/proxy/https://api.extole.io/v4/reports/${reportId}/download.json`;
+
     try {
-        const response = await fetch(`https://api.extole.io/v4/tokens/${extoleToken}/download.json?report_id={reportId}`, {
+        const response = await fetch(uri, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
