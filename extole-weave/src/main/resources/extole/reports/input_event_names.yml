@@ -1,5 +1,4 @@
 
-name: inputConsumerEventNames
 description: Runs a report that lists the names of all the input consumer events and their counts for a client in the specified time period
 reportType: CONFIGURABLE_INPUT_RECORD_METRICS
 parameters:

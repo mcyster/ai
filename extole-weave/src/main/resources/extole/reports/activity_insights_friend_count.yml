@@ -1,6 +1,4 @@
 
-
-name: activityInsightsFriendCount
 description: Runs a report that returns people with a lot of friends
 reportType: sbdbtvo9keb604hfxcz
 parameters:

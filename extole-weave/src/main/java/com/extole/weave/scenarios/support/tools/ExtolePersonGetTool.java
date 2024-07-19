@@ -26,7 +26,7 @@ class ExtolePersonGetTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getName() {
-        return "extole_person_get";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override

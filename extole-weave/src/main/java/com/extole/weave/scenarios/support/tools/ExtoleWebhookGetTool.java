@@ -25,7 +25,7 @@ class ExtoleWebhookGetTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getName() {
-        return "extole_webhook_get";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override

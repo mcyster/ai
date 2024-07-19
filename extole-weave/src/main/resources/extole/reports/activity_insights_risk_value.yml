@@ -1,5 +1,4 @@
 
-name: activityInsightsRiskValue
 description: Runs a report that returns people with a high risk value.
 reportType: sbdbedyvskiz3oue03v
 parameters:    

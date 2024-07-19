@@ -30,7 +30,7 @@ class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getName() {
-        return "extoleClientEventSearch";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override

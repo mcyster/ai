@@ -27,7 +27,7 @@ class SupportTicketSearchTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getName() {
-        return "ticketSearch";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override

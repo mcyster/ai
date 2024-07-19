@@ -8,10 +8,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.ai.weave.service.scenario.ScenarioLoader;
 import com.extole.weave.scenarios.runbooks.ExtoleRunbookScenarioLoader;
 import com.extole.weave.scenarios.runbooks.RunbookScenario;
 import com.extole.weave.scenarios.support.ExtoleSupportHelpScenario;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
@@ -66,7 +66,13 @@ public class ExtoleRunbookConfiguration implements ExtoleRunbookScenarioLoader {
                 name = "ExtoleRunbook" + name;
                 
                 try (InputStream inputStream = resource.getInputStream()) {
-                    var configuration = mapper.readValue(inputStream, ExtoleConfigurableRunbookScenario.Configuration.class);
+                    ExtoleConfigurableRunbookScenario.Configuration configuration;
+                    try {
+                        configuration = mapper.readValue(inputStream, ExtoleConfigurableRunbookScenario.Configuration.class);
+                    } catch(JsonMappingException exception) {
+                        logger.error("Failed to load runbook yml: " + resource.getDescription(), exception);
+                        continue;
+                    }
 
                     logger.info("Loaded Extole Runbook: " + name);
 

@@ -22,10 +22,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool<Request> {
     Tool<Request, Void> tool;
 
-    ExtoleConfigurableTimeRangeReportTool(Configuration configuration, ExtoleWebClientFactory extoleWebClientFactory) {
+    ExtoleConfigurableTimeRangeReportTool(String name, Configuration configuration, ExtoleWebClientFactory extoleWebClientFactory) {
 
        this.tool = new UncachedExtoleConfigurableTimeRangeReportTool(
-           configuration.getName(),
+           name,
            configuration.getDescription(),
            configuration.getReportType(),
            configuration.getRowLimit(),
@@ -55,7 +55,6 @@ class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool<Request
     }
 
     public static class Configuration {
-        private String name;
         private String description;
         private String reportType;
         private Map<String, String> parameters = new HashMap<>();
@@ -63,13 +62,12 @@ class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool<Request
         private final boolean waitForResult;
 
         @JsonCreator
-        public Configuration(@JsonProperty("name") String name,
-                @JsonProperty("description") String description,
-                @JsonProperty("reportType") String reportType,
-                @JsonProperty("parameters") Map<String, String> parameters,
-                @JsonProperty("rowLimit") Integer rowLimit,
-                @JsonProperty("waitForResult") Boolean waitForResult) {
-            setName(name);
+        public Configuration(
+            @JsonProperty("description") String description,
+            @JsonProperty("reportType") String reportType,
+            @JsonProperty("parameters") Map<String, String> parameters,
+            @JsonProperty("rowLimit") Integer rowLimit,
+            @JsonProperty("waitForResult") Boolean waitForResult) {
             setDescription(description);
             setReportType(reportType);
             setParameters(parameters);
@@ -85,15 +83,6 @@ class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool<Request
             } else {
                 this.waitForResult = false;
             }
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        private void setName(String name) {
-            validateString(name, "name");
-            this.name = name;
         }
 
         public String getDescription() {

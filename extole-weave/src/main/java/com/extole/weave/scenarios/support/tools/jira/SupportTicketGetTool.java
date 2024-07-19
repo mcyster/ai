@@ -28,7 +28,7 @@ public class SupportTicketGetTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getName() {
-        return "ticketGet";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override

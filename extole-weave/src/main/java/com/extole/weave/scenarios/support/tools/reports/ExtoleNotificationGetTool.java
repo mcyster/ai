@@ -110,7 +110,7 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getName() {
-        return "extoleNotificationGet";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override

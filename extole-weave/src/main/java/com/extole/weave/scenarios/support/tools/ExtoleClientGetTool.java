@@ -22,7 +22,7 @@ public class ExtoleClientGetTool implements ExtoleSupportTool<Parameters> {
 
     @Override
     public String getName() {
-        return "extoleClientGet";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override

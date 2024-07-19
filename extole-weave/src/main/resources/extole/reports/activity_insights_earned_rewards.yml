@@ -1,5 +1,4 @@
 
-name: activityInsightsEarnedRewards
 description: Runs a report that returns people and their reward count for people with more than 10 rewards or people who have been blocked.
 reportType: sbdcik2zjrtx4kuu073a
 parameters:

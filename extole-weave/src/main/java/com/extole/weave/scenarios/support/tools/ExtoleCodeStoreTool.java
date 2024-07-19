@@ -19,7 +19,7 @@ class ExtoleCodeStoreTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getName() {
-        return "extole_code";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override

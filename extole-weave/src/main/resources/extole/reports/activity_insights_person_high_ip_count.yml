@@ -1,5 +1,4 @@
 
-name: activityInsightsHighIpCount
 description: Runs a report that returns people that have a high number of IP addresses associated with their profile.
 reportType: sc1n312yghmkv4ss0xhd
 parameters:

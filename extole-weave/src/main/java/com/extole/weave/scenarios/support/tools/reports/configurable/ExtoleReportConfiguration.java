@@ -10,6 +10,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportAdvisorToolLoader;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.weave.scenarios.support.tools.ExtoleWebClientFactory;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 
@@ -51,11 +52,27 @@ public class ExtoleReportConfiguration implements ExtoleSupportAdvisorToolLoader
                 logger.info("Loading Extole report tool: " + resource.getURI().toString());
 
                 try (InputStream inputStream = resource.getInputStream()) {
-                    var configuration = mapper.readValue(inputStream, ExtoleConfigurableTimeRangeReportTool.Configuration.class);
+                    logger.info("Loading Extole Runbook: " + resource.getURI().toString());
+                    var name = capitalize(removeExtension(resource.getFilename()));
+                    if (name.isBlank()) {
+                        throw new ExtoleReportConfigurtationException("Runbook without filename", resource);
+                    }
+                    if (!name.matches("[a-zA-Z0-9]+")) {
+                        throw new ExtoleReportConfigurtationException("Runbook name must only contain alphanumeric characters: " + name, resource);                    
+                    }
+                    name = name + "Tool";
+                    
+                    ExtoleConfigurableTimeRangeReportTool.Configuration configuration;
+                    try {
+                        configuration = mapper.readValue(inputStream, ExtoleConfigurableTimeRangeReportTool.Configuration.class);
+                    } catch(JsonMappingException exception) {
+                        logger.error("Failed to load report yml: " + resource.getDescription(), exception);
+                        continue;
+                    }
 
-                    logger.info("Loaded Extole report tool: " + configuration.getName());
+                    logger.info("Loaded Extole report tool: " + name);
 
-                    var reportTool = new ExtoleConfigurableTimeRangeReportTool(configuration, extoleWebClientFactory);
+                    var reportTool = new ExtoleConfigurableTimeRangeReportTool(name, configuration, extoleWebClientFactory);
                     configurableContext.getBeanFactory().registerSingleton(reportTool.getName(), reportTool);
 
                     tools.add(reportTool);
@@ -64,6 +81,39 @@ public class ExtoleReportConfiguration implements ExtoleSupportAdvisorToolLoader
                 }
             }
         }
+    }
+
+    private static String capitalize(String input) {
+        if (input == null || input.isEmpty()) {
+            return "";
+        }
+
+        String snakeCase = input.replaceAll("([a-z])([A-Z])", "$1_$2");
+        snakeCase = snakeCase.replace("-", "_");
+        String[] words = snakeCase.split("_");
+
+        StringBuilder capitalizedWords = new StringBuilder();
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                capitalizedWords.append(word.substring(0, 1).toUpperCase())
+                    .append(word.substring(1).toLowerCase());
+            }
+        }
+
+        return capitalizedWords.toString().trim();
+    }
+
+    public static String removeExtension(String filename) {
+        if (filename == null || filename.isEmpty()) {
+            return "";
+        }
+
+        int lastDotIndex = filename.lastIndexOf('.');
+        if (lastDotIndex == -1) {
+            return filename;
+        }
+
+        return filename.substring(0, lastDotIndex);
     }
 
 }

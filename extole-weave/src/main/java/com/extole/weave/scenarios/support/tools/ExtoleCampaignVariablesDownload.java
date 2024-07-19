@@ -22,7 +22,7 @@ class ExtoleCampaignVariablesGetTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getName() {
-        return "extoleCampaignVariablesGet";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override

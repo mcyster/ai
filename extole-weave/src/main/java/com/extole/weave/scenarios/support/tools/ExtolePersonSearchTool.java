@@ -29,7 +29,7 @@ class ExtolePersonSearchTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getName() {
-        return "extole_person_search";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override

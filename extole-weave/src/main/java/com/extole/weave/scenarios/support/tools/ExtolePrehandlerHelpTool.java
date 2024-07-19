@@ -31,7 +31,7 @@ class ExtolePrehandlerHelpTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getName() {
-        return "extole_prehandler_help";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override
