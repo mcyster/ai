@@ -1,0 +1,61 @@
+<html ng-app="jsonFormatterApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Extole Report</title>
+    <meta name="tags" content="extole,report">
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <script src="data.js"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+        #jsonDisplay {
+            padding: 20px;
+            margin: 20px auto;
+            width: 80%;
+            max-width: 2400px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <h2 id="graphTitle"></h2>
+        <canvas id="chart"></canvas>
+    </div>
+    <div id="jsonDisplay"></div>
+</body>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    async function showData() {
+        let data;
+        try {
+            var reportRunnerId = "s4y0iq3ses720z9dt8mf";
+            data = await getData(reportRunnerId);
+
+            console.log('Data fetched successfully:', data);
+            const dataDisplay = document.getElementById('jsonDisplay');
+            if (data) {
+                dataDisplay.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } else {
+                dataDisplay.innerHTML = '<pre>No data available</pre>';
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+
+    showData();
+});
+</script>
+</html>
