@@ -1,8 +1,8 @@
 <html ng-app="jsonFormatterApp">
 <head>
     <meta charset="UTF-8">
-    <title>Extole Report</title>
-    <meta name="tags" content="extole,report">
+    <title>Extole Total Event Count Over TIme</title>
+    <meta name="tags" content="extole,report,kpis">
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -25,18 +25,28 @@
             width: 80%;
             max-width: 2400px;
             border: 1px solid #ddd;
+            display: none;
+        }
+        .json-toggler {
+            cursor: pointer;
+            color: #007BFF;
+            margin: 20px auto;
+            width: 80%;
+            max-width: 2400px;
+            text-align: left;
         }
     </style>
 </head>
 <body>
     <div class="chart-container">
-        <h2 id="graphTitle"></h2>
+        <h2 id="graphTitle">Total Event Count Over Time</h2>
         <canvas id="chart"></canvas>
     </div>
+    <div class="json-toggler" onclick="toggleJsonDisplay()">Show JSON Data</div>
     <div id="jsonDisplay"></div>
 </body>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", async function() {
     async function showData() {
         try {
             var data = await getReport();
@@ -48,6 +58,51 @@ document.addEventListener("DOMContentLoaded", function() {
             } else {
                 dataDisplay.innerHTML = '<pre>No data available</pre>';
             }
+
+            // Group data by period_end and sum event counts
+            const eventCountsByDate = data.reduce((acc, item) => {
+                const date = item.period_end;
+                acc[date] = (acc[date] || 0) + item.events_count;
+                return acc;
+            }, {});
+
+            const labels = Object.keys(eventCountsByDate);
+            const eventCounts = Object.values(eventCountsByDate);
+
+            // Create the line chart
+            const ctx = document.getElementById('chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Event Count',
+                        data: eventCounts,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -55,6 +110,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
     showData();
 });
+
+function toggleJsonDisplay() {
+    const jsonDisplay = document.getElementById('jsonDisplay');
+    const toggler = document.querySelector('.json-toggler');
+    if (jsonDisplay.style.display === 'none' || jsonDisplay.style.display === '') {
+        jsonDisplay.style.display = 'block';
+        toggler.innerText = 'Hide JSON Data';
+    } else {
+        jsonDisplay.style.display = 'none';
+        toggler.innerText = 'Show JSON Data';
+    }
+}
 
 async function getReport() {
     var extoleClientId = "1890234003";
