@@ -1,8 +1,8 @@
 <html ng-app="jsonFormatterApp">
 <head>
     <meta charset="UTF-8">
-    <title>Extole Total Event Count Over TIme</title>
-    <meta name="tags" content="extole,report,kpis">
+    <title>Extole Top Client Event Traffic</title>
+    <meta name="tags" content="extole,report,kpis,top,clients,events">
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -39,7 +39,7 @@
 </head>
 <body>
     <div class="chart-container">
-        <h2 id="graphTitle">Total Event Count Over Time</h2>
+        <h2 id="graphTitle">Top 10 Clients Event Traffic</h2>
         <canvas id="chart"></canvas>
     </div>
     <div class="json-toggler" onclick="toggleJsonDisplay()">Show JSON Data</div>
@@ -50,7 +50,6 @@ document.addEventListener("DOMContentLoaded", async function() {
     async function showData() {
         try {
             var data = await getReport();
-
             console.log('Data fetched successfully:', data);
             const dataDisplay = document.getElementById('jsonDisplay');
             if (data) {
@@ -59,30 +58,64 @@ document.addEventListener("DOMContentLoaded", async function() {
                 dataDisplay.innerHTML = '<pre>No data available</pre>';
             }
 
-            // Group data by period_end and sum event counts
-            const eventCountsByDate = data.reduce((acc, item) => {
-                const date = item.period_end;
-                acc[date] = (acc[date] || 0) + item.events_count;
+            // filtering for the trailing 12 months
+            const now = new Date();
+            const trailingYear = new Date();
+            trailingYear.setMonth(now.getMonth() - 12);
+            const filteredData = data.filter(item => new Date(item.period_end) > trailingYear);
+
+            // Summing events by client
+            const eventCountByClient = filteredData.reduce((acc, item) => {
+                const clientID = item.client_id;
+                acc[clientID] = (acc[clientID] || 0) + item.events_count;
                 return acc;
             }, {});
 
-            const labels = Object.keys(eventCountsByDate);
-            const eventCounts = Object.values(eventCountsByDate);
+            // Sorting to get top 10 clients
+            const topClients = Object.entries(eventCountByClient)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 10)
+                .map(([clientID]) => clientID);
+
+            // Filtering data for these top 10 clients
+            const topClientsData = filteredData.filter(item => topClients.includes(item.client_id));
+
+            // Create a map of client IDs to names
+            const clientNames = {};
+            topClientsData.forEach(item => {
+                if (!clientNames[item.client_id]) {
+                    clientNames[item.client_id] = item.client_name;
+                }
+            });
+
+            // Aggregating data for each client over time
+            const aggregatedData = topClientsData.reduce((acc, item) => {
+                const date = item.period_end;
+                const clientID = item.client_id;
+                if (!acc[clientID]) acc[clientID] = {};
+                acc[clientID][date] = (acc[clientID][date] || 0) + item.events_count;
+                return acc;
+            }, {});
+
+            const datasets = Object.entries(aggregatedData).map(([clientID, eventsByDate]) => {
+                const borderColor = getRandomColor();
+                return {
+                    label: clientNames[clientID] || `Client ${clientID}`,
+                    data: Object.entries(eventsByDate).map(([date, count]) => ({ x: date, y: count })),
+                    borderColor: borderColor,
+                    backgroundColor: borderColor,
+                    borderWidth: 3,
+                    fill: false,
+                    tension: 0.1
+                };
+            });
 
             // Create the line chart
             const ctx = document.getElementById('chart').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Total Event Count',
-                        data: eventCounts,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0.1
-                    }]
+                    datasets: datasets
                 },
                 options: {
                     responsive: true,
@@ -90,7 +123,23 @@ document.addEventListener("DOMContentLoaded", async function() {
                         x: {
                             type: 'time',
                             time: {
-                                unit: 'day'
+                                unit: 'month'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Event Count',
+                                font: {
+                                    weight: 'bold'
+                                }
                             }
                         }
                     },
@@ -109,6 +158,11 @@ document.addEventListener("DOMContentLoaded", async function() {
     }
 
     showData();
+
+    function getRandomColor() {
+        const r = () => Math.floor(Math.random() * 256);
+        return `rgba(${r()},${r()},${r()},1)`;
+    }
 });
 
 function toggleJsonDisplay() {
@@ -148,6 +202,5 @@ async function getReport() {
 
     return typedData;
 }
-
 </script>
 </html>

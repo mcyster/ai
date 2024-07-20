@@ -15,6 +15,14 @@ import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Type;
 
 public class ManagedWebsites {
     private WebsiteProvider websiteProvider;
+    private static List<String> curatedSites;
+
+    static {
+        curatedSites = new ArrayList<>();
+        curatedSites.add("start-here");
+        curatedSites.add("game-of-life");
+        curatedSites.add("extole-support-tickets");
+    }
     
     public ManagedWebsites(WebsiteProvider websiteProvider) {
         this.websiteProvider = websiteProvider;
@@ -63,6 +71,12 @@ public class ManagedWebsites {
         
         if (website.getType() == Type.Managed) {
             tags.add("managed");
+        }
+        if (website.getId().equals("start-here")) {
+            tags.add("start");
+        }
+        if (curatedSites.contains(website.getId())) {
+            tags.add("curated");
         }
         
         return new ManagedWebsite(website, name, tags);

@@ -21,6 +21,6 @@ public class RootController {
     public RedirectView index() throws IOException {
         logger.info("get /");
 
-        return new RedirectView("/sites/managed/sites/index.html?tags=managed,start");
+        return new RedirectView("/sites/managed/sites/index.html?tags=managed,curated,start");
     }
 }
