@@ -2,6 +2,7 @@
 
 # Minor Changes
 
+- remove code store, use VectorStore tool, remove store project
 - load vstore lazily, load old version, then update in background
 - prehandler use SearchTool
 - cleanup vectorstores, files
