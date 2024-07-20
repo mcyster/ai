@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleWebClientException;
-import com.extole.client.web.ExtoleWebClientFactory;
+import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtolePersonRewardsGetTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -18,11 +18,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
 class ExtolePersonRewardsGetTool implements ExtoleSupportTool<Request> {
-    private static final Logger logger = LogManager.getLogger(ExtoleWebClientFactory.class);
+    private static final Logger logger = LogManager.getLogger(ExtoleTrustedWebClientFactory.class);
 
-    private ExtoleWebClientFactory extoleWebClientFactory;
+    private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 
-    ExtolePersonRewardsGetTool(ExtoleWebClientFactory extoleWebClientFactory) {
+    ExtolePersonRewardsGetTool(ExtoleTrustedWebClientFactory extoleWebClientFactory) {
         this.extoleWebClientFactory = extoleWebClientFactory;
     }
 
@@ -46,7 +46,7 @@ class ExtolePersonRewardsGetTool implements ExtoleSupportTool<Request> {
         JsonNode result;
 
         try {
-            result = this.extoleWebClientFactory.getWebClient(request.client_id).get()
+            result = this.extoleWebClientFactory.getWebClientById(request.client_id).get()
                 .uri(uriBuilder -> uriBuilder
                     .path("/v4/runtime-persons/" + request.person_id + "/rewards")
                     .build())

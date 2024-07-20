@@ -15,7 +15,7 @@ import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleWebClientException;
-import com.extole.client.web.ExtoleWebClientFactory;
+import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.weave.scenarios.support.tools.reports.ExtoleNotificationGetTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class ExtoleNotificationGetTool implements ExtoleSupportTool<Request> {
     private Tool<Request, Void> tool;
 
-    ExtoleNotificationGetTool(ExtoleWebClientFactory extoleWebClientFactory, AiWeaveService aiWeaveService) {
+    ExtoleNotificationGetTool(ExtoleTrustedWebClientFactory extoleWebClientFactory, AiWeaveService aiWeaveService) {
         this.tool = aiWeaveService.cachingTool(new UncachedNotificationGetTool(extoleWebClientFactory));
     }
 
@@ -103,9 +103,9 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
 
     private static final Logger logger = LogManager.getLogger(ExtoleSupportTool.class);
 
-    private ExtoleWebClientFactory extoleWebClientFactory;
+    private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 
-    UncachedNotificationGetTool(ExtoleWebClientFactory extoleWebClientFactory) {
+    UncachedNotificationGetTool(ExtoleTrustedWebClientFactory extoleWebClientFactory) {
         this.extoleWebClientFactory = extoleWebClientFactory;
     }
 
@@ -157,7 +157,7 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
         throws ToolException {
         JsonNode response;
         try {
-            response = this.extoleWebClientFactory.getWebClient(request.clientId).get()
+            response = this.extoleWebClientFactory.getWebClientById(request.clientId).get()
                 .uri(uriBuilder -> uriBuilder
                     .path("/v6/notifications/" + request.userId)
                     .build())

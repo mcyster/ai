@@ -10,7 +10,7 @@ import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.extole.client.web.ExtoleWebClientException;
-import com.extole.client.web.ExtoleWebClientFactory;
+import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionScenario;
 import com.extole.weave.scenarios.support.tools.ExtolePrehandlerHelpTool.Request;
 import com.extole.weave.session.ExtoleSessionContext;
@@ -23,10 +23,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @Component
 class ExtolePrehandlerHelpTool implements ExtoleSupportTool<Request> {
     private ExtoleJavascriptPrehandlerActionScenario scenario;
-    private ExtoleWebClientFactory extoleWebClientFactory;
+    private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 
     ExtolePrehandlerHelpTool(ExtoleJavascriptPrehandlerActionScenario scenario,
-        ExtoleWebClientFactory extoleWebClientFactory) {
+        ExtoleTrustedWebClientFactory extoleWebClientFactory) {
         this.scenario = scenario;
         this.extoleWebClientFactory = extoleWebClientFactory;
     }

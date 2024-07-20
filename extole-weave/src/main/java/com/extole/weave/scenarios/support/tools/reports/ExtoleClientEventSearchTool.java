@@ -5,7 +5,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.client.web.ExtoleWebClientFactory;
+import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.weave.scenarios.support.tools.reports.ExtoleClientEventSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -20,10 +20,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
     private static final String NOTIFICATION_ID_PATTERN = "[a-z0-9]{18,20}";
 
-    private ExtoleWebClientFactory extoleWebClientFactory;
+    private ExtoleTrustedWebClientFactory extoleWebClientFactory;
     private ExtoleNotificationGetTool extoleNotificationGetTool;
 
-    ExtoleClientEventSearchTool(ExtoleWebClientFactory extoleWebClientFactory, ExtoleNotificationGetTool extoleNotificationGetTool) {
+    ExtoleClientEventSearchTool(ExtoleTrustedWebClientFactory extoleWebClientFactory, ExtoleNotificationGetTool extoleNotificationGetTool) {
         this.extoleWebClientFactory = extoleWebClientFactory;
         this.extoleNotificationGetTool = extoleNotificationGetTool;
     }

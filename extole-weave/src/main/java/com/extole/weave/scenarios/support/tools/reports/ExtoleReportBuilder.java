@@ -14,7 +14,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleWebClientException;
-import com.extole.client.web.ExtoleWebClientFactory;
+import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class ExtoleReportBuilder {
     public static final Duration DEFAULT_MAX_AGE = Duration.ofHours(8);
-    ExtoleWebClientFactory webClientFactory;
+    ExtoleTrustedWebClientFactory webClientFactory;
     Optional<String> clientId = Optional.empty();
     ObjectNode payload = JsonNodeFactory.instance.objectNode();
     String format = "json";
@@ -33,7 +33,7 @@ public class ExtoleReportBuilder {
     private boolean waitForResult = true;
     private Duration maxAge = DEFAULT_MAX_AGE;
 
-    public ExtoleReportBuilder(ExtoleWebClientFactory webClientFactory) {
+    public ExtoleReportBuilder(ExtoleTrustedWebClientFactory webClientFactory) {
         this.webClientFactory = webClientFactory;
     }
 
@@ -103,7 +103,7 @@ public class ExtoleReportBuilder {
         WebClient webClient;
         try {
             if (this.clientId.isPresent()) {
-                webClient = this.webClientFactory.getWebClient(this.clientId.get());
+                webClient = this.webClientFactory.getWebClientById(this.clientId.get());
             } else {
                 webClient = this.webClientFactory.getSuperUserWebClient();
             }
@@ -217,7 +217,7 @@ public class ExtoleReportBuilder {
 
         JsonNode reports;
         try {
-            WebClient webClient = this.webClientFactory.getWebClient(this.clientId.get());
+            WebClient webClient = this.webClientFactory.getWebClientById(this.clientId.get());
     
             reports = webClient.get()
                 .uri(uriBuilder -> uriBuilder

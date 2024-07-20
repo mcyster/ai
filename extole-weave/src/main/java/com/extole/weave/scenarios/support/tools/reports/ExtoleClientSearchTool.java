@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleWebClientException;
-import com.extole.client.web.ExtoleWebClientFactory;
+import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.weave.scenarios.support.tools.reports.ExtoleClientSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,9 +19,9 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 @Component
 class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
-    private ExtoleWebClientFactory extoleWebClientFactory;
+    private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 
-    ExtoleClientSearchTool(ExtoleWebClientFactory extoleWebClientFactory) {
+    ExtoleClientSearchTool(ExtoleTrustedWebClientFactory extoleWebClientFactory) {
         this.extoleWebClientFactory = extoleWebClientFactory;
     }
 

@@ -1,20 +1,25 @@
 package com.extole.weave.scenarios.help.tools;
 
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.extole.client.web.ExtoleWebClientFactory;
 import com.extole.weave.session.ExtoleSessionContext;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 
+@Component
 public class ExtoleClientTimelineTool implements Tool<ExtoleClientTimelineRequest, ExtoleSessionContext> {
+    private ExtoleWebClientFactory extoleWebClientFactory;
 
-    public ExtoleClientTimelineTool() {
+    public ExtoleClientTimelineTool(ExtoleWebClientFactory extoleWebClientFactory) {
+        this.extoleWebClientFactory = extoleWebClientFactory;
     }
 
     @Override
@@ -34,9 +39,7 @@ public class ExtoleClientTimelineTool implements Tool<ExtoleClientTimelineReques
 
     @Override
     public Object execute(ExtoleClientTimelineRequest request, ExtoleSessionContext context) throws ToolException {
-        var webClient = ExtoleWebClientBuilder.builder("https://api.extole.io/")
-            .setApiKey(context.getAccessToken())
-            .build();
+        var webClient = this.extoleWebClientFactory.getWebClient(context.getAccessToken());
 
         JsonNode resultNode = null;
         try {

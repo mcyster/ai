@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleWebClientException;
-import com.extole.client.web.ExtoleWebClientFactory;
+import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleCampaignVariablesGetTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -16,9 +16,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
 class ExtoleCampaignVariablesGetTool implements ExtoleSupportTool<Request> {
-    private ExtoleWebClientFactory extoleWebClientFactory;
+    private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 
-    ExtoleCampaignVariablesGetTool(ExtoleWebClientFactory extoleWebClientFactory) {
+    ExtoleCampaignVariablesGetTool(ExtoleTrustedWebClientFactory extoleWebClientFactory) {
         this.extoleWebClientFactory = extoleWebClientFactory;
     }
 
@@ -42,7 +42,7 @@ class ExtoleCampaignVariablesGetTool implements ExtoleSupportTool<Request> {
         JsonNode result;
 
         try {
-            result = this.extoleWebClientFactory.getWebClient(request.clientId).get()
+            result = this.extoleWebClientFactory.getWebClientById(request.clientId).get()
                 .uri(uriBuilder -> uriBuilder
                     .path("/v2/campaigns/" + request.campaignId + "/creative/variable/batch/values.json")
                     .queryParam("type", "TEXT")

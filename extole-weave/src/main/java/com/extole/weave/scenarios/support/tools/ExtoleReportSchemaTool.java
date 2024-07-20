@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.client.web.ExtoleWebClientFactory;
+import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.client.web.ExtoleWebClientException;
 import com.extole.weave.scenarios.support.tools.ExtoleReportSchemaTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,9 +25,9 @@ import com.fasterxml.jackson.module.jsonSchema.jakarta.types.ObjectSchema;
 
 @Component
 public class ExtoleReportSchemaTool implements ExtoleSupportTool<Request> {
-    private ExtoleWebClientFactory extoleWebClientFactory;
+    private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 
-    ExtoleReportSchemaTool(ExtoleWebClientFactory extoleWebClientFactory) {
+    ExtoleReportSchemaTool(ExtoleTrustedWebClientFactory extoleWebClientFactory) {
         this.extoleWebClientFactory = extoleWebClientFactory;
     }
 
@@ -103,7 +103,7 @@ public class ExtoleReportSchemaTool implements ExtoleSupportTool<Request> {
           
         JsonNode response;
         try {
-            response = this.extoleWebClientFactory.getWebClient(clientId).get()
+            response = this.extoleWebClientFactory.getWebClientById(clientId).get()
                 .uri(uriBuilder -> uriBuilder
                     .path(url)
                     .queryParam("limit", String.valueOf(limit))

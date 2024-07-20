@@ -1,12 +1,14 @@
 package com.extole.weave.scenarios.help;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.AssistantScenarioBuilder;
-import com.cyster.ai.weave.service.conversation.Conversation;
+import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.weave.scenarios.help.tools.ExtoleClientTimelineTool;
 import com.extole.weave.scenarios.help.tools.ExtoleClientTool;
@@ -20,9 +22,19 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
 
     private AiWeaveService aiWeaveService;
     private Optional<Scenario<Void, ExtoleSessionContext>> scenario = Optional.empty();
-
-    ExtoleHelpScenario(AiWeaveService aiWeaveService) {
+    private List<Tool<?, ExtoleSessionContext>> tools = new ArrayList<>();
+    
+    ExtoleHelpScenario(AiWeaveService aiWeaveService,
+        ExtoleMeTool extoleMeTool,
+        ExtoleClientTool extoleClientTool,
+        ExtoleMyAuthorizationsTool extoleMyAuthorizationsTool,
+        ExtoleClientTimelineTool extoleClientTimelineTool) {
         this.aiWeaveService = aiWeaveService;
+        
+        this.tools.add(extoleMeTool);
+        this.tools.add(extoleClientTool);
+        this.tools.add(extoleMyAuthorizationsTool);
+        this.tools.add(extoleClientTimelineTool);
     }
 
     @Override
@@ -60,13 +72,12 @@ You help with questions around using the Extole SaaS Marketing platform.
 
             AssistantScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
 
-            builder
-                .setInstructions(instructions)
-                .withTool(new ExtoleMeTool())
-                .withTool(new ExtoleClientTool())
-                .withTool(new ExtoleMyAuthorizationsTool())
-                .withTool(new ExtoleClientTimelineTool());
-
+            builder.setInstructions(instructions);
+                
+            for(var tool: this.tools) {
+                builder.withTool(tool);
+            }
+    
             this.scenario = Optional.of(builder.getOrCreate());
         }
         return this;

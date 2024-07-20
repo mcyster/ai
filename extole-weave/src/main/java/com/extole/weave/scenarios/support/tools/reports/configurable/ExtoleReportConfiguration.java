@@ -7,7 +7,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import com.extole.client.web.ExtoleWebClientFactory;
+import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportAdvisorToolLoader;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -25,10 +25,10 @@ import java.util.List;
 public class ExtoleReportConfiguration implements ExtoleSupportAdvisorToolLoader  {
     private static final Logger logger = LogManager.getLogger(ExtoleReportConfiguration.class);
 
-    private ExtoleWebClientFactory extoleWebClientFactory;
+    private ExtoleTrustedWebClientFactory extoleWebClientFactory;
     private List<ExtoleSupportTool<?>> tools = new ArrayList<>();
 
-    public ExtoleReportConfiguration(ExtoleWebClientFactory extoleWebClientFactory, ApplicationContext context) throws IOException, ExtoleReportConfigurtationException {
+    public ExtoleReportConfiguration(ExtoleTrustedWebClientFactory extoleWebClientFactory, ApplicationContext context) throws IOException, ExtoleReportConfigurtationException {
         this.extoleWebClientFactory = extoleWebClientFactory;
         registerReports(context);
     }

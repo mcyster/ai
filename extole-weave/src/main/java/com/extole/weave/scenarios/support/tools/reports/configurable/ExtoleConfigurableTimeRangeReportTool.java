@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.client.web.ExtoleWebClientFactory;
+import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.weave.scenarios.support.tools.reports.ExtoleReportBuilder;
 import com.extole.weave.scenarios.support.tools.reports.configurable.UncachedExtoleConfigurableTimeRangeReportTool.Request;
@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool<Request> {
     Tool<Request, Void> tool;
 
-    ExtoleConfigurableTimeRangeReportTool(String name, Configuration configuration, ExtoleWebClientFactory extoleWebClientFactory) {
+    ExtoleConfigurableTimeRangeReportTool(String name, Configuration configuration, ExtoleTrustedWebClientFactory extoleWebClientFactory) {
 
        this.tool = new UncachedExtoleConfigurableTimeRangeReportTool(
            name,
@@ -131,7 +131,7 @@ class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool<Request
 class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool<Request> {
     private static final String PARAMETER_NAME_TIME_RANGE = "time_range";
     private static final String DEFAULT_TIME_RANGE = "LAST_MONTH";
-    private ExtoleWebClientFactory extoleWebClientFactory;
+    private ExtoleTrustedWebClientFactory extoleWebClientFactory;
     private String name;
     private String description;
     private String reportType;
@@ -146,7 +146,7 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool
             int rowLimit,
             Map<String, String> fixedParameters,
             boolean waitForResult,
-            ExtoleWebClientFactory extoleWebClientFactory) {
+            ExtoleTrustedWebClientFactory extoleWebClientFactory) {
         this.extoleWebClientFactory = extoleWebClientFactory;
         this.name = name;
         this.description = description;

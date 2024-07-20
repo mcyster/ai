@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.client.web.ExtoleWebClientFactory;
+import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.weave.scenarios.support.tools.reports.ExtoleClientEventGetByNotificationIdTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 class ExtoleClientEventGetByNotificationIdTool implements ExtoleSupportTool<Request> {
     Tool<Request, Void> tool;
 
-    ExtoleClientEventGetByNotificationIdTool(ExtoleWebClientFactory extoleWebClientFactory, AiWeaveService aiWeaveService) {
+    ExtoleClientEventGetByNotificationIdTool(ExtoleTrustedWebClientFactory extoleWebClientFactory, AiWeaveService aiWeaveService) {
         this.tool = aiWeaveService.cachingTool(new UncachedClientEventGetTool(extoleWebClientFactory));
     }
 
@@ -86,9 +86,9 @@ class ExtoleClientEventGetByNotificationIdTool implements ExtoleSupportTool<Requ
 class UncachedClientEventGetTool implements ExtoleSupportTool<Request> {
     private static final String NOTIFICATION_ID_PATTERN = "[a-z0-9]{18,20}";
 
-    private ExtoleWebClientFactory extoleWebClientFactory;
+    private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 
-    UncachedClientEventGetTool(ExtoleWebClientFactory extoleWebClientFactory) {
+    UncachedClientEventGetTool(ExtoleTrustedWebClientFactory extoleWebClientFactory) {
         this.extoleWebClientFactory = extoleWebClientFactory;
     }
 
