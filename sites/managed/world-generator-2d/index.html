@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="tags" content="simulation,trees,terrain">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D World Generator</title>
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        body { margin: 20px; overflow: hidden; }
+        canvas { display: block; }
+        .notes-box { border: 1px solid #ccc; padding: 10px; margin: 10px 0; background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h1>2D World Generator</h1>
+    <canvas id="worldCanvas" width="800" height="600"></canvas>
+    <script>
+        // Terrain generation parameters
+        const canvas = document.getElementById('worldCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        const tileSize = 4;  // Increase terrain detail by further decreasing tile size
+        const cols = Math.floor(width / tileSize);
+        const rows = Math.floor(height / tileSize);
+
+        // Randomly generate terrain heights
+        let heights = Array(cols).fill(0).map(() => Math.floor(Math.random() * rows / 2));
+
+        // Smooth out the terrain heights by averaging neighboring columns multiple times
+        for (let s = 0; s < 10; s++) {  // Increase repetitions for more smoothing
+            for (let i = 1; i < cols - 1; i++) {
+                heights[i] = Math.floor((heights[i-1] + heights[i] + heights[i+1]) / 3);
+            }
+        }
+
+        // Draw terrain function
+        function drawTerrain() {
+            for (let x = 0; x < cols; x++) {
+                for (let y = 0; y < rows; y++) {
+                    if (y >= rows - heights[x]) {
+                        if (y === rows - heights[x]) {
+                            ctx.fillStyle = "#228B22"; // Green color for grass
+                        } else if (rows - y - heights[x] % 2 > 1) {  // Variation between stone and dirt layer
+                            ctx.fillStyle = "#964B00"; // Brown color for dirt
+                        } else {
+                            ctx.fillStyle = "#808080"; // Grey color for stone
+                        }
+                    } else {
+                        ctx.fillStyle = "#87CEEB"; // Sky blue color
+                    }
+                    ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                }
+            }
+        }
+
+        // Randomly place trees on the terrain
+        function drawTrees() {
+            ctx.fillStyle = "#006400";  // Darker green color for tree leaves
+            for (let x = 0; x < cols; x++) {
+                if (Math.random() < 0.1) {  // Increase chance to place a tree
+                    const treeHeight = 6;  // Increased tree height
+                    const treeTrunkHeight = 3;  // Increased trunk height
+                    const treeTopY = rows - heights[x] - treeHeight;
+                    const treeTrunkY = rows - heights[x] - treeTrunkHeight;
+
+                    // Draw tree trunk
+                    ctx.fillStyle = "#8B4513";
+                    ctx.fillRect(x * tileSize, treeTrunkY * tileSize, tileSize, treeTrunkHeight * tileSize);
+
+                    // Draw tree leaves
+                    ctx.fillStyle = "#006400";
+                    for (let ty = 0; ty < treeHeight - treeTrunkHeight; ty++) {
+                        for (let tx = -2; tx <= 2; tx++) {  // Increased leaf width
+                            if (x + tx >= 0 && x + tx < cols) {  // Ensure leaves stay within canvas bounds
+                                ctx.fillRect((x + tx) * tileSize, (treeTopY + ty) * tileSize, tileSize, tileSize);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Initial draw
+        drawTerrain();
+        drawTrees();
+    </script>
+</body>
+</html>
