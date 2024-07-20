@@ -1,4 +1,4 @@
-async function getData(extoleClientId, reportRunnerId) {
+async function getTypedData(extoleClientId, reportRunnerId) {
     var url = `/extole/report-runners/${reportRunnerId}/latest/download.json`;
 
     console.log("fetch", url);

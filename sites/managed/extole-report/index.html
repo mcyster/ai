@@ -59,8 +59,27 @@ document.addEventListener("DOMContentLoaded", function() {
 async function getReport() {
     var extoleClientId = "1890234003";
     var reportRunnerId = "s869x14kpawsodmdk0f8";
-    var data = await getData(extoleClientId, reportRunnerId);
-    return data;
+    var data = await getTypedData(extoleClientId, reportRunnerId);
+
+    if (reportRunnerId != "s869x14kpawsodmdk0f8") {
+        throw new Error(`Update the typeData in getReport to match the reportRunnerId: ${reportRunnerId} for client ${extoleCientId}`);
+    }
+
+    var typedData = data.map(item => ({
+        period_end: item.period_end || null,
+        client_id: item.client_id || null,
+        client_name: item.client_name || null,
+        client_type: item.client_type || null,
+        vertical: item.vertical || null,
+        client_status: item.client_status || null,
+        integration_name: item.integration_name || null,
+        integration_type: item.integration_type || null,
+        destination: item.destination || null,
+        events: item.events || null,
+        events_count: item.events_count || 0,
+    }));
+
+    return typedData;
 }
 
 </script>
