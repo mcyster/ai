@@ -49,10 +49,8 @@ public class WebProxyController {
         @RequestParam Map<String, String> parameters,
         @RequestHeader HttpHeaders headers) throws RestException {
 
-        System.out.println("HERE1: " + path);
         String baseUri = (path.startsWith("/")) ? path.substring(1) : path;
 
-        
         var allowed = false;
         for(var allowedBaseUri: this.allowedBaseUris) {
             if (baseUri.startsWith(allowedBaseUri)) {
@@ -77,14 +75,10 @@ public class WebProxyController {
                 }) 
                 .retrieve()
                 .toEntity(String.class);
-              System.out.println("HERE2");
 
         } catch(Exception exception) {
-            System.out.println("HERE8");
             throw new RestException(HttpStatus.BAD_REQUEST,  "Proxying '" + baseUri + "' failed", exception);
         }
-
-        System.out.println(response.block().getBody());
 
         return response;
     }

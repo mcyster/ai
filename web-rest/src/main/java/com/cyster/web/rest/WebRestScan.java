@@ -7,5 +7,5 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @Configuration
 @ComponentScan
 @EnableScheduling
-public class WebSiteScan {
+public class WebRestScan {
 }

@@ -16,9 +16,10 @@ import com.cyster.rest.CysterRestScan;
 import com.cyster.store.CysterStoreScan;
 import com.cyster.weave.CysterSageScan;
 import com.cyster.weave.rest.WeaveRestScan;
-import com.cyster.web.rest.WebSiteScan;
+import com.cyster.web.rest.WebRestScan;
 import com.cyster.web.weave.WebDeveloperScan;
 import com.extole.client.ExtoleClientScan;
+import com.extole.rest.ExtoleRestScan;
 import com.extole.tickets.rest.ExtoleTicketsScan;
 import com.extole.weave.ExtoleWeaveScan;
 
@@ -32,7 +33,8 @@ import com.extole.weave.ExtoleWeaveScan;
     ExtoleTicketsScan.class, 
     CysterStoreScan.class, 
     ExtoleWeaveScan.class, 
-    WebSiteScan.class, 
+    WebRestScan.class,
+    ExtoleRestScan.class,
     CysterRestScan.class })
 public class Application {
 
