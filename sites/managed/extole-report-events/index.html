@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Extole Total Event Count</title>
-    <meta name="tags" content="extole,tickets,reports">
+    <meta name="tags" content="extole,tickets,reports,kpi">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Total Event Count by Period</h2>
+            <h2 id="graphTitle">Total Event Count by Week</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -68,10 +68,10 @@
         async function getReport(): Promise<Row[]> {
             var extoleClientId = "1890234003";
             var reportRunnerId = "s869x14kpawsodmdk0f8";
-            var data = await getData(extoleClientId, reportRunnerId);
             if (reportRunnerId != "s869x14kpawsodmdk0f8") {
-                throw new Error(`Update the typeData in getReport to match the reportRunnerId: ${reportRunnerId} for client ${extoleClientId}`);
+                throw new Error(`Update the interface Row to match the reportRunnerId: ${reportRunnerId} for client ${extoleClientId}`);
             }
+            var data = await getData(extoleClientId, reportRunnerId);
             const rows = data.map(item => ({
                 period_end: item.period_end || null,
                 client_id: item.client_id || null,
@@ -142,7 +142,7 @@
                             },
                             title: {
                                 display: true,
-                                text: 'Period',
+                                text: 'Week',
                                 font: {
                                     size: 16,
                                     weight: 'bold'
