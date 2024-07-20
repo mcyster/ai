@@ -36,6 +36,13 @@ In your Jira account, you will need to setup a webhook
   - issue requests for: create, comment create
 
 
+# Using
+
+Get the scehma of a Report Runne
+```
+curl -s -H "Authorization: Bearer $token" -H 'Content-Type: application/json' 'http://localhost:8080/conversations/messages' -d '{ "scenario": "ExtoleSupportHelp", "prompt": "Can you write a typescript class for a row of the report id: s4y0iq3ses720z9dt8mf in client id: 1890234003 reportRunType is report_runner"}' | jq -r '.response.content'
+```
+
 ## References
 - https://developer.atlassian.com/server/jira/platform/webhooks/
 - https://ngrok.com/

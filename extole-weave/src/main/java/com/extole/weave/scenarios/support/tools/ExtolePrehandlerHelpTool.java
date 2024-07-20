@@ -9,6 +9,8 @@ import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message.Type;
+import com.extole.client.web.ExtoleWebClientException;
+import com.extole.client.web.ExtoleWebClientFactory;
 import com.extole.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionScenario;
 import com.extole.weave.scenarios.support.tools.ExtolePrehandlerHelpTool.Request;
 import com.extole.weave.session.ExtoleSessionContext;
@@ -63,7 +65,7 @@ class ExtolePrehandlerHelpTool implements ExtoleSupportTool<Request> {
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
-        } catch (WebClientResponseException.Forbidden exception) {
+        } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientException exception) {
             throw new ToolException("Internal error, unable to get clients");

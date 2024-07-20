@@ -1,4 +1,4 @@
-package com.extole.weave.scenarios.support.tools;
+package com.extole.client.web;
 
 import java.util.Optional;
 
@@ -9,8 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.cyster.ai.weave.service.FatalToolException;
-import com.cyster.ai.weave.service.ToolException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -59,7 +57,7 @@ public class ExtoleWebClientBuilder {
         return this;
     }
 
-    public WebClient build() throws ToolException {
+    public WebClient build() throws ExtoleWebClientException {
         Optional<String> key = Optional.empty();
 
         if (this.clientId.isEmpty()) {
@@ -68,7 +66,7 @@ public class ExtoleWebClientBuilder {
                     key = this.superApiKey;
                     this.clientId = Optional.of("1890234003");
                 } else {
-                    throw new FatalToolException("No Extole apiKey specified");
+                    throw new ExtoleWebClientSuperUserTokenException("No Extole apiKey specified");
                 }
             } else {
                 key = this.apiKey;
@@ -81,7 +79,7 @@ public class ExtoleWebClientBuilder {
                 // TODO verify clientId == access token if unverified
                 key = this.apiKey;
             } else {
-                throw new FatalToolException("No Extole apiKey specified");
+                throw new ExtoleWebClientTokenException("No Extole apiKey specified");
             }
         }
 
@@ -89,13 +87,13 @@ public class ExtoleWebClientBuilder {
             final String bearer = key.get();
             this.webClientBuilder.defaultHeaders(headers -> headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + bearer));
         } else {
-            throw new FatalToolException("No Extole apiKey specified");
+            throw new ExtoleWebClientTokenException("No Extole apiKey specified");
         }
 
         return this.webClientBuilder.build();
     }
 
-    private String getClientApiKey(String superApiKey, String clientId) throws ToolException {
+    private String getClientApiKey(String superApiKey, String clientId) throws ExtoleWebClientException {
         ObjectNode payload = JsonNodeFactory.instance.objectNode();
         payload.put("client_id", clientId);
 
@@ -112,21 +110,21 @@ public class ExtoleWebClientBuilder {
                 .retrieve()
                 .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response ->
                     response.bodyToMono(String.class).flatMap(errorBody ->
-                        Mono.error(new ToolException("Invalid extoleManagedApiKey: " + getKeyPeek(superApiKey) + " or clientId: " + clientId,
-                                "Bad request code: " + response.statusCode() + " body: " + errorBody + " payload:" + payload.toString()))
+                        Mono.error(new ExtoleWebClientException("Invalid extoleManagedApiKey: " + getKeyPeek(superApiKey) + " or clientId: " + clientId 
+                              + " bad request code: " + response.statusCode() + " body: " + errorBody + " payload:" + payload.toString()))
                     )
                 )
                 .bodyToMono(JsonNode.class)
                 .block();
         } catch(Throwable exception) {
-            if (exception.getCause() instanceof ToolException) {
-                throw (ToolException)exception.getCause();
+            if (exception.getCause() instanceof ExtoleWebClientException) {
+                throw (ExtoleWebClientException)exception.getCause();
             }
             throw exception;
         }
 
         if (!result.path("access_token").isEmpty()) {
-            throw new ToolException("Internal error, failed to obtain Extole access_token for client");
+            throw new ExtoleWebClientTokenException("Internal error, failed to obtain Extole access_token for client: " + clientId);
         }
 
         return result.path("access_token").asText();

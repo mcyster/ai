@@ -7,8 +7,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
+import com.extole.client.web.ExtoleWebClientException;
+import com.extole.client.web.ExtoleWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
-import com.extole.weave.scenarios.support.tools.ExtoleWebClientFactory;
 import com.extole.weave.scenarios.support.tools.reports.ExtoleClientSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -52,7 +53,7 @@ class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
-        } catch (WebClientResponseException.Forbidden exception) {
+        } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientException exception) {
             throw new ToolException("Internal error, unable to get clients");

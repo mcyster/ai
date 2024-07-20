@@ -6,8 +6,8 @@ import java.util.Objects;
 
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.extole.client.web.ExtoleWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
-import com.extole.weave.scenarios.support.tools.ExtoleWebClientFactory;
 import com.extole.weave.scenarios.support.tools.reports.ExtoleReportBuilder;
 import com.extole.weave.scenarios.support.tools.reports.configurable.UncachedExtoleConfigurableTimeRangeReportTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;

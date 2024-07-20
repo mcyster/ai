@@ -8,9 +8,13 @@ import java.util.Optional;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.weave.scenarios.support.tools.ExtoleWebClientFactory;
+import com.extole.client.web.ExtoleWebClientException;
+import com.extole.client.web.ExtoleWebClientFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -97,10 +101,14 @@ public class ExtoleReportBuilder {
 
     public ObjectNode build() throws ToolException {
         WebClient webClient;
-        if (this.clientId.isPresent()) {
-            webClient = this.webClientFactory.getWebClient(this.clientId.get());
-        } else {
-            webClient = this.webClientFactory.getSuperUserWebClient();
+        try {
+            if (this.clientId.isPresent()) {
+                webClient = this.webClientFactory.getWebClient(this.clientId.get());
+            } else {
+                webClient = this.webClientFactory.getSuperUserWebClient();
+            }
+        } catch (ExtoleWebClientException exception) {
+            throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         }
 
         var reportTag = "ai-" + reportHash(payload);
@@ -207,19 +215,24 @@ public class ExtoleReportBuilder {
             return null;
         }
 
-        WebClient webClient = this.webClientFactory.getWebClient(this.clientId.get());
-
-        JsonNode reports = webClient.get()
-            .uri(uriBuilder -> uriBuilder
-                .path("/v4/reports")
-                .queryParam("required_tags", reportTag)
-                .queryParam("limit", 1)
-                .build())
-            .accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .bodyToMono(JsonNode.class)
-            .block();
-
+        JsonNode reports;
+        try {
+            WebClient webClient = this.webClientFactory.getWebClient(this.clientId.get());
+    
+            reports = webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                    .path("/v4/reports")
+                    .queryParam("required_tags", reportTag)
+                    .queryParam("limit", 1)
+                    .build())
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+        } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
+            throw new FatalToolException("extoleSuperUserToken is invalid", exception);        
+        }
+        
         if (!reports.isArray() || reports.size() == 0) {
             return null;
         }

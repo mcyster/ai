@@ -6,8 +6,8 @@ import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.ToolException;
+import com.extole.client.web.ExtoleWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
-import com.extole.weave.scenarios.support.tools.ExtoleWebClientFactory;
 import com.extole.weave.scenarios.support.tools.reports.ExtoleSummaryReportTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;

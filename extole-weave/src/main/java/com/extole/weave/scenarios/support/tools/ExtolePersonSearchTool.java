@@ -11,6 +11,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
+import com.extole.client.web.ExtoleWebClientException;
+import com.extole.client.web.ExtoleWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtolePersonSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -63,6 +65,8 @@ class ExtolePersonSearchTool implements ExtoleSupportTool<Request> {
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
+        } catch(ExtoleWebClientException exception) { 
+            throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientResponseException.Forbidden exception) {
             // Should be a 404/400 not a 403
             var errorResponse = exception.getResponseBodyAs(JsonNode.class);
@@ -118,7 +122,7 @@ class ExtolePersonSearchTool implements ExtoleSupportTool<Request> {
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
-        } catch (WebClientResponseException.Forbidden exception) {
+        } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientException exception) {
             throw new ToolException("Internal error, unable to get person(s)");

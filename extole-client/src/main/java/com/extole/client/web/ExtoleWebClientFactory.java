@@ -1,4 +1,4 @@
-package com.extole.weave.scenarios.support.tools;
+package com.extole.client.web;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -12,8 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.ai.weave.service.FatalToolException;
-import com.cyster.ai.weave.service.ToolException;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
@@ -37,9 +35,9 @@ public class ExtoleWebClientFactory {
         }
     }
 
-    public WebClient getSuperUserWebClient() throws ToolException {
+    public WebClient getSuperUserWebClient() throws ExtoleWebClientException {
         if (this.extoleSuperUserApiKey.get().isEmpty()) {
-            throw new FatalToolException("extoleSuperUserApiKey is required");
+            throw new ExtoleWebClientSuperUserTokenException("extoleSuperUserApiKey is required");
         }
 
         return ExtoleWebClientBuilder.builder(extoleBaseUri)
@@ -47,16 +45,16 @@ public class ExtoleWebClientFactory {
             .build();
     }
 
-    public WebClient getWebClient(String clientId) throws ToolException {
+    public WebClient getWebClient(String clientId) throws ExtoleWebClientException {
         if (this.extoleSuperUserApiKey.get().isEmpty()) {
-            throw new FatalToolException("extoleSuperUserApiKey is required");
+            throw new ExtoleWebClientSuperUserTokenException("extoleSuperUserApiKey is required");
         }
 
         if (clientId == null || clientId.isBlank()) {
-            throw new FatalToolException("clientId is required");
+            throw new ExtoleWebClientInvalidIdException("clientId is required");
         }
         if (!clientId.matches("^\\d{1,12}$")) {
-            throw new FatalToolException("A clientId is 1 to 12 digits");
+            throw new ExtoleWebClientInvalidIdException("A clientId is 1 to 12 digits");
         }
 
         return ExtoleWebClientBuilder.builder(extoleBaseUri)
@@ -93,7 +91,7 @@ public class ExtoleWebClientFactory {
         } catch (WebClientResponseException.Forbidden exception) {
             logger.error("Extole super user key invalid or expired. Key: " + getKeyPeek(superApiKey));
             return superApiKey;
-        } catch (ToolException exception) {
+        } catch (ExtoleWebClientException exception) {
             logger.error("Failed to refersh Extole super user key. Key: " + getKeyPeek(superApiKey), exception);
             return superApiKey;
         }

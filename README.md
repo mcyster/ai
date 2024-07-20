@@ -1,4 +1,4 @@
-# ai
+#n ai
 Restful ai app
 
 
@@ -45,12 +45,12 @@ curl -s 'http://localhost:8080/scenarios'  | jq -r '.[].name'
 
 Synchronously run a scenario:
 ```
-curl -s  -H 'Content-Type: application/json' 'http://localhost:8080/conversations/messages' -d '{"scenario":"translate", "prompt": "Hello World", "parameters": { "language": "en", "target_language": "fr" }}' | jq .
+curl -s  -H 'Content-Type: application/json' 'http://localhost:8080/conversations/messages' -d '{"scenario":"Translate", "prompt": "Hello World", "parameters": { "language": "en", "target_language": "fr" }}' | jq .
 ```
 
 Synchronously run a scenario with details of what happened:
 ```
-curl -s  -H 'Content-Type: application/json' 'http://localhost:8080/conversations/messages?level=Debug' -d '{"scenario":"translate", "prompt": "Hello World", "parameters": { "language": "en", "target_language": "fr" }}' | jq .
+curl -s  -H 'Content-Type: application/json' 'http://localhost:8080/conversations/messages?level=Debug' -d '{"scenario":"Translate", "prompt": "Hello World", "parameters": { "language": "en", "target_language": "fr" }}' | jq .
 ```
 
 # jira-app
@@ -66,12 +66,12 @@ cd $AI_HOME
 
 Test helping support on a ticket with
 ```
-curl -s  -H 'Content-Type: application/json' 'http://localhost:8090/conversations/messages' -d '{"scenario":"extoleSupportTicket", "parameters": { "ticketNumber": "SUP-NNNN" }}' | jq .
+curl -s  -H 'Content-Type: application/json' 'http://localhost:8090/conversations/messages' -d '{"scenario":"ExtoleSupportTicket", "parameters": { "ticketNumber": "SUP-NNNN" }}' | jq .
 ```
 
 Test mapping a ticket to a runbook
 ```
-curl -s  -H 'Content-Type: application/json' 'http://localhost:8090/conversations/messages' -d '{"scenario":"extoleTicketRunbook", "parameters": { "ticketNumber": "SUP-NNNN" }}' | jq .
+curl -s  -H 'Content-Type: application/json' 'http://localhost:8090/conversations/messages' -d '{"scenario":"ExtoleTicketRunbookSelector", "parameters": { "ticketNumber": "SUP-NNNN" }}' | jq .
 ```
 
 # Development Environment Setup

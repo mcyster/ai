@@ -7,6 +7,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
+import com.extole.client.web.ExtoleWebClientException;
+import com.extole.client.web.ExtoleWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleCampaignVariablesGetTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -51,6 +53,8 @@ class ExtoleCampaignVariablesGetTool implements ExtoleSupportTool<Request> {
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();
+        } catch (ExtoleWebClientException exception) {
+            throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientResponseException.Forbidden exception) {
             var errorResponse = exception.getResponseBodyAs(JsonNode.class);
             if (errorResponse.has("code") && errorResponse.path("code").asText().equals("campaign_not_found")) {

@@ -7,9 +7,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
+import com.extole.client.web.ExtoleWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportAdvisorToolLoader;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
-import com.extole.weave.scenarios.support.tools.ExtoleWebClientFactory;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Configuration
 public class ExtoleReportConfiguration implements ExtoleSupportAdvisorToolLoader  {

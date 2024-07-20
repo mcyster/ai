@@ -26,6 +26,7 @@ dependencies {
     implementation project(':rest')
     implementation project(':extole-tickets-rest')
     implementation project(':cyster-weave')
+    implementation project(':extole-client')
     implementation project(':extole-weave')
     implementation project(':web-weave')
     implementation project(':weave-rest')

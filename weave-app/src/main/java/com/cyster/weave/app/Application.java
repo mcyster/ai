@@ -17,11 +17,12 @@ import com.cyster.weave.CysterSageScan;
 import com.cyster.weave.rest.WeaveRestScan;
 import com.cyster.web.rest.WebSiteScan;
 import com.cyster.web.weave.WebDeveloperScan;
+import com.extole.client.ExtoleClientScan;
 import com.extole.tickets.rest.ExtoleTicketsScan;
 import com.extole.weave.ExtoleSageScan;
 
 @SpringBootApplication
-@Import(value = { CysterSageScan.class, WeaveRestScan.class, WebDeveloperScan.class, ExtoleTicketsScan.class, CysterStoreScan.class, ExtoleSageScan.class, WebSiteScan.class, CysterRestScan.class })
+@Import(value = { CysterSageScan.class, WeaveRestScan.class, WebDeveloperScan.class, ExtoleClientScan.class, ExtoleTicketsScan.class, CysterStoreScan.class, ExtoleSageScan.class, WebSiteScan.class, CysterRestScan.class })
 public class Application {
 
     private static final Logger logger = LogManager.getLogger(Application.class);
