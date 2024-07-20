@@ -22,7 +22,7 @@ import com.fasterxml.jackson.module.jsonSchema.jakarta.types.ObjectSchema;
 
 
 @Component
-class ExtoleReportSchemaTool implements ExtoleSupportTool<Request> {
+public class ExtoleReportSchemaTool implements ExtoleSupportTool<Request> {
     private ExtoleWebClientFactory extoleWebClientFactory;
 
     ExtoleReportSchemaTool(ExtoleWebClientFactory extoleWebClientFactory) {
@@ -36,7 +36,7 @@ class ExtoleReportSchemaTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getDescription() {
-        return "Get a person by person_id";
+        return "Get the json schema of a report given the client id and report id";
     }
 
     @Override
@@ -110,7 +110,7 @@ class ExtoleReportSchemaTool implements ExtoleSupportTool<Request> {
 
         return response;
     }
-    static record Request(
+    public static record Request(
         @JsonPropertyDescription("The 1 to 12 digit id for a client.")
         @JsonProperty(required = true)
         String clientId,

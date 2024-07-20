@@ -2,13 +2,10 @@ package com.cyster.web.weave.scenarios;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.impl.openai.HttpClientLogger.Response;
 import com.cyster.ai.weave.service.FatalToolException;
-import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
 import com.cyster.web.weave.scenarios.WebsiteFilePutTool.Request;
-import com.cyster.web.weave.scenarios.WebsiteProvider.Website;
 import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Asset;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
