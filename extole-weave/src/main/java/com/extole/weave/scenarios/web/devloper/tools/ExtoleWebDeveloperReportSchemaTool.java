@@ -6,10 +6,9 @@ import com.cyster.ai.weave.service.ToolException;
 import com.cyster.web.weave.scenarios.ManagedWebsites;
 import com.cyster.web.weave.scenarios.WebsiteDeveloperTool;
 import com.extole.weave.scenarios.support.tools.ExtoleReportSchemaTool;
+import com.extole.weave.scenarios.support.tools.ExtoleReportSchemaTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-
-import com.extole.weave.scenarios.web.devloper.tools.ExtoleWebDeveloperReportSchemaTool.Request;
 
 @Component
 public class ExtoleWebDeveloperReportSchemaTool implements WebsiteDeveloperTool<Request> {
@@ -35,18 +34,9 @@ public class ExtoleWebDeveloperReportSchemaTool implements WebsiteDeveloperTool<
     }
 
     @Override
-    public Object execute(Request parameters, ManagedWebsites context) throws ToolException {
-        var request = new ExtoleReportSchemaTool.Request(parameters.clientId, parameters.reportId);
+    public Object execute(Request request, ManagedWebsites context) throws ToolException {
         return this.reportSchemaTool.execute(request, null);
     }
 
-    static record Request(
-        @JsonPropertyDescription("The 1 to 12 digit id for a client.")
-        @JsonProperty(required = true)
-        String clientId,
 
-        @JsonPropertyDescription("The 20 to 22 character alphanumeric Extole report id")
-        @JsonProperty(required = true)
-        String reportId
-    ) {}
 }

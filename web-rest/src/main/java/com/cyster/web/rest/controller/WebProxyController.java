@@ -1,19 +1,23 @@
 package com.cyster.web.rest.controller;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.cyster.rest.RestException;
 
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +30,14 @@ public class WebProxyController {
     
     @Autowired
     public WebProxyController(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.build();
+        int bufferSize = 256 * 1024 * 1024; 
+        
+        this.webClient = webClientBuilder
+                .clientConnector(new ReactorClientHttpConnector(HttpClient.create()))
+                .exchangeStrategies(ExchangeStrategies.builder()
+                        .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(bufferSize))
+                        .build())
+                .build();
         
         this.allowedBaseUris = new ArrayList<>();
         this.allowedBaseUris.add("https://api.extole.io");
@@ -60,7 +71,10 @@ public class WebProxyController {
                     parameters.forEach(builder::queryParam);
                     return builder.build().toUri();
                 })
-                .headers(httpHeaders -> headers.forEach(httpHeaders::put))
+                .headers(httpHeaders -> {
+                    headers.forEach(httpHeaders::put);
+                    httpHeaders.remove(HttpHeaders.ACCEPT_ENCODING); // Remove the Accept-Encoding header
+                }) 
                 .retrieve()
                 .toEntity(String.class);
               System.out.println("HERE2");
@@ -70,7 +84,7 @@ public class WebProxyController {
             throw new RestException(HttpStatus.BAD_REQUEST,  "Proxying '" + baseUri + "' failed", exception);
         }
 
-        System.out.println("HERE9");
+        System.out.println(response.block().getBody());
 
         return response;
     }

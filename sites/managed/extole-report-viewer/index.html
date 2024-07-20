@@ -48,10 +48,10 @@
     <div id="inputFormContainer">
         <form id='inputForm' style="display: flex; flex-direction: column; max-width: 400px; margin: auto;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <label for='report_type' style="flex: 1;">Report Type:</label>
-                <select id='report_type' name='report_type' style="flex: 2;">
-                    <option value="single">Single</option>
-                    <option value="repeated">Repeated</option>
+                <label for='report_run_type' style="flex: 1;">Report Run Type:</label>
+                <select id='report_run_type' name='report_run_type' style="flex: 2;">
+                    <option value="report">Single</option>
+                    <option value="report_runner">Repeated</option>
                 </select>
             </div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
@@ -72,12 +72,12 @@
 document.addEventListener("DOMContentLoaded", function() {
     const reportIdInput = document.getElementById('report_id');
     const extoleTokenInput = document.getElementById('extole_token');
-    const reportTypeSelect = document.getElementById('report_type');
+    const reportRunTypeSelect = document.getElementById('report_run_type');
     
     // Populate the form with stored values
     const storedReportId = sessionStorage.getItem('report_id');
     const storedExtoleToken = localStorage.getItem('extole_token');
-    const storedReportType = sessionStorage.getItem('report_type');
+    const storedReportRunType = sessionStorage.getItem('report_run_type');
 
     if (storedReportId) {
         reportIdInput.value = storedReportId;
@@ -87,31 +87,31 @@ document.addEventListener("DOMContentLoaded", function() {
         extoleTokenInput.value = storedExtoleToken;
     }
 
-    if (storedReportType) {
-        reportTypeSelect.value = storedReportType;
+    if (storedReportRunType) {
+        reportRunTypeSelect.value = storedReportRunType;
     }
 
     document.getElementById('inputForm').addEventListener('submit', function(event) {
         event.preventDefault();
         const reportId = reportIdInput.value;
         const extoleToken = extoleTokenInput.value;
-        const reportType = reportTypeSelect.value;
+        const reportRunType = reportRunTypeSelect.value;
         sessionStorage.setItem('report_id', reportId);
         localStorage.setItem('extole_token', extoleToken);
-        sessionStorage.setItem('report_type', reportType);
+        sessionStorage.setItem('report_run_type', reportRunType);
         showData();
     });
 
     async function showData() {
         const reportId = sessionStorage.getItem('report_id');
         const extoleToken = localStorage.getItem('extole_token');
-        const reportType = sessionStorage.getItem('report_type');
+        const reportRunType = sessionStorage.getItem('report_run_type');
         
-        console.log('Fetching data with Report ID:', reportId, 'Extole Token:', extoleToken, 'and Report Type:', reportType);
+        console.log('Fetching data with Report ID:', reportId, 'Extole Token:', extoleToken, 'and Report Run Type:', reportRunType);
         
         let data;
         try {
-            data = await getData(reportType, reportId, extoleToken);
+            data = await getData(reportRunType, reportId, extoleToken);
 
             console.log('Data fetched successfully:', data);
             const dataDisplay = document.getElementById('jsonDisplay');
@@ -128,7 +128,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const urlParams = new URLSearchParams(window.location.search);
     const queryReportId = urlParams.get('report_id');
     const queryExtoleToken = localStorage.getItem('extole_token');
-    const queryReportType = urlParams.get('report_type');
+    const queryReportRunType = urlParams.get('report_run_type');
 
     if (queryReportId) {
         sessionStorage.setItem('report_id', queryReportId);
@@ -140,14 +140,14 @@ document.addEventListener("DOMContentLoaded", function() {
         extoleTokenInput.value = queryExtoleToken;
     }
 
-    if (queryReportType) {
-        sessionStorage.setItem('report_type', queryReportType);
-        reportTypeSelect.value = queryReportType;
+    if (queryReportRunType) {
+        sessionStorage.setItem('report_run_type', queryReportRunType);
+        reportRunTypeSelect.value = queryReportRunType;
     }
 
     console.log("Initial reportId:", queryReportId);
     console.log("Initial extoleToken:", queryExtoleToken);
-    console.log("Initial reportType:", queryReportType);
+    console.log("Initial reportRunType:", queryReportRunType);
 
     // Initial data display call if values are already present
     showData();

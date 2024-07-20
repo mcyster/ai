@@ -1,15 +1,15 @@
 
-async function getData(reportType, reportId, extoleToken) {
+async function getData(reportRunType, reportId, extoleToken) {
     if (!reportId || !extoleToken) {
         return null;
     }
-    if (!reportType) {
-        reportType = "single";
+    if (!reportRunType) {
+        reportRunType = "report";
     }
 
     
     var uri;
-    if (reportType == "repeated") {
+    if (reportRunType == "report_runner") {
        uri = `/proxy/https://api.extole.io/v6/report-runners/${reportId}/latest/download.json`;
     } else {
        uri = `/proxy/https://api.extole.io/v4/reports/${reportId}/download.json`;

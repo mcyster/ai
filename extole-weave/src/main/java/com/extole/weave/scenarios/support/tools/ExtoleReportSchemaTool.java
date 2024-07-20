@@ -46,11 +46,11 @@ public class ExtoleReportSchemaTool implements ExtoleSupportTool<Request> {
 
     @Override
     public Object execute(Request request, Void context) throws ToolException {
-        return getReportSchema(request.clientId(), request.reportId());
+        return getReportSchema(request.clientId(), request.reportId(), request.reportRunType());
     }
 
-    private JsonSchema getReportSchema(String clientId, String reportId) throws ToolException {
-        JsonNode dataNodes = loadReport(clientId, reportId, 1);
+    private JsonSchema getReportSchema(String clientId, String reportId, ReportRunType runType) throws ToolException {
+        JsonNode dataNodes = loadReport(clientId, reportId, runType, 1);
         
         try {
             System.out.println("dataNodes: " + (new ObjectMapper()).writerWithDefaultPrettyPrinter().writeValueAsString(dataNodes));
@@ -90,12 +90,20 @@ public class ExtoleReportSchemaTool implements ExtoleSupportTool<Request> {
     }
     
     // Don't want to pass report to AI 
-    private JsonNode loadReport(String clientId, String reportId, int limit) throws ToolException {
+    private JsonNode loadReport(String clientId, String reportId, ReportRunType runType, int limit) throws ToolException {
+        
+        String url;
+        if (runType == ReportRunType.REPORT) {
+            url = "/v4/reports/" + reportId + "/download.json";
+        } else {
+            url = "/v6/report-runners/" + reportId + "/latest/download.json";
+        }
+          
         JsonNode response;
         try {
             response = this.extoleWebClientFactory.getWebClient(clientId).get()
                 .uri(uriBuilder -> uriBuilder
-                    .path("/v4/reports/" + reportId + "/download.json")
+                    .path(url)
                     .queryParam("limit", String.valueOf(limit))
                     .build())
                 .accept(MediaType.APPLICATION_JSON)
@@ -110,6 +118,16 @@ public class ExtoleReportSchemaTool implements ExtoleSupportTool<Request> {
 
         return response;
     }
+    
+    public enum ReportRunType {
+        @JsonProperty("Report")
+        @JsonPropertyDescription("This report only runs once")
+        REPORT,
+        @JsonProperty("ReportRunner")
+        @JsonPropertyDescription("This type of report runs multiple times. Scheduled reports are this type")
+        REPORT_RUNNER
+    }
+    
     public static record Request(
         @JsonPropertyDescription("The 1 to 12 digit id for a client.")
         @JsonProperty(required = true)
@@ -117,7 +135,21 @@ public class ExtoleReportSchemaTool implements ExtoleSupportTool<Request> {
 
         @JsonPropertyDescription("The 20 to 22 character alphanumeric Extole report id")
         @JsonProperty(required = true)
-        String reportId
-    ) {};
+        String reportId,
+        
+        @JsonPropertyDescription("Report type")
+        @JsonProperty(required = false)
+        ReportRunType reportRunType         
+    ) {
+        public Request(
+            @JsonProperty("clientId") String clientId,
+            @JsonProperty("reportId") String reportId,
+            @JsonProperty("reportRunType") ReportRunType reportRunType
+        ) {
+            this.clientId = clientId;
+            this.reportId = reportId;
+            this.reportRunType = reportRunType != null ? reportRunType : ReportRunType.REPORT;
+        }
+    }
 }
 
