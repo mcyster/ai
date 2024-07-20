@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.cyster.ai.weave.service.ToolException;
-import com.cyster.jira.client.JiraWebClientFactory;
+import com.cyster.jira.client.web.JiraWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.weave.scenarios.support.tools.jira.SupportTicketSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;

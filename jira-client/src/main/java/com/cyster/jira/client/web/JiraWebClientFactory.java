@@ -1,18 +1,21 @@
-package com.cyster.jira.client;
+package com.cyster.jira.client.web;
 
 import java.util.Optional;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+@Component
 public class JiraWebClientFactory {
     private Optional<String> jiraApiKey = Optional.empty();
     private final String jiraBaseUri;
 
     private static final Logger logger = LogManager.getLogger(JiraWebClientFactory.class);
 
-    public JiraWebClientFactory(String jiraApiKey, String jiraBaseUri) {
+    public JiraWebClientFactory(@Value("${JIRA_API_KEY}") String jiraApiKey, @Value("https://extole.atlassian.net/") String jiraBaseUri) {
 
         if (jiraApiKey != null) {
             this.jiraApiKey = Optional.of(jiraApiKey);

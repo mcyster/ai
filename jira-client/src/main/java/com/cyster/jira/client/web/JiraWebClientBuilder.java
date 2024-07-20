@@ -1,4 +1,4 @@
-package com.cyster.jira.client;
+package com.cyster.jira.client.web;
 
 import java.nio.charset.StandardCharsets;
 

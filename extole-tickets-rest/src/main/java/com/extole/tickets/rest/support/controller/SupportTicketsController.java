@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.jira.client.JiraWebClientFactory;
+import com.cyster.jira.client.web.JiraWebClientFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,7 +38,9 @@ public class SupportTicketsController {
     private Path tempDirectory;
     private final ObjectMapper objectMapper;
 
-    public SupportTicketsController(@Value("${AI_HOME}") String aiHome, JiraWebClientFactory jiraWebClientFactory,
+    public SupportTicketsController(
+        @Value("${AI_HOME}") String aiHome, 
+        JiraWebClientFactory jiraWebClientFactory,
         ObjectMapper objectMapper) {
         Path directory = Paths.get(aiHome);
         if (!Files.exists(directory)) {

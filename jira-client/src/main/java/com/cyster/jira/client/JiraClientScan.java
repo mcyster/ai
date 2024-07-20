@@ -1,9 +1,9 @@
-package com.extole.client;
+package com.cyster.jira.client;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ComponentScan
-public class ExtoleClientScan {
+public class JiraClientScan {
 }

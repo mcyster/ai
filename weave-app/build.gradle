@@ -25,6 +25,7 @@ dependencies {
     implementation project(':store')
     implementation project(':rest')
     implementation project(':cyster-weave')
+    implementation project(':jira-client')
     implementation project(':extole-tickets-rest')
     implementation project(':extole-client')
     implementation project(':extole-weave')

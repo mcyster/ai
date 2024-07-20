@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import com.cyster.jira.client.adf.writer.AtlassianDocumentMapper;
+import com.cyster.jira.client.adf.writer.AtlassianDocumentMarkdownVisitor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

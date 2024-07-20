@@ -1,4 +1,4 @@
-package com.cyster.adf.reader;
+package com.cyster.jira.client.adf.reader;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

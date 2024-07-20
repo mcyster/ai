@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import com.cyster.adf.writer.AtlassianDocumentMapper;
 import com.cyster.ai.weave.service.ToolException;
-import com.cyster.jira.client.JiraWebClientFactory;
+import com.cyster.jira.client.adf.writer.AtlassianDocumentMapper;
+import com.cyster.jira.client.web.JiraWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.weave.scenarios.support.tools.jira.SupportTicketCommentAddTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;

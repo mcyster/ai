@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
+import com.cyster.jira.client.JiraClientScan;
 import com.cyster.rest.ApplicationServerConfig;
 import com.cyster.rest.CysterRestScan;
 import com.cyster.store.CysterStoreScan;
@@ -19,10 +20,21 @@ import com.cyster.web.rest.WebSiteScan;
 import com.cyster.web.weave.WebDeveloperScan;
 import com.extole.client.ExtoleClientScan;
 import com.extole.tickets.rest.ExtoleTicketsScan;
-import com.extole.weave.ExtoleSageScan;
+import com.extole.weave.ExtoleWeaveScan;
 
 @SpringBootApplication
-@Import(value = { CysterSageScan.class,WeaveRestScan.class, WebDeveloperScan.class, ExtoleClientScan.class, ExtoleTicketsScan.class, CysterStoreScan.class, ExtoleSageScan.class,  WebSiteScan.class, CysterRestScan.class })
+@Import(value = { 
+    CysterSageScan.class,
+    WeaveRestScan.class, 
+    WebDeveloperScan.class, 
+    ExtoleClientScan.class, 
+    JiraClientScan.class,
+    ExtoleTicketsScan.class, 
+    CysterStoreScan.class, 
+    ExtoleWeaveScan.class, 
+    WebSiteScan.class, 
+    CysterRestScan.class 
+})
 public class Application {
 
     private static final Logger logger = LogManager.getLogger(Application.class);
