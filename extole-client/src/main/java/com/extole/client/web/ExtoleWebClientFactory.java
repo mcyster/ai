@@ -1,8 +1,5 @@
 package com.extole.client.web;
 
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 

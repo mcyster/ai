@@ -1,6 +1,7 @@
 package com.extole.weave.scenarios.support.tools;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -52,7 +53,7 @@ public class ExtoleReportSchemaTool implements ExtoleSupportTool<Request> {
     }
 
     private JsonSchema getReportSchema(String clientId, String reportId, ReportRunType runType) throws ToolException {
-        JsonNode dataNodes = loadReport(clientId, reportId, runType, 1);
+        JsonNode dataNodes = tryHardToloadReport(clientId, reportId, runType, 1);
         
         try {
             System.out.println("dataNodes: " + (new ObjectMapper()).writerWithDefaultPrettyPrinter().writeValueAsString(dataNodes));
@@ -90,9 +91,28 @@ public class ExtoleReportSchemaTool implements ExtoleSupportTool<Request> {
         
         return dataSchema;
     }
-    
+   
+    private JsonNode tryHardToloadReport(String clientId, String reportId, ReportRunType runType, int limit) throws ToolException {
+        Optional<JsonNode> result;
+        
+        result = loadReport(clientId, reportId, runType, limit);
+        if (result.isEmpty()) {
+            if (runType == ReportRunType.REPORT) {
+                runType = ReportRunType.REPORT_RUNNER;
+            } else {
+                runType = ReportRunType.REPORT;
+            }
+            result = loadReport(clientId, reportId, runType, limit);
+            if (result.isEmpty()) {
+                throw new ToolException("Unable to load report/report_runner");
+            }
+        }
+        
+        return result.get();
+    }
+
     // Don't want to pass report to AI 
-    private JsonNode loadReport(String clientId, String reportId, ReportRunType runType, int limit) throws ToolException {
+    private Optional<JsonNode> loadReport(String clientId, String reportId, ReportRunType runType, int limit) throws ToolException {
         
         String url;
         if (runType == ReportRunType.REPORT) {
@@ -115,10 +135,10 @@ public class ExtoleReportSchemaTool implements ExtoleSupportTool<Request> {
         } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientException exception) {
-            throw new FatalToolException("Problems fetching report: " + reportId, exception);
+            return Optional.empty();
         } 
 
-        return response;
+        return Optional.of(response);
     }
     
     public enum ReportRunType {

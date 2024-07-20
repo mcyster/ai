@@ -38,10 +38,8 @@
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     async function showData() {
-        let data;
         try {
-            var reportRunnerId = "s4y0iq3ses720z9dt8mf";
-            data = await getData(reportRunnerId);
+            var data = await getReport();
 
             console.log('Data fetched successfully:', data);
             const dataDisplay = document.getElementById('jsonDisplay');
@@ -57,5 +55,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     showData();
 });
+
+async function getReport() {
+    var extoleClientId = "1890234003";
+    var reportRunnerId = "s869x14kpawsodmdk0f8";
+    var data = await getData(extoleClientId, reportRunnerId);
+    return data;
+}
+
 </script>
 </html>

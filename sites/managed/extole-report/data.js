@@ -1,9 +1,9 @@
+async function getData(extoleClientId, reportRunnerId) {
+    var url = `/extole/report-runners/${reportRunnerId}/latest/download.json`;
 
-async function getData(reportRunnerId) {
-    var uri = `/extole/report-runners/${reportRunnerId}/latest/download.json`;
-
+    console.log("fetch", url);
     try {
-        const response = await fetch(uri, {
+        const response = await fetch(url, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -18,3 +18,4 @@ async function getData(reportRunnerId) {
         throw error;
     }
 }
+
