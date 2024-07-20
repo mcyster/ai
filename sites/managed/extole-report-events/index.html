@@ -69,6 +69,8 @@ document.addEventListener("DOMContentLoaded", async function() {
             const labels = Object.keys(eventCountsByDate);
             const eventCounts = Object.values(eventCountsByDate);
 
+            const color = generateColors(1)[0];
+
             // Create the line chart
             const ctx = document.getElementById('chart').getContext('2d');
             new Chart(ctx, {
@@ -78,9 +80,9 @@ document.addEventListener("DOMContentLoaded", async function() {
                     datasets: [{
                         label: 'Total Event Count',
                         data: eventCounts,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 4,
+                        borderColor: color,
+                        backgroundColor: color,
+                        borderWidth: 2,
                         fill: false,
                         tension: 0.1
                     }]
@@ -164,6 +166,17 @@ async function getReport() {
     }));
 
     return typedData;
+}
+
+function generateColors(numColors) {
+    const colors = [];
+    const hueStep = 360 / numColors;
+    for (let i = 0; i < numColors; i++) {
+        const hue = i * hueStep;
+        const color = `hsl(${hue}, 50%, 45%)`;
+        colors.push(color);
+    }
+    return colors;
 }
 
 </script>

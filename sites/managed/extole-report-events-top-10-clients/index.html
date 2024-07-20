@@ -97,14 +97,16 @@ document.addEventListener("DOMContentLoaded", async function() {
                 return acc;
             }, {});
 
-            const datasets = Object.entries(aggregatedData).map(([clientID, eventsByDate]) => {
-                const borderColor = getRandomColor();
+            const colors = generateColors(Object.keys(aggregatedData).length);
+
+            const datasets = Object.entries(aggregatedData).map(([clientID, eventsByDate], index) => {
+                const borderColor = colors[index];
                 return {
                     label: clientNames[clientID] || `Client ${clientID}`,
                     data: Object.entries(eventsByDate).map(([date, count]) => ({ x: date, y: count })),
                     borderColor: borderColor,
                     backgroundColor: borderColor,
-                    borderWidth: 3,
+                    borderWidth: 2,
                     fill: false,
                     tension: 0.1
                 };
@@ -159,9 +161,15 @@ document.addEventListener("DOMContentLoaded", async function() {
 
     showData();
 
-    function getRandomColor() {
-        const r = () => Math.floor(Math.random() * 256);
-        return `rgba(${r()},${r()},${r()},1)`;
+    function generateColors(numColors) {
+        const colors = [];
+        const hueStep = 360 / numColors;
+        for (let i = 0; i < numColors; i++) {
+            const hue = i * hueStep;
+            const color = `hsl(${hue}, 50%, 45%)`;
+            colors.push(color);
+        }
+        return colors;
     }
 });
 
