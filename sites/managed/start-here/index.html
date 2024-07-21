@@ -7,26 +7,55 @@
     <title>Start Here</title>
     <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
     <style>
-        body { margin: 20px; overflow: hidden; }
+        body { margin: 20px; overflow: auto; }
         canvas { display: block; }
         .notes-box { border: 1px solid #ccc; padding: 10px; margin: 10px 0; background-color: #f9f9f9; }
     </style>
 </head>
 <body>
     <h1>AI Page Developer</h1>
-    <p>Click on the Open Chat button to talk to the AI Web Developer to fix or change this page.</p>
+    <h2>Listing websites</h2>
+    <p>Websites are filtered by tags. Remove tags from the filter to see more websites, click on the tags under a website to filter to websites with just that tag.</p>
+    <p>Website listing page links:
+        <ul>
+            <li><a href="http://localhost:8090/sites/managed/sites/index.html?tags=managed,curated,start">List just the start page</a></li>
+            <li><a href="http://localhost:8090/sites/managed/sites/index.html?tags=managed,curated">List curated pages</a></li>
+            <li><a href="http://localhost:8090/sites/managed/sites/index.html?tags=managed">List managed pages</a>
+            <li><a href="http://localhost:8090/sites/managed/sites/index.html?tags=unmanaged">List unmanaged pages</a></li>
+        </ul>
+    </p>
+    <h2>Change a Website</h2>
+    <p>Click on the "Open Chat" button to talk to the AI Web Developer.</p>
     <p><em>Note: It can take 2 or more minutes for the page to update after submitting a prompt.</em></p>
-    <p>Prompts to change a website:</p>
+    <h4>Prompts to change a website:</h4>
     <div class="notes-box">Please update the page to give a brief description of Beep Boop</div>
     <div class="notes-box">Please update the background color of the page to light blue</div>
     <div class="notes-box">Please add 100 bouncing balls to the page</div>
     <div class="notes-box">I would like to make a simple space invaders game, please update the page to implement a basic space invaders game using javascript</div>
     <div class="notes-box">Can you add an interactive form to the page to collect user feedback?</div>
     <div class="notes-box">Please embed a YouTube video tutorial on how to use this AI assistant</div>
-    <p>Prompts to manage a website</p>
+
+    <p>If an javacsript error occours on your website an error button will appear on the chat window, click on that button to get the error in the chat prompt so you can send it to the AI to debug.</p>
+    <p>The chat window supports &ltshift&gt;&lt;enter&gt; to add a new line when you are typing a message.</p>
+
+    <h2>Manage a Website</h2>
+    <p>Its generally best to make a copy of a website before you change it, ask the AI to copy the page before you start working on it.</p>
+    <p>The website name is derived from the title of the page, ask the AI to change the title to update the name of the website on the listing page.</p>
+    <p>Ask the AI to add tags to the page, so you can find the page in the future</a>
+    <p>Special reserved tags:
+        <ul>
+            <li>start - for this start website / page</li>
+            <li>curated - specified a well defined set of example pages</li>
+            <li>managed - used websites not being managed in revision control</li>
+            <li>unmanaged - websites not being managed in revision control</li>
+        </ul>
+    </p>
+    <h4>Prompts to manage a website:</h4>
     <div class="notes-box">Please make a copy of this website</div>
     <div class="notes-box">Please add the tag: example</div>
     <div class="notes-box">Please remove the tag: example</div>
     <div class="notes-box">Please change the title of the page to: example</div>
+    <h4>Managed websites</h4>
+    <p>Managed websites are checked into this git repository <a href="https://github.com/mcyster/ai">https://github.com/mcyster/ai</a>. Submit a pull request to get a website added or updated.</a>
 </body>
 </html>
