@@ -14,6 +14,8 @@ import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Asset;
 import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Type;
 
 public class ManagedWebsites {
+    private static final List<String> RESERVED_TAGS = Arrays.asList("managed", "unmanaged", "start", "curated");
+
     private WebsiteProvider websiteProvider;
     private static List<String> curatedSites;
 
@@ -68,6 +70,8 @@ public class ManagedWebsites {
                 .filter(tag -> !tag.isEmpty())
                 .collect(Collectors.toList());
         }
+        
+        tags.removeAll(RESERVED_TAGS);
         
         if (website.getType() == Type.Managed) {
             tags.add("managed");
