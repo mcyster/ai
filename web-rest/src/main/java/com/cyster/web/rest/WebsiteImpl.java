@@ -96,14 +96,14 @@ class WebsiteImpl implements Website {
 
         Path file = directory.resolve(name);
         if (!Files.exists(file)) {            
-            throw new RuntimeException("Unable to find file: " + name);
+            throw new RuntimeException("Unable to find file: " + name + " from directory: " + directory);
         }
 
         String content;
         try {
             content = Files.readString(file);
         } catch (IOException exception) {
-            throw new RuntimeException("Unable to read file: " + name);
+            throw new RuntimeException("Unable to read file: " + name + " from directory " + directory);
         }
 
         return new TextAsset(name, content);
