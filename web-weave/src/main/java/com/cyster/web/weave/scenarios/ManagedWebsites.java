@@ -71,7 +71,10 @@ public class ManagedWebsites {
         
         if (website.getType() == Type.Managed) {
             tags.add("managed");
+        } else {
+            tags.add("unmanaged"); 
         }
+        
         if (website.getId().equals("start-here")) {
             tags.add("start");
         }
