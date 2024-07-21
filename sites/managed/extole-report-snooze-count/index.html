@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Extole Total Event Count</title>
-    <meta name="tags" content="extole,reports,kpi,events">
+    <title>Extole Total Snooze Count</title>
+    <meta name="tags" content="extole,reports,kpi,snooze">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,23 +25,21 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Total Event Count by Week</h2>
+            <h2 id="graphTitle">Active Snooze Count by Week</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
 
     <script id="typescript-code" type="text/typescript">
         interface Row {
-          period_end: string | null;
-          client_id: string | null;
-          client_name: string | null;
-          client_type: string | null;
-          vertical: string | null;
-          client_status: string | null;
-          integration_name: string | null;
-          integration_type: string | null;
-          destination: string | null;
-          events_count: number;
+            "Client Id": string;
+            "Client Short Name": string;
+            "Tags": string;
+            "User Email": string;
+            "Expires": string;
+            "Created Date": string;
+            "Duration": string;
+            "Comment": string;
         }
 
         async function getData(extoleClientId: string, reportRunnerId: string): Promise<any[]> {
@@ -67,24 +65,18 @@
 
         async function getReport(): Promise<Row[]> {
             var extoleClientId = "1890234003";
-            var reportRunnerId = "s869x14kpawsodmdk0f8";
-            if (reportRunnerId != "s869x14kpawsodmdk0f8") {
-                throw new Error(`Update the interface Row to match the reportRunnerId: ${reportRunnerId} for client ${extoleClientId}`);
-            }
+            var reportRunnerId = "sdvw8f5kcy721se4fx3x";
             var data = await getData(extoleClientId, reportRunnerId);
             const rows = data.map(item => ({
-                period_end: item.period_end || null,
-                client_id: item.client_id || null,
-                client_name: item.client_name || null,
-                client_type: item.client_type || null,
-                vertical: item.vertical || null,
-                client_status: item.client_status || null,
-                integration_name: item.integration_name || null,
-                integration_type: item.integration_type || null,
-                destination: item.destination || null,
-                events_count: item.events_count || 0
+                "Client Id": item["Client Id"] || null,
+                "Client Short Name": item["Client Short Name"] || null,
+                "Tags": item["Tags"] || null,
+                "User Email": item["User Email"] || null,
+                "Expires": item["Expires"] || null,
+                "Created Date": item["Created Date"] || null,
+                "Duration": item["Duration"] || null,
+                "Comment": item["Comment"] || null,
             }));
-            console.log(rows);
             return rows;
         }
 
@@ -100,12 +92,14 @@
         }
 
         function countEventsPerPeriod(rows: Row[]) {
-            const eventCounts: { [period: string]: number } = {};
+            const snoozeCounts: { [period: string]: number } = {};
             rows.forEach(row => {
-                const period = row.period_end;
-                eventCounts[period!] = (eventCounts[period!] || 0) + row.events_count;
+                const date = new Date(row["Created Date"]);
+                const week = new Date(date.setDate(date.getDate() - date.getDay())); // Set date to the start of the week (Sunday)
+                const period = week.toISOString().split('T')[0]; // Get ISO date string
+                snoozeCounts[period] = (snoozeCounts[period] || 0) + 1;
             });
-            return eventCounts;
+            return snoozeCounts;
         }
 
         function renderChart(eventCounts: { [period: string]: number }) {
@@ -120,7 +114,7 @@
                 data: {
                     datasets: [
                         {
-                            label: 'Event Count',
+                            label: 'Snooze Count',
                             backgroundColor: color,
                             borderColor: color,
                             fill: false,
@@ -134,10 +128,10 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: 'day',
+                                unit: 'week',
                                 tooltipFormat: 'PP',
                                 displayFormats: {
-                                    day: 'PP'
+                                    week: 'PPP'
                                 }
                             },
                             title: {
@@ -153,7 +147,7 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Event Count',
+                                text: 'Snooze Count',
                                 font: {
                                     size: 16,
                                     weight: 'bold'
@@ -173,8 +167,8 @@
             },
             async created() {
                 getReport().then(events => {
-                    const eventCounts = countEventsPerPeriod(events);
-                    renderChart(eventCounts);
+                    const snoozeCounts = countEventsPerPeriod(events);
+                    renderChart(snoozeCounts);
                 }).catch(error => {
                     console.error('Error loading data:', error);
                 });
