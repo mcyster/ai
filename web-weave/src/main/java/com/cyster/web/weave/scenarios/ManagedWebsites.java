@@ -22,8 +22,9 @@ public class ManagedWebsites {
     static {
         curatedSites = new ArrayList<>();
         curatedSites.add("start-here");
+        curatedSites.add("blank");
+        curatedSites.add("graph-co2");
         curatedSites.add("game-of-life");
-        curatedSites.add("extole-support-tickets");
     }
     
     public ManagedWebsites(WebsiteProvider websiteProvider) {
