@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Support Tickets Missed Due Date</title>
+    <meta name="tags" content="extole,tickets,support,due">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Support Tickets Missing Due Date Each Week</h2>
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+    <script id="typescript-code" type="text/typescript">
+        interface SupportTicket {
+            key: string;
+            project: string;
+            created: Date;
+            type: string;
+            status: string;
+            statusChanged: Date;
+            category: string | null;
+            resolved: Date | null;
+            due: Date | null;
+            priority: string;
+            reporter: string | null;
+            assignee: string | null;
+            pod: string | null;
+            pairCsm: string | null;
+            pairSupport: string | null;
+            clientPriority: string | null;
+            timeSeconds: number;
+        }
+
+        async function getData(): Promise<SupportTicket[]> {
+            const url = '/support/tickets';
+
+            try {
+                const response = await fetch(url, { method: 'GET' });
+                if (!response.ok) {
+                    alert(`Error: unable to fetch ${url}`);
+                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
+                }
+                const rawData: any[] = await response.json();
+                const data: SupportTicket[] = rawData.map(ticket => ({
+                    ...ticket,
+                    created: new Date(Date.parse(ticket.created)),
+                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
+                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
+                }));
+                return data;
+            } catch (error) {
+                alert(`Error: problem fetching ${url}`);
+                console.error('Fetch error:', error);
+                throw error;
+            }
+        }
+
+        function countMissedDueDateTicketsPerWeek(tickets: SupportTicket[]) {
+            const weekCounts: { [weekEndDate: string]: number } = {};
+
+            tickets.forEach(ticket => {
+                if (ticket.due && ticket.resolved && ticket.resolved > ticket.due) {
+                    const resolutionDate = ticket.resolved;
+                    const weekEndDate = getWeekEndDate(resolutionDate);
+
+                    weekCounts[weekEndDate] = (weekCounts[weekEndDate] || 0) + 1;
+                }
+            });
+            return weekCounts;
+        }
+
+        function getWeekEndDate(date: Date) {
+            const dayOfWeek = date.getUTCDay();
+            const weekEndDate = new Date(date);
+            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+        }
+
+        function renderChart(weekCounts: { [weekEndDate: string]: number }) {
+            const ctx = document.getElementById('chart') as HTMLCanvasElement;
+            if (!ctx) return;
+
+            let weeks = Object.keys(weekCounts).sort();
+            weeks = weeks.slice(-24); // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
+
+            const dataPoints = weeks.map(week => ({ x: new Date(week), y: weekCounts[week] || 0 }));
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                        label: 'Missed Due Date Tickets',
+                        backgroundColor: 'hsl(200, 50%, 45%)', // Use a single color for the dataset
+                        borderColor: 'hsl(200, 50%, 45%)', // Use the same color for the border
+                        fill: false,
+                        data: dataPoints,
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'week',
+                                tooltipFormat: 'PP',
+                                displayFormats: {
+                                    week: 'PP'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Week Ending',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true, // Ensure y-axis starts at 0
+                            title: {
+                                display: true,
+                                text: 'Number of Tickets',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const app = {
+            data() {
+                return {
+                    jsonData: []
+                };
+            },
+            async created() {
+                getData().then(tickets => {
+                    // Only consider tickets created in the last 6 months
+                    const sixMonthsAgo = new Date();
+                    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                    const filteredTickets = tickets.filter(ticket => ticket.created >= sixMonthsAgo);
+
+                    const weekCounts = countMissedDueDateTicketsPerWeek(filteredTickets);
+                    renderChart(weekCounts);
+                }).catch(error => {
+                    console.error('Error loading data:', error);
+                });
+            }
+        };
+
+        Vue.createApp(app).mount('#app');
+    </script>
+
+    <script>
+        (async function compileAndExecute() {
+            const tsCode = document.getElementById('typescript-code').textContent;
+            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
+            eval(jsCode);
+        })();
+    </script>
+</body>
+</html>
