@@ -1,5 +1,12 @@
 
 
+# next
+
+- jira @mention
+- Support ticket classifier 
+- validate Extole campaign, page to leverage
+- graphbuilder support client_id
+
 # Minor Changes
 
 - remove code store, use VectorStore tool, remove store project
