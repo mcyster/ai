@@ -1,11 +1,12 @@
 
 
-# next
+# Next
 
 - jira @mention
 - Support ticket classifier 
 - validate Extole campaign, page to leverage
 - graphbuilder support client_id
+- jira endpoint to get data
 
 # Minor Changes
 
