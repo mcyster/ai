@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Top 10 Activities for the UI Pod</title>
+    <meta name="tags" content="extole,support,tickets,activities,ui-pod">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Top 10 Activities for the UI Pod</h2>
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+    <script id="typescript-code" type="text/typescript">
+        interface SupportTicket {
+            key: string;
+            project: string;
+            created: Date;
+            type: string;
+            status: string;
+            statusChanged: Date;
+            category: string | null;
+            resolved: Date | null;
+            due: Date | null;
+            priority: string;
+            reporter: string | null;
+            assignee: string | null;
+            client: string | null;
+            clientId: string | null;
+            pod: string | null;
+            pairCsm: string | null;
+            pairSupport: string | null;
+            clientPriority: string | null;
+            timeSeconds: number;
+        }
+
+        async function getData(): Promise<SupportTicket[]> {
+            const url = '/support/tickets';
+
+            try {
+                const response = await fetch(url, { method: 'GET' });
+                if (!response.ok) {
+                    alert(`Error: unable to fetch ${url}`);
+                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
+                }
+                const rawData: any[] = await response.json();
+                const data: SupportTicket[] = rawData.map(ticket => ({
+                    ...ticket,
+                    created: new Date(Date.parse(ticket.created)),
+                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
+                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
+                }));
+                return data;
+            } catch (error) {
+                alert(`Error: problem fetching ${url}`);
+                console.error('Fetch error:', error);
+                throw error;
+            }
+        }
+
+        function countTicketsPerCategoryPerWeek(tickets: SupportTicket[]) {
+            const categoryCounts: { [category: string]: { [weekEndDate: string]: number } } = {};
+
+            tickets.forEach(ticket => {
+                const creationDate = ticket.created;
+                const category = ticket.category || 'Uncategorized';
+                const weekEndDate = getWeekEndDate(creationDate);
+
+                if (!categoryCounts[category]) {
+                    categoryCounts[category] = {};
+                }
+                categoryCounts[category][weekEndDate] = (categoryCounts[category][weekEndDate] || 0) + 1;
+            });
+            return categoryCounts;
+        }
+
+        function getWeekEndDate(date: Date) {
+            const dayOfWeek = date.getUTCDay();
+            const weekEndDate = new Date(date);
+            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+        }
+
+        function getTopCategories(categoryCounts: { [category: string]: { [weekEndDate: string]: number } }, limit: number = 10) {
+            const categoryTotals: { [category: string]: number } = {};
+            for (const category in categoryCounts) {
+                categoryTotals[category] = Object.values(categoryCounts[category]).reduce((sum, count) => sum + count, 0);
+            }
+
+            return Object.entries(categoryTotals)
+                .sort(([, totalA], [, totalB]) => totalB - totalA)
+                .slice(0, limit)
+                .map(([category]) => category);
+        }
+
+        function renderChart(categoryCounts: { [category: string]: { [weekEndDate: string]: number } }, topCategories: string[]) {
+            const ctx = document.getElementById('chart') as HTMLCanvasElement;
+            if (!ctx) return;
+
+            let weeks = new Set<string>();
+            topCategories.forEach(category => {
+                Object.keys(categoryCounts[category]).forEach(week => weeks.add(week));
+            });
+            weeks = new Set(Array.from(weeks).sort());
+
+            // Filter weeks to include only the last 6 months
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            weeks = new Set(Array.from(weeks).filter(week => new Date(week) >= sixMonthsAgo));
+
+            const colors = generateColors(topCategories.length);
+            const datasets = topCategories.map((category, index) => {
+                const data = Array.from(weeks).map(week => ({ x: new Date(week), y: categoryCounts[category][week] || 0 }));
+                return {
+                    label: category,
+                    backgroundColor: colors[index], // Set the backgroundColor to match the borderColor
+                    borderColor: colors[index], // Use the same color for the border
+                    fill: false,
+                    data,
+                    borderWidth: 4
+                };
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'week',
+                                tooltipFormat: 'PP',
+                                displayFormats: {
+                                    week: 'PP'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Week Ending',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true, // Ensure y-axis starts at 0
+                            title: {
+                                display: true,
+                                text: 'Number of Tickets',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateColors(numColors: number): string[] {
+            const colors = [];
+            const hueStep = 360 / numColors;
+            for (let i = 0; i < numColors; i++) {
+                const hue = i * hueStep;
+                const color = `hsl(${hue}, 50%, 45%)`;
+                colors.push(color);
+            }
+            return colors;
+        }
+
+        const app = {
+            data() {
+                return {
+                    jsonData: []
+                };
+            },
+            async created() {
+                getData().then(tickets => {
+                    tickets = tickets.filter(ticket => ticket.pod === 'Support UI Pod'); // Filter by pod
+                    const categoryCounts = countTicketsPerCategoryPerWeek(tickets);
+                    const topCategories = getTopCategories(categoryCounts);
+                    renderChart(categoryCounts, topCategories);
+                }).catch(error => {
+                    console.error('Error loading data:', error);
+                });
+            }
+        };
+
+        Vue.createApp(app).mount('#app');
+    </script>
+
+    <script>
+        (async function compileAndExecute() {
+            const tsCode = document.getElementById('typescript-code').textContent;
+            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
+            eval(jsCode);
+        })();
+    </script>
+</body>
+</html>
