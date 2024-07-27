@@ -7,6 +7,7 @@
 - validate Extole campaign, page to leverage
 - graphbuilder support client_id
 - jira endpoint to get data
+- web developer, archive, edit creates copy if managed, ...
 
 # Minor Changes
 
