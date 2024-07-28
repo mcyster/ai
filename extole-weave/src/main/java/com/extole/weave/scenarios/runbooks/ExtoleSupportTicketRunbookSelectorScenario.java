@@ -1,7 +1,11 @@
 package com.extole.weave.scenarios.runbooks;
 
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
@@ -13,6 +17,10 @@ import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.weave.scenarios.support.tools.jira.SupportTicketGetTool;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
+import com.extole.weave.scenarios.runbooks.ExtoleRunbookSelectorScenario.Response;
 import com.extole.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorScenario.Parameters;
 
 @Component
@@ -106,24 +114,36 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
       "condition": "If still no Runbook is found."
     },
     {
-      "step": "Evaluate multiple search results for closest context before defaulting to %s.",
+      "step": "Evaluate multiple search results for closest context before defaulting to {{defaultRunbookName}}.",
       "condition": "Only use as a last resort."
     }
     {
       "step": "Provide your answer in JSON format",
-      "schema": %s
+      "schema": {{{schema}}},
+      "description": [
+        "Its important to always return a json response."
+      ]
     }
   ]
 }
 """;
-    
+            
+            
             var schema = aiWeaveService.getJsonSchema(Response.class);
 
-            System.out.println("!!!!!!!! extole support ticket schema:\n" + schema);
-
-            var instructions = String.format(instructionsTemplate, defaultRunbookName, schema);
-
-            System.out.println("!!!!!!!! extole support ticket instructions: " + instructions);
+            Map<String, String> parameters = new HashMap<>() {{
+                put("schema", schema);
+                put("defaultRunbookName", defaultRunbookName);
+            }};
+            
+            MustacheFactory mostacheFactory = new DefaultMustacheFactory();
+            Mustache mustache = mostacheFactory.compile(new StringReader(instructionsTemplate), "instructions");
+            var messageWriter = new StringWriter();
+            mustache.execute(messageWriter, parameters);
+            messageWriter.flush();
+            var instructions = messageWriter.toString();
+    
+            System.out.println("!!!!!!!! extole support ticket runbook instructions: " + instructions);
             
             AssistantScenarioBuilder<Parameters, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
             builder.setInstructions(instructions);

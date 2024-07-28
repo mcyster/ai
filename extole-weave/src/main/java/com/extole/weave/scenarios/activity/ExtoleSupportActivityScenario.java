@@ -1,5 +1,9 @@
 package com.extole.weave.scenarios.activity;
 
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
@@ -8,7 +12,11 @@ import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.scenario.Scenario;
+import com.extole.weave.scenarios.activity.ExtoleSupportTicketActivityScenario.Response;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 
 @Component
 public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
@@ -54,7 +62,7 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
 {
   "instructions": [
     {
-      "step": "Construct a detailed query string",
+      "step": "Construct a detailed query string based on the prompt",
       "description": [
         "Remove PII, company names, and URLs.",
         "Remove duplicate words and common stop words.",
@@ -82,12 +90,15 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
       "condition": "If still no Activity is found."
     },
     {
-      "step": "Evaluate multiple search results for closest context before defaulting to %s.",
-      "condition": "Only use as a last resort."
+      "step": "Evaluate multiple search results for closest context before defaulting to '{{defaultActivity}}'.",
+      "condition": "Only use as '{{defaultActivity}}' as a last resort."
     }
     {
       "step": "Provide your answer in JSON format",
-      "schema": %s
+      "schema": {{{schema}}},
+      "description": [
+        "Its important to always return a json response."
+      ]
     }
   ]
 }
@@ -95,9 +106,17 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
     
             var schema = aiWeaveService.getJsonSchema(Response.class);
 
-            System.out.println("!!!!!!!! extole support activity schema:\n" + schema);
-
-            var instructions = String.format(instructionsTemplate, DEFAULT_ACTIVITY, schema);
+            Map<String, String> parameters = new HashMap<>() {{
+                put("schema", schema);
+                put("defaultActivity", DEFAULT_ACTIVITY);
+            }};
+            
+            MustacheFactory mostacheFactory = new DefaultMustacheFactory();
+            Mustache mustache = mostacheFactory.compile(new StringReader(instructionsTemplate), "instructions");
+            var messageWriter = new StringWriter();
+            mustache.execute(messageWriter, parameters);
+            messageWriter.flush();
+            var instructions = messageWriter.toString();
 
             System.out.println("!!!!!!!! extole suppport activity instructions: " + instructions);
             
