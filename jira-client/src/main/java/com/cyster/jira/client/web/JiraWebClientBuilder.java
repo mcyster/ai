@@ -5,17 +5,27 @@ import java.nio.charset.StandardCharsets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import reactor.core.publisher.Mono;
 
 public class JiraWebClientBuilder {
+    private static int BUFFER_SIZE = 160 * 1024 * 1024;
+
     WebClient.Builder webClientBuilder;
 
     private static final Logger logger = LogManager.getLogger(JiraWebClientBuilder.class);
 
     JiraWebClientBuilder(String baseJiraUrl) {
+        ExchangeStrategies strategies = ExchangeStrategies.builder()
+                .codecs(configurer -> configurer
+                    .defaultCodecs()
+                    .maxInMemorySize(BUFFER_SIZE))
+                .build();
+        
         this.webClientBuilder = WebClient.builder()
+            .exchangeStrategies(strategies)
             .baseUrl(baseJiraUrl);
     }
 

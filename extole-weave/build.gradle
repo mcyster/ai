@@ -28,6 +28,7 @@ dependencies {
     implementation project(':ai-weave')
     implementation project(':store')
     implementation project(':jira-client')
+    implementation project(':extole-jira')
     implementation project(':web-weave')
     implementation project(':extole-client')
     

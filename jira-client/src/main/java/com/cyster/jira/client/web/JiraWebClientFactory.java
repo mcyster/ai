@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
-public class JiraWebClientFactory {
+public class JiraWebClientFactory {    
     private Optional<String> jiraApiKey = Optional.empty();
     private final String jiraBaseUri;
 
@@ -30,7 +30,7 @@ public class JiraWebClientFactory {
         if (this.jiraApiKey.isEmpty()) {
             throw new IllegalArgumentException("jiraApiKey is required");
         }
-
+        
         return JiraWebClientBuilder.builder(this.jiraBaseUri)
             .setApiKey(this.jiraApiKey.get())
             .build();

@@ -16,6 +16,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 
 @Component
 public class SupportTicketService {
+    private static int MAX_TICKETS_PER_REQUEST = 1024;
+    
     private JiraWebClientFactory jiraWebClientFactory;
     
     SupportTicketService(JiraWebClientFactory jiraWebClientFactory) {
@@ -138,16 +140,23 @@ public class SupportTicketService {
                      break;
                  }
 
-             } catch (WebClientResponseException exception) {
-                 if (exception.getCause() instanceof DataBufferLimitException)
-                 if (maxResultsPerRequest <= 1) {
-                     throw new RuntimeException("Unable to fetch tickets in small enough chunks for size", exception);
+                 maxResultsPerRequest = maxResultsPerRequest * 2;
+                 if (maxResultsPerRequest > MAX_TICKETS_PER_REQUEST) {
+                     maxResultsPerRequest = MAX_TICKETS_PER_REQUEST;
                  }
-                 maxResultsPerRequest = maxResultsPerRequest / 2;
-                 if (maxResultsPerRequest < 1) {
-                     maxResultsPerRequest = 1;
+             } catch (WebClientResponseException exception) {
+                 if (exception.getCause() instanceof DataBufferLimitException) {
+                     if (maxResultsPerRequest <= 1) {
+                         throw new RuntimeException("Unable to fetch tickets in small enough chunks for size", exception);
+                     }
+                     
+                     maxResultsPerRequest = maxResultsPerRequest / 2;
+                     if (maxResultsPerRequest < 1) {
+                         maxResultsPerRequest = 1;
+                     }
                  }
              }
+             
          } while (true);
 
          return tickets;
@@ -166,15 +175,11 @@ public class SupportTicketService {
     private static FullSupportTicket issueToFullTicketResponse(JsonNode issue) {
         var ticketBuilder = FullSupportTicket.newBuilder();
         ticketBuilder.ticket(issueToTicketResponse(issue));
-
-        System.out.println("XXXX issue: " + issue);
-
+        
         JsonNode descriptionNode = issue.path("fields").path("description");
         if (descriptionNode.isNull() || descriptionNode.isMissingNode()) {
             ticketBuilder.description("");
-        } else {                
-            System.out.println("XXXX description: " + descriptionNode.toPrettyString());
-            
+        } else {                            
             String content = new MarkDownDocumentMapper().fromAtlassianDocumentFormat(descriptionNode);
             ticketBuilder.description(content);
         }
