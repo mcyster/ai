@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Ticket Duration by Ticket Priority</title>
-    <meta name="tags" content="extole,support,tickets,priority,duration">
+    <meta name="tags" content="support,tickets,priority,duration">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -76,6 +76,10 @@
                 console.error('Fetch error:', error);
                 throw error;
             }
+        }
+
+        function filterTicketsByClient(tickets: SupportTicket[], clientName: string) {
+	    return tickets.filter(ticket => ticket.client?.toLowerCase() !== clientName.toLowerCase());
         }
 
         function filterTicketsByDate(tickets: SupportTicket[], startDate: Date) {
@@ -197,7 +201,8 @@
                 const startDate = new Date();
                 startDate.setMonth(startDate.getMonth() - 6);
                 getData().then(tickets => {
-                    const filteredTickets = filterTicketsByDate(tickets, startDate);
+                    const filteredByClient = filterTicketsByClient(tickets, "Extole");
+                    const filteredTickets = filterTicketsByDate(filteredByClient, startDate);
                     const durationMap = calculateTicketDurationsByPriority(filteredTickets);
                     renderDurationChart(durationMap);
                 }).catch(error => {

@@ -70,7 +70,9 @@
                     resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
                     due: ticket.due ? new Date(Date.parse(ticket.due)) : null
                 }));
-                return data;
+
+		const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole');
+                return filteredData;
             } catch (error) {
                 alert(`Error: problem fetching ${url}`);
                 console.error('Fetch error:', error);

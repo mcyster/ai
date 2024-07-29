@@ -2,12 +2,12 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Support Ticket Velocity</title>
-    <meta name="tags" content="extole,support,tickets,velocity">
+    <title>Extole vs Support Tickets Resolved</title>
+    <meta name="tags" content="extole,support,tickets,velocity,resolved">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
-    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> 
     <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
     <style>
         #graphTitle {
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Support Ticket Velocity</h2>
+            <h2 id="graphTitle">Support Tickets Resolved (Extole vs Support)</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -71,9 +71,7 @@
                     due: ticket.due ? new Date(Date.parse(ticket.due)) : null
                 }));
 
-                // Filter out tickets assigned to the Extole client
-                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole');
-                return filteredData;
+                return data;
             } catch (error) {
                 alert(`Error: problem fetching ${url}`);
                 console.error('Fetch error:', error);
@@ -81,100 +79,71 @@
             }
         }
 
-        function countTicketsPerWeek(tickets: SupportTicket[]) {
-            const createCounts: { [endOfWeekDate: string]: number } = {};
-            const resolveCounts: { [endOfWeekDate: string]: number } = {};
-            const elapsedTimes: { [endOfWeekDate: string]: number[] } = {};
-            const avgElapsedTimes: { [endOfWeekDate: string]: number } = {};
+        function countResolvedTicketsPerWeek(tickets: SupportTicket[]) {
+            const resolvedCountsExtole: { [endOfWeekDate: string]: number } = {};
+            const resolvedCountsNonExtole: { [endOfWeekDate: string]: number } = {};
             
             tickets.forEach(ticket => {
-                const creationDate = ticket.created;
-                const resolutionDate = ticket.resolved || new Date(); // Use current date if not resolved
+                if (ticket.resolved) {
+                    const resolvedDate = ticket.resolved;
+                    const resolvedWeekEnd = getWeekEndDate(resolvedDate);
 
-                const createdWeekEnd = getWeekEndDate(creationDate);
-                const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
-
-                const elapsedTime = (resolutionDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24); // in days
-
-                if (!elapsedTimes[createdWeekEnd]) {
-                    elapsedTimes[createdWeekEnd] = [];
+                    if (ticket.client?.toLowerCase() === 'extole') {
+                        if (resolvedCountsExtole[resolvedWeekEnd] === undefined) {
+                            resolvedCountsExtole[resolvedWeekEnd] = 0;
+                        }
+                        resolvedCountsExtole[resolvedWeekEnd]++;
+                    } else {
+                        if (resolvedCountsNonExtole[resolvedWeekEnd] === undefined) {
+                            resolvedCountsNonExtole[resolvedWeekEnd] = 0;
+                        }
+                        resolvedCountsNonExtole[resolvedWeekEnd]++;
+                    }
                 }
-                elapsedTimes[createdWeekEnd].push(elapsedTime);
-
-                if (resolveCounts[resolvedWeekEnd] === undefined) {
-                    resolveCounts[resolvedWeekEnd] = 0;
-                }
-                resolveCounts[resolvedWeekEnd]++;
-
-                if (createCounts[createdWeekEnd] === undefined) {
-                    createCounts[createdWeekEnd] = 0;
-                }
-                createCounts[createdWeekEnd]++;
             });
 
-            Object.keys(elapsedTimes).forEach(week => {
-                const times = elapsedTimes[week];
-                const avgTime = times.reduce((sum, time) => sum + time, 0) / times.length;
-                avgElapsedTimes[week] = avgTime;
-            });
-
-            return { createCounts, resolveCounts, avgElapsedTimes };
+            return { resolvedCountsExtole, resolvedCountsNonExtole };
         }
 
         function getWeekEndDate(date: Date) {
             const dayOfWeek = date.getUTCDay();
             const weekEndDate = new Date(date);
-            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
-            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
-            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); 
+            weekEndDate.setUTCHours(0, 0, 0, 0); 
+            return weekEndDate.toISOString().split('T')[0]; 
         }
 
-        function renderChart(createCounts: { [endOfWeekDate: string]: number }, resolveCounts: { [endOfWeekDate: string]: number }, avgElapsedTimes: { [endOfWeekDate: string]: number }) {
+        function renderChart(resolvedCountsExtole: { [endOfWeekDate: string]: number }, resolvedCountsNonExtole: { [endOfWeekDate: string]: number }) {
             const ctx = document.getElementById('chart') as HTMLCanvasElement;
             if (!ctx) return;
-            let weeks = Object.keys(createCounts).sort();
+            let weeks = Object.keys(resolvedCountsExtole).sort();
             
-            // Remove the first week unconditionally
-            if (weeks.length > 1) {
-                weeks.shift();
-            }
-            // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
             if (weeks.length > 24) {
                 weeks = weeks.slice(-24);
             }
 
-            const createData = weeks.map(week => ({ x: new Date(week), y: createCounts[week] || 0 }));
-            const resolveData = weeks.map(week => ({ x: new Date(week), y: resolveCounts[week] || 0 }));
-            const avgElapsedTimeData = weeks.map(week => ({ x: new Date(week), y: avgElapsedTimes[week] || 0 }));
+            const resolvedDataExtole = weeks.map(week => ({ x: new Date(week), y: resolvedCountsExtole[week] || 0 }));
+            const resolvedDataNonExtole = weeks.map(week => ({ x: new Date(week), y: resolvedCountsNonExtole[week] || 0 }));
 
             new Chart(ctx, {
                 type: 'line',
                 data: {
                     datasets: [
                         {
-                            label: 'Tickets Created',
+                            label: 'Tickets Resolved - Extole',
                             backgroundColor: 'rgba(139, 34, 34, 0.2)',
                             borderColor: 'rgba(200, 30, 30, 1)',
                             fill: false,
-                            data: createData,
+                            data: resolvedDataExtole,
                             borderWidth: 4 
                         },
                         {
-                            label: 'Tickets Closed',
+                            label: 'Tickets Resolved - Non-Extole',
                             backgroundColor: 'rgba(75, 192, 192, 0.2)',
                             borderColor: 'rgba(34, 139, 34, 1)',
                             fill: false,
-                            data: resolveData,
+                            data: resolvedDataNonExtole,
                             borderWidth: 4 
-                        },
-                        {
-                            label: 'Average Elapsed Time (days)',
-                            backgroundColor: 'rgba(0, 0, 139, 0.2)',
-                            borderColor: 'rgba(0, 0, 200, 1)',
-                            fill: false,
-                            data: avgElapsedTimeData,
-                            borderWidth: 4,
-                            yAxisID: 'y1', // Add a second y-axis for average elapsed time
                         }
                     ]
                 },
@@ -204,27 +173,10 @@
                             }
                         },
                         y: {
-                            beginAtZero: true, // Ensure y-axis starts at 0
+                            beginAtZero: true, 
                             title: {
                                 display: true,
                                 text: 'Number of Tickets',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    weight: 'bold'
-                                }
-                            }
-                        },
-                        y1: {
-                            beginAtZero: true, // Ensure y1-axis starts at 0
-                            position: 'right',
-                            title: {
-                                display: true,
-                                text: 'Average Elapsed Time (days)',
                                 font: {
                                     size: 16,
                                     weight: 'bold'
@@ -249,8 +201,8 @@
             },
             async created() {
                 getData().then(tickets => {
-                    const { createCounts, resolveCounts, avgElapsedTimes } = countTicketsPerWeek(tickets);
-                    renderChart(createCounts, resolveCounts, avgElapsedTimes);
+                    const { resolvedCountsExtole, resolvedCountsNonExtole } = countResolvedTicketsPerWeek(tickets);
+                    renderChart(resolvedCountsExtole, resolvedCountsNonExtole);
                 }).catch(error => {
                     console.error('Error loading data:', error);
                 });
