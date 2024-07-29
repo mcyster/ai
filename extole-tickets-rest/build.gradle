@@ -18,6 +18,7 @@ dependencies {
 
     implementation project(':ai-weave')
     implementation project(':jira-client')
+    implementation project(':extole-jira')
 
     testImplementation('org.springframework.boot:spring-boot-starter-test')
 }

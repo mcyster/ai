@@ -1,3 +1,69 @@
-name,keywords
-test1,"word1, word2, word3"
-test2,"word4,word5,word6"
+category,activityName,tickets,keywords,count
+Reporting,Run an event report,SUP-44852 SUP-44777 SUP-44776 SUP-44822,event report generate create,4
+Reporting,Create a custom report,SUP-44422 SUP-44494 SUP-44777 SUP-44422,custom report generate create,4
+Reporting,Schedule automated report,SUP-44807 SUP-44806 SUP-44593 SUP-44592 SUP-44591 SUP-44590 SUP-44589,,7
+Data Management,Upload audience,SUP-44535,upload audience employee partner,1
+Data Management,Process opt-outs,SUP-44693 SUP-44693,process opt-out unsubscribe,2
+Data Management,Clean up data,SUP-44450 SUP-44452 SUP-44450 SUP-44452,clean data sanitize remove,4
+Data Management,Perform data fixup,SUP-44463 SUP-44499 SUP-44532 SUP-44463 SUP-44473 SUP-44787,fixup data correct repair,6
+Data Management,Update user profiles,SUP-44472 SUP-44455 SUP-44474 SUP-44532 SUP-44472 SUP-44455 SUP-44532,update profile user information,7
+Data Analysis,Analyze program performance,SUP-44424 SUP-44537 SUP-44466 SUP-44825 SUP-44424 SUP-44537,analyze performance metrics KPI,6
+Data Analysis,Investigate missing referrals,SUP-44486 SUP-44510 SUP-44513 SUP-44486,investigate missing referral lost,4
+Data Analysis,Investigate impressions,SUP-44558 SUP-44576 SUP-44577 SUP-44578 SUP-44579 SUP-44580 SUP-44581 SUP-44582 SUP-44583 SUP-44585 SUP-44586 SUP-44587 SUP-44588 SUP-44589 SUP-44658 SUP-44659 SUP-44376 SUP-44377 SUP-44378 SUP-44379 SUP-44380 SUP-44381 SUP-44382 SUP-44383 SUP-44384 SUP-44385 SUP-44386 SUP-44387 SUP-44388 SUP-44396 SUP-44397 SUP-44398 SUP-44399 SUP-44400 SUP-44401 SUP-44402 SUP-44403 SUP-44404 SUP-44405 SUP-44406 SUP-44407 SUP-44408 SUP-44409 SUP-44410 SUP-44411 SUP-44412 SUP-44413 SUP-44513 SUP-44514 SUP-44515 SUP-44516 SUP-44517 SUP-44518 SUP-44558 SUP-44576 SUP-44577 SUP-44578 SUP-44612 SUP-44613 SUP-44614 SUP-44615 SUP-44631 SUP-44632 SUP-44633 SUP-44634 SUP-44635 SUP-44636 SUP-44637 SUP-44638 SUP-44639 SUP-44640 SUP-44641 SUP-44651 SUP-44652 SUP-44653 SUP-44654 SUP-44655 SUP-44656 SUP-44657 SUP-44658 SUP-44659 SUP-44660 SUP-44661 SUP-44662 SUP-44663 SUP-44664 SUP-44665 SUP-44666 SUP-44667 SUP-44700 SUP-44701 SUP-44702 SUP-44703 SUP-44704 SUP-44705 SUP-44706 SUP-44707 SUP-44708 SUP-44709 SUP-44710 SUP-44711 SUP-44712 SUP-44713 SUP-44714 SUP-44715 SUP-44716 SUP-44717 SUP-44718 SUP-44837 SUP-44838 SUP-44839 SUP-44840 SUP-44841,investigate impression anomaly unusual,113
+Data Analysis,Investigate click-throughs,SUP-44612 SUP-44613 SUP-44614 SUP-44615 SUP-44616 SUP-44628 SUP-44629 SUP-44630 SUP-44631 SUP-44632 SUP-44633 SUP-44634 SUP-44635 SUP-44636 SUP-44660 SUP-44661,investigate click-through anomaly unusual,16
+Data Analysis,Investigate shares,SUP-44637 SUP-44638 SUP-44639 SUP-44640 SUP-44641 SUP-44646 SUP-44647 SUP-44648 SUP-44649 SUP-44650 SUP-44651 SUP-44652 SUP-44653 SUP-44654 SUP-44662 SUP-44663,investigate share anomaly unusual,16
+Data Analysis,Investigate conversions,SUP-44655 SUP-44656 SUP-44657 SUP-44658 SUP-44659 SUP-44660 SUP-44661 SUP-44662 SUP-44663 SUP-44664 SUP-44665 SUP-44666 SUP-44667 SUP-44664 SUP-44665,investigate conversion anomaly unusual,15
+Data Analysis,Investigate rewards,SUP-44424 SUP-44825 SUP-44668 SUP-44669 SUP-44670 SUP-44671 SUP-44673 SUP-44674 SUP-44675 SUP-44676 SUP-44677 SUP-44679 SUP-44680 SUP-44681 SUP-44682 SUP-44666 SUP-44667,investigate reward anomaly unusual,17
+Rewarding,Create manual referral,SUP-44433,,1
+Rewarding,Issue makegood rewards,SUP-44414 SUP-44373 SUP-44626 SUP-44719 SUP-44702 SUP-44714 SUP-44776 SUP-44780 SUP-44824 SUP-44719 SUP-44414 SUP-44373 SUP-44680 SUP-44716 SUP-44626 SUP-44679,makegood reward issue compensate,16
+Rewarding,Re-issue rewards,SUP-44814 SUP-44676 SUP-44716 SUP-44415 SUP-44373 SUP-44415 SUP-44591 SUP-44677 SUP-44415 SUP-44805,,10
+Rewarding,Investigate missing rewards,SUP-44475 SUP-44392 SUP-44728 SUP-44475 SUP-44392 SUP-44477,investigate missing reward lost,6
+Rewarding,Configure reward rules,SUP-44384 SUP-44557 SUP-44720 SUP-44384 SUP-44559 SUP-44824 ,configure rewardable event setup,6
+Rewarding,Investigate reward processing errors,SUP-44539 SUP-44541 SUP-44542 SUP-44543 SUP-44544 SUP-44545 SUP-44547 SUP-44548 SUP-44550 SUP-44551 SUP-44552 SUP-44553 SUP-44554 SUP-44556 SUP-44363 SUP-44487 SUP-44519 SUP-44556 SUP-44768,investigate reward processing error issue,19
+Rewarding,Check reward balance,SUP-44804,,1
+Integration,Add or update prehandlers,SUP-44465 SUP-44525 SUP-44531 SUP-44465 SUP-44775 SUP-44552 SUP-44369 SUP-44812,add update prehandler modify,8
+Integration,Investigate prehandler failures,SUP-44360 SUP-44360 SUP-44687,investigate prehandler failure error,3
+Integration,Add or update posthandler,SUP-44369,,1
+Integration,Create a new campaign,SUP-44437 SUP-44623 SUP-44479 SUP-44753,create new campaign setup,4
+Integration,Configure API integrations,SUP-44479 SUP-44479,configure API integration setup,2
+Integration,Configure third-party integrations,SUP-44374 SUP-44375 SUP-44505,configure third-party integration setup,3
+Integration,Set up webhooks,SUP-44374 SUP-44505 SUP-44374,setup webhook configure,3
+Integration,Investigate webhook failures,SUP-44522 SUP-44523 SUP-44564 SUP-44565 SUP-44566 SUP-44567 SUP-44580 SUP-44581 SUP-44591 SUP-44594 SUP-44609 SUP-44610 SUP-44672 SUP-44761 SUP-44765 SUP-44784 SUP-44791 SUP-44792 SUP-44563 SUP-44565 SUP-44566 SUP-44567 SUP-44580 SUP-44516 SUP-44522 SUP-44564 SUP-44396 SUP-44522 SUP-44523 SUP-44524 SUP-44525 SUP-44527 SUP-44561 SUP-44562 SUP-44563 SUP-44564 SUP-44565 SUP-44566 SUP-44567 SUP-44580 SUP-44676 SUP-44677 SUP-44678 SUP-44679 SUP-44761 SUP-44762 SUP-44763 SUP-44764 SUP-44765 SUP-44766 SUP-44767 SUP-44768 SUP-44769 SUP-44770 SUP-44790 SUP-44791 SUP-44792 SUP-44793 SUP-44794 SUP-44795 SUP-44829 SUP-44830,investigate webhook failure error,62
+Integration,Process file uploads,SUP-44375 SUP-44443 SUP-44447 SUP-44547 SUP-44675,process file upload import data,5
+Campaign and Program Management,Create a new campaign,SUP-44869 SUP-44757 SUP-44763 SUP-44437 SUP-44453 SUP-44451,,6
+Campaign and Program Management,Update campaign settings,SUP-44451 SUP-44479 SUP-44517 SUP-44536 SUP-44559 SUP-44560 SUP-44604 SUP-44619 SUP-44622 SUP-44695 SUP-44697 SUP-44735 SUP-44481 SUP-44483,update campaign settings modify,14
+Campaign and Program Management,Configure program rules,SUP-44437 SUP-44479 SUP-44720,configure program rule setup modify,3
+Campaign and Program Management,Perform QA on a campaign,SUP-44536 SUP-44453 SUP-44645 SUP-44451 SUP-44757 SUP-44451 SUP-44536 SUP-44608 SUP-44645,QA quality assurance test campaign,9
+Campaign and Program Management,Archive old campaigns,SUP-44470 SUP-44470,archive old campaign remove,2
+Campaign and Program Management,Enable/disable program features,SUP-44748 SUP-44385 SUP-44616 SUP-44509 SUP-44540 SUP-44579 SUP-44740 SUP-44739,enable disable feature toggle,8
+Campaign and Program Management,Investigate program setup issue,SUP-44437 SUP-44466 SUP-44495 SUP-44518 SUP-44524 SUP-44527 SUP-44533 SUP-44537 SUP-44466 SUP-44467 SUP-44468 SUP-44469 SUP-44473 SUP-44476 SUP-44477 SUP-44478 SUP-44480 SUP-44482 SUP-44483 SUP-44484 SUP-44485 SUP-44486 SUP-44459 SUP-44458 SUP-44457 SUP-44456,investigate program setup issue problem,26
+Campaign and Program Management,Investigate controller execution issue,SUP-44438 SUP-44441 SUP-44442 SUP-44448 SUP-44449 SUP-44459 SUP-44460 SUP-44461 SUP-44462 SUP-44463 SUP-44464 SUP-44465 SUP-44394 SUP-44438 SUP-44420 SUP-44421 SUP-44389 SUP-44454 SUP-44555 SUP-44556 SUP-44669 SUP-44670 SUP-44689 SUP-44690 SUP-44691 SUP-44692 SUP-44769 SUP-44770 SUP-44773 SUP-44774 SUP-44775 SUP-44776 SUP-44778 SUP-44779 SUP-44780 SUP-44781 SUP-44782 SUP-44783 SUP-44784 SUP-44785 SUP-44786 SUP-44789 SUP-44823 ,investigate controller execution failure error,43
+Campaign and Program Management,Investigate campaign building failures,SUP-44515 SUP-44516 SUP-44519 SUP-44520 SUP-44521 SUP-44525 SUP-44526 SUP-44527 SUP-44529 SUP-44530 SUP-44533 SUP-44534 SUP-44389 SUP-44454,investigate campaign build failure error,14
+Creative and UI Updates,Update email templates,SUP-44481 SUP-44391 SUP-44444 SUP-44559 SUP-44618 SUP-44619 SUP-44619 SUP-44391 SUP-44481 SUP-44542,update email template modify,10
+Creative and UI Updates,Modify microsite layout,SUP-44559 SUP-44370 SUP-44560 SUP-44604 SUP-44559 SUP-44370 SUP-44528 SUP-44620 SUP-44623 SUP-44624 SUP-44736 SUP-44771 SUP-44387,modify microsite layout design,13
+Creative and UI Updates,Add new UI elements,SUP-44387 SUP-44391 SUP-44468 SUP-44528 SUP-44538 SUP-44560 SUP-44736 SUP-44560,add UI element feature,8
+Creative and UI Updates,Customize share experience,SUP-44370 SUP-44444 SUP-44528 SUP-44604 SUP-44742 SUP-44370 SUP-44444 SUP-44489 SUP-44528,customize share experience modify,9
+Creative and UI Updates,Fix email rendering issues,SUP-44434 SUP-44435 SUP-44573 SUP-44574 SUP-44575 SUP-44594 SUP-44595 SUP-44596 SUP-44678 SUP-44713 SUP-44743 SUP-44744 SUP-44795 SUP-44796 SUP-44595 SUP-44596 SUP-44419 SUP-44565 SUP-44584 SUP-44678 SUP-44484 SUP-44485 SUP-44520 SUP-44521 SUP-44546 SUP-44549 SUP-44565 SUP-44567 SUP-44568 SUP-44584 SUP-44595 SUP-44596 SUP-44678 SUP-44713 SUP-44743 SUP-44744 SUP-44788 SUP-44796 SUP-44830 SUP-44831,fix email render issue problem,40
+Creative and UI Updates,Fix microsite rendering issues,SUP-44446 SUP-44491 SUP-44524 SUP-44549 SUP-44555 SUP-44565 SUP-44567 SUP-44568 SUP-44571 SUP-44572 SUP-44435 SUP-44446,fix microsite render issue problem,12
+Creative and UI Updates,Fix creative rendering issues,SUP-44546 SUP-44576 SUP-44583 SUP-44584 SUP-44588 SUP-44616 SUP-44618 SUP-44642 SUP-44643 SUP-44684 SUP-44755 SUP-44784 SUP-44788 SUP-44434 SUP-44755 SUP-44808,fix creative render issue problem,16
+Creative and UI Updates,Update program assets,SUP-44481 SUP-44517 SUP-44529 SUP-44604,update program asset modify change,4
+Integration and Technical Setup,Update OAuth settings,SUP-44393 SUP-44393,update OAuth settings modify,2
+Integration and Technical Setup,Add tracking parameters,SUP-44489 SUP-44620 SUP-44489,add tracking parameter UTM,3
+User Management,Block specific users,SUP-44471 SUP-44471 SUP-44465 SUP-44720 ,block user ban restrict,4
+User Management,Update user permissions,SUP-44467 SUP-44600 SUP-44676,update user permission access,3
+User Management,Update user profile,SUP-44872 SUP-44871 SUP-44870 SUP-44532 SUP-44474 SUP-44472,User Management,6
+User Management,Investigate user eligibility issues,SUP-44627 SUP-44467 SUP-44510 SUP-44467 SUP-44466 SUP-44752,investigate user eligibility issue,6
+User Management,Manage user lists,SUP-44468 SUP-44471 SUP-44535,manage user list update modify,3
+Compliance and Security,Handle GDPR requests,SUP-44725 SUP-44725,handle GDPR request compliance,2
+Compliance and Security,Perform security audits,SUP-44598 SUP-44599 SUP-44598,perform security audit check,3
+Compliance and Security,Update compliance settings,SUP-44600 SUP-44599,update compliance settings modify,2
+Client Support,Investigate client-reported issues,SUP-44495 SUP-44510 SUP-44518 SUP-44627 SUP-44683 SUP-44510 SUP-44493 SUP-44721 SUP-44724 SUP-44726 SUP-44727 SUP-44728 SUP-44729 SUP-44730 SUP-44731 SUP-44732 SUP-44733 SUP-44734,investigate client issue problem,18
+Client Support,Provide documentation to clients,SUP-44496 SUP-44745,provide documentation guide manual,2
+Client Support,Assist with client testing,SUP-44645 SUP-44683 SUP-44645 SUP-44753,assist client test support,4
+Client Support,Offboard client,SUP-44507,,1
+System Maintenance,Investigate integration failures,SUP-44487 SUP-44488 SUP-44489 SUP-44490 SUP-44492 SUP-44493 SUP-44497 SUP-44506 SUP-44508 SUP-44509 SUP-44511 SUP-44512 SUP-44514 SUP-44431,investigate integration failure error,14
+System Maintenance,Update system settings,SUP-44505 SUP-44372 SUP-44372 SUP-44505,update system settings modify,4
+System Maintenance,Perform routine checks,SUP-44593 SUP-44592 SUP-44590 SUP-44589 SUP-44600 SUP-44592 SUP-44593 SUP-44597 SUP-44601 SUP-44602 SUP-44603,perform routine check maintenance,11
+System Maintenance,Investigate system errors,SUP-44441 SUP-44439 SUP-44748 SUP-44749 SUP-44750 SUP-44751,investigate system error issue problem,6
+Monitoring and Alerts,Configure alert settings,SUP-44592 SUP-44590,configure alert settings setup,2
+Monitoring and Alerts,Resume paused monitoring,SUP-44361 SUP-44509 SUP-44507 SUP-44616 SUP-44679 SUP-44385,resume paused monitoring restart,6

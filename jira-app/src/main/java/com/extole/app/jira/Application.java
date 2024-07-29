@@ -19,6 +19,7 @@ import com.cyster.weave.rest.WeaveRestScan;
 import com.cyster.web.rest.WebRestScan;
 import com.cyster.web.weave.WebDeveloperScan;
 import com.extole.client.ExtoleClientScan;
+import com.extole.jira.ExtoleJiraScan;
 import com.extole.rest.ExtoleRestScan;
 import com.extole.tickets.rest.ExtoleTicketsScan;
 import com.extole.weave.ExtoleWeaveScan;
@@ -30,6 +31,7 @@ import com.extole.weave.ExtoleWeaveScan;
     WebDeveloperScan.class, 
     ExtoleClientScan.class, 
     JiraClientScan.class,
+    ExtoleJiraScan.class,
     ExtoleTicketsScan.class, 
     CysterStoreScan.class, 
     ExtoleWeaveScan.class, 
