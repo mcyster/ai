@@ -71,7 +71,7 @@ public class SupportTicketsController {
 
     @GetMapping("/tickets/full")
     public List<FullSupportTicketResponse> getFullTickets(@RequestParam Optional<Integer> limit) {
-        return fetchFullTickets(limit);
+        return loadFullTickets(limit);
     }
 
     @GetMapping("/tickets/{ticketNumber}")
@@ -94,7 +94,18 @@ public class SupportTicketsController {
     }
 
     private List<SupportTicketResponse> loadTickets(Optional<Integer> limit) {
-        List<SupportTicketResponse> tickets;
+        List<FullSupportTicketResponse> tickets = loadFullTickets(limit);
+
+        List<SupportTicketResponse> shortTickets = new ArrayList<>();
+        for(var ticket: tickets) {
+            shortTickets.add(ticket.ticket());
+        }
+        
+        return shortTickets;
+    }
+
+    private List<FullSupportTicketResponse> loadFullTickets(Optional<Integer> limit) {
+        List<FullSupportTicketResponse> tickets;
 
         Path cacheFilename = getCacheFilename(getHash(limit));
         if (Files.exists(cacheFilename)) {
@@ -106,12 +117,12 @@ public class SupportTicketsController {
             }
 
             try {
-                tickets = objectMapper.readValue(json, new TypeReference<List<SupportTicketResponse>>(){});
+                tickets = objectMapper.readValue(json, new TypeReference<List<FullSupportTicketResponse>>(){});
             } catch (JsonProcessingException exception) {
                 throw new RuntimeException(exception);
             }
         } else {
-            tickets = fetchTickets(limit);
+            tickets = fetchFullTickets(limit);
 
             try (FileWriter file = new FileWriter(cacheFilename.toString())) {
                 file.write(objectMapper.writeValueAsString(tickets));
@@ -122,7 +133,7 @@ public class SupportTicketsController {
 
         return tickets;
     }
-
+    
     private List<FullSupportTicketResponse> fetchFullTickets(Optional<Integer> limit) {
         var ticketQueryBuilder = supportTicketService.ticketQueryBuilder();
                 
@@ -142,23 +153,6 @@ public class SupportTicketsController {
         return response;
     }
 
-    private List<SupportTicketResponse> fetchTickets(Optional<Integer> limit) {
-        var ticketQueryBuilder = supportTicketService.ticketQueryBuilder();
-        
-        ticketQueryBuilder.withTrailing7Months();
-        //ticketQueryBuilder.withTrailingWeek();
-        
-        if (limit.isPresent()) {
-            ticketQueryBuilder.withLimit(limit.get());
-        }
-        
-        List<FullSupportTicket> tickets = ticketQueryBuilder.query();  
-        List<SupportTicketResponse> response = new ArrayList<>();
-        for(var ticket: tickets) {
-            response.add(SupportTicketResponse.fromSupportTicket(ticket.ticket()));
-        }
-        return response;
-    }
     
     private Path getCacheFilename(String uniqueHash) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
