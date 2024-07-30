@@ -16,6 +16,7 @@ import com.cyster.ai.weave.service.ToolException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class Toolset<C> {
     private static final Logger logger = LoggerFactory.getLogger(Toolset.class);
@@ -31,6 +32,7 @@ public class Toolset<C> {
     public String execute(String name, String jsonParameters, C context) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new Jdk8Module());
+        mapper.registerModules(new JavaTimeModule());
         
         if (!tools.containsKey(name)) {
             return error("No tool called: " + name, Type.BAD_TOOL_NAME);
