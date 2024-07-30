@@ -83,6 +83,7 @@ public class SupportTicketService {
             add("priority");
             add("issuetype");
             add("status");
+            add("labels");
             add("statuscategorychangedate");
             add("reporter");
             add("assignee");

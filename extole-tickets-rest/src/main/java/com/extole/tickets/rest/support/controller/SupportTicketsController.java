@@ -138,7 +138,7 @@ public class SupportTicketsController {
         var ticketQueryBuilder = supportTicketService.ticketQueryBuilder();
                 
         ticketQueryBuilder.withTrailing7Months();
-        //ticketQueryBuidler.witTrailingWeek();
+        ticketQueryBuilder.withTrailingWeek();
         
         if (limit.isPresent()) {
             ticketQueryBuilder.withLimit(limit.get());
@@ -233,7 +233,8 @@ public class SupportTicketsController {
             Optional<String> pairCsm,
             Optional<String> pairSupport,
             Optional<String> clientPriority,
-            Integer timeSeconds
+            Integer timeSeconds,
+            List<String> labels
     ) {
         public static SupportTicketResponse fromSupportTicket(SupportTicket ticket) {
             ZoneId utcZone = ZoneId.of("UTC");
@@ -263,7 +264,8 @@ public class SupportTicketsController {
                 ticket.pairCsm(),
                 ticket.pairSupport(),
                 ticket.clientPriority(),
-                ticket.timeSeconds()
+                ticket.timeSeconds(),
+                ticket.labels()
             );
         }
     }

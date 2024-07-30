@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 public record SupportTicket(
@@ -26,7 +28,8 @@ public record SupportTicket(
     Optional<String> pairCsm,
     Optional<String> pairSupport,
     Integer timeSeconds,
-    String summary
+    String summary,
+    List<String> labels
 ) {
     public static Builder newBuilder() {
         return new Builder();
@@ -56,7 +59,8 @@ public record SupportTicket(
         Optional<String> pairSupport = Optional.empty();
         Integer timeSeconds = 0;
         String summary = null;
-
+        List<String> labels = Collections.emptyList(); 
+                
         public Builder key(String key) {
             this.key = key;
             return this;
@@ -158,6 +162,11 @@ public record SupportTicket(
             this.summary = summary;
             return this;
         }
+
+        public Builder labels(List<String> labels) {
+            this.labels = labels;
+            return this;
+        }
         
         public SupportTicket build() {
             if (key == null || key.isEmpty()) {
@@ -206,7 +215,8 @@ public record SupportTicket(
                     pairCsm,
                     pairSupport,
                     timeSeconds,
-                    summary
+                    summary,
+                    labels
                 );
         }
         
