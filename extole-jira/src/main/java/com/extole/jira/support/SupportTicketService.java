@@ -256,7 +256,18 @@ public class SupportTicketService {
         ticketBuilder.clientPriority(fields.path("customfield_11373").asText(null));
         ticketBuilder.timeSeconds(fields.path("aggregatetimespent").asInt());
         ticketBuilder.summary(fields.path("summary").asText());
-
+        
+        var labelNode = fields.path("labels");
+        if (labelNode.isArray()) {
+            var labels = new ArrayList<String>();
+            ArrayNode labelsNode = (ArrayNode) labelNode;
+            for (JsonNode node : labelsNode) {
+                String label = node.asText();
+                labels.add(label);
+            }
+            ticketBuilder.labels(labels);
+        }
+        
         return ticketBuilder.build();
     }
 }

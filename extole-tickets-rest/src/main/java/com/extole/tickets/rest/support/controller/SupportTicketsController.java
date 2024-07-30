@@ -138,7 +138,7 @@ public class SupportTicketsController {
         var ticketQueryBuilder = supportTicketService.ticketQueryBuilder();
                 
         ticketQueryBuilder.withTrailing7Months();
-        ticketQueryBuilder.withTrailingWeek();
+        //ticketQueryBuilder.withTrailingWeek();
         
         if (limit.isPresent()) {
             ticketQueryBuilder.withLimit(limit.get());
