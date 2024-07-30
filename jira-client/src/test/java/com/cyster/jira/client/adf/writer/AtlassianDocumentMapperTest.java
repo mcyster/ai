@@ -1,4 +1,4 @@
-package com.cyster.adf.writer;
+package com.cyster.jira.client.adf.writer;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertTrue;
