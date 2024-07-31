@@ -177,6 +177,61 @@ public class AtlassianDocumentMapperTest {
         checkResult(markdown, expectedResult);
     }
 
+    
+    @Test
+    public void testBoldedCode() {
+        var expectedResult = """
+{
+  "version" : 1,
+  "type" : "doc",
+  "content" : [ {
+    "type" : "paragraph",
+    "content" : [ {
+      "type" : "text",
+      "text" : "Check this out: "
+    }, {
+      "type" : "text",
+      "text" : "alert(\\"testing\\");",
+      "marks" : [ {
+        "type" : "strong"
+      } ]
+    } ]
+  } ]
+}
+""";
+
+        var markdown = "Check this out: **`alert(\"testing\");`**";
+
+        checkResult(markdown, expectedResult);
+    }
+
+    @Test
+    public void testCodeBolded() {
+        var expectedResult = """
+{
+  "version" : 1,
+  "type" : "doc",
+  "content" : [ {
+    "type" : "paragraph",
+    "content" : [ {
+      "type" : "text",
+      "text" : "Check this out: "
+    }, {
+      "type" : "text",
+      "text" : "**alert(\\"testing\\");**",
+      "marks" : [ {
+        "type" : "code"
+      } ]
+    } ]
+  } ]
+}
+""";
+
+        var markdown = "Check this out: `**alert(\"testing\");**`";
+
+        checkResult(markdown, expectedResult);
+    }
+    
     @Test
     public void testCodeBlock() {
         var expectedResult = """
