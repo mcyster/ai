@@ -87,6 +87,7 @@ public class SupportTicketsController {
         
         return FullSupportTicketResponse.fromFullSupportTicket(tickets.get(0));
     }
+
     
     @Scheduled(initialDelayString = "PT30M", fixedRateString = "PT1H")
     public void performScheduledTask() {

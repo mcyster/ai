@@ -19,8 +19,11 @@ public class TesterScenario implements Scenario<Void, Void> {
     private Optional<Scenario<Void, Void>> scenario = Optional.empty();
     private List<Tool<?,Void>> tools = new ArrayList<>();
     
-    public TesterScenario(AiWeaveService aiWeaveService, FailingTesterTool failingTesterTool) {
+    public TesterScenario(AiWeaveService aiWeaveService, 
+            RandomNumberTool randomNumberTool,
+            FailingTesterTool failingTesterTool) {
       this.aiWeaveService = aiWeaveService;
+      this.tools.add(randomNumberTool);
       this.tools.add(failingTesterTool);
     }
 
