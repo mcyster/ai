@@ -12,21 +12,19 @@ import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 
 @Component
-public class TesterScenario implements Scenario<Void, Void> {
-    private final String DESCRIPTION = "Helps with testing scenarios";
+public class NestedTesterScenario implements Scenario<Void, Void> {
+    private final String DESCRIPTION = "Helps with testing nested scenarios";
 
     private AiWeaveService aiWeaveService;
     private Optional<Scenario<Void, Void>> scenario = Optional.empty();
     private List<Tool<?,Void>> tools = new ArrayList<>();
     
-    public TesterScenario(AiWeaveService aiWeaveService, 
+    public NestedTesterScenario(AiWeaveService aiWeaveService, 
             RandomNumberTool randomNumberTool,
-            FailingTesterTool failingTesterTool,
-            NestedAiTool nestedAiTool) {
+            FailingTesterTool failingTesterTool) {
       this.aiWeaveService = aiWeaveService;
       this.tools.add(randomNumberTool);
       this.tools.add(failingTesterTool);
-      this.tools.add(nestedAiTool);
     }
 
     @Override
@@ -69,4 +67,5 @@ public class TesterScenario implements Scenario<Void, Void> {
         return this.scenario.get();
     }
 }
+
 
