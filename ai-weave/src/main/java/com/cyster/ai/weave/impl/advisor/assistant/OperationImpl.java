@@ -87,12 +87,20 @@ public class OperationImpl implements Operation, OperationLogger {
     }
 
     @Override
+    public OperationLogger childLogger(String description, Object context) {
+        var operation = new OperationImpl(level, description, context);
+        children.add(operation);
+        return operation;
+    }
+    
+    @Override
     public OperationLogger childLogger(Level level, String description) {
         var operation = new OperationImpl(level, description);
         children.add(operation);
         return operation;
     }
 
+    
     @Override
     public String toString() {
         ObjectMapper objectMapper = new ObjectMapper();

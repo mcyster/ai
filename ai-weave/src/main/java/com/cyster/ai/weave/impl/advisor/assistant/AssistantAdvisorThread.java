@@ -3,6 +3,7 @@ package com.cyster.ai.weave.impl.advisor.assistant;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -94,7 +95,8 @@ public class AssistantAdvisorThread<CONTEXT> {
     }
 
     private String doRun(Thread thread, OperationLogger operations) throws AdvisorConversationException {
-        RunsClient runsClient = this.openAiService.createClient(RunsClient.class, operations);
+        RunsClient runsClient = this.openAiService.createClient(RunsClient.class, operations, 
+                Map.of("assistantId", this.assistantId, "threadId" ,thread.id()));
 
         int retryCount = 0;
         long delay = RUN_BACKOFF_MIN;
@@ -198,7 +200,7 @@ public class AssistantAdvisorThread<CONTEXT> {
             logger.info("Run.status[" + run.id() + "]: " + run.status() + " (delay " + delay + "ms)");
         } while (!run.status().equals("completed"));
 
-        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations);
+        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations, Map.of("threadId", thread.id()));
 
         var responseMessages = messagesClient.listMessages(thread.id(), PaginationQueryParameters.none(), Optional.empty());
 
@@ -233,7 +235,7 @@ public class AssistantAdvisorThread<CONTEXT> {
     }
 
     private ThreadMessage addThreadedMessage(Thread thread, Message message, OperationLogger operations) {
-        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations);
+        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations, Map.of("threadId", thread.id()));
 
         Role role;
         switch(message.getType()) {

@@ -58,6 +58,18 @@ public class OpenAiService {
             .build());
     }
 
+    public <T> T createClient(Class<T> clientClass, OperationLogger operationLogger, Object context) {
+        OperationLogger logger = operationLogger.childLogger(clientClass.getSimpleName(), context);
+
+        HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(20))
+            .build();
+
+        return client(clientClass, OpenAI.newBuilder(apiKey)
+            .httpClient(new HttpClientLogger(httpClient, logger))
+            .build());
+    }
+    
     private <T> T client(Class<T> clientClass,   OpenAI openAiClient) {
         if (clientClass == AudioClient.class) {
             return clientClass.cast(openAiClient.audioClient());

@@ -7,6 +7,7 @@ public interface OperationLogger {
     void log(Level level, String description, Object context);
 
     OperationLogger childLogger(String description);
+    OperationLogger childLogger(String description, Object context);
     OperationLogger childLogger(Level level, String description);
 
 }
