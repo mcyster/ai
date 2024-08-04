@@ -11,10 +11,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public interface MessageResponse {
     enum Level {
-        Debug,
-        Verbose,
-        Normal,
-        Quiet;
+        debug,
+        verbose,
+        normal,
+        quiet;
     }
 
     String getType();
@@ -53,9 +53,9 @@ public interface MessageResponse {
     }
 
     public static class VerboseMessageResponse implements MessageResponse {
+        private final OperationResponse operation;
         private final String type;
         private final String content;
-        private final OperationResponse operation;
 
 
         private VerboseMessageResponse(String type, String content, Operation operation) {
@@ -100,8 +100,6 @@ public interface MessageResponse {
     }
 
     public static interface OperationResponse {
-
-
         Level getLevel();
         String getDescription();
         Object getContext();
@@ -172,18 +170,18 @@ public interface MessageResponse {
 
     public static MessageResponse.Level toResponseLevel(Operation.Level level) {
         return switch (level) {
-            case Normal -> MessageResponse.Level.Normal;
-            case Verbose -> MessageResponse.Level.Verbose;
-            case Debug -> MessageResponse.Level.Debug;
+            case Normal -> MessageResponse.Level.normal;
+            case Verbose -> MessageResponse.Level.verbose;
+            case Debug -> MessageResponse.Level.debug;
         };
     }
 
     public static Operation.Level toLevel(MessageResponse.Level level) {
         return switch (level) {
-            case Quiet -> Operation.Level.Normal;
-            case Normal -> Operation.Level.Normal;
-            case Verbose -> Operation.Level.Verbose;
-            case Debug -> Operation.Level.Debug;
+            case quiet -> Operation.Level.Normal;
+            case normal -> Operation.Level.Normal;
+            case verbose -> Operation.Level.Verbose;
+            case debug -> Operation.Level.Debug;
         };
     }
 
@@ -195,7 +193,7 @@ public interface MessageResponse {
         }
 
         public MessageResponse create(String type, String content, Operation operation) {
-            if (responseLevel == MessageResponse.Level.Quiet) {
+            if (responseLevel == MessageResponse.Level.quiet) {
                 return new QuietMessageResponse(type, content);
             } else {
                 return new VerboseMessageResponse(type, content, new FilteredOperation(operation, toLevel(this.responseLevel)));

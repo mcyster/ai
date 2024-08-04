@@ -4,21 +4,25 @@ import java.util.List;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.cyster.web.rest.ResourceHandlerConfig;
 
-
 @Configuration
 @EnableWebMvc
 public class JiraAppConfig implements WebMvcConfigurer {
     private List<ResourceHandlerConfig> resourceHandlerConfigs;
+    private List<Converter<?, ?>> converters;
 
     public JiraAppConfig(ApplicationContext applicationContext,
-        List<ResourceHandlerConfig> resourceHandlerConfigs) {
+        List<ResourceHandlerConfig> resourceHandlerConfigs,
+        List<Converter<?, ?>> converters) {
         this.resourceHandlerConfigs = resourceHandlerConfigs;
+        this.converters = converters;
     }
 
     @Override
@@ -35,4 +39,10 @@ public class JiraAppConfig implements WebMvcConfigurer {
             .addResourceLocations("classpath:/static/");
     }
 
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        for(var converter: converters) {
+            registry.addConverter(converter);
+        }
+    }
 }
