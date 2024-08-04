@@ -2,11 +2,10 @@
 
 # Next
 
-- support ticket classifier 
+- conversation messages, support nesting
+- graph support client_id
 - validate Extole campaign, page to leverage
-- graphbuilder support client_id
-- jira endpoint to get data
-- web developer, archive, edit creates copy if managed, ...
+- jira / engineering tickets
 - ---
 - support ticket classifier iteration
 
@@ -33,6 +32,7 @@ Make libraries
 - support archive
 - allow ai to do all operations, copy, save as, ...
 - don't allow managed pages to be edited, change pattern to copy then edit
+- archive, edit creates copy if managed, ...
 
 ## Extole Weave
 
