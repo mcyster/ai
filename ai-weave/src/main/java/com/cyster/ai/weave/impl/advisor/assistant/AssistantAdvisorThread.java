@@ -1,6 +1,7 @@
 package com.cyster.ai.weave.impl.advisor.assistant;
 
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -60,12 +61,13 @@ public class AssistantAdvisorThread<CONTEXT> {
     }
 
     public Message respond(List<Message> messages) throws ConversationException {
-        var operations = new OperationImpl("assistant");
-
+        OperationImpl operations;
         if (thread.isEmpty()) {
+              operations = new OperationImpl("Assistant - createThread", new ArrayList<>(messages));
               thread = Optional.of(createThread(messages, operations));
         }
         else {
+            operations = new OperationImpl("Assistant - continueThread", new ArrayList<>(messages));
             for(var message: messages) {
                 addThreadedMessage(thread.get(), message, operations);
             }

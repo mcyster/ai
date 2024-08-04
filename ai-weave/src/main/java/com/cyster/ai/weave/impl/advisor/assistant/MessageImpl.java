@@ -2,6 +2,8 @@ package com.cyster.ai.weave.impl.advisor.assistant;
 
 import com.cyster.ai.weave.service.conversation.Operation;
 
+import java.util.Optional;
+
 import com.cyster.ai.weave.service.conversation.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,24 +11,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class MessageImpl implements Message {
     private final Type type;
     private final String content;
-    private final Operation operation;
+    private final Optional<Operation> operation;
 
     public MessageImpl(Type type, String content, Operation operation) {
         this.type = type;
         this.content = content;
-        this.operation = operation;
+        this.operation = Optional.of(operation);
     }
 
     public MessageImpl(Type type, String content) {
         this.type = type;
         this.content = content;
-        this.operation = new OperationImpl("operations");
+        this.operation = Optional.empty();
     }
 
     public MessageImpl(String content) {
         this.type = Type.USER;
         this.content = content;
-        this.operation = new OperationImpl("operations");
+        this.operation = Optional.empty();
     }
 
     @Override
@@ -40,7 +42,7 @@ public class MessageImpl implements Message {
     }
 
     @Override
-    public Operation operation() {
+    public Optional<Operation> operation() {
         return this.operation;
     }
 
@@ -50,9 +52,10 @@ public class MessageImpl implements Message {
 
         try {
             return objectMapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+        } catch (JsonProcessingException exception) {
+            throw new RuntimeException(exception);
         }
     }
+
 
 }

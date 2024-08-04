@@ -1,5 +1,7 @@
 package com.cyster.ai.weave.service.conversation;
 
+import java.util.Optional;
+
 public interface Message {
 
     public enum Type {
@@ -20,6 +22,6 @@ public interface Message {
 
     String getContent();
 
-    Operation operation();
+    Optional<Operation> operation();
 
 }

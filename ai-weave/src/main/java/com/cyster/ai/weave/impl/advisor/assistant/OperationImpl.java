@@ -35,6 +35,13 @@ public class OperationImpl implements Operation, OperationLogger {
         this.children = new CopyOnWriteArrayList<>();
     }
 
+    public OperationImpl(String description, Object context) {
+        this.level = Level.Normal;
+        this.description = description;
+        this.context = Optional.of(context);
+        this.children = new CopyOnWriteArrayList<>();
+    }
+    
     public OperationImpl(String description) {
         this.level = Level.Normal;
         this.description = description;

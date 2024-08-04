@@ -91,7 +91,10 @@ public interface MessageResponse {
     }
 
     private static OperationResponse createOperationResponse(Operation operation) {
-        if (operation.children().size() == 0) {
+        if (operation.context().isEmpty() && operation.children().size() == 0) {
+            return new OperationResponseNoContextOrChildren(operation);
+        }
+        else if (operation.children().size() == 0) {
             return new OperationResponseNoChildren(operation);
         }
         else {
@@ -100,25 +103,29 @@ public interface MessageResponse {
     }
 
     public static interface OperationResponse {
-        Level getLevel();
         String getDescription();
-        Object getContext();
+    }
+
+    public static class OperationResponseNoContextOrChildren implements OperationResponse {
+        String description;
+
+        public OperationResponseNoContextOrChildren(Operation operation) {
+            this.description = operation.getDescription();
+        }
+
+        @Override
+        public String getDescription() {
+            return this.description;
+        }
     }
 
     public static class OperationResponseNoChildren implements OperationResponse {
-        MessageResponse.Level level;
         String description;
         Optional<Object> context;
 
         public OperationResponseNoChildren(Operation operation) {
-            this.level = toResponseLevel(operation.getLevel());
             this.description = operation.getDescription();
             this.context = operation.context();
-        }
-
-        @Override
-        public Level getLevel() {
-            return this.level;
         }
 
         @Override
@@ -126,20 +133,17 @@ public interface MessageResponse {
             return this.description;
         }
 
-        @Override
         public Object getContext() {
             return this.context;
         }
     }
 
     public static class OperationResponseWithChildren implements OperationResponse {
-        MessageResponse.Level level;
         String description;
-        List<OperationResponse> children;
         Optional<Object> context;
+        List<OperationResponse> children;
 
         public OperationResponseWithChildren(Operation operation) {
-            this.level = toResponseLevel(operation.getLevel());
             this.description = operation.getDescription();
             this.children = new ArrayList<>();
             for (Operation child: operation.children()) {
@@ -149,22 +153,16 @@ public interface MessageResponse {
         }
 
         @Override
-        public Level getLevel() {
-            return level;
-        }
-
-        @Override
         public String getDescription() {
             return this.description;
         }
 
-        public List<OperationResponse> getChildren() {
-            return this.children;
-        }
-
-        @Override
         public Object getContext() {
             return this.context;
+        }
+        
+        public List<OperationResponse> getChildren() {
+            return this.children;
         }
     }
 
@@ -192,11 +190,11 @@ public interface MessageResponse {
             this.responseLevel = level;
         }
 
-        public MessageResponse create(String type, String content, Operation operation) {
-            if (responseLevel == MessageResponse.Level.quiet) {
+        public MessageResponse create(String type, String content, Optional<Operation> operation) {
+            if (responseLevel == MessageResponse.Level.quiet || operation.isEmpty()) {
                 return new QuietMessageResponse(type, content);
             } else {
-                return new VerboseMessageResponse(type, content, new FilteredOperation(operation, toLevel(this.responseLevel)));
+                return new VerboseMessageResponse(type, content, new FilteredOperation(operation.get(), toLevel(this.responseLevel)));
             }
         }
     }
