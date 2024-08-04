@@ -2,12 +2,13 @@
 
 # Next
 
-- jira @mention
-- Support ticket classifier 
+- support ticket classifier 
 - validate Extole campaign, page to leverage
 - graphbuilder support client_id
 - jira endpoint to get data
 - web developer, archive, edit creates copy if managed, ...
+- ---
+- support ticket classifier iteration
 
 # Minor Changes
 
@@ -17,6 +18,13 @@
 - cleanup vectorstores, files
 
 # Major Changes
+
+## repos
+
+Make libraries
+- Split out Extole, have extole reference via libraries
+- 
+
 
 ## Web Weave
 
