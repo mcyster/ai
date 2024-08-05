@@ -1,7 +1,6 @@
 package com.cyster.ai.weave.impl.advisor.assistant;
 
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,16 +60,13 @@ public class AssistantAdvisorThread<CONTEXT> {
         this.context = context;
     }
 
-    public Message respond(List<Message> messages) throws ConversationException {
-        OperationImpl operations;
+    public Message respond(List<Message> messages,  OperationLogger operation) throws ConversationException {
         if (thread.isEmpty()) {
-              operations = new OperationImpl("Assistant - createThread", new ArrayList<>(messages));
-              thread = Optional.of(createThread(messages, operations));
+            thread = Optional.of(createThread(messages, operation));
         }
         else {
-            operations = new OperationImpl("Assistant - continueThread", new ArrayList<>(messages));
             for(var message: messages) {
-                addThreadedMessage(thread.get(), message, operations);
+                addThreadedMessage(thread.get(), message, operation);
             }
         }
 
@@ -78,7 +74,7 @@ public class AssistantAdvisorThread<CONTEXT> {
         String response = null;
         do {
             try {
-                response = doRun(thread.get(), operations);
+                response = doRun(thread.get(), operation);
             } catch (RetryableAdvisorConversationException exception) {
                 retries = retries + 1;
                 if (retries > CONVERSATION_RETIES_MAX) {
@@ -91,7 +87,7 @@ public class AssistantAdvisorThread<CONTEXT> {
             }
         } while (response == null);
 
-        return new MessageImpl(Type.AI, response, operations);
+        return new MessageImpl(Type.AI, response, operation);
     }
 
     private String doRun(Thread thread, OperationLogger operations) throws AdvisorConversationException {
@@ -169,7 +165,8 @@ public class AssistantAdvisorThread<CONTEXT> {
                     var callId = functionToolCall.id();
 
                     var output = this.toolset.execute(functionToolCall.function().name(),
-                        functionToolCall.function().arguments(), this.context);
+                        functionToolCall.function().arguments(), this.context, 
+                        operations.childLogger("Tool - " + functionToolCall.function().name(), functionToolCall.function().arguments()));
 
                     ToolOutput toolOutput = ToolOutput.newBuilder().toolCallId(callId).output(output).build();
 
@@ -261,7 +258,7 @@ public class AssistantAdvisorThread<CONTEXT> {
     }
 
     private Thread createThread(List<Message> messages, OperationLogger operations) {
-        ThreadsClient threadsClient = openAiService.createClient(ThreadsClient.class, operations);
+        ThreadsClient threadsClient = openAiService.createClient(ThreadsClient.class, operations, "createThread");
 
         var threadRequestBuilder = CreateThreadRequest.newBuilder();
 

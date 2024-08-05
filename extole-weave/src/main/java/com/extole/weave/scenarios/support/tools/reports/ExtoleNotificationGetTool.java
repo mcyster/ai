@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
@@ -50,8 +51,8 @@ public class ExtoleNotificationGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request parameters, Void context) throws ToolException {
-        return this.tool.execute(parameters, context);
+    public Object execute(Request parameters, Void context, OperationLogger operation) throws ToolException {
+        return this.tool.execute(parameters, context, operation);
     }
 
     static class Request {
@@ -125,7 +126,7 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context) throws ToolException {
+    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
         JsonNode notification = null;
 
         if (request.notificationId == null || request.notificationId.isBlank()) {

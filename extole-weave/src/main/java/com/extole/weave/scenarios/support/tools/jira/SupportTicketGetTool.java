@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.jira.client.adf.reader.MarkDownDocumentMapper;
@@ -45,7 +46,7 @@ public class SupportTicketGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context) throws ToolException {
+    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
 
         if (request.key != null && request.key.isEmpty()) {
             throw new FatalToolException("Attribute ticket key not specified");

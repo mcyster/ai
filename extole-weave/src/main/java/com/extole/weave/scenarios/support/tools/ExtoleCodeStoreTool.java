@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.store.SimpleVectorStoreService;
 import com.extole.weave.scenarios.support.tools.ExtoleCodeStoreTool.Request;
@@ -33,7 +34,7 @@ class ExtoleCodeStoreTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context) throws ToolException {
+    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
         return Collections.emptyMap();
 
     }

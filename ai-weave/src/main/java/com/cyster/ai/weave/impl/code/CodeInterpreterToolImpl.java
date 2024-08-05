@@ -3,6 +3,7 @@ package com.cyster.ai.weave.impl.code;
 import java.util.Collections;
 import java.util.List;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.CodeInterpreterTool;
 import com.cyster.ai.weave.service.ToolException;
 
@@ -31,7 +32,7 @@ public class CodeInterpreterToolImpl<CONTEXT> implements CodeInterpreterTool<CON
     }
 
     @Override
-    public Object execute(Void parameters, CONTEXT context) throws ToolException {
+    public Object execute(Void parameters, CONTEXT context, OperationLogger operation) throws ToolException {
         // Implemented directly by OpenAI
         return Collections.emptyMap();
     }

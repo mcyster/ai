@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.jira.client.adf.writer.AtlassianDocumentMapper;
 import com.cyster.jira.client.web.JiraWebClientFactory;
@@ -49,7 +50,7 @@ class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context) throws ToolException {
+    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
         if (request.key == null || request.key.isEmpty()) {
             throw new ToolException("Attribute 'key' not specified");
         }

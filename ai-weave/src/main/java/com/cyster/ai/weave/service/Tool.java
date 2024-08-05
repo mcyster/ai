@@ -1,5 +1,6 @@
 package com.cyster.ai.weave.service;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 
 public interface Tool<T, C> {
 
@@ -9,5 +10,5 @@ public interface Tool<T, C> {
 
     Class<T> getParameterClass();
 
-    Object execute(T parameters, C context) throws ToolException;
+    Object execute(T parameters, C context, OperationLogger operation) throws ToolException;
 }

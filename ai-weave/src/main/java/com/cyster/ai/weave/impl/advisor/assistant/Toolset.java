@@ -29,7 +29,7 @@ public class Toolset<C> {
         }
     }
 
-    public String execute(String name, String jsonParameters, C context) {
+    public String execute(String name, String jsonParameters, C context, OperationLogger operation) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new Jdk8Module());
         mapper.registerModules(new JavaTimeModule());
@@ -40,7 +40,7 @@ public class Toolset<C> {
         Tool<?, C> tool = tools.get(name);
 
         try {
-            var result = executeTool(tool, jsonParameters, context);
+            var result = executeTool(tool, jsonParameters, context, operation);
 
             return mapper.writeValueAsString(result);
         } catch (FatalToolException exception) {
@@ -56,12 +56,12 @@ public class Toolset<C> {
         }
     }
 
-    public <T> Object executeTool(Tool<T, C> tool, String jsonArguments, C context) throws ToolException {
+    public <T> Object executeTool(Tool<T, C> tool, String jsonArguments, C context, OperationLogger operation) throws ToolException {
         ObjectMapper mapper = new ObjectMapper();
 
         try {
             T parameters = mapper.readValue(jsonArguments, tool.getParameterClass());
-            return tool.execute(parameters, context);
+            return tool.execute(parameters, context, operation);
         } catch (JsonProcessingException exception) {
             return error("Tool parameters did not match json schema", Type.BAD_TOOL_PARAMETERS, exception);
         }

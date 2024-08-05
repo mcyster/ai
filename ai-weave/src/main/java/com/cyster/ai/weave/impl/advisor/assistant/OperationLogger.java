@@ -1,8 +1,8 @@
 package com.cyster.ai.weave.impl.advisor.assistant;
 
-import com.cyster.ai.weave.service.conversation.Operation.Level;
+import com.cyster.ai.weave.service.conversation.Operation;
 
-public interface OperationLogger {
+public interface OperationLogger extends Operation {
     void log(String description, Object context);
     void log(Level level, String description, Object context);
 

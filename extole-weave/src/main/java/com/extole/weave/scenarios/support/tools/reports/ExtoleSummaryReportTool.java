@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
@@ -40,7 +41,7 @@ class ExtoleSummaryReportTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context) throws ToolException {
+    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
 
         ObjectNode parameters = JsonNodeFactory.instance.objectNode();
         {

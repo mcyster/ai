@@ -2,6 +2,7 @@ package com.cyster.weave.impl.scenarios.tester;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
@@ -36,14 +37,14 @@ public class NestedAiTool implements Tool<Parameters, Void> {
     }
 
     @Override
-    public Object execute(Parameters request, Void context) throws ToolException {
+    public Object execute(Parameters request, Void context, OperationLogger operation) throws ToolException {
         Conversation conversation = this.nestedTesterScenario.createConversationBuilder(null, null)
             .addMessage(request.prompt)
             .start();
 
         Message message;
         try {
-            message = conversation.respond();
+            message = conversation.respond(operation);
         } catch (ConversationException exception) {
            throw new ToolException("Find Runbook failed to start conversation", exception);
         }

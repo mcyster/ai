@@ -41,11 +41,11 @@ public class CachingTool<Request, Context> implements Tool<Request, Context> {
     }
 
     @Override
-    public Object execute(Request request, Context context) throws ToolException {
+    public Object execute(Request request, Context context, OperationLogger operation) throws ToolException {
         Key<Request, Context> key = new Key<Request, Context>(this.tool, request, context);
 
         try {
-            return cache.get(key, () -> execute(key));
+            return cache.get(key, () -> execute(key, operation));
         } catch(ExecutionException exception) {
             Throwable cause = exception.getCause();
             if (cause instanceof ToolException) {
@@ -57,8 +57,8 @@ public class CachingTool<Request, Context> implements Tool<Request, Context> {
         }
     }
 
-    private static <Request, Context> Object execute(Key<Request, Context> key) throws ToolException {
-        return key.getTool().execute(key.getRequest(), key.getContext());
+    private static <Request, Context> Object execute(Key<Request, Context> key, OperationLogger operation) throws ToolException {
+        return key.getTool().execute(key.getRequest(), key.getContext(), operation);
     }
 
     private static class Key<Request, Context> {

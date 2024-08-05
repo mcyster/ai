@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
@@ -50,7 +51,7 @@ public class ExtoleSupportTicketRunbookExecuterTool implements Tool<RunbookScena
     }
 
     @Override
-    public Object execute(RunbookScenarioParameters request, Void context) throws ToolException {
+    public Object execute(RunbookScenarioParameters request, Void context, OperationLogger operation) throws ToolException {
         var scenario = this.runbookScenarios.get(request.runbookName());
         if (scenario == null) {
             throw new ToolException("Runbook " + request.runbookName() + " not found");
@@ -70,7 +71,7 @@ public class ExtoleSupportTicketRunbookExecuterTool implements Tool<RunbookScena
 
         Message message;
         try {
-            message = conversation.respond();
+            message = conversation.respond(operation);
         } catch (ConversationException exception) {
            throw new ToolException("execute runbook failed to start conversation", exception);
         }

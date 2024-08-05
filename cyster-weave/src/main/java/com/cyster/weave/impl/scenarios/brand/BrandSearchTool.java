@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -39,7 +40,7 @@ class BrandSearchTool implements Tool<BrandSearchRequest, Void> {
     }
 
     @Override
-    public Object execute(BrandSearchRequest searchRequest, Void context) {
+    public Object execute(BrandSearchRequest searchRequest, Void context, OperationLogger operation) {
         var webClient = WebClient.builder().baseUrl("https://api.brandfetch.io/")
             .build();
 

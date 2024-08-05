@@ -2,6 +2,7 @@ package com.extole.weave.scenarios.runbooks;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
@@ -36,14 +37,14 @@ public class ExtoleSupportTicketRunbookSelectorTool implements Tool<Parameters, 
     }
 
     @Override
-    public Object execute(Parameters request, Void context) throws ToolException {
+    public Object execute(Parameters request, Void context, OperationLogger operation) throws ToolException {
         Conversation conversation = runbookSelectorScenario.createConversationBuilder(request, null)
             .addMessage("Ticket Number: " + request.ticketNumber())
             .start();
 
         Message message;
         try {
-            message = conversation.respond();
+            message = conversation.respond(operation);
         } catch (ConversationException exception) {
            throw new ToolException("Find Runbook failed to start conversation", exception);
         }

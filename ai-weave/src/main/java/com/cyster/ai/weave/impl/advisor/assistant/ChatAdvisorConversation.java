@@ -70,10 +70,18 @@ public class ChatAdvisorConversation implements Conversation {
     }
 
     @Override
+    public Message respond(OperationLogger operation) throws ConversationException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    @Override
     public List<Message> getMessages() {
         return messages.stream()
             .filter(message -> message.getType() == Message.Type.AI || message.getType() == Message.Type.USER)
             .collect(Collectors.toList());
     }
+
+
 
 }

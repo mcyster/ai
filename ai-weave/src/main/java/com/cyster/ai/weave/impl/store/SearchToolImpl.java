@@ -5,6 +5,7 @@ import java.util.Collections;
 import io.github.stefanbratanov.jvm.openai.VectorStore;
 import io.github.stefanbratanov.jvm.openai.VectorStoresClient;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.ToolException;
@@ -36,7 +37,7 @@ public class SearchToolImpl<CONTEXT> implements SearchTool<CONTEXT> {
     }
 
     @Override
-    public Object execute(Void parameters, CONTEXT context) throws ToolException {
+    public Object execute(Void parameters, CONTEXT context, OperationLogger operation) throws ToolException {
         // Implemented directly by OpenAI
         return Collections.emptyMap();
     }

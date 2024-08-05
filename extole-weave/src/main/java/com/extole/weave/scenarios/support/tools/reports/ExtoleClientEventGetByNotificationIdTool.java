@@ -2,6 +2,7 @@ package com.extole.weave.scenarios.support.tools.reports;
 
 import java.util.Objects;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
@@ -40,8 +41,8 @@ class ExtoleClientEventGetByNotificationIdTool implements ExtoleSupportTool<Requ
     }
 
     @Override
-    public Object execute(Request parameters, Void context) throws ToolException {
-        return this.tool.execute(parameters, context);
+    public Object execute(Request parameters, Void context, OperationLogger operation) throws ToolException {
+        return this.tool.execute(parameters, context, operation);
     }
 
     static class Request {
@@ -108,7 +109,7 @@ class UncachedClientEventGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context) throws ToolException {
+    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
         if (request.notificationId == null || request.notificationId.isBlank()) {
             throw new ToolException("notificationId is required");
         }

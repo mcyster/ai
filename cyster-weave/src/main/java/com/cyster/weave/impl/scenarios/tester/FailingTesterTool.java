@@ -2,6 +2,7 @@ package com.cyster.weave.impl.scenarios.tester;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 
@@ -27,7 +28,7 @@ public class FailingTesterTool implements Tool<Void, Void> {
     }
 
     @Override
-    public Object execute(Void parameters, Void context) throws ToolException {
+    public Object execute(Void parameters, Void context, OperationLogger operation) throws ToolException {
         throw new ToolException("Failing test tool - intentionally fails with this exception");
     }
 }

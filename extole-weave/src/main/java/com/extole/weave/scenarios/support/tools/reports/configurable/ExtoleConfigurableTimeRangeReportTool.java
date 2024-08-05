@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
@@ -50,8 +51,8 @@ class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool<Request
     }
 
     @Override
-    public Object execute(Request parameters, Void context) throws ToolException {
-        return this.tool.execute(parameters, context);
+    public Object execute(Request parameters, Void context, OperationLogger operation) throws ToolException {
+        return this.tool.execute(parameters, context, operation);
     }
 
     public static class Configuration {
@@ -172,7 +173,7 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool
     }
 
     @Override
-    public Object execute(Request request, Void context) throws ToolException {
+    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
         ObjectNode parameters = JsonNodeFactory.instance.objectNode();
         {
             ObjectMapper mapper = new ObjectMapper();

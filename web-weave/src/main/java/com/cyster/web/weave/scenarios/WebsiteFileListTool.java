@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
@@ -34,7 +35,7 @@ class WebsiteFileListTool implements WebsiteDeveloperTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, ManagedWebsites context) throws ToolException {
+    public Object execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
         ManagedWebsite website = context.getSite(request.websiteId());
         return new Response(website.site().getId(), website.site().getAssets());
     }

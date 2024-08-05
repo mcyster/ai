@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleWebClientException;
@@ -41,7 +42,7 @@ class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request searchRequest, Void context) throws ToolException {
+    public Object execute(Request searchRequest, Void context, OperationLogger operation) throws ToolException {
 
         JsonNode resultNode;
         try {

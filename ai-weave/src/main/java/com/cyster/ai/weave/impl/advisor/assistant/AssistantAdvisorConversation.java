@@ -34,14 +34,29 @@ public class AssistantAdvisorConversation<CONTEXT> implements Conversation {
 
     @Override
     public Message respond() throws ConversationException {
+        var operation = new OperationImpl("Assistant", new ArrayList<>(newMessages));
+       
         messages.addAll(newMessages);
-        var response = this.assistantAdvisorThread.respond(this.newMessages);
+        var response = this.assistantAdvisorThread.respond(this.newMessages, operation);
         newMessages.clear();
+        
         messages.add(response);
      
         return response;
     }
 
+    @Override
+    public Message respond(OperationLogger operation) throws ConversationException {
+        var childOperation = operation.childLogger("Assistant", new ArrayList<>(newMessages));
+
+        messages.addAll(newMessages);
+        var response = this.assistantAdvisorThread.respond(this.newMessages, childOperation);
+        newMessages.clear();
+        messages.add(response);
+     
+        return response;
+    }
+    
     @Override
     public List<Message> getMessages() {
         return Stream.concat(this.messages.stream(), this.newMessages.stream())

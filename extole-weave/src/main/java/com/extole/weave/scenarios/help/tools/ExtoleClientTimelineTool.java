@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
@@ -38,7 +39,7 @@ public class ExtoleClientTimelineTool implements Tool<ExtoleClientTimelineReques
     }
 
     @Override
-    public Object execute(ExtoleClientTimelineRequest request, ExtoleSessionContext context) throws ToolException {
+    public Object execute(ExtoleClientTimelineRequest request, ExtoleSessionContext context, OperationLogger operation) throws ToolException {
         var webClient = this.extoleWebClientFactory.getWebClient(context.getAccessToken());
 
         JsonNode resultNode = null;

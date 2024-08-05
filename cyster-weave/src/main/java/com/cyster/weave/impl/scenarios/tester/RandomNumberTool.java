@@ -4,6 +4,7 @@ import java.util.Random;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -26,7 +27,7 @@ public class RandomNumberTool implements Tool<Parameters, Void> {
 
     @Override
     public String getDescription() {
-        return "Fails - to allow testing";
+        return "Generates a random number";
     }
 
     @Override
@@ -35,8 +36,17 @@ public class RandomNumberTool implements Tool<Parameters, Void> {
     }
 
     @Override
-    public Object execute(Parameters parameters, Void context) throws ToolException {
-        int value = this.random.nextInt(parameters.upperBound - parameters.lowerBound + 1) + parameters.lowerBound;
+    public Object execute(Parameters parameters, Void context, OperationLogger operation) throws ToolException {
+        int lowerBound = 0;
+        if (parameters.lowerBound != null) {
+            lowerBound = parameters.lowerBound;
+        }
+        int upperBound = 100;
+        if (parameters.upperBound != null) {
+            upperBound = parameters.upperBound;
+        }
+        
+        Integer value = this.random.nextInt(upperBound - lowerBound + 1) + lowerBound;
         
         return value;
     }
@@ -44,11 +54,12 @@ public class RandomNumberTool implements Tool<Parameters, Void> {
     public static record Parameters(
         @JsonPropertyDescription("Lower bound of random number, defaults to 0")
         @JsonProperty(required = false)
-        int lowerBound,
+        Integer lowerBound,
         @JsonPropertyDescription("Upper bound of random number, defaults to 100")
         @JsonProperty(required = false)
-        int upperBound
-    ) {};
+        Integer upperBound
+    ) {
+    };
 }
 
 
