@@ -72,7 +72,10 @@
                     due: ticket.due ? new Date(Date.parse(ticket.due)) : null
                 }));
 
-                const filteredData = data.filter(ticket => !ticket.labels.includes("exec_escalated"));
+                const filteredData = data.filter(ticket => 
+                    !ticket.labels.includes("exec_escalated") && 
+                    ticket.client !== "Extole"
+                );
                 return filteredData;
             } catch (error) {
                 alert(`Error: problem fetching ${url}`);
@@ -91,11 +94,14 @@
 
         function categorizeDurations(tickets: SupportTicket[]): { [endOfWeekDate: string]: { week1: number, week2: number, week3: number, week4Plus: number } } {
             const categories: { [endOfWeekDate: string]: { week1: number, week2: number, week3: number, week4Plus: number } } = {};
+            const currentDate = new Date();
 
             tickets.forEach(ticket => {
-                if (ticket.resolved && ticket.created && ticket.resolved > ticket.created) {
-                    const duration = Math.ceil((ticket.resolved.getTime() - ticket.created.getTime()) / (1000 * 60 * 60 * 24 * 7)); // Weeks
-                    const sundayMidnite = getSundayMidnite(ticket.resolved);
+                const endDate = ticket.resolved && ticket.resolved < currentDate ? ticket.resolved : currentDate;
+
+                for (let date = new Date(ticket.created); date < endDate; date.setUTCDate(date.getUTCDate() + 7)) {
+                    const sundayMidnite = getSundayMidnite(date);
+                    const duration = Math.ceil((date.getTime() - ticket.created.getTime()) / (1000 * 60 * 60 * 24 * 7)); // Weeks
 
                     if (!categories[sundayMidnite]) {
                         categories[sundayMidnite] = { week1: 0, week2: 0, week3: 0, week4Plus: 0 };
