@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Short Lead Time Tickets and Top Creators</title>
+    <meta name="tags" content="extole,support,tickets,short_lead_time,weekly">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Short Lead Time Tickets Per Week</h2>
+            <canvas id="shortLeadTimeChart"></canvas>
+        </div>
+    </div>
+
+    <script id="typescript-code" type="text/typescript">
+        interface SupportTicket {
+            key: string;
+            project: string;
+            created: Date;
+            type: string;
+            status: string;
+            statusChanged: Date;
+            category: string | null;
+            resolved: Date | null;
+            due: Date | null;
+            priority: string;
+            reporter: string | null;
+            assignee: string | null;
+            client: string | null;
+            clientId: string | null;
+            pod: string | null;
+            pairCsm: string | null;
+            pairSupport: string | null;
+            clientPriority: string | null;
+            timeSeconds: number;
+        }
+
+        async function getData(): Promise<SupportTicket[]> {
+            const url = '/support/tickets';
+
+            try {
+                const response = await fetch(url, { method: 'GET' });
+                if (!response.ok) {
+                    alert(`Error: unable to fetch ${url}`);
+                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
+                }
+                const rawData: any[] = await response.json();
+                const data: SupportTicket[] = rawData.map(ticket => ({
+                    ...ticket,
+                    created: new Date(Date.parse(ticket.created)),
+                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
+                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
+                }));
+
+                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole');
+                return filteredData;
+            } catch (error) {
+                alert(`Error: problem fetching ${url}`);
+                console.error('Fetch error:', error);
+                throw error;
+            }
+        }
+
+        function filterTicketsByDate(tickets: SupportTicket[], startDate: Date) {
+            return tickets.filter(ticket => ticket.created >= startDate);
+        }
+
+        function filterShortLeadTimeTickets(tickets: SupportTicket[]): SupportTicket[] {
+            return tickets.filter(ticket => ticket.due && (ticket.due.getTime() - ticket.created.getTime()) / (1000 * 60 * 60 * 24) <= 2);
+        }
+
+        function countTicketsPerWeekPerUser(tickets: SupportTicket[]) {
+            const weekUserMap: { [weekEndDate: string]: { [reporter: string]: number } } = {};
+
+            tickets.forEach(ticket => {
+                const weekEndDate = getWeekEndDate(ticket.created);
+                const reporter = ticket.reporter || 'Unknown';
+                if (!weekUserMap[weekEndDate]) {
+                    weekUserMap[weekEndDate] = {};
+                }
+                if (!weekUserMap[weekEndDate][reporter]) {
+                    weekUserMap[weekEndDate][reporter] = 0;
+                }
+                weekUserMap[weekEndDate][reporter] += 1;
+            });
+
+            return weekUserMap;
+        }
+
+        function getWeekEndDate(date: Date) {
+            const dayOfWeek = date.getUTCDay();
+            const weekEndDate = new Date(date);
+            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+        }
+
+        function countTicketsByCreator(tickets: SupportTicket[]): { [reporter: string]: number } {
+            const creatorMap: { [reporter: string]: number } = {};
+
+            tickets.forEach(ticket => {
+                const reporter = ticket.reporter || 'Unknown';
+                if (!creatorMap[reporter]) {
+                    creatorMap[reporter] = 0;
+                }
+                creatorMap[reporter] += 1;
+            });
+
+            return creatorMap;
+        }
+
+        function getTopCreatorsFiltered(creatorMap: { [reporter: string]: number }): { reporter: string, count: number }[] {
+            const sortedCreators = Object.keys(creatorMap)
+                .map(reporter => ({ reporter, count: creatorMap[reporter] }))
+                .sort((a, b) => b.count - a.count)
+                .filter((_, index) => index < 8); // limiting to top 8
+
+            return sortedCreators;
+        }
+
+        function generateColors(numColors: number): string[] {
+            const colors = [];
+            const hueStep = 360 / numColors;
+            for (let i = 0; i < numColors; i++) {
+                const hue = i * hueStep;
+                const color = `hsl(${hue}, 50%, 45%)`;
+                colors.push(color); 
+            }
+            return colors;
+        }
+
+        function renderShortLeadTimeChart(weekUserMap: { [weekEndDate: string]: { [reporter: string]: number } }, topCreators: { reporter: string, count: number }[]) {
+            const ctx = document.getElementById('shortLeadTimeChart') as HTMLCanvasElement;
+            if (!ctx) return;
+
+            const weeks = Object.keys(weekUserMap).sort();
+            const colors = generateColors(topCreators.length);
+
+            const dataSets = topCreators.map((creator, index) => {
+                const data = weeks.map(week => ({ x: new Date(week), y: weekUserMap[week][creator.reporter] || 0 }));
+                return {
+                    label: `${creator.reporter}`,
+                    data,
+                    fill: false,
+                    borderWidth: 4,
+                    borderColor: colors[index],
+                    backgroundColor: colors[index].replace('45%', '70%'),
+                    hidden: false
+                };
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: dataSets
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'week',
+                                tooltipFormat: 'PP',
+                                displayFormats: {
+                                    week: 'PP'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Week Ending',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true, // Ensure y-axis starts at 0
+                            title: {
+                                display: true,
+                                text: 'Number of Tickets',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const app = {
+            data() {
+                return {
+                    jsonData: []
+                };
+            },
+            async created() {
+                const startDate = new Date();
+                startDate.setMonth(startDate.getMonth() - 6);
+                getData().then(tickets => {
+                    const filteredTickets = filterTicketsByDate(tickets, startDate);
+                    const shortLeadTimeTickets = filterShortLeadTimeTickets(filteredTickets);
+
+                    const weekUserMap = countTicketsPerWeekPerUser(shortLeadTimeTickets);
+                    const creatorMap = countTicketsByCreator(shortLeadTimeTickets);
+
+                    const topCreators = getTopCreatorsFiltered(creatorMap);
+
+                    renderShortLeadTimeChart(weekUserMap, topCreators);
+                }).catch(error => {
+                    console.error('Error loading data:', error);
+                });
+            }
+        };
+
+        Vue.createApp(app).mount('#app');
+    </script>
+
+    <script>
+        (async function compileAndExecute() {
+            const tsCode = document.getElementById('typescript-code').textContent;
+            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
+            eval(jsCode);
+        })();
+    </script>
+</body>
+</html>
