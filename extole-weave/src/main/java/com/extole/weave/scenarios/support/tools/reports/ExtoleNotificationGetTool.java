@@ -54,6 +54,10 @@ public class ExtoleNotificationGetTool implements ExtoleSupportTool<Request> {
     public Object execute(Request parameters, Void context, OperationLogger operation) throws ToolException {
         return this.tool.execute(parameters, context, operation);
     }
+    
+    public int hash() {
+        return Objects.hash(getName(), getDescription(), getParameterClass(), tool.hash());
+    }
 
     static class Request {
         @JsonProperty(required = true)

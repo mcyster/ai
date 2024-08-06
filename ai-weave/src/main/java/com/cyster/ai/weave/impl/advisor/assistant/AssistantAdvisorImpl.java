@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.cyster.ai.weave.impl.advisor.Advisor;
@@ -23,8 +24,6 @@ import io.github.stefanbratanov.jvm.openai.FilesClient;
 import io.github.stefanbratanov.jvm.openai.PaginationQueryParameters;
 import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
 import io.github.stefanbratanov.jvm.openai.AssistantsClient.PaginatedAssistants;
-
-
 
 public class AssistantAdvisorImpl<C> implements Advisor<C> {
     public static String VERSION = "0.1";
@@ -132,7 +131,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
 
         @Override
         public Advisor<C2> getOrCreate() {
-            String hash = this.getHash();
+            String hash = String.valueOf(assistantHash());
 
             var assistant = this.findAssistant(hash);
             if (assistant.isEmpty()) {
@@ -203,30 +202,8 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
             return Optional.empty();
         }
 
-        private String getHash() {
-            String text = VERSION + this.name + this.instructions;
-            for (var tool : this.toolsetBuilder.create().getTools()) {
-                text = text + tool.getName() + tool.getDescription();
-            }
-
-            MessageDigest digest;
-            try {
-                digest = MessageDigest.getInstance("SHA-256");
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            }
-            byte[] hashBytes = digest.digest(text.getBytes());
-
-            StringBuilder hexString = new StringBuilder();
-            for (byte value : hashBytes) {
-                String hex = Integer.toHexString(0xff & value);
-                if (hex.length() == 1) {
-                    hexString.append('0');
-                }
-                hexString.append(hex);
-            }
-            return hexString.toString();
+        private int assistantHash() {
+            return Objects.hash(MODEL, VERSION, name, instructions, filePaths, this.toolsetBuilder.create().getTools());   
         }
-
     }
 }

@@ -1,5 +1,7 @@
 package com.extole.weave.scenarios.support.tools.jira;
 
+import java.util.Objects;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -103,6 +105,10 @@ class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
         return result;
     }
 
+    public int hash() {
+        return Objects.hash(getName(), getDescription(), getParameterClass(), testMode);
+    }
+    
     private static boolean isAtlassianDocumentFormat(String input) {
         ObjectMapper mapper = new ObjectMapper();
 

@@ -2,6 +2,7 @@ package com.cyster.ai.weave.impl.code;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.CodeInterpreterTool;
@@ -37,6 +38,10 @@ public class CodeInterpreterToolImpl<CONTEXT> implements CodeInterpreterTool<CON
         return Collections.emptyMap();
     }
 
+    public int hash() {
+        return Objects.hash(getName(), getDescription(), getParameterClass(), fileIds);
+    }
+    
     public List<String> getFileIds() {
         return this.fileIds;
     }

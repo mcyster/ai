@@ -1,5 +1,7 @@
 package com.extole.weave.scenarios.runbooks;
 
+import java.util.Objects;
+
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
@@ -55,5 +57,8 @@ public class ExtoleSupportTicketClientTool implements Tool<Parameters, Void> {
         return aiWeaveService.extractResponse(com.extole.weave.scenarios.runbooks.ExtoleSupportTicketClientScenario.Response.class, message.getContent());
     }
    
+    public int hash() {
+        return Objects.hash(getName(), getDescription(), getParameterClass(), extoleTicketClientScenario.hash());
+    }
 }
 

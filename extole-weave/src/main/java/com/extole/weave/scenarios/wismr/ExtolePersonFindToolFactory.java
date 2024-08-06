@@ -67,6 +67,7 @@ class ExtolePersonFindTool implements Tool<ExtolePersonFileToolParameters, Void>
         return this.getExecutor().apply((ExtolePersonFileToolParameters)parameters);
     }
 
+    
     public Function<ExtolePersonFileToolParameters, Object> getExecutor() {
         return parameter -> findPerson(parameter);
     }

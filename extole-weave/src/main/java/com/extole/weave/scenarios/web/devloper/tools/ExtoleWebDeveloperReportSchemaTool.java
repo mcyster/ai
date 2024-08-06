@@ -1,5 +1,7 @@
 package com.extole.weave.scenarios.web.devloper.tools;
 
+import java.util.Objects;
+
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
@@ -39,5 +41,7 @@ public class ExtoleWebDeveloperReportSchemaTool implements WebsiteDeveloperTool<
         return this.reportSchemaTool.execute(request, null, operation);
     }
 
-
+    public int hash() {
+        return Objects.hash(getName(), getDescription(), getParameterClass(), reportSchemaTool.hash());
+    }
 }

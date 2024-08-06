@@ -1,5 +1,7 @@
 package com.cyster.weave.impl.scenarios.tester;
 
+import java.util.Objects;
+
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
@@ -52,6 +54,10 @@ public class NestedAiTool implements Tool<Parameters, Void> {
         return message.getContent();
     }
 
+    public int hash() {
+        return Objects.hash(getName(), getDescription(), getParameterClass(), nestedTesterScenario.hash());
+    }
+    
     public static record Parameters(
             @JsonPropertyDescription("Conversatoinal prompt for an AI")
             @JsonProperty(required = true)

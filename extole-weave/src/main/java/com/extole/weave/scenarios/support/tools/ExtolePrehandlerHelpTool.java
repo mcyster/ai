@@ -1,5 +1,7 @@
 package com.extole.weave.scenarios.support.tools;
 
+import java.util.Objects;
+
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
@@ -87,6 +89,10 @@ class ExtolePrehandlerHelpTool implements ExtoleSupportTool<Request> {
         }
     }
 
+    public int hash() {
+        return Objects.hash(getName(), getDescription(), getParameterClass(), scenario.hash());
+    }
+    
     static class Request {
         @JsonProperty(required = true)
         public String client_id;

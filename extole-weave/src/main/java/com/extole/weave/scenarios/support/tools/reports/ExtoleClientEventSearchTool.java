@@ -107,6 +107,10 @@ class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
         return reportBuilder.build();
     }
 
+    public int hash() {
+        return Objects.hash(getName(), getDescription(), getParameterClass(), extoleNotificationGetTool.hash());
+    }
+    
     static class Request {
         @JsonProperty(required = true)
         public String clientId;

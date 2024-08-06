@@ -2,6 +2,7 @@ package com.extole.weave.scenarios.runbooks;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -80,6 +81,10 @@ public class ExtoleSupportTicketRunbookExecuterTool implements Tool<RunbookScena
         return response;
     }
 
+    public  int hash() {
+        return Objects.hash(getName(), getDescription(), getParameterClass(), runbookScenarios);
+    }
+    
     public record Response (
         @JsonProperty(required = true) String ticketNumber,
         @JsonProperty(required = true) String runbookName,

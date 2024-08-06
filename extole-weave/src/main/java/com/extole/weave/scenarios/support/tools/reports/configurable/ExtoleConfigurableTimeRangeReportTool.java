@@ -55,6 +55,11 @@ class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool<Request
         return this.tool.execute(parameters, context, operation);
     }
 
+
+    public int hash() {
+        return Objects.hash(getName(), getDescription(), getParameterClass(), tool.hash());
+    }
+    
     public static class Configuration {
         private String description;
         private String reportType;
@@ -201,6 +206,10 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool
         return reportBuilder.build();
     }
 
+    public int hash() {
+        return Objects.hash(getName(), getDescription(), getParameterClass(), reportType, rowLimit, fixedParameters, waitForResult);
+    }
+    
     static class Request {
         @JsonProperty(required = true)
         public String clientId;

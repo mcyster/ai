@@ -1,6 +1,7 @@
 package com.cyster.ai.weave.impl.store;
 
 import java.util.Collections;
+import java.util.Objects;
 
 import io.github.stefanbratanov.jvm.openai.VectorStore;
 import io.github.stefanbratanov.jvm.openai.VectorStoresClient;
@@ -42,6 +43,10 @@ public class SearchToolImpl<CONTEXT> implements SearchTool<CONTEXT> {
         return Collections.emptyMap();
     }
 
+    public int hash() {
+        return Objects.hash(getName(), getDescription(), getParameterClass(), vectorStore.id());
+    }
+    
     @Override
     public boolean isReady() {
         var updatedVectorStore = this.openAiService.createClient(VectorStoresClient.class).retrieveVectorStore(vectorStore.id());

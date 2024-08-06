@@ -57,6 +57,10 @@ public class CachingTool<Request, Context> implements Tool<Request, Context> {
         }
     }
 
+    public int hash() {
+        return Objects.hash(getName(), getDescription(), getParameterClass(), tool.hash());
+    }
+    
     private static <Request, Context> Object execute(Key<Request, Context> key, OperationLogger operation) throws ToolException {
         return key.getTool().execute(key.getRequest(), key.getContext(), operation);
     }
