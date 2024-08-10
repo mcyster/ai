@@ -2,7 +2,7 @@ package com.extole.jira.support;
 
 import java.time.ZonedDateTime;
 
-public record TicketComment(String description, String author, ZonedDateTime created) {
+public record SupportTicketComment(String description, String author, ZonedDateTime created) {
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -27,7 +27,7 @@ public record TicketComment(String description, String author, ZonedDateTime cre
             return this;
         }
         
-        public TicketComment build() {
+        public SupportTicketComment build() {
             if (author == null || author.isEmpty()) {
                 throw new IllegalArgumentException("Author cannot be null or empty");
             }
@@ -35,7 +35,7 @@ public record TicketComment(String description, String author, ZonedDateTime cre
                 throw new IllegalArgumentException("Created cannot be null");
             }
             
-            return new TicketComment(description, author, created);
+            return new SupportTicketComment(description, author, created);
         }
     }
 };

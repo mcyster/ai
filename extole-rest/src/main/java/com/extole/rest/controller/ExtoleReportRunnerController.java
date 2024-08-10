@@ -1,6 +1,5 @@
 package com.extole.rest.controller;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,6 @@ import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.cyster.rest.RestException;
-import com.extole.client.web.ExtoleTrustedWebClientFactory;
 
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;

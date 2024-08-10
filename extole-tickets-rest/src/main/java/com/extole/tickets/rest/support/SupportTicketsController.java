@@ -1,4 +1,4 @@
-package com.extole.tickets.rest.support.controller;
+package com.extole.tickets.rest.support;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.extole.jira.support.FullSupportTicket;
 import com.extole.jira.support.SupportTicket;
 import com.extole.jira.support.SupportTicketService;
-import com.extole.jira.support.TicketComment;
+import com.extole.jira.support.SupportTicketComment;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -159,7 +159,7 @@ public class SupportTicketsController {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String date = formatter.format(new Date());
 
-        return tempDirectory.resolve("tickets-" + uniqueHash + "-" + date + ".json");
+        return tempDirectory.resolve("support-tickets-" + uniqueHash + "-" + date + ".json");
     }
 
     public static String getHash(Object... parameters) {
@@ -276,7 +276,7 @@ public class SupportTicketsController {
             String author, 
             @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") ZonedDateTime created
     ) {
-        public static TicketCommentResponse fromTicketComment(TicketComment comment) {
+        public static TicketCommentResponse fromTicketComment(SupportTicketComment comment) {
             ZoneId utcZone = ZoneId.of("UTC");
 
             return new TicketCommentResponse(comment.description(), comment.author(), comment.created().withZoneSameInstant(utcZone));

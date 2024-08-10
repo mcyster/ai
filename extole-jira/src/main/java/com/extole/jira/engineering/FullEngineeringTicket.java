@@ -1,20 +1,20 @@
-package com.extole.jira.support;
+package com.extole.jira.engineering;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public record FullSupportTicket(SupportTicket ticket, String description, List<SupportTicketComment> comments) {
+public record FullEngineeringTicket(EngineeringTicket ticket, String description, List<EngineeringTicketComment> comments) {
 
     public static Builder newBuilder() {
         return new Builder();
     }
     
     public static class Builder {
-        SupportTicket ticket;
+        EngineeringTicket ticket;
         String description;
-        List<SupportTicketComment> comments = new ArrayList<>();
+        List<EngineeringTicketComment> comments = new ArrayList<>();
     
-        public Builder ticket(SupportTicket ticket) {
+        public Builder ticket(EngineeringTicket ticket) {
             this.ticket = ticket;
             return this;
         }
@@ -24,12 +24,12 @@ public record FullSupportTicket(SupportTicket ticket, String description, List<S
             return this;
         }
           
-        public Builder addComment(SupportTicketComment comment) {
+        public Builder addComment(EngineeringTicketComment comment) {
             comments.add(comment);
             return this;
         }
 
-        public FullSupportTicket build() {
+        public FullEngineeringTicket build() {
             if (ticket == null) {
                 throw new IllegalArgumentException("Ticket cannot be null");
             }
@@ -39,7 +39,8 @@ public record FullSupportTicket(SupportTicket ticket, String description, List<S
             }
          
             
-            return new FullSupportTicket(ticket, description, comments);
+            return new FullEngineeringTicket(ticket, description, comments);
         }
     }
 }
+

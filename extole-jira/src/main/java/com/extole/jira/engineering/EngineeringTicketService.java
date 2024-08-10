@@ -1,4 +1,4 @@
-package com.extole.jira.support;
+package com.extole.jira.engineering;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +15,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 @Component
-public class SupportTicketService {
+public class EngineeringTicketService {
     private static int MAX_TICKETS_PER_REQUEST = 1024;
     
     private JiraWebClientFactory jiraWebClientFactory;
     
-    SupportTicketService(JiraWebClientFactory jiraWebClientFactory) {
+    EngineeringTicketService(JiraWebClientFactory jiraWebClientFactory) {
         this.jiraWebClientFactory = jiraWebClientFactory;
     }
     
@@ -52,8 +52,8 @@ public class SupportTicketService {
             return this;
         }
         
-        public List<FullSupportTicket> query() {
-            String query = "project in (\"SUP\", \"LAUNCH\", \"SPEED\")"
+        public List<FullEngineeringTicket> query() {
+            String query = "project in (\"ENG\", \"T3\")"
                 + " AND " + filter
                 + " AND type in (Bug, Task, Story)"
                 + " ORDER BY CREATED ASC";
@@ -62,8 +62,8 @@ public class SupportTicketService {
         }
     }
     
-    public Optional<FullSupportTicket> getTicket(String ticketNumber) {
-        List<FullSupportTicket> tickets = fetchFullTickets("issuekey = " + ticketNumber, Optional.empty());
+    public Optional<FullEngineeringTicket> getTicket(String ticketNumber) {
+        List<FullEngineeringTicket> tickets = fetchFullTickets("issuekey = " + ticketNumber, Optional.empty());
         
         if (tickets.size() == 0) {
             return Optional.empty();
@@ -72,7 +72,7 @@ public class SupportTicketService {
         return Optional.of(tickets.get(0));
     }
     
-    private List<FullSupportTicket> fetchFullTickets(String query, Optional<Integer> limit) {
+    private List<FullEngineeringTicket> fetchFullTickets(String query, Optional<Integer> limit) {
 
         List<String> fields = new ArrayList<>() {{
             add("key");
@@ -87,15 +87,8 @@ public class SupportTicketService {
             add("statuscategorychangedate");
             add("reporter");
             add("assignee");
-            add("customfield_11301");
-            add("customfield_11312");
-            add("customfield_11326");
             add("resolutiondate");
-            add("customfield_11375");
-            add("customfield_11376");
-            add("customfield_11373");
-            add("customfield_11320");
-            add("aggregatetimespent");
+            add("customfield_10800");  // Team
             add("description");
             add("comment");
         }};
@@ -105,7 +98,7 @@ public class SupportTicketService {
              maxResultsPerRequest = limit.get();
          }
 
-         List<FullSupportTicket> tickets = new ArrayList<>();
+         List<FullEngineeringTicket> tickets = new ArrayList<>();
          do {
              JsonNode response;
              try {
@@ -163,8 +156,8 @@ public class SupportTicketService {
          return tickets;
      }
         
-    private static List<FullSupportTicket> issuesToFullTicketResponses(ArrayNode issues) {
-        List<FullSupportTicket> tickets = new ArrayList<>();
+    private static List<FullEngineeringTicket> issuesToFullTicketResponses(ArrayNode issues) {
+        List<FullEngineeringTicket> tickets = new ArrayList<>();
 
         for(JsonNode issue: issues) {
             tickets.add(issueToFullTicketResponse(issue));
@@ -173,8 +166,8 @@ public class SupportTicketService {
         return tickets;      
     }
  
-    private static FullSupportTicket issueToFullTicketResponse(JsonNode issue) {
-        var ticketBuilder = FullSupportTicket.newBuilder();
+    private static FullEngineeringTicket issueToFullTicketResponse(JsonNode issue) {
+        var ticketBuilder = FullEngineeringTicket.newBuilder();
         ticketBuilder.ticket(issueToTicketResponse(issue));
         
         JsonNode descriptionNode = issue.path("fields").path("description");
@@ -190,7 +183,7 @@ public class SupportTicketService {
             if (!commentContainerNode.path("comments").isMissingNode()) {            
                 ArrayNode commentsNode = (ArrayNode)commentContainerNode.path("comments");
                 for(JsonNode commentNode: commentsNode) {
-                    var commentBuilder = SupportTicketComment.newBuilder();
+                    var commentBuilder = EngineeringTicketComment.newBuilder();
                     
                     String author = commentNode.path("author").path("emailAddress").asText();
                     if (author == null || author.isBlank()) {
@@ -213,8 +206,8 @@ public class SupportTicketService {
         return ticketBuilder.build();   
     }
     
-    private static List<SupportTicket> issuesToTicketResponses(ArrayNode issues) {
-        List<SupportTicket> tickets = new ArrayList<>();
+    private static List<EngineeringTicket> issuesToTicketResponses(ArrayNode issues) {
+        List<EngineeringTicket> tickets = new ArrayList<>();
 
         for(JsonNode issue: issues) {
             System.out.println(issue.toPrettyString());
@@ -226,35 +219,23 @@ public class SupportTicketService {
     }
     
    
-    private static SupportTicket issueToTicketResponse(JsonNode issue) {
+    private static EngineeringTicket issueToTicketResponse(JsonNode issue) {
         JsonNode fields = issue.path("fields");
 
-        String client = null;
-        String value = fields.path("customfield_11312").path("value").asText();
-        if (value != null && !value.trim().isEmpty()) {
-            client = value.split("-")[0].trim();
-        }
-
-        var ticketBuilder = SupportTicket.newBuilder();
+        var ticketBuilder = EngineeringTicket.newBuilder();
         ticketBuilder.key(issue.path("key").asText());
         ticketBuilder.project(fields.path("project").path("key").asText());
-        ticketBuilder.created(fields.path("created").asText());
         ticketBuilder.type(fields.path("issuetype").path("name").asText());
         ticketBuilder.status(fields.path("status").path("name").asText());
         ticketBuilder.statusChanged(fields.path("statuscategorychangedate").asText());
-        ticketBuilder.category(fields.path("parent").path("fields").path("summary").asText(null));
+        ticketBuilder.epic(fields.path("parent").path("fields").path("summary").asText(null));
+        // ticketBuilder.initiative(fields.path("parent").path("fields").path("summary").asText(null)); // TBD
+        ticketBuilder.created(fields.path("created").asText());
         ticketBuilder.resolved(fields.path("resolutiondate").asText(null));
-        ticketBuilder.due(fields.path("customfield_11301").asText(null));
         ticketBuilder.priority(fields.path("priority").path("name").asText());
         ticketBuilder.reporter(fields.path("reporter").path("emailAddress").asText(null));
         ticketBuilder.assignee(fields.path("assignee").path("emailAddress").asText(null));
-        ticketBuilder.client(client);
-        ticketBuilder.clientId(fields.path("customfield_11320").asText(null));
-        ticketBuilder.pod(fields.path("customfield_11326").asText(null));
-        ticketBuilder.pairCsm(fields.path("customfield_11375").path("emailAddress").asText(null));
-        ticketBuilder.pairSupport(fields.path("customfield_11376").path("emailAddress").asText(null));
-        ticketBuilder.clientPriority(fields.path("customfield_11373").asText(null));
-        ticketBuilder.timeSeconds(fields.path("aggregatetimespent").asInt());
+        ticketBuilder.team(fields.path("customfield_10800").path("name").asText());
         ticketBuilder.summary(fields.path("summary").asText());
         
         var labelNode = fields.path("labels");
