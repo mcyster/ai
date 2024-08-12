@@ -138,8 +138,8 @@ public class EngineeringTicketsController {
     private List<FullEngineeringTicketResponse> fetchFullTickets(Optional<Integer> limit) {
         var ticketQueryBuilder = engineeringTicketService.ticketQueryBuilder();
                 
-        //ticketQueryBuilder.withTrailing7Months();
-        ticketQueryBuilder.withTrailingWeek();
+        ticketQueryBuilder.withTrailing7Months();
+        //ticketQueryBuilder.withTrailingWeek();
         
         if (limit.isPresent()) {
             ticketQueryBuilder.withLimit(limit.get());
