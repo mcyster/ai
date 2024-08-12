@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Engineering Team Velocity</title>
+    <meta name="tags" content="extole,engineering,tickets,team,velocity,resolved">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Engineering Team Velocity - Resolved Tickets</h2>
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+    <script id="typescript-code" type="text/typescript">
+        interface EngineeringTicketResponse {
+            key: string;
+            project: string;
+            type: string;
+            status: string;
+            statusChanged: string; // Corresponds to ZonedDateTime with format 'yyyy-MM-dd'T'HH:mm:ssXXX'
+            epic?: string; // Optional fields in Java can be represented as optional properties in TypeScript using '?'
+            initiative?: string;
+            created: string; // Corresponds to ZonedDateTime with format 'yyyy-MM-dd'T'HH:mm:ssXXX'
+            resolved?: string; // Corresponds to Optional<ZonedDateTime>
+            priority: string;
+            reporter?: string;
+            assignee?: string;
+            team?: string;
+            labels: string[];
+        }
+
+        async function getData(): Promise<EngineeringTicketResponse[]> {
+            const url = '/engineering/tickets';
+
+            try {
+                const response = await fetch(url, { method: 'GET' });
+                if (!response.ok) {
+                    alert(`Error: unable to fetch ${url}`);
+                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
+                }
+                const rawData: any[] = await response.json();
+                const data: EngineeringTicketResponse[] = rawData.map(ticket => ({
+                    ...ticket,
+                    created: new Date(Date.parse(ticket.created)),
+                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
+                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
+                }));
+
+                // Filter out tickets assigned to the Extole client
+                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole');
+                return filteredData;
+            } catch (error) {
+                alert(`Error: problem fetching ${url}`);
+                console.error('Fetch error:', error);
+                throw error;
+            }
+        }
+
+        function countTicketsPerWeek(tickets: EngineeringTicketResponse[], type: 'created' | 'resolved') {
+            const teamCounts: { [team: string]: { [endOfWeekDate: string]: number } } = {};
+
+            tickets.forEach(ticket => {
+                const date = type === 'resolved' && ticket.resolved ? ticket.resolved : ticket.created;
+                if (!date) return;
+                const team = ticket.team || 'Unknown'; // Default to 'Unknown' if no team specified
+                const weekEndDate = getWeekEndDate(date);
+
+                // Initialize the team's object if necessary
+                if (!teamCounts[team]) {
+                    teamCounts[team] = {};
+                }
+
+                if (teamCounts[team][weekEndDate] === undefined) {
+                    teamCounts[team][weekEndDate] = 0;
+                }
+                teamCounts[team][weekEndDate]++;
+            });
+
+            return teamCounts;
+        }
+
+        function getWeekEndDate(date: Date) {
+            const dayOfWeek = date.getUTCDay();
+            const weekEndDate = new Date(date);
+            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek)); // Adjust for week ending on Sunday
+            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+        }
+
+        function renderChart(teamCounts: { [team: string]: { [endOfWeekDate: string]: number } }) {
+            const ctx = document.getElementById('chart') as HTMLCanvasElement;
+            if (!ctx) return;
+            let weeks: string[] = [];
+            const datasets: any[] = [];
+
+            // Collect all weeks from all teams and sort
+            Object.values(teamCounts).forEach(count => {
+                weeks = weeks.concat(Object.keys(count));
+            });
+            weeks = Array.from(new Set(weeks)).sort();
+
+            // Remove the first week unconditionally
+            if (weeks.length > 1) {
+                weeks.shift();
+            }
+
+            // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
+            if (weeks.length > 24) {
+                weeks = weeks.slice(-24);
+            }
+
+            // Generate colors for each team
+            const colors = generateColors(Object.keys(teamCounts).length);
+
+            // Prepare datasets for each team
+            let colorIndex = 0;
+            Object.keys(teamCounts).forEach(team => {
+                const counts = teamCounts[team];
+                const data = weeks.map(week => ({ x: new Date(week), y: counts[week] || 0 }));
+                datasets.push({
+                    label: `${team}`,
+                    backgroundColor: colors[colorIndex],
+                    borderColor: colors[colorIndex],
+                    fill: false,
+                    data: data,
+                    borderWidth: 4 
+                });
+                colorIndex++;
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: datasets
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'week',
+                                tooltipFormat: 'PP',
+                                displayFormats: {
+                                    week: 'PP'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Week Ending',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true, // Ensure y-axis starts at 0
+                            title: {
+                                display: true,
+                                text: 'Number of Tickets Resolved',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function generateColors(numColors: number): string[] {
+            const colors = [];
+            const hueStep = 360 / numColors;
+            for (let i = 0; i < numColors; i++) {
+                const hue = i * hueStep;
+                const color = `hsl(${hue}, 50%, 45%)`;
+                colors.push(color);
+            }
+            return colors;
+        }
+
+        const app = {
+            data() {
+                return {
+                    jsonData: []
+                };
+            },
+            async created() {
+                getData().then(tickets => {
+                    const teamCounts = countTicketsPerWeek(tickets, 'resolved');
+                    renderChart(teamCounts);
+                }).catch(error => {
+                    console.error('Error loading data:', error);
+                });
+            }
+        };
+
+        Vue.createApp(app).mount('#app');
+    </script>
+
+    <script>
+        (async function compileAndExecute() {
+            const tsCode = document.getElementById('typescript-code').textContent;
+            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
+            eval(jsCode);
+        })();
+    </script>
+</body>
+</html>
