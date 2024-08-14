@@ -82,15 +82,17 @@
             
             tickets.forEach(ticket => {
                 const creationDate = ticket.created;
-                const resolutionDate = ticket.resolved || new Date(); // Use current date if not resolved
+                const resolutionDate = ticket.resolved; // Only count resolved tickets
 
                 const createdWeekEnd = getWeekEndDate(creationDate);
                 const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
 
-                if (resolveCounts[resolvedWeekEnd] === undefined) {
-                    resolveCounts[resolvedWeekEnd] = 0;
+                if (resolutionDate) { // Only increment closed count if resolved
+                    if (resolveCounts[resolvedWeekEnd] === undefined) {
+                        resolveCounts[resolvedWeekEnd] = 0;
+                    }
+                    resolveCounts[resolvedWeekEnd]++;
                 }
-                resolveCounts[resolvedWeekEnd]++;
 
                 if (createCounts[createdWeekEnd] === undefined) {
                     createCounts[createdWeekEnd] = 0;
