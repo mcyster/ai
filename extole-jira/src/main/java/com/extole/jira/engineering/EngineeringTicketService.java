@@ -1,7 +1,9 @@
 package com.extole.jira.engineering;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.core.io.buffer.DataBufferLimitException;
@@ -72,8 +74,112 @@ public class EngineeringTicketService {
         return Optional.of(tickets.get(0));
     }
     
+    private Map<String, String> fetchInitiatives() {
+        List<String> fields = new ArrayList<>() {{
+            add("key");
+            add("summary");
+        }};
+        
+        String query = "project in (ENG, T3) and issuetype = Initiative ORDER BY created DESC";
+        
+        JsonNode response;
+        try {
+            response = this.jiraWebClientFactory.getWebClient().get()
+                .uri(uriBuilder -> uriBuilder
+                    .path("/rest/api/3/search")
+                    .queryParam("jql", query)
+                    .queryParam("fields", fields)
+                    .build())
+              .accept(MediaType.APPLICATION_JSON)
+              .retrieve()
+              .bodyToMono(JsonNode.class)
+              .block();
+        } catch (WebClientResponseException exception) {
+            throw new RuntimeException("Unable to engineering initiatives", exception);
+        }
+        if (response == null || !response.has("issues")) {
+            throw new IllegalArgumentException("Jira search failed with unexpected response while fetching initatives");
+        }
+        var issues = response.path("issues");
+        if (!issues.isArray()) {
+            throw new IllegalArgumentException("Jira search failed with unexpected response");
+        } 
+        
+        Map<String, String> initiatives = new HashMap<>();
+        for(JsonNode issue: issues) {
+            JsonNode keyNode = issue.path("key");
+            JsonNode summaryNode = issue.path("fields").path("summary");
+            initiatives.put(keyNode.asText(), summaryNode.asText());
+        }
+        return initiatives;
+    }
+    
+    private Map<String, Epic> fetchEpics() {
+        
+        Map<String, String> initatives = fetchInitiatives();
+        
+        List<String> fields = new ArrayList<>() {{
+            add("key");
+            add("summary");
+            add("parent");
+        }};
+        
+        String query = "project in (ENG, T3) and issuetype = Epic ORDER BY created DESC";
+        
+        Map<String, Epic> epics = new HashMap<>();
+        do {
+            JsonNode response;
+            try {
+                response = this.jiraWebClientFactory.getWebClient().get()
+                    .uri(uriBuilder -> uriBuilder
+                        .path("/rest/api/3/search")
+                        .queryParam("jql", query)
+                        .queryParam("startAt", epics.size())
+                        .queryParam("maxResults", 100)
+                        .queryParam("fields", fields)
+                        .build())
+                  .accept(MediaType.APPLICATION_JSON)
+                  .retrieve()
+                  .bodyToMono(JsonNode.class)
+                  .block();
+            } catch (WebClientResponseException exception) {
+                throw new RuntimeException("Unable to fetch engineering epics", exception);
+            }
+            if (response == null || !response.has("issues")) {
+                throw new IllegalArgumentException("Jira search failed with unexpected response while fetching initatives");
+            }
+            
+            var issues = response.path("issues");
+            if (!issues.isArray()) {
+                throw new IllegalArgumentException("Jira search failed with unexpected response");
+            } 
+
+        
+            for(JsonNode issue: issues) {
+                JsonNode keyNode = issue.path("key");
+                JsonNode summaryNode = issue.path("fields").path("summary");
+                String initativeKey = issue.path("fields").path("parent").path("key").asText();
+                
+                Optional<String> initiative = Optional.empty();
+                if (initativeKey != null && !initativeKey.isBlank() && initatives.containsKey(initativeKey)) {
+                    initiative = Optional.of(initatives.get(initativeKey));
+                }
+                
+                epics.put(keyNode.asText(), new Epic(keyNode.asText(), summaryNode.asText(), initiative));
+            }
+            
+            if (epics.keySet().size() >= response.path("total").asInt()) {
+                break;
+            }
+        } while(true);
+        
+        return epics;
+    }
+    
     private List<FullEngineeringTicket> fetchFullTickets(String query, Optional<Integer> limit) {
 
+        var epics = fetchEpics();
+        
         List<String> fields = new ArrayList<>() {{
             add("key");
             add("project");
@@ -124,7 +230,7 @@ public class EngineeringTicketService {
                      throw new IllegalArgumentException("Jira search failed with unexpected response");
                  }
 
-                 tickets.addAll(issuesToFullTicketResponses((ArrayNode)issues));
+                 tickets.addAll(issuesToFullTicketResponses(epics, (ArrayNode)issues));
 
                  if (limit.isPresent() && tickets.size() >= limit.get()) {
                      break;
@@ -156,19 +262,19 @@ public class EngineeringTicketService {
          return tickets;
      }
         
-    private static List<FullEngineeringTicket> issuesToFullTicketResponses(ArrayNode issues) {
+    private static List<FullEngineeringTicket> issuesToFullTicketResponses(Map<String, Epic> epics, ArrayNode issues) {
         List<FullEngineeringTicket> tickets = new ArrayList<>();
 
         for(JsonNode issue: issues) {
-            tickets.add(issueToFullTicketResponse(issue));
+            tickets.add(issueToFullTicketResponse(epics, issue));
         }
 
         return tickets;      
     }
  
-    private static FullEngineeringTicket issueToFullTicketResponse(JsonNode issue) {
+    private static FullEngineeringTicket issueToFullTicketResponse(Map<String, Epic> epics, JsonNode issue) {
         var ticketBuilder = FullEngineeringTicket.newBuilder();
-        ticketBuilder.ticket(issueToTicketResponse(issue));
+        ticketBuilder.ticket(issueToTicketResponse(epics, issue));
         
         JsonNode descriptionNode = issue.path("fields").path("description");
         if (descriptionNode.isNull() || descriptionNode.isMissingNode()) {
@@ -206,22 +312,15 @@ public class EngineeringTicketService {
         return ticketBuilder.build();   
     }
     
-    private static List<EngineeringTicket> issuesToTicketResponses(ArrayNode issues) {
-        List<EngineeringTicket> tickets = new ArrayList<>();
-
-        for(JsonNode issue: issues) {
-            System.out.println(issue.toPrettyString());
-
-            tickets.add(issueToTicketResponse(issue));
-        }
-
-        return tickets;
-    }
-    
-   
-    private static EngineeringTicket issueToTicketResponse(JsonNode issue) {
+    private static EngineeringTicket issueToTicketResponse(Map<String, Epic> epics, JsonNode issue) {
         JsonNode fields = issue.path("fields");
-
+        
+        Optional<String> initative = Optional.empty();
+        String epicKey = fields.path("parent").path("key").asText();
+        if (epicKey != null && !epicKey.isBlank() && epics.containsKey(epicKey)) {
+            initative = epics.get(epicKey).initiative();
+        }
+        
         var ticketBuilder = EngineeringTicket.newBuilder();
         ticketBuilder.key(issue.path("key").asText());
         ticketBuilder.project(fields.path("project").path("key").asText());
@@ -229,7 +328,9 @@ public class EngineeringTicketService {
         ticketBuilder.status(fields.path("status").path("name").asText());
         ticketBuilder.statusChanged(fields.path("statuscategorychangedate").asText());
         ticketBuilder.epic(fields.path("parent").path("fields").path("summary").asText(null));
-        // ticketBuilder.initiative(fields.path("parent").path("fields").path("summary").asText(null)); // TBD
+        if (initative.isPresent()) {
+            ticketBuilder.initiative(initative.get());
+        }
         ticketBuilder.created(fields.path("created").asText());
         ticketBuilder.resolved(fields.path("resolutiondate").asText(null));
         ticketBuilder.priority(fields.path("priority").path("name").asText());
@@ -251,4 +352,7 @@ public class EngineeringTicketService {
         
         return ticketBuilder.build();
     }
+    
+    private static record Epic(String key, String epic, Optional<String> initiative) {};
+    
 }

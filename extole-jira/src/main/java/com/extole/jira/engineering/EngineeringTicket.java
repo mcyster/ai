@@ -79,7 +79,7 @@ public record EngineeringTicket (
         }
 
         public Builder initiative(String initiative) {
-            this.epic = Optional.ofNullable(initiative);
+            this.initiative = Optional.ofNullable(initiative);
             return this;
         }
 
