@@ -88,6 +88,7 @@ public class SupportTicketService {
             add("reporter");
             add("assignee");
             add("customfield_11301");
+            add("customfield_11302");
             add("customfield_11312");
             add("customfield_11326");
             add("resolutiondate");
@@ -245,6 +246,7 @@ public class SupportTicketService {
         ticketBuilder.category(fields.path("parent").path("fields").path("summary").asText(null));
         ticketBuilder.resolved(fields.path("resolutiondate").asText(null));
         ticketBuilder.due(fields.path("customfield_11301").asText(null));
+        ticketBuilder.start(fields.path("customfield_11302").asText(null));
         ticketBuilder.priority(fields.path("priority").path("name").asText());
         ticketBuilder.reporter(fields.path("reporter").path("emailAddress").asText(null));
         ticketBuilder.assignee(fields.path("assignee").path("emailAddress").asText(null));

@@ -41,6 +41,8 @@
             category: string | null;
             resolved: Date | null;
             due: Date | null;
+            start: Date;
+            started: Date;
             priority: string;
             reporter: string | null;
             assignee: string | null;
@@ -68,7 +70,8 @@
                     created: new Date(Date.parse(ticket.created)),
                     statusChanged: new Date(Date.parse(ticket.statusChanged)),
                     resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null,
+                    start: ticket.start ? new Date(Date.parse(ticket.start)) : null
                 }));
 
                 // Filter for tickets assigned to the Extole client

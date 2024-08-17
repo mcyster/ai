@@ -225,6 +225,7 @@ public class SupportTicketsController {
             Optional<String> category,
             @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")  Optional<ZonedDateTime> resolved,
             @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") Optional<ZonedDateTime> due,
+            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") ZonedDateTime start,
             String priority,
             Optional<String> reporter,
             Optional<String> assignee,
@@ -245,6 +246,7 @@ public class SupportTicketsController {
             Optional<ZonedDateTime> resolved = ticket.resolved().map(date -> date.withZoneSameInstant(utcZone));
             
             Optional<ZonedDateTime> due = ticket.due().map(date -> date.withZoneSameInstant(utcZone));
+            ZonedDateTime start = ticket.start().withZoneSameInstant(utcZone);
 
             return new SupportTicketResponse(
                 ticket.key(),
@@ -256,6 +258,7 @@ public class SupportTicketsController {
                 ticket.category(),
                 resolved,
                 due,
+                start,
                 ticket.priority(),
                 ticket.reporter(),
                 ticket.assignee(),

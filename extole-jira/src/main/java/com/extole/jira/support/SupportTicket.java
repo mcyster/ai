@@ -18,6 +18,7 @@ public record SupportTicket(
     Optional<String> category,
     Optional<ZonedDateTime> resolved,
     Optional<ZonedDateTime> due,
+    ZonedDateTime start,
     String priority,
     Optional<String> clientPriority,
     Optional<String> reporter,
@@ -48,6 +49,7 @@ public record SupportTicket(
         Optional<String> category = Optional.empty();
         Optional<ZonedDateTime> resolved = Optional.empty();
         Optional<ZonedDateTime> due;
+        Optional<ZonedDateTime> start = Optional.empty();
         String priority;
         Optional<String> clientPriority = Optional.empty();
         Optional<String> reporter = Optional.empty();
@@ -108,6 +110,11 @@ public record SupportTicket(
             return this;
         }
 
+        public Builder start(String start) {
+            this.start = Optional.ofNullable(parseDate(start));
+            return this;
+        }
+        
         public Builder priority(String priority) {
             this.priority = priority;
             return this;
@@ -195,6 +202,11 @@ public record SupportTicket(
                 throw new IllegalArgumentException("Summary cannot be null or empty");
             }
             
+            ZonedDateTime start = created;
+            if (this.start.isPresent()) {
+                start = this.start.get();
+            }
+
             return new SupportTicket(
                     key,
                     project,
@@ -205,6 +217,7 @@ public record SupportTicket(
                     category,
                     resolved,
                     due,
+                    start,
                     priority,
                     clientPriority,
                     reporter,

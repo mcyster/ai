@@ -41,6 +41,7 @@
             category: string | null;
             resolved: Date | null;
             due: Date | null;
+            start: Date;
             priority: string;
             reporter: string | null;
             assignee: string | null;
@@ -69,7 +70,8 @@
                     created: new Date(Date.parse(ticket.created)),
                     statusChanged: new Date(Date.parse(ticket.statusChanged)),
                     resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null,
+                    start: new Date(Date.parse(ticket.start))
                 }));
 
                 const filteredData = data.filter(ticket => 
@@ -99,9 +101,9 @@
             tickets.forEach(ticket => {
                 const endDate = ticket.resolved && ticket.resolved < currentDate ? ticket.resolved : currentDate;
 
-                for (let date = new Date(ticket.created); date < endDate; date.setUTCDate(date.getUTCDate() + 7)) {
+                for (let date = new Date(ticket.start); date < endDate; date.setUTCDate(date.getUTCDate() + 7)) {
                     const sundayMidnite = getSundayMidnite(date);
-                    const duration = Math.ceil((date.getTime() - ticket.created.getTime()) / (1000 * 60 * 60 * 24 * 7)); // Weeks
+                    const duration = Math.ceil((date.getTime() - ticket.start.getTime()) / (1000 * 60 * 60 * 24 * 7)); // Weeks
 
                     if (!categories[sundayMidnite]) {
                         categories[sundayMidnite] = { week1: 0, week2: 0, week3: 0, week4Plus: 0 };
