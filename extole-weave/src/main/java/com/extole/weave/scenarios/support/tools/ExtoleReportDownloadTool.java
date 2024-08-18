@@ -1,5 +1,8 @@
 package com.extole.weave.scenarios.support.tools;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.buffer.DataBufferLimitException;
@@ -17,7 +20,14 @@ import com.extole.weave.scenarios.support.tools.ExtoleReportDownloadTool.Request
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
+import net.thisptr.jackson.jq.JsonQuery;
+import net.thisptr.jackson.jq.Output;
+import net.thisptr.jackson.jq.Scope;
+import net.thisptr.jackson.jq.Version;
+import net.thisptr.jackson.jq.exception.JsonQueryException;
 import reactor.core.publisher.Mono;
 
 @Component
@@ -79,7 +89,28 @@ class ExtoleReportDownloadTool implements ExtoleSupportTool<Request> {
         if (result == null || !result.isArray()) {
             throw new ToolException("Fetch failed unexpected result");
         }
+        
+        if (request.jqExpression != null && !request.jqExpression.isBlank()) {
+            ArrayNode jqResults = JsonNodeFactory.instance.arrayNode();
 
+            try {
+                Scope rootScope = Scope.newEmptyScope();
+                Scope childScope = Scope.newChildScope(rootScope);
+    
+                JsonQuery jq = JsonQuery.compile(".[] | {event_id, name, message}", Version.LATEST);
+                
+                Output output = (JsonNode item) -> {
+                    jqResults.add(item);
+                };
+                
+                jq.apply(childScope, result, output);
+                
+            } catch (JsonQueryException exception) {
+                throw new ToolException("Failed to run report through jq expression: " + request.jqExpression, exception);
+            }
+            result = jqResults;
+        }
+        
         return result;
     }
 
@@ -98,17 +129,23 @@ class ExtoleReportDownloadTool implements ExtoleSupportTool<Request> {
         
         @JsonPropertyDescription("The maximum number of rows to download from the report, defaults to 10")
         @JsonProperty(required = false)
-        Integer limit
+        Integer limit,
+
+        @JsonPropertyDescription("Parse the output of the report through the jq expression before returning")
+        @JsonProperty(required = false)
+        String jqExpression
     ) {
         public Request(
                 String clientId,
                 String reportId,
                 Integer offset,
-                Integer limit) {
+                Integer limit,
+                String jqExpression) {
             this.clientId = clientId;
             this.reportId = reportId;
             this.offset = offset == null ? 0 : offset;
             this.limit = limit == null ? 10 : limit;
+            this.jqExpression = jqExpression;
         }
     }
 }

@@ -64,20 +64,11 @@ class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
             throw new ToolException("Query failed with unexpected result");
         }
         
-        var query = "";
-   //     if (request.query() != null) {
-            //query = request.query().toLowerCase();
-        //}
 
         ArrayNode results = JsonNodeFactory.instance.arrayNode();
         {
             for (JsonNode clientNode : resultNode) {
-                if (query.isBlank() ||
-                    clientNode.path("name").asText().toLowerCase().contains(query) ||
-                    clientNode.path("short_name").asText().toLowerCase().contains(query) ||
-                    clientNode.path("client_id").asText().equals(query)) {
-                    results.add(clientNode);
-                }
+                results.add(clientNode);
             }
         }
 
@@ -85,19 +76,13 @@ class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
     }
 
     static record Request(
-       // @JsonPropertyDescription("Optionally match gainst client name, client short_name or client_id against query")
-       // @JsonProperty(required = false)
-       // String query,
-        
         @JsonPropertyDescription("Filters client by type (CUSTOMER, EX_CUSTOMER, PROSPECT, UNCLASSIFIED, TEST), defaults to CUSTOMER")
         @JsonProperty(required = false)
         String clientType
     ) {
         public Request(
-                //String query,
                 String clientType
         ) {
-            //this.query = query;
             this.clientType = clientType == null ? "CUSTOMER" : clientType;
         }
     }

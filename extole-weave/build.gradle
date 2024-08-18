@@ -20,6 +20,8 @@ dependencies {
 
     implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema-jakarta:2.16.1'
    
+     implementation 'net.thisptr:jackson-jq:1.0.0-preview.20240207'
+   
     implementation 'com.github.spullara.mustache.java:compiler:0.9.10'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.16.2'
     implementation 'com.google.guava:guava:33.0.0-jre'

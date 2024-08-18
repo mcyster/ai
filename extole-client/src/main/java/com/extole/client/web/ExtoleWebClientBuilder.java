@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -18,7 +19,9 @@ import reactor.core.publisher.Mono;
 public class ExtoleWebClientBuilder {
     private static final int KEY_LENGTH_MIN = 25;
     private static final int KEY_PEEK_LENGTH = 4;
-
+    
+    private static int BUFFER_SIZE = 100 * 1024 * 1024;
+    
     WebClient.Builder webClientBuilder;
     Optional<String> clientId = Optional.empty();
     Optional<String> superApiKey = Optional.empty();
@@ -28,7 +31,13 @@ public class ExtoleWebClientBuilder {
 
     ExtoleWebClientBuilder(String baseUrl) {
         this.webClientBuilder = WebClient.builder()
-            .baseUrl(baseUrl);
+            .baseUrl(baseUrl)
+            //.clientConnector(new ReactorClientHttpConnector(HttpClient.create()
+            //        .wiretap("reactor.netty.http.client.HttpClient", LogLevel.DEBUG, AdvancedByteBufFormat.TEXTUAL)
+            //        .responseTimeout(Duration.ofSeconds(30))
+            //    ))
+             .exchangeStrategies(ExchangeStrategies.builder()
+                    .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(BUFFER_SIZE)).build());
     }
 
     public static ExtoleWebClientBuilder builder(String baseUrl) {
