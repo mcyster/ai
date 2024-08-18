@@ -1,4 +1,4 @@
-package com.extole.weave.scenarios.support.tools.reports;
+package com.extole.weave.scenarios.support.tools;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -9,9 +9,8 @@ import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleWebClientException;
+import com.extole.weave.scenarios.support.tools.ExtoleClientSearchTool.Request;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
-import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
-import com.extole.weave.scenarios.support.tools.reports.ExtoleClientSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -42,13 +41,14 @@ class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request searchRequest, Void context, OperationLogger operation) throws ToolException {
+    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
 
         JsonNode resultNode;
         try {
             resultNode = this.extoleWebClientFactory.getSuperUserWebClient().get()
                 .uri(uriBuilder -> uriBuilder
                     .path("/v4/clients")
+                    .queryParam("type", request.clientType())
                     .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
@@ -63,16 +63,17 @@ class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
         if (resultNode == null || !resultNode.isArray()) {
             throw new ToolException("Query failed with unexpected result");
         }
-
-        if (searchRequest.query == null || searchRequest.query.isEmpty()) {
-            return resultNode;
-        }
-        var query = searchRequest.query.toLowerCase();
+        
+        var query = "";
+   //     if (request.query() != null) {
+            //query = request.query().toLowerCase();
+        //}
 
         ArrayNode results = JsonNodeFactory.instance.arrayNode();
         {
             for (JsonNode clientNode : resultNode) {
-                if (clientNode.path("name").asText().toLowerCase().contains(query) ||
+                if (query.isBlank() ||
+                    clientNode.path("name").asText().toLowerCase().contains(query) ||
                     clientNode.path("short_name").asText().toLowerCase().contains(query) ||
                     clientNode.path("client_id").asText().equals(query)) {
                     results.add(clientNode);
@@ -83,10 +84,22 @@ class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
         return results;
     }
 
-    static class Request {
-        @JsonPropertyDescription("Query client list against client name, client short_name or client_id")
+    static record Request(
+       // @JsonPropertyDescription("Optionally match gainst client name, client short_name or client_id against query")
+       // @JsonProperty(required = false)
+       // String query,
+        
+        @JsonPropertyDescription("Filters client by type (CUSTOMER, EX_CUSTOMER, PROSPECT, UNCLASSIFIED, TEST), defaults to CUSTOMER")
         @JsonProperty(required = false)
-        public String query;
+        String clientType
+    ) {
+        public Request(
+                //String query,
+                String clientType
+        ) {
+            //this.query = query;
+            this.clientType = clientType == null ? "CUSTOMER" : clientType;
+        }
     }
 }
 
