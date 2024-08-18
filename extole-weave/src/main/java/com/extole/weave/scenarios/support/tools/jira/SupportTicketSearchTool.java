@@ -151,7 +151,7 @@ class SupportTicketSearchTool implements ExtoleSupportTool<Request> {
     }
 
     static class Request {
-        @JsonPropertyDescription("JQL query for tickets, always prefix query with: project = SUP, if you have a clientId do a contains operation with the field name \"Client Id Calculated\"")
+        @JsonPropertyDescription("JQL query for tickets, always prefix query with: project in (SUP, SPEED, LAUNCH), if you have a clientId do a contains operation (~) with the quoted field name \"Client Id Calculated\"")
         @JsonProperty(required = false)
         public String query;
 
