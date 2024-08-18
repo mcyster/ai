@@ -2,6 +2,7 @@ package com.extole.weave.scenarios.support.tools;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
@@ -12,18 +13,20 @@ import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleWebClientException;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
-import com.extole.weave.scenarios.support.tools.ExtolePersonGetTool.Request;
+import com.extole.weave.scenarios.support.tools.ExtoleReportDownloadTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import reactor.core.publisher.Mono;
+
 @Component
-class ExtolePersonGetTool implements ExtoleSupportTool<Request> {
+class ExtoleReportDownloadTool implements ExtoleSupportTool<Request> {
     private static final Logger logger = LogManager.getLogger(ExtoleTrustedWebClientFactory.class);
 
     private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 
-    ExtolePersonGetTool(ExtoleTrustedWebClientFactory extoleWebClientFactory) {
+    ExtoleReportDownloadTool(ExtoleTrustedWebClientFactory extoleWebClientFactory) {
         this.extoleWebClientFactory = extoleWebClientFactory;
     }
 
@@ -34,7 +37,7 @@ class ExtolePersonGetTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getDescription() {
-        return "Get a person by person_id";
+        return "Gets details of the report like status (DONE, IN_PROGRESS), name and parameters used to run report.";
     }
 
     @Override
@@ -49,28 +52,31 @@ class ExtolePersonGetTool implements ExtoleSupportTool<Request> {
         try {
             result = this.extoleWebClientFactory.getWebClientById(request.clientId()).get()
                 .uri(uriBuilder -> uriBuilder
-                    .path("/v4/runtime-persons/" + request.personId())
+                    .path("/v4/reports/" + request.reportId() + "/download.json")
+                    .queryParam("offset", request.offset())
+                    .queryParam("limit", request.limit())
                     .build())
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
+                .onErrorResume(WebClientResponseException.class, exception -> {
+                    if (exception.getCause() instanceof DataBufferLimitException) {
+                        return Mono.error(new ToolException("Data buffer limit exceeded, perhaps reduce the row limit", exception));
+                    }
+                    return Mono.error(exception);
+                })                
                 .block();
         } catch (ExtoleWebClientException exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientResponseException.Forbidden exception) {
-            // Should be a 404/400 not a 403
-            var errorResponse = exception.getResponseBodyAs(JsonNode.class);
-            if (errorResponse.has("code") && errorResponse.path("code").asText().equals("person_not_found")) {
-                throw new ToolException("Person not found");
-            }
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientException exception) {
-            throw new ToolException("Internal error, unable to get person");
+            throw new ToolException("Internal error, unable to get report", exception);
         }
 
-        logger.trace("person.search result: " + result.toString());
+        logger.trace("report.download result: " + result.toString());
 
-        if (result == null || !result.has("id")) {
+        if (result == null || !result.isArray()) {
             throw new ToolException("Fetch failed unexpected result");
         }
 
@@ -82,8 +88,28 @@ class ExtolePersonGetTool implements ExtoleSupportTool<Request> {
         @JsonProperty(required = true)
         String clientId,
 
-        @JsonPropertyDescription("The Extole id for the person")
+        @JsonPropertyDescription("The id of the report")
         @JsonProperty(required = true)
-        String personId
-    ) {}
+        String reportId,
+        
+        @JsonPropertyDescription("The row of the report to start downloading from, defaults to 0")
+        @JsonProperty(required = false)
+        Integer offset,
+        
+        @JsonPropertyDescription("The maximum number of rows to download from the report, defaults to 10")
+        @JsonProperty(required = false)
+        Integer limit
+    ) {
+        public Request(
+                String clientId,
+                String reportId,
+                Integer offset,
+                Integer limit) {
+            this.clientId = clientId;
+            this.reportId = reportId;
+            this.offset = offset == null ? 0 : offset;
+            this.limit = limit == null ? 10 : limit;
+        }
+    }
 }
+
