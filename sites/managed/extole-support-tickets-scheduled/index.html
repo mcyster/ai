@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Support Ticket Velocity</title>
-    <meta name="tags" content="extole,support,tickets,velocity">
+    <meta name="tags" content="extole,support,tickets,velocity,scheduled">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Support Ticket Velocity</h2>
+            <h2 id="graphTitle">Scheduled Support Ticket Velocity</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -35,13 +35,13 @@
             key: string;
             project: string;
             created: Date;
+            start: Date | null;
             type: string;
             status: string;
             statusChanged: Date;
             category: string | null;
             resolved: Date | null;
             due: Date | null;
-            start: Date;
             priority: string;
             reporter: string | null;
             assignee: string | null;
@@ -67,15 +67,14 @@
                 const data: SupportTicket[] = rawData.map(ticket => ({
                     ...ticket,
                     created: new Date(Date.parse(ticket.created)),
+                    start: ticket.start ? new Date(Date.parse(ticket.start)) : null,
                     statusChanged: new Date(Date.parse(ticket.statusChanged)),
                     resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null,
-                    start: new Date(Date.parse(ticket.start))
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
                 }));
 
-                // Filter out tickets assigned to the Extole client and those with a start date later than today
-                const today = new Date();
-                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole' && ticket.start <= today);
+                // Filter out tickets assigned to the Extole client
+                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole');
                 return filteredData;
             } catch (error) {
                 alert(`Error: problem fetching ${url}`);
@@ -83,30 +82,24 @@
                 throw error;
             }
         }
+        
+        function countScheduledTicketsPerWeek(tickets: SupportTicket[]) {
+            const scheduledCounts: { [endOfWeekDate: string]: number } = {};
 
-        function countTicketsPerWeek(tickets: SupportTicket[]) {
-            const startCounts: { [endOfWeekDate: string]: number } = {};
-            const resolveCounts: { [endOfWeekDate: string]: number } = {};
-            
             tickets.forEach(ticket => {
-                const startDate = ticket.start;
-                const resolutionDate = ticket.resolved || new Date(); // Use current date if not resolved
+                // A scheduled ticket is one where start > created + 7 days
+                if (ticket.start && ticket.start.getTime() > ticket.created.getTime() + 7 * 24 * 60 * 60 * 1000) {
+                    const creationDate = ticket.created;
+                    const createdWeekEnd = getWeekEndDate(creationDate);
 
-                const startWeekEnd = getWeekEndDate(startDate);
-                const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
-
-                if (resolveCounts[resolvedWeekEnd] === undefined) {
-                    resolveCounts[resolvedWeekEnd] = 0;
+                    if (scheduledCounts[createdWeekEnd] === undefined) {
+                        scheduledCounts[createdWeekEnd] = 0;
+                    }
+                    scheduledCounts[createdWeekEnd]++;
                 }
-                resolveCounts[resolvedWeekEnd]++;
-
-                if (startCounts[startWeekEnd] === undefined) {
-                    startCounts[startWeekEnd] = 0;
-                }
-                startCounts[startWeekEnd]++;
             });
 
-            return { startCounts, resolveCounts };
+            return scheduledCounts;
         }
 
         function getWeekEndDate(date: Date) {
@@ -117,10 +110,10 @@
             return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
         }
 
-        function renderChart(startCounts: { [endOfWeekDate: string]: number }, resolveCounts: { [endOfWeekDate: string]: number }) {
+        function renderChart(scheduledCounts: { [endOfWeekDate: string]: number }) {
             const ctx = document.getElementById('chart') as HTMLCanvasElement;
             if (!ctx) return;
-            let weeks = Object.keys(startCounts).sort();
+            let weeks = Object.keys(scheduledCounts).sort();
             
             // Remove the first week unconditionally
             if (weeks.length > 1) {
@@ -131,27 +124,18 @@
                 weeks = weeks.slice(-24);
             }
 
-            const createData = weeks.map(week => ({ x: new Date(week), y: startCounts[week] || 0 }));
-            const resolveData = weeks.map(week => ({ x: new Date(week), y: resolveCounts[week] || 0 }));
+            const scheduledData = weeks.map(week => ({ x: new Date(week), y: scheduledCounts[week] || 0 }));
 
             new Chart(ctx, {
                 type: 'line',
                 data: {
                     datasets: [
                         {
-                            label: 'Tickets Started',
-                            backgroundColor: 'rgba(139, 34, 34, 0.2)',
-                            borderColor: 'rgba(200, 30, 30, 1)',
+                            label: 'Scheduled Tickets Created',
+                            backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                            borderColor: 'rgba(255, 159, 64, 1)',
                             fill: false,
-                            data: createData,
-                            borderWidth: 4 
-                        },
-                        {
-                            label: 'Tickets Closed',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(34, 139, 34, 1)',
-                            fill: false,
-                            data: resolveData,
+                            data: scheduledData,
                             borderWidth: 4 
                         }
                     ]
@@ -210,8 +194,8 @@
             },
             async created() {
                 getData().then(tickets => {
-                    const { startCounts, resolveCounts } = countTicketsPerWeek(tickets);
-                    renderChart(startCounts, resolveCounts);
+                    const scheduledCounts = countScheduledTicketsPerWeek(tickets);
+                    renderChart(scheduledCounts);
                 }).catch(error => {
                     console.error('Error loading data:', error);
                 });
