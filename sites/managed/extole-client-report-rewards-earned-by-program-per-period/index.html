@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="tags" content="extole,client,report,customer_contribution_rate,parameters">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Contribution Rate Dashboard</title>
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/json-formatter-js@2.5.17/dist/json-formatter.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/json-formatter-js@2.5.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jq-web@0.5.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns/dist/locale/en-US/index.umd.js"></script>
+    <style>
+        body { margin: 20px; overflow: auto; display: flex; flex-direction: column; align-items: start; height: 100vh; width: 100%; }
+        .content { text-align: left; width: 100%; max-width: 1200px; }
+        .error { background-color: red; color: white; padding: 10px; margin-bottom: 20px; }
+        .json-report { text-align: left; white-space: pre-wrap; font-family: monospace; display: none; width: 100%; }
+        .json-formatter { margin-top: 20px; text-align: left; width: 100%; }
+        .controls { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; width: 100%; flex-wrap: nowrap; font-size: 12px; }
+        .controls form { display: flex; align-items: center; gap: 10px; flex-grow: 1; width: 100%; }
+        .controls input[type="text"] { flex-grow: 1; width: 100%; box-sizing: border-box; }
+        .controls button, .controls label { white-space: nowrap; }
+        #json { width: 95%; margin-top: 40px; }
+        #graph-container { width: 95%; }
+    </style>
+    <script>
+        function getParameterByName(name, url = window.location.href) {
+            name = name.replace(/[\[\]]/g, '\\$&');
+            const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+        function fetchJsonReport(clientId, reportId) {
+            const url = `/extole/${clientId}/reports/${reportId}/download.json`;
+            console.log('Fetching JSON report from URL:', url);
+            return fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    console.log('JSON report fetched successfully');
+                    return response.json();
+                });
+        }
+
+        function toggleJsonReport() {
+            const jsonReportDiv = document.querySelector('#json .json-report');
+            if (jsonReportDiv.style.display === 'none') {
+                jsonReportDiv.style.display = 'block';
+            } else {
+                jsonReportDiv.style.display = 'none';
+            }
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function processReportData(data) {
+            const filteredData = data.filter(item => item.reward_state === 'reward_earned');
+            const groupedData = {};
+            filteredData.forEach(item => {
+                const key = item.program + '_' + item.period_end;
+                if (!groupedData[key]) {
+                    groupedData[key] = { program: item.program, period: item.period_end, amount: 0, count: 0 };
+                }
+                groupedData[key].amount += item.amount;
+                groupedData[key].count += item.count;
+            });
+            return Object.values(groupedData);
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('graph').getContext('2d');
+            console.log('Data for chart:', data);
+
+            const labels = [...new Set(data.map(item => item.period))];
+            const programs = [...new Set(data.map(item => item.program))];
+            const datasets = programs.map(program => {
+                return {
+                    label: program,
+                    data: labels.map(label => {
+                        const item = data.find(d => d.program === program && d.period === label);
+                        return item ? item.amount : 0;
+                    }),
+                    borderColor: getRandomColor(),
+                    fill: false,
+                    tension: 0.1
+                };
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Rewards Earned by Program per Period'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'week',
+                                tooltipFormat: 'yyyy-MM-dd'
+                            },
+                            adapters: {
+                                date: {
+                                    locale: dateFns.enUS
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        window.onload = function() {
+            const clientId = getParameterByName('client_id');
+            const reportId = getParameterByName('report_id');
+            const jsonContainer = document.querySelector('#json');
+            console.log('Page loaded with client_id:', clientId, 'and report_id:', reportId);
+
+            const errors = [];
+            if (!clientId) errors.push('<li>no client_id specified</li>');
+            if (!reportId) errors.push('<li>no report_id specified</li>');
+
+            if (errors.length > 0) {
+                jsonContainer.innerHTML = '<div class="error"><strong>Error: this page expects url parameters</strong><br><ul>' + errors.join('') + '</ul></div>';
+            } else {
+                fetchJsonReport(clientId, reportId)
+                    .then(json => {
+                        console.log('Fetched JSON data:', json);
+                        const processedData = processReportData(json);
+                        renderChart(processedData);
+                        const formatter = new JSONFormatter(json, 2);
+                        const formattedJson = formatter.render();
+                        jsonContainer.innerHTML = '<div class="controls"><button onclick="toggleJsonReport()">-show-</button></div><div class="json-report" style="display: none;"></div>';
+                        jsonContainer.querySelector('.json-report').appendChild(formattedJson);
+                    })
+                    .catch(error => {
+                        console.error('Error loading report:', error);
+                        jsonContainer.innerHTML = '<div class="error">Error loading report: ' + error.message + '</div>';
+                    });
+            }
+        };
+    </script>
+</head>
+<body>
+    <div id="graph-container"><canvas id="graph"></canvas></div>
+    <div id="json"></div>
+</body>
+</html>
