@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="tags" content="extole,client,report,step,metrics,parameters">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Step Metrics Dashboard</title>
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/json-formatter-js@2.5.17/dist/json-formatter.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/json-formatter-js@2.5.17"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jq-web@0.5.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns/dist/locale/en-US/index.umd.js"></script>
+    <style>
+        body { margin: 20px; overflow: auto; display: flex; flex-direction: column; align-items: start; height: 100vh; width: 100%; }
+        .content { text-align: left; width: 100%; max-width: 1200px; }
+        .error { background-color: red; color: white; padding: 10px; margin-bottom: 20px; }
+        .json-report { text-align: left; white-space: pre-wrap; font-family: monospace; display: none; width: 100%; }
+        .json-formatter { margin-top: 20px; text-align: left; width: 100%; }
+        .controls { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; width: 100%; flex-wrap: nowrap; font-size: 12px; }
+        .controls form { display: flex; align-items: center; gap: 10px; flex-grow: 1; width: 100%; }
+        .controls input[type="text"] { flex-grow: 1; width: 100%; box-sizing: border-box; }
+        .controls button, .controls label { white-space: nowrap; }
+        #json { width: 95%; margin-top: 40px; }
+        #graph-container { width: 95%; }
+    </style>
+    <script>
+        function getParameterByName(name, url = window.location.href) {
+            name = name.replace(/[\[\]]/g, '\\$&');
+            const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+        function fetchJsonReport(clientId, reportId) {
+            const url = `/extole/${clientId}/reports/${reportId}/download.json`;
+            console.log('Fetching JSON report from URL:', url);
+            return fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    console.log('JSON report fetched successfully');
+                    return response.json();
+                });
+        }
+
+        function toggleJsonReport() {
+            const jsonReportDiv = document.querySelector('#json .json-report');
+            if (jsonReportDiv.style.display === 'none') {
+                jsonReportDiv.style.display = 'block';
+            } else {
+                jsonReportDiv.style.display = 'none';
+            }
+        }
+
+        function applyJqTransformation(json, query = '[.[] | . as $period | .steps[] | .metrics[] | select(.tags[] == \\"dashboard-graph\\") | {period_end: $period.period_end, metric_name: .name, metric_value: .value}]') {
+            console.log('Applying jq transformation with query:', query);
+            return window.jq.json(json, query);
+        }
+
+        function escapeHtml(unsafe) {
+            return unsafe.replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function parseDate(dateString) {
+            const datePart = dateString.split('T')[0];
+            return new Date(datePart);
+        }
+
+        function groupByWeek(data) {
+            const groupedData = {};
+            data.forEach(item => {
+                const date = parseDate(item.period_end);
+                const weekStart = new Date(date);
+                weekStart.setDate(date.getDate() - date.getDay()); // Start of week
+                const weekKey = weekStart.toISOString().split('T')[0];
+
+                if (!groupedData[weekKey]) {
+                    groupedData[weekKey] = {};
+                }
+                if (!groupedData[weekKey][item.metric_name]) {
+                    groupedData[weekKey][item.metric_name] = [];
+                }
+                groupedData[weekKey][item.metric_name].push(item.metric_value);
+            });
+
+            const chartData = [];
+            Object.keys(groupedData).forEach(weekKey => {
+                Object.keys(groupedData[weekKey]).forEach(metric_name => {
+                    const avgValue = groupedData[weekKey][metric_name].reduce((a, b) => a + b, 0) / groupedData[weekKey][metric_name].length;
+                    chartData.push({ period_end: weekKey, metric_name, metric_value: avgValue });
+                });
+            });
+
+            return chartData;
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('graph').getContext('2d');
+            data = groupByWeek(data);
+            console.log('Data for chart after processing:', data);
+            const processedData = data.reduce((acc, item) => {
+                if (item.period_end && item.metric_name && typeof item.metric_value !== 'undefined') {
+                    if (!acc.labels.includes(item.period_end)) {
+                        acc.labels.push(item.period_end);
+                    }
+                    if (!acc.datasets[item.metric_name]) {
+                        acc.datasets[item.metric_name] = { label: item.metric_name, data: [] };
+                    }
+                    acc.datasets[item.metric_name].data.push(item.metric_value);
+                }
+                return acc;
+            }, { labels: [], datasets: {} });
+            console.log('Final processed data for chart rendering:', processedData);
+
+            if (processedData.labels.length === 0 || Object.keys(processedData.datasets).length === 0) {
+                console.error('Processed data is empty or invalid for chart rendering.');
+                return;
+            }
+
+            const datasets = Object.values(processedData.datasets).map(dataset => ({
+                label: dataset.label,
+                data: dataset.data,
+                fill: false,
+                borderColor: getRandomColor(),
+                tension: 0.1
+            }));
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: processedData.labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Dashboard Step Metrics value by Week'
+                        }
+                    },
+                    scales: {
+                        x: { type: 'time', time: { unit: 'week', tooltipFormat: 'yyyy-MM-dd' }, adapters: { date: { locale: dateFns.enUS } } }
+                    }
+                }
+            });
+        }
+
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        window.onload = function() {
+            const clientId = getParameterByName('client_id');
+            const reportId = getParameterByName('report_id');
+            const jqQueryFromUrl = getParameterByName('jq');
+            const jsonContainer = document.querySelector('#json');
+            console.log('Page loaded with client_id:', clientId, 'and report_id:', reportId, 'and jq:', jqQueryFromUrl);
+
+            const errors = [];
+            if (!clientId) errors.push('<li>no client_id specified</li>');
+            if (!reportId) errors.push('<li>no report_id specified</li>');
+
+            if (errors.length > 0) {
+                jsonContainer.innerHTML = '<div class="error"><strong>Error: this page expects url parameters</strong><br><ul>' + errors.join('') + '</ul></div>';
+            } else {
+                fetchJsonReport(clientId, reportId)
+                    .then(json => {
+                        console.log('Fetched JSON data:', json);
+                        const jqQuery = jqQueryFromUrl || '[.[] | . as $period | .steps[] | .metrics[] | select(.tags[] == "dashboard-graph") | {period_end: $period.period_end, metric_name: .name, metric_value: .value}]';
+                        const escapedJqQuery = escapeHtml(jqQuery);
+                        const transformedJson = applyJqTransformation(json, jqQuery);
+                        console.log('Transformed JSON data:', transformedJson);
+                        renderChart(transformedJson);
+                        const formatter = new JSONFormatter(json, 2);
+                        const formattedJson = formatter.render();
+                        jsonContainer.innerHTML = '<div class="controls"><form id="jq-form"><label for="jq-query">jq:</label><input type="text" id="jq-query" name="jq-query" value="' + escapedJqQuery + '"><button type="submit">Apply</button></form><button onclick="toggleJsonReport()">-show-</button></div><div class="json-report" style="display: none;"></div>';
+                        jsonContainer.querySelector('.json-report').appendChild(formattedJson);
+                        document.querySelector('#jq-form').addEventListener('submit', function(event) {
+                            event.preventDefault();
+                            const query = document.querySelector('#jq-query').value;
+                            console.log('Form submitted with jq query:', query);
+                            try {
+                                const transformedJsonCustom = applyJqTransformation(json, query);
+                                console.log('Transformed JSON data with custom query:', transformedJsonCustom);
+                                jsonContainer.querySelector('.json-report').innerHTML = '';
+                                const transformedFormatter = new JSONFormatter(transformedJsonCustom, 2);
+                                const transformedFormattedJson = transformedFormatter.render();
+                                jsonContainer.querySelector('.json-report').appendChild(transformedFormattedJson);
+                                renderChart(transformedJsonCustom);
+                            } catch (error) {
+                                console.error('Error applying jq query:', error);
+                                jsonContainer.querySelector('.json-report').innerHTML = '<div class="error">Error applying jq query: ' + error.message + '</div>';
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading report:', error);
+                        jsonContainer.innerHTML = '<div class="error">Error loading report: ' + error.message + '</div>';
+                    });
+            }
+        };
+    </script>
+</head>
+<body>
+    <div id="graph-container"><canvas id="graph"></canvas></div>
+    <div id="json"></div>
+</body>
+</html>
