@@ -31,9 +31,10 @@ dependencies {
     implementation project(':store')
     implementation project(':jira-client')
     implementation project(':extole-jira')
+    implementation project(':scheduler-weave')
     implementation project(':web-weave')
     implementation project(':extole-client')
-    
+        
     testImplementation('org.springframework.boot:spring-boot-starter-test')
 }
 

@@ -10,6 +10,7 @@ import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
+import com.cyster.scheduler.impl.SchedulerTool;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.extole.weave.scenarios.runbooks.ExtoleSupportTicketScenario.Parameters;
@@ -25,7 +26,8 @@ public class ExtoleSupportTicketScenario implements Scenario<Parameters, Void> {
     public ExtoleSupportTicketScenario(AiWeaveService aiWeaveService,
         ExtoleSupportTicketRunbookSelectorTool runbookSelectorTool,
         ExtoleSupportTicketClientTool ticketClientTool,
-        ExtoleSupportTicketRunbookExecuterTool runbookExecuterTool) {
+        ExtoleSupportTicketRunbookExecuterTool runbookExecuterTool,
+        SchedulerTool schedulerTool) {
         this.aiWeaveService = aiWeaveService;
         this.tools.add(runbookSelectorTool);
         this.tools.add(ticketClientTool);

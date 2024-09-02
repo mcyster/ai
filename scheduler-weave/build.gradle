@@ -22,6 +22,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema-jakarta:2.16.1'
 
     implementation project(':ai-weave')
+    implementation project(':cyster-weave')
 
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

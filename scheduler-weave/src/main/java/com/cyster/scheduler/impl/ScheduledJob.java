@@ -12,10 +12,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.Scenario.ConversationBuilder;
+import com.cyster.weave.service.scenariosession.ScenarioSession;
+import com.cyster.weave.service.scenariosession.ScenarioSessionStore;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,11 +34,14 @@ public class ScheduledJob implements Job {
     private final ObjectMapper objectMapper;
     private final ApplicationContext applicationContext;
     private AtomicReference<Optional<ScenarioSet>> lazyScenarioSet;
+    private AtomicReference<Optional<ScenarioSessionStore>> lazyScenarioSessionStore;
 
+    
     public ScheduledJob(ObjectMapper objectMapper,  ApplicationContext applicationContext) {
         this.objectMapper = objectMapper;
         this.applicationContext = applicationContext;
         this.lazyScenarioSet = new AtomicReference<>(Optional.empty());
+        this.lazyScenarioSessionStore = new AtomicReference<>(Optional.empty());
     }
 
     @Override
@@ -66,26 +73,25 @@ public class ScheduledJob implements Job {
                 return;
             }
         }
-        
-        ConversationBuilder conversationBuilder = createConversationBuilder(scenario, parameters, null); 
-        
-        if (prompt != null) {
-            conversationBuilder.addMessage(prompt);
-        }
+   
+        ScenarioSession<?, ?> scenarioSession = createScenarioSession(scenario, parameters, null);
                 
-        logger.info("Scheduled scenario '" + scenarioName + "' conversation started");
+        logger.info("Scheduled scenario session id: " + scenarioSession.getId() + " started");
+                
+        Conversation conversation = scenarioSession.getConversation();
+        if (prompt != null) {
+            conversation.addMessage(Type.USER, prompt);
+        }
         
-        Message conversation;
+        Message message;
         try {
-            conversation = conversationBuilder.start().respond();
+            message = conversation.respond();
         } catch (ConversationException exception) {
             logger.error("Failed to execute scheduled scenario " + scenarioName, exception);
             return;      
         }
-
-        // TODO make available in ScenarioSession, so you can inspect the conversation 
         
-        logger.info("Scheduled scenario '" + scenarioName + "' conversation response: " + conversation.getContent());
+        logger.info("Scheduled scenario session id: " + scenarioSession.getId() + " response: " + message.getContent());
     }
     
     private ScenarioSet getScenarioSet() {
@@ -97,13 +103,24 @@ public class ScheduledJob implements Job {
         }).orElseThrow(() -> new RuntimeException("Unable to initialize scenario set"));
     }
     
+    private ScenarioSessionStore scenarioSessionStore() {
+        return lazyScenarioSessionStore.updateAndGet(currentValue -> {
+            if (!currentValue.isPresent()) {
+                return Optional.of(applicationContext.getBean(ScenarioSessionStore.class));
+            }
+            return currentValue;
+        }).orElseThrow(() -> new RuntimeException("Unable to initialize scenario set"));
+    }
+    
     @SuppressWarnings("unchecked")
-    private static <PARAMETERS, CONTEXT> ConversationBuilder createConversationBuilder(
+    private <PARAMETERS, CONTEXT> ScenarioSession<PARAMETERS, CONTEXT> createScenarioSession(
             Scenario<PARAMETERS, CONTEXT> scenario, Object parameters, Object context) {
         PARAMETERS castParameters = (PARAMETERS)parameters;
         CONTEXT castContext = (CONTEXT)context;
 
-        return scenario.createConversationBuilder(castParameters, castContext);
+        ConversationBuilder conversationBuilder = scenario.createConversationBuilder(castParameters, castContext);
+        Conversation conversation = conversationBuilder.start();
+        
+        return scenarioSessionStore().addSession(scenario, castParameters, conversation);
     }
-    
 }

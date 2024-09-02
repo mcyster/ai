@@ -13,6 +13,7 @@ import org.springframework.core.env.Environment;
 import com.cyster.jira.client.JiraClientScan;
 import com.cyster.rest.ApplicationServerConfig;
 import com.cyster.rest.CysterRestScan;
+import com.cyster.scheduler.SchedulerWeaveScan;
 import com.cyster.store.CysterStoreScan;
 import com.cyster.weave.CysterWeaveScan;
 import com.cyster.weave.rest.WeaveRestScan;
@@ -27,6 +28,7 @@ import com.extole.weave.ExtoleWeaveScan;
 @SpringBootApplication
 @Import(value = { 
     CysterWeaveScan.class,
+    SchedulerWeaveScan.class,
     WeaveRestScan.class, 
     WebDeveloperScan.class, 
     ExtoleClientScan.class, 

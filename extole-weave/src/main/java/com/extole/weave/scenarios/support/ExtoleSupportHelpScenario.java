@@ -9,8 +9,9 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.AssistantScenarioBuilder;
-import com.cyster.ai.weave.service.conversation.Conversation;
+import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
+import com.cyster.scheduler.impl.SchedulerTool;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportAdvisorToolLoader;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 
@@ -20,9 +21,12 @@ public class ExtoleSupportHelpScenario implements Scenario<Void, Void> {
     
     private AiWeaveService aiWeaveService;
     private Optional<Scenario<Void, Void>> scenario = Optional.empty();
-    private Map<String, ExtoleSupportTool<?>> tools = new HashMap<>();
+    private Map<String, Tool<?, Void>> tools = new HashMap<>();
 
-    ExtoleSupportHelpScenario(AiWeaveService aiWeaveService, List<ExtoleSupportAdvisorToolLoader> toolLoaders, List<ExtoleSupportTool<?>> tools) {
+    ExtoleSupportHelpScenario(AiWeaveService aiWeaveService, 
+            List<ExtoleSupportAdvisorToolLoader> toolLoaders, 
+            List<ExtoleSupportTool<?>> tools,
+            SchedulerTool schedulerTool) {
         this.aiWeaveService = aiWeaveService;
         
         for(var tool: tools) {
@@ -34,6 +38,7 @@ public class ExtoleSupportHelpScenario implements Scenario<Void, Void> {
                 this.tools.put(tool.getName(), tool);
             }
         }
+        this.tools.put(schedulerTool.getName(), schedulerTool);
     }
 
     @Override
