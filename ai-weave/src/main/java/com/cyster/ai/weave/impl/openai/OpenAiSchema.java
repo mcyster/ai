@@ -43,11 +43,11 @@ public class OpenAiSchema {
                         fieldObject = transformToOpenAiSchema((ObjectNode) fieldValue, mapper);
                     } else {
                         fieldObject = (ObjectNode) fieldValue;
-
-                        if (!fieldObject.path("required").isMissingNode()) {
-                            fieldObject.remove("required");
-                            requiredNode.add(fieldName);
-                        }
+                    }
+                    
+                    if (!fieldObject.path("required").isMissingNode()) {
+                        fieldObject.remove("required");
+                        requiredNode.add(fieldName);
                     }
                 }
             }

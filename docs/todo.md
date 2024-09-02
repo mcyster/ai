@@ -25,6 +25,13 @@ Make libraries
 - Split out Extole, have extole reference via libraries
 - 
 
+## Scheduler
+
+Respond with a handle in the initial scheduling message so we have a resource to see the state / manage the schedule
+Put in way to pass / carry abitrary data - especially for supporting retries
+Pass context
+Support giving schedules group names etc, to allow canceling, reschduling etc
+Support variant that perists across restarts
 
 ## Web Weave
 

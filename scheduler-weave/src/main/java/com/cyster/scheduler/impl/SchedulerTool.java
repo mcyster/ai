@@ -15,6 +15,8 @@ import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.scenario.Scenario;
+import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
 import com.cyster.scheduler.impl.SchedulerTool.Parameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,6 +30,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.Map;
 
 @Component
 public class SchedulerTool implements Tool<Parameters, Void> {
@@ -64,8 +67,11 @@ public class SchedulerTool implements Tool<Parameters, Void> {
 
     @Override
     public Object execute(Parameters parameters, Void context, OperationLogger operation) throws ToolException {
-        ScenarioSet scenarioSet = getScenarioSet();
-        if (!scenarioSet.hasScenario(parameters.scenario())) {
+        
+        Scenario<?,?> scenario;
+        try {
+            scenario = getScenarioSet().getScenario(parameters.scenario());
+        } catch (ScenarioException e) {
             throw new ToolException("Scenario not found: " + parameters.scenario());
         }
         
@@ -84,12 +90,16 @@ public class SchedulerTool implements Tool<Parameters, Void> {
         
         if (parameters.parameters() != null) {
             try {
-                jobData.put(JOB_DATA_PARAMETERS, objectMapper.writeValueAsString(parameters));
+                jobData.put(JOB_DATA_PARAMETERS, objectMapper.writeValueAsString(parameters.parameters()));
             } catch (JsonProcessingException exception) {
-                throw new FatalToolException("Unable to convert parameters to json: " + parameters.toString(), exception);
+                throw new FatalToolException("Unable to convert parameters to json: " + parameters.parameters().toString(), exception);
             }
         }
-
+        
+        if (scenario.getParameterClass() != Void.class && parameters.parameters() == null) {
+            throw new FatalToolException("The '" + parameters.scenario() + "' scenario requires parameters to be provided, but no parameters were specified.");   
+        }
+        
         JobDetail jobDetail = JobBuilder.newJob(ScheduledJob.class)
                 .withIdentity("scheduledScenario", "aiWeaveGroup")
                 .usingJobData(jobData)
@@ -127,7 +137,6 @@ public class SchedulerTool implements Tool<Parameters, Void> {
     static record Parameters(
         @JsonPropertyDescription("Scenario to execute after the delay") @JsonProperty(required = true) String scenario,
         @JsonPropertyDescription("Prompt for the scenario") @JsonProperty(required = false) String prompt,
-        @JsonPropertyDescription("Parameters to pass to the for the scenario") @JsonProperty(required = false) Object parameters,
+        @JsonPropertyDescription("Parameters for the scenario") @JsonProperty(required = false) Map<String, Object> parameters,
         @JsonPropertyDescription("Delay an ISO 8601 duration") @JsonProperty(required = true) String delay) {}
-
 }

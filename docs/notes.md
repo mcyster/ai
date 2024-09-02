@@ -1,4 +1,7 @@
 
+2024-9-1
+- added scheduler tool
+
 2024-7-17
 - ai-weave just exposes Scenarios (remove advisor/assitant special case)
 

@@ -32,6 +32,7 @@ public class ExtoleSupportTicketScenario implements Scenario<Parameters, Void> {
         this.tools.add(runbookSelectorTool);
         this.tools.add(ticketClientTool);
         this.tools.add(runbookExecuterTool);
+        this.tools.add(schedulerTool);
     }
 
     @Override

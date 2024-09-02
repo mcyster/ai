@@ -15,6 +15,7 @@ import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -62,6 +63,9 @@ public class Toolset<C> {
         try {
             T parameters = mapper.readValue(jsonArguments, tool.getParameterClass());
             return tool.execute(parameters, context, operation);
+        } catch (MismatchedInputException exception) {
+            // Original Message can help describe the problem in enought detail to resolve, often references the exact field.
+            return error("Tool parameters did not match json schema. " + exception.getOriginalMessage(), Type.BAD_TOOL_PARAMETERS, exception);
         } catch (JsonProcessingException exception) {
             return error("Tool parameters did not match json schema", Type.BAD_TOOL_PARAMETERS, exception);
         }
