@@ -17,11 +17,11 @@ public class OpenAiSchema {
         this.schemaNode = mapper.valueToTree(schema);
     }
 
-    public ObjectNode toJsonNode() {
-        return transformToOpenAiSchema(this.schemaNode, this.mapper);
+    public ObjectNode toJsonNode() {    	
+        return transformToOpenAiSchema("", this.schemaNode, this.mapper);
     }
 
-    private static ObjectNode transformToOpenAiSchema(ObjectNode schemaNode, ObjectMapper mapper) {
+    private static ObjectNode transformToOpenAiSchema(String path, ObjectNode schemaNode, ObjectMapper mapper) {
 
         if (!schemaNode.path("id").isMissingNode()) {
             schemaNode.remove("id");
@@ -40,20 +40,31 @@ public class OpenAiSchema {
                 if (fieldValue.isObject()) {
                     ObjectNode fieldObject;
                     if (fieldValue.has("type") && fieldValue.path("type").asText().equals("object")) {
-                        fieldObject = transformToOpenAiSchema((ObjectNode) fieldValue, mapper);
+                        fieldObject = transformToOpenAiSchema(path + "." + fieldName, (ObjectNode) fieldValue, mapper);
                     } else {
                         fieldObject = (ObjectNode) fieldValue;
                     }
-                    
-                    if (!fieldObject.path("required").isMissingNode()) {
-                        fieldObject.remove("required");
+
+                    if (fieldValue.path("required").asBoolean(false)) {
                         requiredNode.add(fieldName);
                     }
                 }
             }
-            schemaNode.set("required", requiredNode);
+
+            if (requiredNode.size() > 0) {
+                schemaNode.set("required", requiredNode);
+            } else {
+                schemaNode.remove("required"); 
+            }
         }
 
+        if (schemaNode.has("additionalProperties")) {
+            JsonNode additionalPropertiesNode = schemaNode.path("additionalProperties");
+            if (additionalPropertiesNode.isObject()) {
+                ((ObjectNode) additionalPropertiesNode).remove("id");
+            }
+        }
+        
         return schemaNode;
     }
 }

@@ -1,6 +1,9 @@
-package com.cyster.ai.weave.impl.advisor.openai;
+package com.cyster.ai.weave.impl.openai;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -57,9 +60,8 @@ public class OpenAiSchemaTest {
         var openAiSchema = schema.toJsonNode();
 
         System.out.println("openAischema: " + openAiSchema.toPrettyString());
-        assertTrue(openAiSchema.has("required"), "The 'required' attribute should exist");
-        assertTrue(openAiSchema.path("required").isArray(), "The 'required' attribute is an array");
-        assertTrue(openAiSchema.path("required").size() == 0, "The 'required' attribute is of length 0");
+        assertFalse(openAiSchema.has("required"), "The 'required' attribute should not exist");
+
         assertTrue(openAiSchema.has("properties"), "The 'properties' attribute should exist");
         assertTrue(openAiSchema.path("properties").has("attribute"),
             "The path 'properties.attribute' attribute exists");
@@ -78,9 +80,9 @@ public class OpenAiSchemaTest {
         var openAiSchema = schema.toJsonNode();
 
         System.out.println("openAischema: " + openAiSchema.toPrettyString());
-        assertTrue(openAiSchema.has("required"), "The 'required' attribute should exist");
-        assertTrue(openAiSchema.path("required").isArray(), "The 'required' attribute is an array");
-        assertTrue(openAiSchema.path("required").size() == 0, "The 'required' attribute is of length 0");
+        
+        assertFalse(openAiSchema.has("required"), "The 'required' attribute should exist");
+        
         assertTrue(openAiSchema.has("properties"), "The 'properties' attribute should exist");
         assertTrue(openAiSchema.path("properties").has("attribute"),
             "The path 'properties.attribute' attribute exists");
@@ -103,6 +105,49 @@ public class OpenAiSchemaTest {
             "The path 'properties.subobject.properties' must exist");
     }
 
+    @Test
+    public void testNestedMap() {
+        var schema = new OpenAiSchema(schema(NestedMap.class));
+
+        var openAiSchema = schema.toJsonNode();
+
+        System.out.println("openAischema: " + openAiSchema.toPrettyString());
+        
+        assertTrue(openAiSchema.has("required"), "The 'required' attribute should exist");
+        assertTrue(openAiSchema.path("required").isArray(), "The 'required' attribute is an array");
+        assertTrue(openAiSchema.path("required").size() == 1, "The 'required' attribute is of length 1");
+        
+        assertTrue(openAiSchema.has("properties"), "The 'property' attribute should exist");
+        
+        assertTrue(openAiSchema.path("properties").has("attribute"),
+            "The path 'properties.attribute' attribute exists");
+        assertTrue(openAiSchema.path("properties").path("attribute").has("type"),
+            "The path 'properties.attribute.type' attribute exists");
+        assertTrue(openAiSchema.path("properties").path("attribute").path("type").asText().equals("string"),
+            "The path 'properties.attribute.type' attribute value is String");
+        assertTrue(openAiSchema.path("properties").path("attribute").has("description"),
+            "The path 'properties.attribute.description' attribute exists");
+
+        assertTrue(openAiSchema.path("properties").has("map"),
+                "The path 'properties.map' attribute exists");
+        assertTrue(openAiSchema.path("properties").path("map").has("type"),
+            "The path 'properties.map.type' attribute exists");
+        assertTrue(openAiSchema.path("properties").path("map").path("type").asText().equals("object"),
+            "The path 'properties.map.type' attribute value is object");
+        assertTrue(openAiSchema.path("properties").path("map").has("description"),
+            "The path 'properties.map.description' attribute exists");
+        assertTrue(openAiSchema.path("properties").path("map").has("additionalProperties"),
+            "The path 'properties.map.additionalProperties' attribute exists");
+        assertTrue(openAiSchema.path("properties").path("map").path("additionalProperties").has("type"),
+            "The path 'properties.map.additionalProperties.type' attribute exists");
+        assertTrue(openAiSchema.path("properties").path("map").path("additionalProperties").path("type").asText().equals("object"),
+            "The path 'properties.map.additionalProperties.type' attribute has type object");
+        assertFalse(openAiSchema.path("properties").path("map").path("additionalProperties").has("id"),
+             "The path 'properties.map.additionalProperties.id' attribute does not exist");
+
+    }
+    
+    
     private static <T> JsonSchema schema(Class<T> clazz) {
         ObjectMapper mapper = new ObjectMapper();
 
@@ -143,7 +188,11 @@ class AttributeWithSubobject {
     @JsonProperty(required = false)
     public String attribute;
 
-    @JsonPropertyDescription("the optional subobject")
+    @JsonPropertyDescription("the optional subobject, which has a required attribute")
     @JsonProperty(required = false)
     public Subobject subobject;
 }
+
+record NestedMap (
+    @JsonPropertyDescription("Top level attribute") @JsonProperty(required = true) String attribute,
+    @JsonPropertyDescription("Map subattribute") @JsonProperty(required = false) Map<String, Object> map) {}
