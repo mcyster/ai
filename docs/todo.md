@@ -2,12 +2,15 @@
 
 # Next
 
+- split app extole-support, extole-help 
+- lint, listen on client events
+- vector store for confluence runbooks, via github
 - conversation messages, support nesting
-- graph support client_id
 - validate Extole campaign, page to leverage
 - jira / engineering tickets
 - ---
 - support ticket classifier iteration
+- slack integration
 
 # Changes
 
@@ -15,15 +18,6 @@
   - load vstore lazily, load old version, then update in background
 - prehandler use SearchTool
 - cleanup vectorstores, files
-
-## scheduling
-
-Want to persist schedules across restarts / scale
-- Quartz
-- Zapier
-- IFTTT
-- n8n
-- https://posthook.io/
 
 ## repos
 

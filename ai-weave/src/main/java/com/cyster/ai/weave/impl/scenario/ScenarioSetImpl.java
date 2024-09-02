@@ -21,10 +21,17 @@ public class ScenarioSetImpl implements ScenarioSet {
        }
     }
 
+    @Override
     public Set<Scenario<?,?>> getScenarios() {
         return scenarios.values().stream().collect(Collectors.toSet());
     }
 
+    @Override
+    public boolean hasScenario(String name) {
+        return this.scenarios.containsKey(name);
+    }
+
+    @Override
     public Scenario<?,?> getScenario(String name) throws ScenarioException {
         if (this.scenarios.containsKey(name)) {
             return this.scenarios.get(name);

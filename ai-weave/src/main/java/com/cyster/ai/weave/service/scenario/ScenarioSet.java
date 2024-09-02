@@ -6,5 +6,7 @@ public interface ScenarioSet {
 
     Set<Scenario<?,?>> getScenarios();
 
+    boolean hasScenario(String name);
+
     Scenario<?,?> getScenario(String name) throws ScenarioException;
 }

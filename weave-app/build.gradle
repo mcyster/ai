@@ -28,6 +28,7 @@ dependencies {
     implementation project(':extole-jira')
     implementation project(':extole-tickets-rest')
     implementation project(':extole-client')
+    implementation project(':scheduler-weave')    
     implementation project(':extole-weave')
     implementation project(':cyster-weave')
     implementation project(':web-weave')
