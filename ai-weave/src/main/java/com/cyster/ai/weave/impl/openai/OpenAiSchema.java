@@ -21,8 +21,12 @@ public class OpenAiSchema {
         return transformToOpenAiSchema("", this.schemaNode, this.mapper);
     }
 
+    ObjectNode getJacksonSchema() {
+    	return schemaNode;
+    }
+    
     private static ObjectNode transformToOpenAiSchema(String path, ObjectNode schemaNode, ObjectMapper mapper) {
-
+        
         if (!schemaNode.path("id").isMissingNode()) {
             schemaNode.remove("id");
         }
@@ -37,16 +41,19 @@ public class OpenAiSchema {
                 String fieldName = field.getKey();
                 JsonNode fieldValue = field.getValue();
 
+                if (fieldValue.has("required")) {
+                    if (fieldValue.path("required").asBoolean(false)) {
+                        requiredNode.add(fieldName);
+                    }
+                    ((ObjectNode) fieldValue).remove("required");
+                }
+            	
                 if (fieldValue.isObject()) {
                     ObjectNode fieldObject;
                     if (fieldValue.has("type") && fieldValue.path("type").asText().equals("object")) {
                         fieldObject = transformToOpenAiSchema(path + "." + fieldName, (ObjectNode) fieldValue, mapper);
                     } else {
                         fieldObject = (ObjectNode) fieldValue;
-                    }
-
-                    if (fieldValue.path("required").asBoolean(false)) {
-                        requiredNode.add(fieldName);
                     }
                 }
             }
