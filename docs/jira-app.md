@@ -8,14 +8,14 @@ jira-app-deploy
 
 # Setup
 
-## etup OpenAI API Key
+### Setup OpenAI API Key
  Define
   - OPENAI_API_KEY
 
-## Jira API Key
+### Jira API Key
   - Define JIRA_API_KEY # $email:base64($token)
 
-## Setup outbound Webhook
+### Setup outbound Webhook
   - Goto Jira, e.g. [Extole Jira](https://extole.atlassian.net/)
   - Click Cog icon (top right)
   - System
@@ -28,7 +28,7 @@ jira-app-deploy
       - Issue: Created
       - Comment: Created
 
-## Google key
+### Google key
   - Goto [Goole Cloud](https://console.cloud.google.com)
   - Create a project: BeepBoop
     - OAuth Consent Screen
@@ -42,10 +42,10 @@ jira-app-deploy
       - GOOGLE_CLIENT_ID
       - GOOGLE_CLIENT_SECRET
 
-## Github Key
+### Github Key
   - export EXTOLE_GITHUB_API_KEY
 
-## Extole Key:
+### Extole Key:
   - define EXTOLE_SUPER_USER_API_KEY
 
 ## Public IP for Jira Webhook
