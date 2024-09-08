@@ -1,7 +1,4 @@
 
-
-
-
 # Deployment
 
 Deploy the jira-app to production with (you will need ssh credentials on prod-ai):
@@ -11,8 +8,15 @@ jira-app-deploy
 
 # Setup
 
+## etup OpenAI API Key
+ Define
+  - OPENAI_API_KEY
+
+## Jira API Key
+  - Define JIRA_API_KEY # $email:base64($token)
+
 ## Setup outbound Webhook
-Goto Jira, e.g. [Extole Jira](https://extole.atlassian.net/)
+  - Goto Jira, e.g. [Extole Jira](https://extole.atlassian.net/)
   - Click Cog icon (top right)
   - System
   - Webhooks
@@ -23,6 +27,26 @@ Goto Jira, e.g. [Extole Jira](https://extole.atlassian.net/)
       - JQL: All Issues
       - Issue: Created
       - Comment: Created
+
+## Google key
+  - Goto [Goole Cloud](https://console.cloud.google.com)
+  - Create a project: BeepBoop
+    - OAuth Consent Screen
+      - Home Page: http://beep-boop.extole.com:8090
+      - Privacy: http://beep-boop.extole.com:8090/privacy.html
+      - Terms: http://beep-boop.extole.com:8090/terms.html
+      - Roles: Identity
+      - Users: Limit to extole employees
+  - Create Credentials
+    - Define:
+      - GOOGLE_CLIENT_ID
+      - GOOGLE_CLIENT_SECRET
+
+## Github Key
+  - export EXTOLE_GITHUB_API_KEY
+
+## Extole Key:
+  - define EXTOLE_SUPER_USER_API_KEY
 
 ## Public IP for Jira Webhook
 
