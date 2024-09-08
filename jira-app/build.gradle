@@ -16,6 +16,8 @@ repositories {
 dependencies {
     implementation 'org.springframework:spring-webmvc' 
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
     implementation 'com.github.spullara.mustache.java:compiler:0.9.10'
     implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema-jakarta'
