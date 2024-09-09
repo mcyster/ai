@@ -9,11 +9,15 @@ jira-app-deploy
 # Setup
 
 ### Setup OpenAI API Key
+Define 
+  - JIRA_APP_DOMAIN=beep-boop.extole.com   # or localhost for dev
+
  Define
   - OPENAI_API_KEY
 
 ### Jira API Key
   - Define JIRA_API_KEY # $email:base64($token)
+  - Define JIRA_WEBHOOK_SECRET   # e.g.: head /dev/urandom | tr -dc A-Za-z0-9 | head -c 20
 
 ### Setup outbound Webhook
   - Goto Jira, e.g. [Extole Jira](https://extole.atlassian.net/)
@@ -22,7 +26,8 @@ jira-app-deploy
   - Webhooks
   - Select / Create Webhook
     - Specify URL to which events should be posted
-      - I'm using an ngrok url that relays requests to the jira-app server
+      - http://beep-boop.extole.com:8090/tickets?secret=$SECRET
+      - if local dev use ngrok, see below
     - Events
       - JQL: All Issues
       - Issue: Created

@@ -5,10 +5,12 @@ import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,16 +34,39 @@ public class TicketController {
     private static Pattern MENTION_PATTERN = Pattern.compile("\\[\\~accountid:[^\\]]+\\]");
 
     private TicketCommenter ticketCommenter;
+    private String jiraWebhookSecret;
 
     private static final Logger logger = LogManager.getLogger(TicketController.class);
     private static final Logger eventLogger = LogManager.getLogger("events");
 
-    public TicketController(TicketCommenter ticketCommenter) {
+    public TicketController(TicketCommenter ticketCommenter,  @Value("${JIRA_WEBHOOK_SECRET}") String jiraWebhookSecret) {
+        if (jiraWebhookSecret == null || jiraWebhookSecret.trim().isEmpty()) {
+            throw new IllegalStateException("Environment variable JIRA_WEBHOOK_SECRET must not be blank or empty");
+        }
+        
         this.ticketCommenter = ticketCommenter;
+        this.jiraWebhookSecret = jiraWebhookSecret;
     }
 
     @PostMapping("/ticket")
-    public ResponseEntity<Void> ticketEvent(@RequestBody JsonNode request) throws BadRequestException, FatalException {
+    public ResponseEntity<String> ticketEvent(
+    		@RequestParam("secret") String secret, 
+    		@RequestBody JsonNode request) throws BadRequestException, FatalException {
+    	
+    	if (secret == null) {
+    		logger.error("No secret parameter specified in request");
+    	     return ResponseEntity
+                 .status(HttpStatus.BAD_REQUEST)
+                 .body("No secret specified");
+    	}
+    
+    	if (!secret.equals(this.jiraWebhookSecret)) {
+    		logger.error("Secret parameter does not match JIRA_WEBHOOK_SECRET");
+   	        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body("Secret does not match configured secret");
+    	}
+    	
         eventLogger.info(request.toString());
 
         if (!request.has("issue")) {
