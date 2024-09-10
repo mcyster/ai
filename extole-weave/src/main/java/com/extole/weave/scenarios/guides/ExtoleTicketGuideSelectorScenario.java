@@ -22,7 +22,7 @@ import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
 import com.extole.weave.scenarios.guides.ExtoleTicketGuideSelectorScenario.Parameters;
 
-@Component
+// @Component
 public class ExtoleTicketGuideSelectorScenario implements Scenario<Parameters, Void> {
     private final String DESCRIPTION = "Find the best Guide for the specified ticket";
 

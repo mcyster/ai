@@ -15,7 +15,7 @@ import com.cyster.ai.weave.service.SearchTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component
+// @Component
 public class ExtoleGuideStore {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleGuideStore.class);
 
