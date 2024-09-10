@@ -1,4 +1,4 @@
-package com.extole.weave.scenarios.prehandler;
+package com.extole.weave.scenarios.guides;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,14 +16,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Component
-public class ExtoleStore {
-    private static final Logger logger = LoggerFactory.getLogger(ExtoleStore.class);
+public class ExtoleGuideStore {
+    private static final Logger logger = LoggerFactory.getLogger(ExtoleGuideStore.class);
 
-    private static String remoteJavaApiRepository = "git@github.com:extole/java-api.git";
-    private static File localJavaApiRepository = new File("/tmp/extole/java-api");
+    private static String remoteJavaApiRepository = "git@github.com:extole/guides.git";
+    private static File localJavaApiRepository = new File("/tmp/extole/guides");
     private AiWeaveService aiWeaveService;
 
-    ExtoleStore(AiWeaveService aiWeaveService) {
+    ExtoleGuideStore(AiWeaveService aiWeaveService) {
         this.aiWeaveService = aiWeaveService;
     }
 
@@ -38,7 +38,7 @@ public class ExtoleStore {
 
         @SuppressWarnings("unchecked")  // TBD
         SearchTool.Builder<CONTEXT> builder = (SearchTool.Builder<CONTEXT>) aiWeaveService.searchToolBuilder()
-            .withName("extole-store")
+            .withName("extole-guides")
             .withDocumentStore(documentStore);
 
         return builder.create();

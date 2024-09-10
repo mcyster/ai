@@ -1,4 +1,4 @@
-package com.extole.weave.scenarios.runbooks;
+package com.extole.weave.scenarios.guides;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -20,26 +20,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
 import com.github.mustachejava.MustacheFactory;
-import com.extole.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorScenario.Parameters;
+import com.extole.weave.scenarios.guides.ExtoleTicketGuideSelectorScenario.Parameters;
 
 @Component
-public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Parameters, Void> {
-    private final String DESCRIPTION = "Find the best Runbook for the specified ticket";
+public class ExtoleTicketGuideSelectorScenario implements Scenario<Parameters, Void> {
+    private final String DESCRIPTION = "Find the best Guide for the specified ticket";
 
     private AiWeaveService aiWeaveService;
     private Optional<Scenario<Parameters, Void>> scenario = Optional.empty();
     private List<Tool<?, Void>> tools = new ArrayList<>();
-    private String defaultRunbookName;
     private SearchTool<Void> searchTool;
     
-    public ExtoleSupportTicketRunbookSelectorScenario(AiWeaveService aiWeaveService, ExtoleRunbookToolFactory runbookToolFactory,
+    public ExtoleTicketGuideSelectorScenario(AiWeaveService aiWeaveService, 
             SupportTicketGetTool ticketGetTool,
-            ExtoleRunbookDefault defaultRunbook) {
+    		ExtoleGuideStore extoleGuideStore) {
+    	
+    	SearchTool<Void> storeSearchTool = extoleGuideStore.createStoreTool();
+    	
         this.aiWeaveService = aiWeaveService;
-        this.tools.add(runbookToolFactory.getRunbookSearchTool());
+        this.tools.add(storeSearchTool);
         this.tools.add(ticketGetTool);
-        this.defaultRunbookName = defaultRunbook.getName();
-        this.searchTool = runbookToolFactory.getRunbookSearchTool();
+        this.searchTool = storeSearchTool;
     }
 
     @Override
@@ -87,7 +88,7 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
     {
       "step": "Construct a detailed query string based on the ticket",
       "description": [
-        "Remove PII, company names, and URLs.",
+        "Remove PII and URLs.",
         "Remove duplicate words and common stop words.",
         "Remove special characters and convert all text to lowercase.",
         "Limit the query to 20 words or fewer."
@@ -100,7 +101,7 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
       ]
     },
     {
-      "step": "Issue multiple detailed queries if no Runbook is found.",
+      "step": "Issue multiple detailed queries if no guide is found.",
       "description": [
         "Focus on different keywords and combinations from the original prompt."
       ]
@@ -110,12 +111,8 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
     },
     {
       "step": "Shorten the original query to 10 words or fewer and try variations.",
-      "condition": "If still no Runbook is found."
+      "condition": "If still no guide is found."
     },
-    {
-      "step": "Evaluate multiple search results for closest context before defaulting to {{defaultRunbookName}}.",
-      "condition": "Only use as a last resort."
-    }
     {
       "step": "Provide your answer in JSON format",
       "schema": {{{schema}}},
@@ -127,12 +124,10 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
 }
 """;
             
-            
             var schema = aiWeaveService.getJsonSchema(Response.class);
 
             Map<String, String> parameters = new HashMap<>() {{
                 put("schema", schema);
-                put("defaultRunbookName", defaultRunbookName);
             }};
             
             MustacheFactory mostacheFactory = new DefaultMustacheFactory();
@@ -142,7 +137,7 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
             messageWriter.flush();
             var instructions = messageWriter.toString();
     
-            System.out.println("!!!!!!!! extole support ticket runbook instructions: " + instructions);
+            System.out.println("!!!!!!!! extole support ticket guies: " + instructions);
             
             AssistantScenarioBuilder<Parameters, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
             builder.setInstructions(instructions);
@@ -162,7 +157,8 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
 
     public record Response (
         @JsonProperty(required = true) String ticketNumber,
-        @JsonProperty(required = true) String runbookName,
+        @JsonProperty(required = true) String guideName,
+        @JsonProperty(required = true) String guideLink,
         @JsonProperty(required = false) String query,
         @JsonProperty(required = false) String[] searchResults 
     ) {}

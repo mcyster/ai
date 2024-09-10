@@ -18,9 +18,9 @@ import com.extole.weave.session.ExtoleSessionContext;
 public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, ExtoleSessionContext> {
     private AiWeaveService aiWeaveService;
     private Optional<Scenario<Void, ExtoleSessionContext>> scenario = Optional.empty();
-    private ExtoleStore extoleStore;
+    private ExtoleApiStore extoleStore;
 
-    ExtoleJavascriptPrehandlerActionScenario(AiWeaveService aiWeaveService, ExtoleStore extoleStore) {
+    ExtoleJavascriptPrehandlerActionScenario(AiWeaveService aiWeaveService, ExtoleApiStore extoleStore) {
         this.aiWeaveService = aiWeaveService;
         this.extoleStore = extoleStore;
     }
