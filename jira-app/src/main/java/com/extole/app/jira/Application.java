@@ -14,7 +14,6 @@ import com.cyster.jira.client.JiraClientScan;
 import com.cyster.rest.ApplicationServerConfig;
 import com.cyster.rest.CysterRestScan;
 import com.cyster.scheduler.SchedulerWeaveScan;
-import com.cyster.store.CysterStoreScan;
 import com.cyster.weave.CysterWeaveScan;
 import com.cyster.weave.rest.WeaveRestScan;
 import com.cyster.web.rest.WebRestScan;
@@ -35,7 +34,6 @@ import com.extole.weave.ExtoleWeaveScan;
     JiraClientScan.class,
     ExtoleJiraScan.class,
     ExtoleTicketsScan.class, 
-    CysterStoreScan.class, 
     ExtoleWeaveScan.class, 
     WebRestScan.class, 
     ExtoleRestScan.class,
