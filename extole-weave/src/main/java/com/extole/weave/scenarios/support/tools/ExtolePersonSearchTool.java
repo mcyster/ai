@@ -146,7 +146,7 @@ class ExtolePersonSearchTool implements ExtoleSupportTool<Request> {
         @JsonProperty(required = true)
         String id;
     }
-
+    
     static class Request {
         @JsonPropertyDescription("The 1 to 12 digit id for a client.")
         @JsonProperty(required = true)

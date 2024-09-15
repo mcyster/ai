@@ -48,14 +48,11 @@ public class OpenAiSchema {
                     ((ObjectNode) fieldValue).remove("required");
                 }
             	
-                //if (fieldValue.isObject()) {
-                    //ObjectNode fieldObject;
-                    //if (fieldValue.has("type") && fieldValue.path("type").asText().equals("object")) {
-                    //    fieldObject = transformToOpenAiSchema(path + "." + fieldName, (ObjectNode) fieldValue, mapper);
-                    //} else {
-                    //    fieldObject = (ObjectNode) fieldValue;
-                    //}
-                //}
+                if (fieldValue.isObject()) {
+                    if (fieldValue.has("type") && fieldValue.path("type").asText().equals("object")) {
+                        transformToOpenAiSchema(path + "." + fieldName, (ObjectNode) fieldValue, mapper);
+                    } 
+                }
             }
 
             if (requiredNode.size() > 0) {

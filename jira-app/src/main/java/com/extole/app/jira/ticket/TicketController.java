@@ -117,10 +117,15 @@ public class TicketController {
                logger.info("Ticket - " + ticketNumber + " - comment_created - ai mention");
 
                String cleanedComment = MENTION_PATTERN.matcher(comment).replaceAll("");
-               if (cleanedComment.isBlank()) {
-                   ticketCommenter.process(ticketNumber);
-               } else {
-                   ticketCommenter.process(ticketNumber, cleanedComment);
+               try {
+	               if (cleanedComment.isBlank()) {
+	                   ticketCommenter.process(ticketNumber);
+	               } else {
+	                   ticketCommenter.process(ticketNumber, cleanedComment);
+	               }
+               } catch(Exception exception) {
+            	   logger.error("Failed to process ticket - " + ticketNumber, exception);
+            	   throw exception;
                }
             }
             break;

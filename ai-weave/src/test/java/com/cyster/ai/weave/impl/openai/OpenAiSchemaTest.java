@@ -106,8 +106,7 @@ public class OpenAiSchemaTest {
 """;
         assertTrue(check(NestedMap.class, expectedSchema), "generated schema does not match expected schema");
     }
-    
-    
+        
     private static <T> JsonSchema schema(Class<T> clazz) {
         ObjectMapper mapper = new ObjectMapper();
 

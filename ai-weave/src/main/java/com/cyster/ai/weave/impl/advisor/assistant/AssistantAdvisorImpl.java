@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+
 import com.cyster.ai.weave.impl.advisor.Advisor;
 import com.cyster.ai.weave.impl.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
@@ -24,6 +25,7 @@ import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
 import io.github.stefanbratanov.jvm.openai.AssistantsClient.PaginatedAssistants;
 
 public class AssistantAdvisorImpl<C> implements Advisor<C> {
+
     public static String VERSION = "0.1";
     public static String METADATA_VERSION = "version";
     public static String METADATA_IDENTITY = "identityHash";
@@ -169,7 +171,12 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
                 requestBuilder.instructions(this.instructions.get());
             }
 
-            Assistant assistant = assistantsClient.createAssistant(requestBuilder.build());
+            
+            var request = requestBuilder.build();
+            
+            System.out.println("createAssistant payload:" + request.toString());
+            
+            Assistant assistant = assistantsClient.createAssistant(request);
 
             return assistant;
         }
