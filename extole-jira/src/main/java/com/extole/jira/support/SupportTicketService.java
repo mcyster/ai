@@ -213,20 +213,7 @@ public class SupportTicketService {
         
         return ticketBuilder.build();   
     }
-    
-    private static List<SupportTicket> issuesToTicketResponses(ArrayNode issues) {
-        List<SupportTicket> tickets = new ArrayList<>();
-
-        for(JsonNode issue: issues) {
-            System.out.println(issue.toPrettyString());
-
-            tickets.add(issueToTicketResponse(issue));
-        }
-
-        return tickets;
-    }
-    
-   
+       
     private static SupportTicket issueToTicketResponse(JsonNode issue) {
         JsonNode fields = issue.path("fields");
 

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.cyster.ai.weave.impl.code.CodeInterpreterToolImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiSchema;
@@ -19,7 +18,6 @@ import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
 import io.github.stefanbratanov.jvm.openai.CreateAssistantRequest;
 import io.github.stefanbratanov.jvm.openai.Function;
 import io.github.stefanbratanov.jvm.openai.ToolResources;
-import io.github.stefanbratanov.jvm.openai.VectorStore;
 
 class AdvisorToolset<C> {
     private Toolset<C> toolset;

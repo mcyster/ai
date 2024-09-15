@@ -3,7 +3,6 @@ package com.extole.weave.scenarios.campaign;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.weave.scenarios.campaign.ExtoleCampaignCheckScenario.Parameters;
 import com.extole.weave.scenarios.support.ExtoleSupportHelpScenario;

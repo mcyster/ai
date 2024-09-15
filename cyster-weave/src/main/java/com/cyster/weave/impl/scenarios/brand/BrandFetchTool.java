@@ -1,7 +1,6 @@
 package com.cyster.weave.impl.scenarios.brand;
 
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.http.MediaType;

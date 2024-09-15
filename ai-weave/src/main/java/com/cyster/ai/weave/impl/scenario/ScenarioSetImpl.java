@@ -8,8 +8,6 @@ import java.util.stream.Collectors;
 
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
-import com.cyster.ai.weave.service.scenario.ScenarioLoader;
-import com.cyster.ai.weave.service.scenario.ScenarioSet;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
 
 public class ScenarioSetImpl implements ScenarioSet {

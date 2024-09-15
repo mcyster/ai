@@ -3,9 +3,7 @@ package com.cyster.web.weave.scenarios;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
-import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
-import com.cyster.web.weave.scenarios.WebsiteProvider.Website;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
 import com.cyster.web.weave.scenarios.WebsiteCopyTool.Request;
