@@ -73,8 +73,12 @@ fi
 
 echo "jira-app $jar last modified $(stat -c '%y' $jar)"
 
+if [ -z "${BEEP_BEEP_PROFILE:-}" ]; then
+    BEEP_BOOP_PROFILE=prod
+fi
+
 cd $app_home
-nohup java -jar $jar >$app_home/logs/jira-app-output.log 2>&1 &
+nohup java -jar "$jar" --spring.profiles.active="$BEEP_BOOP_PROFILE" > "$app_home/logs/jira-app-output.log" 2>&1 &
 
 echo "jira-app running in background as process: $!"
 
