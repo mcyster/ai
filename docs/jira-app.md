@@ -47,6 +47,19 @@ Define
       - GOOGLE_CLIENT_ID
       - GOOGLE_CLIENT_SECRET
 
+#### Google from the Command line
+  - Goto [Goole Cloud](https://console.cloud.google.com)
+    - Goto IAM & Admin > Service Accounts
+      - Goto Service Sccounts
+        - Create Service Account
+          - Role: Basic/Browser
+          - Grant access: to your user
+       - create and download key as json
+         - store json key at something like ~/.beep-boop/aws-credentials.json
+- export GOOGLE_APPLICATION_CREDENTIALS=$HOME/.beep-boop/beepboop-435003-6bd5ff8547e9.json
+-  token="$(oauth2l fetch --scope userinfo.email,userinfo.profile")
+-  curl -H "Authorization: Bearer $token" "http://localhost:8090/scenarios"
+
 ### Github Key
   - export EXTOLE_GITHUB_API_KEY
 
