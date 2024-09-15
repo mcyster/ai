@@ -53,6 +53,8 @@ public class TicketController {
     		@RequestParam("secret") String secret, 
     		@RequestBody JsonNode request) throws BadRequestException, FatalException {
     	
+    	logger.info("ticket secret: " + secret + " configuredSecret: " + this.jiraWebhookSecret);
+    	
     	if (secret == null) {
     		logger.error("No secret parameter specified in request");
     	     return ResponseEntity

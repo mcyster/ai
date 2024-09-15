@@ -19,18 +19,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/ticket")
+            )
             .authorizeHttpRequests(authorizeRequests ->
                 authorizeRequests
-                    .requestMatchers("/terms.html", "/privacy.html", "/ticket").permitAll()
-                    .anyRequest().authenticated()
+                    .requestMatchers("/terms.html", "/privacy.html", "/ticket").permitAll() 
+                    .anyRequest().authenticated() 
             )
             .oauth2Login(oauth2 -> oauth2
-                    .userInfoEndpoint(userInfo -> userInfo
-                        .userService(customOAuth2UserService) 
-                    )
-                );
-           
-	        return http.build();
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOAuth2UserService)
+                )
+            )
+            .logout(logout -> logout
+                .permitAll()
+            );
+
+        return http.build();
     }
 }
-
