@@ -26,7 +26,7 @@ Define
   - Webhooks
   - Select / Create Webhook
     - Specify URL to which events should be posted
-      - http://beep-boop.extole.com:8090/tickets?secret=$SECRET
+      - http://beep-boop.extole.com:8090/tickets?secret=$JIRA_WEBHOOK_SECRET
       - if local dev use ngrok, see below
     - Events
       - JQL: All Issues
@@ -61,7 +61,7 @@ An easy way to get a publicly accessible endpoint for development is ngrok
 To start the jira-app in development:
 In your Jira account, you will need to setup a webhook
 - https://extole.atlassian.net/plugins/servlet/webhooks
-  - url: $NGROK_URL/tickets
+  - url: $NGROK_URL/tickets?secret=$JIRA_WEBHOOK_SECRET
   - issue requests for: create, comment create
 
 
