@@ -1,5 +1,6 @@
 package com.extole.app.jira.ticket;
 
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,8 +31,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 @RestController
 public class TicketController {
-    private static final String JIRA_APP_ACCOUNT_ID = "712020:ac07cb57-f120-4f67-a1d7-06e69eaae834";  // TODO: property
+    private static final String JIRA_APP_ACCOUNT_ID = "712020:ac07cb57-f120-4f67-a1d7-06e69eaae834";
     private static Pattern MENTION_PATTERN = Pattern.compile("\\[\\~accountid:[^\\]]+\\]");
+    private static final Set<String> SUPPORTED_PROJECTS = Set.of("help", "sup", "launch", "speed");
 
     private TicketCommenter ticketCommenter;
     private String jiraWebhookSecret;
@@ -88,11 +90,11 @@ public class TicketController {
 
         switch (webhookEvent) {
         case "jira:issue_created":
-            if (ticketNumber.toLowerCase().startsWith("sup")) {
+            if (isSupportedProject(ticketNumber)) {
                 logger.info("Ticket - " + ticketNumber + " - issue_created - processing");
                 ticketCommenter.process(ticketNumber);
             } else {
-                logger.info("Ticket - " + ticketNumber + " issue_created - ignored - only processing SUP tickets");
+                logger.info("Ticket - " + ticketNumber + " - issue_created - ignored - not in a supported project");
             }
             break;
 
@@ -155,4 +157,8 @@ public class TicketController {
         }
     }
 
+    private static boolean isSupportedProject(String ticketNumber) {
+        String lowerCaseTicket = ticketNumber.toLowerCase();
+        return SUPPORTED_PROJECTS.stream().anyMatch(lowerCaseTicket::startsWith);
+    }
 }

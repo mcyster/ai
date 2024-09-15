@@ -171,12 +171,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
                 requestBuilder.instructions(this.instructions.get());
             }
 
-            
-            var request = requestBuilder.build();
-            
-            System.out.println("createAssistant payload:" + request.toString());
-            
-            Assistant assistant = assistantsClient.createAssistant(request);
+            Assistant assistant = assistantsClient.createAssistant(requestBuilder.build());
 
             return assistant;
         }

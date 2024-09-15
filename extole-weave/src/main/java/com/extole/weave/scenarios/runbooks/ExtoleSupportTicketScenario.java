@@ -12,7 +12,7 @@ import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.scheduler.impl.SchedulerTool;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import com.extole.weave.scenarios.client.ExtoleSupportTicketClientTool;
 import com.extole.weave.scenarios.runbooks.ExtoleSupportTicketScenario.Parameters;
 
 @Component

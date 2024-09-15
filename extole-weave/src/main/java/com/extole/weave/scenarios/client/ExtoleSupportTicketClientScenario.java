@@ -1,4 +1,4 @@
-package com.extole.weave.scenarios.runbooks;
+package com.extole.weave.scenarios.client;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +12,9 @@ import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.weave.scenarios.support.tools.jira.SupportTicketGetTool;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import com.extole.weave.scenarios.client.ExtoleSupportTicketClientScenario.Parameters;
 import com.extole.weave.scenarios.support.tools.ExtoleClientGetTool;
-
-import com.extole.weave.scenarios.runbooks.ExtoleSupportTicketClientScenario.Parameters;
+import com.extole.weave.scenarios.support.tools.ExtoleClientSearchTool;
 
 @Component
 public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, Void> {
@@ -26,18 +25,20 @@ public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, V
     private List<Tool<?, Void>> tools = new ArrayList<>();
     private SupportTicketGetTool ticketGetTool;
     private ExtoleClientGetTool extoleClientGetTool;
+    private ExtoleClientSearchTool extoleClientSearchTool;
     
     public ExtoleSupportTicketClientScenario(AiWeaveService aiWeaveService, 
-        ExtoleRunbookToolFactory runbookToolFactory,
         SupportTicketGetTool ticketGetTool,
-        ExtoleClientGetTool extoleClientGetTool) {
+        ExtoleClientGetTool extoleClientGetTool,
+        ExtoleClientSearchTool extoleClientSearchTool) {
         this.aiWeaveService = aiWeaveService;
-        this.tools.add(runbookToolFactory.getRunbookSearchTool());
         this.tools.add(ticketGetTool);
         this.tools.add(extoleClientGetTool);
+        this.tools.add(extoleClientSearchTool);
         
         this.ticketGetTool = ticketGetTool;
         this.extoleClientGetTool = extoleClientGetTool;
+        this.extoleClientSearchTool = extoleClientSearchTool;
     }
 
     @Override
@@ -78,21 +79,21 @@ You are an Extole Support Team member handling an incoming ticket. Your task is 
 
 Use the %s to get the specified ticket
 
-If the ticket has a non null clientId use that. 
+If the ticket has a non null clientId use that. If the ticket does not have an associated clientId look in the content for a clientId.
+URLs often often in the form client_id=CLIENT_ID
 
-If the ticket does not have an associated clientId look in the content for a clientId.
-In urls its often often in the form client_id=CLIENT_ID
+If you find a client_id, verify the clientId and get the client name and short name using the %s
 
-Verify the clientId and get the client name and short name using the %s
+If you cant find a client_id load all clients using %s and see if you can find a matching name or short name in the ticket.
 
-If no clientId is found use NOT_FOUND for unknown values.
+If no client is found use NOT_FOUND for the client_id, name and short_name.
 
 Provide your answer in JSON format as describe by this schema:
 %s
 """;
             var schema = aiWeaveService.getJsonSchema(Response.class);
 
-            var instructions = String.format(templateInstructions, ticketGetTool.getName(), extoleClientGetTool.getName(), schema);
+            var instructions = String.format(templateInstructions, ticketGetTool.getName(), extoleClientGetTool.getName(), extoleClientSearchTool.getName(), schema);
             
             AssistantScenarioBuilder<Parameters, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
             builder.setInstructions(instructions);

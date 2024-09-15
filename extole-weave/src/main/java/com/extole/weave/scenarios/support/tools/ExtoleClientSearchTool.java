@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 
 @Component
-class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
+public class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
     private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 
     ExtoleClientSearchTool(ExtoleTrustedWebClientFactory extoleWebClientFactory) {

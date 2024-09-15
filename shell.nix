@@ -1,5 +1,5 @@
 let
-  pkgs = import <nixpkgs> {};
+  pkgs = import <nixpkgs> { config = { allowUnfree = true; }; };
 
 in
   pkgs.mkShell {
@@ -8,7 +8,8 @@ in
       vim
       jq.bin
       jdk21
-      #ngrok
+      ngrok
+      oauth2l
     ];
 
     shellHook = ''

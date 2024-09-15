@@ -1,4 +1,4 @@
-package com.extole.weave.scenarios.runbooks;
+package com.extole.weave.scenarios.client;
 
 import java.util.Objects;
 
@@ -11,8 +11,7 @@ import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
-
-import com.extole.weave.scenarios.runbooks.ExtoleSupportTicketClientScenario.Parameters;
+import com.extole.weave.scenarios.client.ExtoleSupportTicketClientScenario.Parameters;
 
 @Component
 public class ExtoleSupportTicketClientTool implements Tool<Parameters, Void> {
@@ -54,7 +53,7 @@ public class ExtoleSupportTicketClientTool implements Tool<Parameters, Void> {
 
         System.out.println("!!! find clientId convo: " + message);
         
-        return aiWeaveService.extractResponse(com.extole.weave.scenarios.runbooks.ExtoleSupportTicketClientScenario.Response.class, message.getContent());
+        return aiWeaveService.extractResponse(com.extole.weave.scenarios.client.ExtoleSupportTicketClientScenario.Response.class, message.getContent());
     }
    
     public int hash() {
