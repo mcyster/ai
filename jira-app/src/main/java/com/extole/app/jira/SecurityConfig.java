@@ -15,11 +15,9 @@ import org.springframework.web.filter.ForwardedHeaderFilter;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
-    private final boolean requiresHttps;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, @Value("${spring.security.requires-https}") boolean requiresHttps) {
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
         this.customOAuth2UserService = customOAuth2UserService;
-        this.requiresHttps = requiresHttps;
     }
 
     @Bean
