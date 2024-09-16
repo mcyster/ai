@@ -42,12 +42,6 @@ public class SecurityConfig {
                 .permitAll()
             );
 
-        if (requiresHttps) {
-            http.requiresChannel(channel -> 
-                channel.anyRequest().requiresSecure()
-            );
-        }
-
         return http.build();
     }
 
