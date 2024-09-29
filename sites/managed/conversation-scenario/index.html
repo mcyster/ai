@@ -24,11 +24,11 @@
             <textarea id="parameters" name="parameters" placeholder='Parameters (key=value pairs, optional)'></textarea>
             <button type="submit">Submit</button>
         </form>
-        <div id="response"></div>
         <div class="links">
             <a href="#" id="reviewTicketLink">Review Ticket</a>
             <a href="#" id="supportHelpLink">Extole Support Help</a>
         </div>
+        <div id="response"></div>
     </div>
     <script>
         document.getElementById('scenarioForm').addEventListener('submit', function(event) {
@@ -58,7 +58,14 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('response').innerText = JSON.stringify(data, null, 2);
+                const responseElement = document.getElementById('response');
+                const conversationLink = document.createElement('a');
+                conversationLink.href = `/sites/managed/conversation/index.html?id=${data.id}`;
+                conversationLink.innerText = 'Conversation Details';
+                responseElement.innerHTML = '';
+                responseElement.appendChild(conversationLink);
+                responseElement.appendChild(document.createElement('br'));
+                responseElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)));
             })
             .catch(error => {
                 document.getElementById('response').innerText = 'Error: ' + error.message;
