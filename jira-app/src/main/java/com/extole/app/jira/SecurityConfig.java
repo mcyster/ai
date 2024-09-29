@@ -24,7 +24,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.addFilterBefore(new ForwardedHeaderFilter(), UsernamePasswordAuthenticationFilter.class)
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/ticket")
+                .ignoringRequestMatchers("/**")
             )
             .authorizeHttpRequests(authorizeRequests ->
                 authorizeRequests
