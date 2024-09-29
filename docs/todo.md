@@ -2,6 +2,10 @@
 
 # Next
 
+- page to kickoff beep-beep
+- ensure we beep-boop can respond to HELP, SUP, LAUNCH, SPEED
+- review noitficiations, callout suggestions in tickit
+- o1
 - split app extole-support, extole-help 
 - lint, listen on client events
 - vector store for confluence runbooks, via github
