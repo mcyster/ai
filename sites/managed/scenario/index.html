@@ -11,7 +11,7 @@
         .content { text-align: center; }
         form { display: flex; flex-direction: column; align-items: stretch; max-width: 400px; width: 100%; }
         input, textarea, button { margin: 5px 0; padding: 10px; font-size: 1em; }
-        #response { margin-top: 20px; white-space: pre-wrap; text-align: left; }
+        #response { margin-top: 20px; white-space: pre-wrap; word-break: break-all; text-align: left; }
         .links { margin-top: 20px; }
         .links a { display: block; margin: 5px 0; color: blue; text-decoration: none; }
     </style>
@@ -21,7 +21,7 @@
         <form id="scenarioForm">
             <input type="text" id="scenario" name="scenario" placeholder="Scenario" required>
             <input type="text" id="prompt" name="prompt" placeholder="Prompt (optional)">
-            <textarea id="data" name="data" placeholder='Data (key=value pairs, optional)'></textarea>
+            <textarea id="parameters" name="parameters" placeholder='Parameters (key=value pairs, optional)'></textarea>
             <button type="submit">Submit</button>
         </form>
         <div id="response"></div>
@@ -36,20 +36,20 @@
             const form = event.target;
             const scenario = form.scenario.value;
             const prompt = form.prompt.value;
-            const dataText = form.data.value;
-            const data = {};
+            const parametersText = form.parameters.value;
+            const parameters = {};
 
-            if (dataText.trim() !== '') {
-                const keyValuePairs = dataText.split('\n');
+            if (parametersText.trim() !== '') {
+                const keyValuePairs = parametersText.split('\n');
                 keyValuePairs.forEach(pair => {
                     const [key, value] = pair.split('=');
                     if (key && value) {
-                        data[key.trim()] = value.trim();
+                        parameters[key.trim()] = value.trim();
                     }
                 });
             }
 
-            const requestData = { scenario, prompt, data };
+            const requestData = { scenario, prompt, parameters };
 
             fetch('/conversations/messages', {
                 method: 'POST',
@@ -69,14 +69,14 @@
             event.preventDefault();
             document.getElementById('scenario').value = 'ExtoleSupportTicket';
             document.getElementById('prompt').value = '';
-            document.getElementById('data').value = 'ticket=';
+            document.getElementById('parameters').value = 'ticketNumber=';
         });
 
         document.getElementById('supportHelpLink').addEventListener('click', function(event) {
             event.preventDefault();
             document.getElementById('scenario').value = 'ExtoleSupportHelp';
             document.getElementById('prompt').value = '';
-            document.getElementById('data').value = '';
+            document.getElementById('parameters').value = '';
         });
     </script>
 </body>
