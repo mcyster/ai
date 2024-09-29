@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="tags" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversations</title>
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        body { margin: 20px; overflow: auto; display: flex; flex-direction: column; align-items: center; height: 100vh; }
+        .content { width: 100%; max-width: 800px; }
+        .links { margin-top: 20px; }
+        .links a { display: block; margin: 5px 0; color: blue; text-decoration: none; }
+        #response { white-space: pre-wrap; word-break: break-all; text-align: left; }
+        .foldable-section { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <div id="nav"></div>
+        <div id="links" class="links"></div>
+        <div id="conversation-info"></div>
+        <div class="foldable-section">
+            <button id="toggle-response">Json Response</button>
+            <div id="response" style="display: none;">Loading...</div>
+        </div>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+        const responseContainer = document.getElementById('response');
+        const linksContainer = document.getElementById('links');
+        const navContainer = document.getElementById('nav');
+        const conversationInfo = document.getElementById('conversation-info');
+        const toggleButton = document.getElementById('toggle-response');
+
+        function fetchJson(endpoint) {
+            return fetch(endpoint)
+                .then(response => response.json())
+                .catch(error => ({ error: error.message }));
+        }
+
+        // Toggle the visibility of the response section
+        toggleButton.addEventListener('click', () => {
+            if (responseContainer.style.display === 'none') {
+                responseContainer.style.display = 'block';
+            } else {
+                responseContainer.style.display = 'none';
+            }
+        });
+
+        // Fetch and display all conversation IDs at the top
+        fetchJson('/conversations').then(async data => {
+            if (data.error) {
+                conversationInfo.innerText = 'Error: ' + data.error;
+            } else {
+                // Show detailed conversation if ID is provided
+                if (id) {
+                    const conversation = data.find(conv => conv.id === id);
+                    const backLink = document.createElement('a');
+                    backLink.href = window.location.pathname;
+                    backLink.textContent = 'Conversations List';
+                    navContainer.appendChild(backLink);
+
+                    if (conversation) {
+                        const aiMessage = conversation.messages.find(msg => msg.type === 'AI');
+                        const aiContent = aiMessage ? aiMessage.content : 'No AI Response';
+                        conversationInfo.innerHTML = `<b>Conversation ID: ${conversation.id}</b><p>${aiContent}</p>`;
+                        responseContainer.innerText = JSON.stringify(conversation, null, 2);
+                    } else {
+                        conversationInfo.innerText = 'Conversation not found';
+                    }
+                } else {
+                    if (data.length === 0) {
+                        conversationInfo.innerText = 'No conversations';
+                    } else {
+                        conversationInfo.innerText = '';
+                        const heading = document.createElement('h2');
+                        heading.textContent = 'Conversations';
+                        linksContainer.appendChild(heading);
+                        data.forEach(conversation => {
+                            const link = document.createElement('a');
+                            link.href = `?id=${conversation.id}`;
+                            link.textContent = `${conversation.id}`;
+                            linksContainer.appendChild(link);
+                        });
+                        responseContainer.innerText = JSON.stringify(data, null, 2);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
