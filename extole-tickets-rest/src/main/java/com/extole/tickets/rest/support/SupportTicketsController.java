@@ -15,6 +15,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,6 +30,7 @@ import com.extole.jira.support.FullSupportTicket;
 import com.extole.jira.support.SupportTicket;
 import com.extole.jira.support.SupportTicketService;
 import com.extole.jira.support.SupportTicketComment;
+import com.extole.jira.support.SupportTicketException;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -36,6 +39,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RestController
 @RequestMapping("/support")
 public class SupportTicketsController {
+    private static final Logger logger = LogManager.getLogger(SupportTicketsController.class);
+
     private SupportTicketService supportTicketService;
     private Path tempDirectory;
     private final ObjectMapper objectMapper;
@@ -65,17 +70,17 @@ public class SupportTicketsController {
     }
 
     @GetMapping("/tickets")
-    public List<SupportTicketResponse> getTickets(@RequestParam Optional<Integer> limit) {
+    public List<SupportTicketResponse> getTickets(@RequestParam Optional<Integer> limit) throws SupportTicketException {
         return loadTickets(limit);
     }
 
     @GetMapping("/tickets/full")
-    public List<FullSupportTicketResponse> getFullTickets(@RequestParam Optional<Integer> limit) {
+    public List<FullSupportTicketResponse> getFullTickets(@RequestParam Optional<Integer> limit) throws SupportTicketException {
         return loadFullTickets(limit);
     }
 
     @GetMapping("/tickets/{ticketNumber}")
-    public FullSupportTicketResponse getTickets(@PathVariable String ticketNumber) {
+    public FullSupportTicketResponse getTickets(@PathVariable String ticketNumber) throws SupportTicketException {
         var ticketQueryBuilder = supportTicketService.ticketQueryBuilder();
         
         ticketQueryBuilder.withTicket(ticketNumber);
@@ -91,10 +96,14 @@ public class SupportTicketsController {
     
     @Scheduled(initialDelayString = "PT30M", fixedRateString = "PT1H")
     public void performScheduledTask() {
-        loadTickets(Optional.empty());
+        try {
+            loadTickets(Optional.empty());
+        } catch (SupportTicketException e) {
+            logger.error("Unable to load support tickets", e);
+        }
     }
 
-    private List<SupportTicketResponse> loadTickets(Optional<Integer> limit) {
+    private List<SupportTicketResponse> loadTickets(Optional<Integer> limit) throws SupportTicketException {
         List<FullSupportTicketResponse> tickets = loadFullTickets(limit);
 
         List<SupportTicketResponse> shortTickets = new ArrayList<>();
@@ -105,7 +114,7 @@ public class SupportTicketsController {
         return shortTickets;
     }
 
-    private List<FullSupportTicketResponse> loadFullTickets(Optional<Integer> limit) {
+    private List<FullSupportTicketResponse> loadFullTickets(Optional<Integer> limit) throws SupportTicketException {
         List<FullSupportTicketResponse> tickets;
 
         Path cacheFilename = getCacheFilename(getHash(limit));
@@ -135,7 +144,7 @@ public class SupportTicketsController {
         return tickets;
     }
     
-    private List<FullSupportTicketResponse> fetchFullTickets(Optional<Integer> limit) {
+    private List<FullSupportTicketResponse> fetchFullTickets(Optional<Integer> limit) throws SupportTicketException {
         var ticketQueryBuilder = supportTicketService.ticketQueryBuilder();
                 
         ticketQueryBuilder.withTrailing7Months();

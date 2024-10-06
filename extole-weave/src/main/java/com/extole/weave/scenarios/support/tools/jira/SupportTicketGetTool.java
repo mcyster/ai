@@ -12,6 +12,7 @@ import com.cyster.ai.weave.service.ToolException;
 import com.cyster.jira.client.adf.reader.MarkDownDocumentMapper;
 import com.cyster.jira.client.web.JiraWebClientFactory;
 import com.extole.jira.support.FullSupportTicket;
+import com.extole.jira.support.SupportTicketException;
 import com.extole.jira.support.SupportTicketService;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.weave.scenarios.support.tools.jira.SupportTicketGetTool.Request;
@@ -52,7 +53,12 @@ public class SupportTicketGetTool implements ExtoleSupportTool<Request> {
             throw new FatalToolException("Attribute ticket key not specified");
         }
 
-        Optional<FullSupportTicket> ticket = supportTicketService.getTicket(request.key);
+        Optional<FullSupportTicket> ticket;
+        try {
+            ticket = supportTicketService.getTicket(request.key);
+        } catch (SupportTicketException exception) {
+            throw new ToolException("Error while loading support tikcet: " + request.key, exception);
+        }
         
         if (ticket.isEmpty()) {
             throw new ToolException("Unable to load support ticket: " + request.key);

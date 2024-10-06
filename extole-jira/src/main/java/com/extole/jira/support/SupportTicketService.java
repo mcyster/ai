@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 @Component
 public class SupportTicketService {
     private static int MAX_TICKETS_PER_REQUEST = 1024;
+    private static int MAX_RETRIES = 5;
     
     private JiraWebClientFactory jiraWebClientFactory;
     
@@ -52,7 +53,7 @@ public class SupportTicketService {
             return this;
         }
         
-        public List<FullSupportTicket> query() {
+        public List<FullSupportTicket> query() throws SupportTicketException {
             String query = "project in (\"SUP\", \"LAUNCH\", \"SPEED\")"
                 + " AND " + filter
                 + " AND type in (Bug, Task, Story)"
@@ -62,7 +63,7 @@ public class SupportTicketService {
         }
     }
     
-    public Optional<FullSupportTicket> getTicket(String ticketNumber) {
+    public Optional<FullSupportTicket> getTicket(String ticketNumber) throws SupportTicketException {
         List<FullSupportTicket> tickets = fetchFullTickets("issuekey = " + ticketNumber, Optional.empty());
         
         if (tickets.size() == 0) {
@@ -72,7 +73,7 @@ public class SupportTicketService {
         return Optional.of(tickets.get(0));
     }
     
-    private List<FullSupportTicket> fetchFullTickets(String query, Optional<Integer> limit) {
+    private List<FullSupportTicket> fetchFullTickets(String query, Optional<Integer> limit) throws SupportTicketException {
 
         List<String> fields = new ArrayList<>() {{
             add("key");
@@ -105,7 +106,8 @@ public class SupportTicketService {
          if (limit.isPresent() && maxResultsPerRequest > limit.get()) {
              maxResultsPerRequest = limit.get();
          }
-
+         int retries = 0;
+         
          List<FullSupportTicket> tickets = new ArrayList<>();
          do {
              JsonNode response;
@@ -156,6 +158,10 @@ public class SupportTicketService {
                      if (maxResultsPerRequest < 1) {
                          maxResultsPerRequest = 1;
                      }
+                 } 
+                 retries += 1;
+                 if (retries > MAX_RETRIES) {
+                     throw new SupportTicketException("Last retry failed for jira query: " + query, exception);
                  }
              }
              
