@@ -2,99 +2,148 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="tags" content="">
+    <meta name="tags" content="conversation">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conversations</title>
+    <title>Conversation</title>
     <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
     <style>
-        body { margin: 20px; overflow: auto; display: flex; flex-direction: column; align-items: center; height: 100vh; }
-        .content { width: 100%; max-width: 800px; }
+        body { margin: 0; height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; align-items: center; }
+        .content { text-align: center; width: 100%; max-width: 600px; height: 100vh; display: flex-direction: column; }
+        form { display: block; width: 100%; padding: 10px; }
+        #startConversationForm input, #startConversationForm textarea,
+        #continueConversationForm input, #continueConversationForm textarea {
+            display:block; margin: 5px 0; padding: 10px; font-size: 1em; width: 100%;
+        }
+        #startConversationForm button, #continueConversationForm button {
+            display:block; margin: 5px 0 5px auto; padding: 10px; font-size: 1em; 
+        }
+        #response, #messages { margin-top: 20px; white-space: pre-wrap; word-break: break-all; text-align: left; }
         .links { margin-top: 20px; }
-        .links a { display: block; margin: 5px 0; color: blue; text-decoration: none; }
-        #response { white-space: pre-wrap; word-break: break-all; text-align: left; }
-        .foldable-section { margin-top: 20px; }
+        .links a { display: block; margin: 0px 0; color: blue; text-decoration: none; }
     </style>
 </head>
 <body>
     <div class="content">
-        <div id="nav"></div>
-        <div id="links" class="links"></div>
-        <div id="conversation-info"></div>
-        <div class="foldable-section">
-            <button id="toggle-response">Json Response</button>
-            <div id="response" style="display: none;">Loading...</div>
+        <form id="startConversationForm" style="display:none">
+            <input type="text" id="scenario" name="scenario" placeholder="Scenario" required>
+            <textarea id="prompt" name="prompt" placeholder="Prompt (optional)"></textarea>
+            <textarea id="parameters" name="parameters" placeholder='Parameters (key=value pairs, optional)'></textarea>
+            <button type="submit">Submit</button>
+            <div class="links">
+                <a href="#" id="reviewTicketLink">Review Ticket</a>
+                <a href="#" id="supportHelpLink">Extole Support Help</a>
+            </div>
+        </form>
+        <form id="continueConversationForm" style="display:none">
+            <textarea id="prompt" name="prompt" placeholder="Prompt (optional)"></textarea>
+            <button type="submit">Submit</button>
+        </form>
+        <div id="response"></div>
+        <hr>
+        <div class="links">
+            <a href="#" id="conversationLink">Conversation</a>
         </div>
+        <div class="links">
+            <a href="/sites/managed/conversation/index.html" id="Conversations">Conversation List</a>
+        </div>
+        <hr>
+        <div id="messages"></div>
     </div>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
-        level = urlParams.get('level');
-        if (!level) {
-            level = "verbose";
-        }
+        const conversationId = urlParams.get('id');
 
-        const responseContainer = document.getElementById('response');
-        const linksContainer = document.getElementById('links');
-        const navContainer = document.getElementById('nav');
-        const conversationInfo = document.getElementById('conversation-info');
-        const toggleButton = document.getElementById('toggle-response');
-
-        function fetchJson(endpoint) {
-            return fetch(endpoint)
+        if (conversationId) {
+            fetch(`/conversations/${conversationId}`)
                 .then(response => response.json())
-                .catch(error => ({ error: error.message }));
+                .then(data => {
+                    const messagesDiv = document.getElementById('messages');
+                    messagesDiv.innerHTML = data.messages.map(msg => `<div><strong>${msg.type}:</strong> ${msg.content}</div>`).join('');
+                })
+                .catch(error => {
+                    document.getElementById('messages').innerText = 'Error: ' + error.message;
+                });
+
+            const form = document.getElementById('continueConversationForm');
+            form.style.display = "block";
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const form = event.target;
+                const prompt = form.prompt.value;
+    
+                fetch(`/conversations/${conversationId}/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const responseElement = document.getElementById('response');
+                    responseElement.innerText = data.content;
+                })
+                .catch(error => {
+                    document.getElementById('response').innerText = 'Error: ' + error.message;
+                });
+            });
+            document.getElementById('conversationLink').href = "/sites/managed/conversation/index.html?id=" + conversationId;
+        } else {
+            const form = document.getElementById('startConversationForm');
+            form.style.display = "block";
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const form = event.target;
+                const scenario = form.scenario.value;
+                const prompt = form.prompt.value;
+                const parametersText = form.parameters.value;
+                const parameters = {};
+    
+                if (parametersText.trim() !== '') {
+                    const keyValuePairs = parametersText.split('\n');
+                    keyValuePairs.forEach(pair => {
+                        const [key, value] = pair.split('=');
+                        if (key && value) {
+                            parameters[key.trim()] = value.trim();
+                        }
+                    });
+                }
+    
+                const requestData = { scenario, prompt, parameters };
+
+                fetch('/conversations/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const responseElement = document.getElementById('response');
+                    const conversationLink = document.createElement('a');
+                    conversationLink.href = `/sites/managed/conversation/index.html?id=${data.id}`;
+                    conversationLink.innerText = 'Conversation Details';
+                    responseElement.innerHTML = '';
+                    responseElement.appendChild(conversationLink);
+                    responseElement.appendChild(document.createElement('br'));
+                    responseElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)));
+                })
+                .catch(error => {
+                    document.getElementById('response').innerText = 'Error: ' + error.message;
+                });
+            });
         }
 
-        // Toggle the visibility of the response section
-        toggleButton.addEventListener('click', () => {
-            if (responseContainer.style.display === 'none') {
-                responseContainer.style.display = 'block';
-            } else {
-                responseContainer.style.display = 'none';
-            }
+        document.getElementById('reviewTicketLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            document.getElementById('scenario').value = 'ExtoleSupportTicket';
+            document.getElementById('prompt').value = '';
+            document.getElementById('parameters').value = 'ticketNumber=';
         });
 
-        // Fetch and display all conversation IDs at the top
-        fetchJson('/conversations?level=' + level).then(async data => {
-            if (data.error) {
-                conversationInfo.innerText = 'Error: ' + data.error;
-            } else {
-                // Show detailed conversation if ID is provided
-                if (id) {
-                    const conversation = data.find(conv => conv.id === id);
-                    const backLink = document.createElement('a');
-                    backLink.href = window.location.pathname;
-                    backLink.textContent = 'Conversations List';
-                    navContainer.appendChild(backLink);
-
-                    if (conversation) {
-                        const aiMessage = conversation.messages.find(msg => msg.type === 'AI');
-                        const aiContent = aiMessage ? aiMessage.content : 'No AI Response';
-                        conversationInfo.innerHTML = `<b>Conversation ID: ${conversation.id}</b><p>${aiContent}</p>`;
-                        responseContainer.innerText = JSON.stringify(conversation, null, 2);
-                    } else {
-                        conversationInfo.innerText = 'Conversation not found';
-                    }
-                } else {
-                    if (data.length === 0) {
-                        conversationInfo.innerText = 'No conversations';
-                    } else {
-                        conversationInfo.innerText = '';
-                        const heading = document.createElement('h2');
-                        heading.textContent = 'Conversations';
-                        linksContainer.appendChild(heading);
-                        data.forEach(conversation => {
-                            const link = document.createElement('a');
-                            link.href = `?id=${conversation.id}`;
-                            link.textContent = `${conversation.id}`;
-                            linksContainer.appendChild(link);
-                        });
-                        responseContainer.innerHTML = data.map(conversation => {
-                            return `<a href="?id=${conversation.id}">${conversation.id}</a>`;
-                        }).join('<br>');
-                    }
-                }
-            }
+        document.getElementById('supportHelpLink').addEventListener('click', function(event) {
+            event.preventDefault();
+            document.getElementById('scenario').value = 'ExtoleSupportHelp';
+            document.getElementById('prompt').value = '';
+            document.getElementById('parameters').value = '';
         });
     </script>
 </body>
