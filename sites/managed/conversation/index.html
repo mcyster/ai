@@ -41,10 +41,9 @@
         <div id="response"></div>
         <hr>
         <div class="links">
-            <a href="#" id="conversationLink">Conversation</a>
-        </div>
-        <div class="links">
-            <a href="/sites/managed/conversation/index.html" id="Conversations">Conversation List</a>
+            <a href="#" style="display:none" id="conversationLink">Conversation Details</a>
+            <a href="/sites/managed/conversation/index.html" id="Conversations">New Conversation</a>
+            <a href="/sites/managed/conversations/index.html" id="Conversations">Conversation List</a>
         </div>
         <hr>
         <div id="messages"></div>
@@ -86,7 +85,9 @@
                     document.getElementById('response').innerText = 'Error: ' + error.message;
                 });
             });
-            document.getElementById('conversationLink').href = "/sites/managed/conversation/index.html?id=" + conversationId;
+            conversationLink = document.getElementById('conversationLink');
+            conversationLink.href = "/sites/managed/conversations/index.html?id=" + conversationId;
+            conversationLink.style.display = "block";
         } else {
             const form = document.getElementById('startConversationForm');
             form.style.display = "block";

@@ -64,13 +64,13 @@
                     const conversation = data.find(conv => conv.id === id);
                     const backLink = document.createElement('a');
                     backLink.href = window.location.pathname;
-                    backLink.textContent = 'Conversations List';
+                    backLink.textContent = 'Conversation List';
                     navContainer.appendChild(backLink);
 
                     if (conversation) {
                         const aiMessage = conversation.messages.find(msg => msg.type === 'AI');
                         const aiContent = aiMessage ? aiMessage.content : 'No AI Response';
-                        conversationInfo.innerHTML = `<b>Conversation ID: <a href="/sites/managed/conversation-scenario/index.html?id=${conversation.id}">${conversation.id}</a></b><p>${aiContent}</a></p>`;
+                        conversationInfo.innerHTML = `<b>Conversation ID: <a href="/sites/managed/conversation/index.html?id=${conversation.id}">${conversation.id}</a></b><p>${aiContent}</a></p>`;
                         responseContainer.innerText = JSON.stringify(conversation, null, 2);
                     } else {
                         conversationInfo.innerText = 'Conversation not found';
