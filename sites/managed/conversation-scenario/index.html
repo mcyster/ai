@@ -10,67 +10,112 @@
         body { margin: 20px; overflow: auto; display: flex; justify-content: center; align-items: center; height: 100vh; }
         .content { text-align: center; }
         form { display: flex; flex-direction: column; align-items: stretch; max-width: 400px; width: 100%; }
-        input, textarea, button { margin: 5px 0; padding: 10px; font-size: 1em; }
-        #response { margin-top: 20px; white-space: pre-wrap; word-break: break-all; text-align: left; }
+        input, textarea, button { display:blacok; margin: 5px 0; padding: 10px; font-size: 1em; }
+        #response, #messages { margin-top: 20px; white-space: pre-wrap; word-break: break-all; text-align: left; }
         .links { margin-top: 20px; }
         .links a { display: block; margin: 5px 0; color: blue; text-decoration: none; }
     </style>
 </head>
 <body>
     <div class="content">
-        <form id="scenarioForm">
+        <form id="startConversationForm" style="display:none">
             <input type="text" id="scenario" name="scenario" placeholder="Scenario" required>
             <input type="text" id="prompt" name="prompt" placeholder="Prompt (optional)">
             <textarea id="parameters" name="parameters" placeholder='Parameters (key=value pairs, optional)'></textarea>
             <button type="submit">Submit</button>
+            <div class="links">
+                <a href="#" id="reviewTicketLink">Review Ticket</a>
+                <a href="#" id="supportHelpLink">Extole Support Help</a>
+            </div>
         </form>
-        <div class="links">
-            <a href="#" id="reviewTicketLink">Review Ticket</a>
-            <a href="#" id="supportHelpLink">Extole Support Help</a>
-        </div>
+        <form id="continueConversationForm" style="display:none">
+            <input type="text" id="prompt" name="prompt" placeholder="Prompt (optional)">
+            <button type="submit">Submit</button>
+        </form>
         <div id="response"></div>
+        <div id="messages"></div>
     </div>
     <script>
-        document.getElementById('scenarioForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const form = event.target;
-            const scenario = form.scenario.value;
-            const prompt = form.prompt.value;
-            const parametersText = form.parameters.value;
-            const parameters = {};
+        const urlParams = new URLSearchParams(window.location.search);
+        const conversationId = urlParams.get('id');
 
-            if (parametersText.trim() !== '') {
-                const keyValuePairs = parametersText.split('\n');
-                keyValuePairs.forEach(pair => {
-                    const [key, value] = pair.split('=');
-                    if (key && value) {
-                        parameters[key.trim()] = value.trim();
-                    }
+        if (conversationId) {
+            fetch(`/conversations/${conversationId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const messagesDiv = document.getElementById('messages');
+                    messagesDiv.innerHTML = data.messages.map(msg => `<div><strong>${msg.type}:</strong> ${msg.content}</div>`).join('');
+                })
+                .catch(error => {
+                    document.getElementById('messages').innerText = 'Error: ' + error.message;
                 });
-            }
 
-            const requestData = { scenario, prompt, parameters };
+            const form = document.getElementById('continueConversationForm');
+            form.style.display = "block";
 
-            fetch('/conversations/messages', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                const responseElement = document.getElementById('response');
-                const conversationLink = document.createElement('a');
-                conversationLink.href = `/sites/managed/conversation/index.html?id=${data.id}`;
-                conversationLink.innerText = 'Conversation Details';
-                responseElement.innerHTML = '';
-                responseElement.appendChild(conversationLink);
-                responseElement.appendChild(document.createElement('br'));
-                responseElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)));
-            })
-            .catch(error => {
-                document.getElementById('response').innerText = 'Error: ' + error.message;
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const form = event.target;
+                const prompt = form.prompt.value;
+    
+                fetch(`/conversations/${conversationId}/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const responseElement = document.getElementById('response');
+                    responseElement.innerText = 'Message sent successfully!';
+                })
+                .catch(error => {
+                    document.getElementById('response').innerText = 'Error: ' + error.message;
+                });
             });
-        });
+        } else {
+            const form = document.getElementById('startConversationForm');
+            form.style.display = "block";
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const form = event.target;
+                const scenario = form.scenario.value;
+                const prompt = form.prompt.value;
+                const parametersText = form.parameters.value;
+                const parameters = {};
+    
+                if (parametersText.trim() !== '') {
+                    const keyValuePairs = parametersText.split('\n');
+                    keyValuePairs.forEach(pair => {
+                        const [key, value] = pair.split('=');
+                        if (key && value) {
+                            parameters[key.trim()] = value.trim();
+                        }
+                    });
+                }
+    
+                const requestData = { scenario, prompt, parameters };
+
+                fetch('/conversations/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const responseElement = document.getElementById('response');
+                    const conversationLink = document.createElement('a');
+                    conversationLink.href = `/sites/managed/conversation/index.html?id=${data.id}`;
+                    conversationLink.innerText = 'Conversation Details';
+                    responseElement.innerHTML = '';
+                    responseElement.appendChild(conversationLink);
+                    responseElement.appendChild(document.createElement('br'));
+                    responseElement.appendChild(document.createTextNode(JSON.stringify(data, null, 2)));
+                })
+                .catch(error => {
+                    document.getElementById('response').innerText = 'Error: ' + error.message;
+                });
+            });
+        }
 
         document.getElementById('reviewTicketLink').addEventListener('click', function(event) {
             event.preventDefault();

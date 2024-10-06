@@ -89,7 +89,9 @@
                             link.textContent = `${conversation.id}`;
                             linksContainer.appendChild(link);
                         });
-                        responseContainer.innerText = JSON.stringify(data, null, 2);
+                        responseContainer.innerHTML = data.map(conversation => {
+                            return `<a href="?id=${conversation.id}">${conversation.id}</a>`;
+                        }).join('<br>');
                     }
                 }
             }
