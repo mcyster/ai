@@ -28,6 +28,11 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const id = urlParams.get('id');
+        level = urlParams.get('level');
+        if (!level) {
+            level = "verbose";
+        }
+
         const responseContainer = document.getElementById('response');
         const linksContainer = document.getElementById('links');
         const navContainer = document.getElementById('nav');
@@ -50,7 +55,7 @@
         });
 
         // Fetch and display all conversation IDs at the top
-        fetchJson('/conversations').then(async data => {
+        fetchJson('/conversations?level=' + level).then(async data => {
             if (data.error) {
                 conversationInfo.innerText = 'Error: ' + data.error;
             } else {
