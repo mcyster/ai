@@ -142,7 +142,11 @@ public class ExtoleReportBuilder {
 
         if (this.waitForResult) {
             var reportId = report.path("report_id").asText();
-
+            var clientId = this.clientId.orElse("1890234003");
+            
+            final Duration maxWaitTime = Duration.ofMinutes(2);  // 1 may be upper limit for tool
+            final Instant startTime = Instant.now();
+            
             while (!report.path("status").asText().equalsIgnoreCase("DONE")) {
                 report = webClient.get()
                     .uri(uriBuilder -> uriBuilder
@@ -153,6 +157,10 @@ public class ExtoleReportBuilder {
                     .bodyToMono(JsonNode.class)
                     .block();
 
+                if (Duration.between(startTime, Instant.now()).compareTo(maxWaitTime) > 0) {
+                    throw new RuntimeException("Maximum wait time of " + maxWaitTime.toMinutes() + " minutes exceeded while waiting for report " + reportId + " in client " + clientId + " to finish.");
+                }
+                
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException exception) {

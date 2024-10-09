@@ -215,16 +215,17 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
 
         ObjectNode response = reportBuilder.build();
         if (response == null || response.path("data").isEmpty()) {
-            throw new ToolException("Problem searching for notification");
+            throw new ToolException("Problem searching for notification: " + request.notificationId + " in client: " + request.clientId);
         }
 
         if (response.path("data").isEmpty() || !response.path("data").isArray()) {
-            throw new ToolException("Problem loading notification");
+            throw new ToolException("Problem loading notification: " + request.notificationId + " in client: " + request.clientId);
+
         }
 
         ArrayNode data = (ArrayNode) response.path("data");
         if (data.size() != 1) {
-            throw new ToolException("Notification not found");
+            throw new ToolException("Notification: " + request.notificationId + " in client: " + request.clientId + " not found");
         }
 
         JsonNode notification = data.get(0);
