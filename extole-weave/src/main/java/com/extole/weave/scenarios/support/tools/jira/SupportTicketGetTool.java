@@ -1,16 +1,12 @@
 package com.extole.weave.scenarios.support.tools.jira;
 
-import java.util.Iterator;
 import java.util.Optional;
 
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
-import com.cyster.jira.client.adf.reader.MarkDownDocumentMapper;
-import com.cyster.jira.client.web.JiraWebClientFactory;
 import com.extole.jira.support.FullSupportTicket;
 import com.extole.jira.support.SupportTicketException;
 import com.extole.jira.support.SupportTicketService;
@@ -18,10 +14,6 @@ import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.weave.scenarios.support.tools.jira.SupportTicketGetTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
 public class SupportTicketGetTool implements ExtoleSupportTool<Request> {

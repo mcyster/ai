@@ -164,7 +164,6 @@ public class SupportTicketService {
                      throw new SupportTicketException("Last retry failed for jira query: " + query, exception);
                  }
              }
-             
          } while (true);
 
          return tickets;
