@@ -2,6 +2,8 @@
 
 # Next
 
+- endpoint to check up without auth
+- check for expired files
 - page to kickoff beep-beep
 - ensure we beep-boop can respond to HELP, SUP, LAUNCH, SPEED
 - review noitficiations, callout suggestions in tickit

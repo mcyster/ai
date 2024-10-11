@@ -120,7 +120,7 @@ public class AssistantAdvisorThread<CONTEXT> {
                 }
                 lastStatus = run.status();
             } catch (InterruptedException exception) {
-                throw new RuntimeException("Thread interrupted with waitfinr for OpenAI run response", exception);
+                throw new RuntimeException("Thread interrupted with waitfing for OpenAI run response", exception);
             }
 
             if (attempts > RUN_POLL_ATTEMPTS_MAX) {
@@ -130,16 +130,15 @@ public class AssistantAdvisorThread<CONTEXT> {
             }
 
             if (run.status().equals("expired")) {
-                throw new RetryableAdvisorConversationException("Run.expired");
+                throw new RetryableAdvisorConversationException("Run.expired, Run: " + run.toString());
             }
 
             if (run.status().equals("failed")) {
-                System.out.println("!!!Run Failed: " + run);
-                throw new AdvisorConversationException("Run.failed");
+                throw new AdvisorConversationException("Run.failed! Run: " + run.toString());
             }
 
             if (run.status().equals("cancelled")) {
-                throw new AdvisorConversationException("Run.cancelled");
+                throw new AdvisorConversationException("Run.cancelled. Run: " +  run.toString());
             }
 
             if (run.requiredAction() != null) {
