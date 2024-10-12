@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Top 10 Activities for the T1 Pod</title>
-    <meta name="tags" content="extole,support,tickets,activities,t1-pod">
+    <title>HELP Top 10 Activities</title>
+    <meta name="tags" content="extole,support,tickets,activities,t1-pod,help">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Top 10 Activities for the T1 Pod</h2>
+            <h2 id="graphTitle">HELP - Top 10 Activities</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -213,7 +213,7 @@
             },
             async created() {
                 getData().then(tickets => {
-                    tickets = tickets.filter(ticket => ticket.pod === 'Support T1 Pod'); // Filter by pod
+                    tickets = tickets.filter(ticket => ticket.key?.includes("HELP"));
                     const categoryCounts = countTicketsPerCategoryPerWeek(tickets);
                     const topCategories = getTopCategories(categoryCounts);
                     renderChart(categoryCounts, topCategories);

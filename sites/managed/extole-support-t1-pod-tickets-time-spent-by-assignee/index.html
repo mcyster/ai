@@ -2,12 +2,12 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Support Ticket Velocity - T1 Pod</title>
-    <meta name="tags" content="extole,support,t1-pod,tickets,velocity">
+    <title>T1 Pod Total Time Spent on Tickets by Assignee per Week</title>
+    <meta name="tags" content="extole,support,tickets,t1-pod,assignee,time-seconds">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
-    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script>
     <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
     <style>
         #graphTitle {
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Support Ticket Velocity - T1 Pod</h2>
+            <h2 id="graphTitle">T1 Pod - Total Time Spent on Tickets by Assignee per Week</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -64,18 +64,17 @@
                     throw new Error(`Error fetching "${url}": ${response.statusText}`);
                 }
                 const rawData: any[] = await response.json();
-                const data: SupportTicket[] = rawData.map(ticket => ({
+
+                const today = new Date();
+                const filteredData = rawData.filter(ticket => ticket.type != "Epic" && ticket.resolved != null && (ticket.pod?.toLowerCase().includes("t1") || ticket.key?.includes("HELP"));
+                const data: SupportTicket[] = filteredData.map(ticket => ({
                     ...ticket,
                     created: new Date(Date.parse(ticket.created)),
                     statusChanged: new Date(Date.parse(ticket.statusChanged)),
                     resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null,
-                    start: new Date(Date.parse(ticket.start))
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
                 }));
-
-                const today = new Date();
-                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole' && ticket.start <= today && ticket.type != "Epic" && ticket.resolved != null && (ticket.pod?.toLowerCase().includes("t1") || ticket.key?.includes("HELP"));
-                return filteredData;
+                return data;
             } catch (error) {
                 alert(`Error: problem fetching ${url}`);
                 console.error('Fetch error:', error);
@@ -83,29 +82,32 @@
             }
         }
 
-        function countTicketsPerWeek(tickets: SupportTicket[]) {
-            const startCounts: { [endOfWeekDate: string]: number } = {};
-            const resolveCounts: { [endOfWeekDate: string]: number } = {};
-            
+        function calculateTimeByAssigneePerWeek(tickets: SupportTicket[]) {
+            const timeCounts: { [assignee: string]: { [endOfWeekDate: string]: number } } = {};
+
             tickets.forEach(ticket => {
-                const startDate = ticket.start;
-                const resolutionDate = ticket.resolved || new Date(); // Use current date if not resolved
+                if (ticket.resolved && ticket.assignee) {
+                    const resolutionDate = ticket.resolved;
+                    const resolvedWeekEnd = getWeekEndDate(resolutionDate);
 
-                const startWeekEnd = getWeekEndDate(startDate);
-                const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
+                    if (!timeCounts[ticket.assignee]) {
+                        timeCounts[ticket.assignee] = {};
+                    }
+                    if (!timeCounts[ticket.assignee][resolvedWeekEnd]) {
+                        timeCounts[ticket.assignee][resolvedWeekEnd] = 0;
+                    }
 
-                if (resolveCounts[resolvedWeekEnd] === undefined) {
-                    resolveCounts[resolvedWeekEnd] = 0;
+                    var time = ticket.timeSeconds;
+                    // assume 15 minutes min per ticket - HELP currently doesn't have timeSeconds
+                    if (time < 900) {
+                        time = 900;
+                    }
+                
+                    timeCounts[ticket.assignee][resolvedWeekEnd] += time / 3600; // Convert to hours
                 }
-                resolveCounts[resolvedWeekEnd]++;
-
-                if (startCounts[startWeekEnd] === undefined) {
-                    startCounts[startWeekEnd] = 0;
-                }
-                startCounts[startWeekEnd]++;
             });
 
-            return { startCounts, resolveCounts };
+            return timeCounts;
         }
 
         function getWeekEndDate(date: Date) {
@@ -116,44 +118,34 @@
             return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
         }
 
-        function renderChart(startCounts: { [endOfWeekDate: string]: number }, resolveCounts: { [endOfWeekDate: string]: number }) {
+        function renderChart(timeCounts: { [assignee: string]: { [endOfWeekDate: string]: number } }) {
             const ctx = document.getElementById('chart') as HTMLCanvasElement;
             if (!ctx) return;
-            let weeks = Object.keys(startCounts).sort();
-            
-            // Remove the first week unconditionally
-            if (weeks.length > 1) {
-                weeks.shift();
-            }
+
+            const assignees = Object.keys(timeCounts);
+            const weeksSet = new Set<string>();
+
+            assignees.forEach(assignee => {
+                Object.keys(timeCounts[assignee]).forEach(week => weeksSet.add(week));
+            });
+            let weeks = Array.from(weeksSet).sort();
+
             // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
             if (weeks.length > 24) {
                 weeks = weeks.slice(-24);
             }
 
-            const createData = weeks.map(week => ({ x: new Date(week), y: startCounts[week] || 0 }));
-            const resolveData = weeks.map(week => ({ x: new Date(week), y: resolveCounts[week] || 0 }));
+            const datasets = assignees.map(assignee => ({
+                label: assignee,
+                data: weeks.map(week => ({ x: new Date(week), y: timeCounts[assignee][week] || 0 })),
+                borderWidth: 4,
+                fill: false,
+            }));
 
             new Chart(ctx, {
                 type: 'line',
                 data: {
-                    datasets: [
-                        {
-                            label: 'Tickets Started',
-                            backgroundColor: 'rgba(139, 34, 34, 0.2)',
-                            borderColor: 'rgba(200, 30, 30, 1)',
-                            fill: false,
-                            data: createData,
-                            borderWidth: 4 
-                        },
-                        {
-                            label: 'Tickets Closed',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(34, 139, 34, 1)',
-                            fill: false,
-                            data: resolveData,
-                            borderWidth: 4 
-                        }
-                    ]
+                    datasets
                 },
                 options: {
                     scales: {
@@ -184,7 +176,7 @@
                             beginAtZero: true, // Ensure y-axis starts at 0
                             title: {
                                 display: true,
-                                text: 'Number of Tickets',
+                                text: 'Total Time Spent (hours)',
                                 font: {
                                     size: 16,
                                     weight: 'bold'
@@ -209,8 +201,8 @@
             },
             async created() {
                 getData().then(tickets => {
-                    const { startCounts, resolveCounts } = countTicketsPerWeek(tickets);
-                    renderChart(startCounts, resolveCounts);
+                    const timeCounts = calculateTimeByAssigneePerWeek(tickets);
+                    renderChart(timeCounts);
                 }).catch(error => {
                     console.error('Error loading data:', error);
                 });

@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Support Ticket Backlog</title>
-    <meta name="tags" content="extole,support,tickets,velocity,backlog,exec_escalated">
+    <title>Support Ticket Resolution TImes (excludes HELP)</title>
+    <meta name="tags" content="extole,support,tickets,resolution,exec_escalated">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Support Ticket Backlog</h2>
+            <h2 id="graphTitle">Support Ticket Resolution Times (excludes HELP)</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -76,7 +76,9 @@
 
                 const filteredData = data.filter(ticket => 
                     !ticket.labels.includes("exec_escalated") && 
-                    ticket.client !== "Extole"
+                    ticket.client !== "Extole" &&
+                    !ticket.key?.includes("HELP") &&
+                    ticket.type != "Epic"
                 );
                 return filteredData;
             } catch (error) {
