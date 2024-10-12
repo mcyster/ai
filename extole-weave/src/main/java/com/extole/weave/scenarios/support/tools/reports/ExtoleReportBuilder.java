@@ -144,7 +144,7 @@ public class ExtoleReportBuilder {
             var reportId = report.path("report_id").asText();
             var clientId = this.clientId.orElse("1890234003");
             
-            final Duration maxWaitTime = Duration.ofMinutes(2);  // 1 may be upper limit for tool
+            final Duration maxWaitTime = Duration.ofMinutes(2);  // 1minute may be upper limit for open ai tool
             final Instant startTime = Instant.now();
             
             while (!report.path("status").asText().equalsIgnoreCase("DONE")) {

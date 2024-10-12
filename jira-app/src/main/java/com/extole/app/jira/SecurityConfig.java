@@ -15,9 +15,12 @@ import org.springframework.web.filter.ForwardedHeaderFilter;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final boolean isOauthEnabled;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, 
+                          @Value("${oauth2.enabled:true}") boolean isOauthEnabled) {
         this.customOAuth2UserService = customOAuth2UserService;
+        this.isOauthEnabled = isOauthEnabled;
     }
 
     @Bean
@@ -25,22 +28,30 @@ public class SecurityConfig {
         http.addFilterBefore(new ForwardedHeaderFilter(), UsernamePasswordAuthenticationFilter.class)
             .csrf(csrf -> csrf
                 .ignoringRequestMatchers("/**")
-            )
-            .authorizeHttpRequests(authorizeRequests ->
-                authorizeRequests
-                    .requestMatchers("/terms.html", "/privacy.html", "/ticket").permitAll()
-                    .anyRequest().authenticated()
-            )
-            .oauth2Login(oauth2 -> oauth2
-                .userInfoEndpoint(userInfo -> userInfo
-                    .userService(customOAuth2UserService)
-                )
-            )
-            .logout(logout -> logout
-                .permitAll()
             );
+
+        if (isOauthEnabled) {
+            http.authorizeHttpRequests(authorizeRequests ->
+                    authorizeRequests
+                        .requestMatchers("/terms.html", "/privacy.html", "/ticket").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                    .userInfoEndpoint(userInfo -> userInfo
+                        .userService(customOAuth2UserService)
+                    )
+                );
+        } else {
+            http.authorizeHttpRequests(authorizeRequests ->
+                    authorizeRequests
+                        .anyRequest().permitAll()
+            );
+        }
+
+        http.logout(logout -> logout
+            .permitAll()
+        );
 
         return http.build();
     }
-
 }

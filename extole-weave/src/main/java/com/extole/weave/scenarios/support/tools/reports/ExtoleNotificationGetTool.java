@@ -220,7 +220,6 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
 
         if (response.path("data").isEmpty() || !response.path("data").isArray()) {
             throw new ToolException("Problem loading notification: " + request.notificationId + " in client: " + request.clientId);
-
         }
 
         ArrayNode data = (ArrayNode) response.path("data");
