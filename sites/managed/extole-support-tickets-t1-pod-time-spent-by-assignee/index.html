@@ -64,7 +64,9 @@
                     throw new Error(`Error fetching "${url}": ${response.statusText}`);
                 }
                 const rawData: any[] = await response.json();
-                const filteredData = rawData.filter(ticket => ticket.pod === 'Support T1 Pod');
+
+                const today = new Date();
+                const filteredData = rawData.filter(ticket => ticket.type != "Epic" && ticket.resolved != null && (ticket.pod?.toLowerCase().includes("t1") || ticket.key?.includes("HELP"));
                 const data: SupportTicket[] = filteredData.map(ticket => ({
                     ...ticket,
                     created: new Date(Date.parse(ticket.created)),
@@ -94,7 +96,14 @@
                     if (!timeCounts[ticket.assignee][resolvedWeekEnd]) {
                         timeCounts[ticket.assignee][resolvedWeekEnd] = 0;
                     }
-                    timeCounts[ticket.assignee][resolvedWeekEnd] += ticket.timeSeconds / 3600; // Convert to hours
+
+                    var time = ticket.timeSeconds;
+                    // assume 15 minutes min per ticket - HELP currently doesn't have timeSeconds
+                    if (time < 900) {
+                        time = 900;
+                    }
+                
+                    timeCounts[ticket.assignee][resolvedWeekEnd] += time / 3600; // Convert to hours
                 }
             });
 

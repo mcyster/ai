@@ -56,7 +56,6 @@ public class SupportTicketService {
         public List<FullSupportTicket> query() throws SupportTicketException {
             String query = "project in (\"HELP\", \"SUP\", \"LAUNCH\", \"SPEED\")"
                 + " AND " + filter
-                + " AND type in (Bug, Task, Story)"
                 + " ORDER BY CREATED ASC";
             
             return fetchFullTickets(query, limit);

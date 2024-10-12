@@ -75,7 +75,7 @@
 
                 // Filter out tickets assigned to the Extole client and those with a start date later than today
                 const today = new Date();
-                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole' && ticket.start <= today);
+                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole' && ticket.start <= today && ticket.type != "Epic" && ticket.resolved != null);
                 return filteredData;
             } catch (error) {
                 alert(`Error: problem fetching ${url}`);

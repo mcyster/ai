@@ -41,7 +41,7 @@
             category: string | null;
             resolved: Date | null;
             due: Date | null;
-                     start: Date;
+            start: Date;
             priority: string;
             reporter: string | null;
             assignee: string | null;
@@ -64,7 +64,6 @@
                     throw new Error(`Error fetching "${url}": ${response.statusText}`);
                 }
                 const rawData: any[] = await response.json();
-                console.log('Raw Data:', rawData); // Debugging data
                 const data: SupportTicket[] = rawData.map(ticket => ({
                     ...ticket,
                     created: new Date(Date.parse(ticket.created)),
@@ -73,9 +72,8 @@
                     due: ticket.due ? new Date(Date.parse(ticket.due)) : null
                 }));
 
-                // Filter for resolved tickets assigned to the Extole client
-                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() != 'extole' && ticket.resolved !== null && ticket.pod?.toLowerCase().includes('t1'));
-                console.log('Filtered Data:', filteredData); // Debugging data
+                const today = new Date();
+                const filteredData = data.filter(ticket => ticket.type != "Epic" && ticket.resolved != null && (ticket.pod?.toLowerCase().includes("t1") || ticket.key?.includes("HELP"));
                 return filteredData;
             } catch (error) {
                 alert(`Error: problem fetching ${url}`);

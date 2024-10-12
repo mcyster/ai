@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Support Ticket Velocity - T1 Pod</title>
+    <title>Support Ticket Velocity - T1 Pod (not HELP)</title>
     <meta name="tags" content="extole,support,t1-pod,tickets,velocity">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Support Ticket Velocity - T1 Pod</h2>
+            <h2 id="graphTitle">Support Ticket Velocity - T1 Pod (not HELP)</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -73,8 +73,10 @@
                     start: new Date(Date.parse(ticket.start))
                 }));
 
+                // Filter out tickets assigned to the Extole client and those with a start date later than today
                 const today = new Date();
-                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole' && ticket.start <= today && ticket.type != "Epic" && ticket.resolved != null && (ticket.pod?.toLowerCase().includes("t1") || ticket.key?.includes("HELP"));
+                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole' && ticket.start <= today && ticket.type != "Epic" && ticket.resolved != null && ticket.pod?.toLowerCase().includes("t1") && !ticket.key?.includes("HELP"));
+
                 return filteredData;
             } catch (error) {
                 alert(`Error: problem fetching ${url}`);
