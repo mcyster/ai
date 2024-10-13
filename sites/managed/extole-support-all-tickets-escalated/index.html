@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Support TIckets Escalation Rate</title>
+    <meta name="tags" content="extole,support,all,tickets,velocity,escalated">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Support Ticket Escalation Rate</h2>
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+    <script id="typescript-code" type="text/typescript">
+        interface SupportTicket {
+            key: string;
+            project: string;
+            created: Date;
+            type: string;
+            status: string;
+            statusChanged: Date;
+            category: string | null;
+            resolved: Date | null;
+            due: Date | null;
+                     start: Date;
+            priority: string;
+            reporter: string | null;
+            assignee: string | null;
+            client: string | null;
+            clientId: string | null;
+            pod: string | null;
+            pairCsm: string | null;
+            pairSupport: string | null;
+            clientPriority: string | null;
+            timeSeconds: number;
+            labels: string[];
+        }
+
+        async function getData(): Promise<SupportTicket[]> {
+            const url = '/support/tickets';
+
+            try {
+                const response = await fetch(url, { method: 'GET' });
+                if (!response.ok) {
+                    alert(`Error: unable to fetch ${url}`);
+                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
+                }
+                const rawData: any[] = await response.json();
+                const data: SupportTicket[] = rawData.map(ticket => ({
+                    ...ticket,
+                    created: new Date(Date.parse(ticket.created)),
+                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
+                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
+                }));
+                return data;
+            } catch (error) {
+                alert(`Error: problem fetching ${url}`);
+                console.error('Fetch error:', error);
+                throw error;
+            }
+        }
+
+        function getSundayMidnite(date: Date) {
+            const dayOfWeek = date.getUTCDay();
+            const sundayMidnight = new Date(date);
+            sundayMidnight.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for Sunday
+            sundayMidnight.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+            return sundayMidnight;
+        }
+
+        function categorizeTickets(tickets: SupportTicket[]): { execEscalated: { [endOfWeekDate: string]: number }, preEscalate: { [endOfWeekDate: string]: number } } {
+            const categories = { execEscalated: {}, preEscalate: {} };
+
+            const now = new Date();
+            const endDate = getSundayMidnite(now);
+            const dates: Date[] = [];
+
+            for (let i = 0; i < 24; i++) { // Approximately 6 months
+                const date = new Date(endDate);
+                date.setUTCDate(date.getUTCDate() - (i * 7));
+                dates.push(date);
+            }
+
+            tickets.forEach(ticket => {
+                dates.forEach(date => {
+                    if (date >= ticket.created && (!ticket.resolved || date < ticket.resolved)) {
+                        const sundayMidniteISO = date.toISOString().split('T')[0];
+
+                        if (ticket.labels.includes('preescalate')) {
+                            if (!categories.preEscalate[sundayMidniteISO]) {
+                                categories.preEscalate[sundayMidniteISO] = 0;
+                            }
+                            categories.preEscalate[sundayMidniteISO] += 1;
+                        }
+
+                        if (ticket.labels.includes('exec_escalated')) {
+                            if (!categories.execEscalated[sundayMidniteISO]) {
+                                categories.execEscalated[sundayMidniteISO] = 0;
+                            }
+                            categories.execEscalated[sundayMidniteISO] += 1;
+                        }
+                    }
+                });
+            });
+
+            return categories;
+        }
+
+        function renderChart(categories: { execEscalated: { [endOfWeekDate: string]: number }, preEscalate: { [endOfWeekDate: string]: number } }) {
+            const ctx = document.getElementById('chart') as HTMLCanvasElement;
+            if (!ctx) return;
+            let labels = Object.keys(categories.execEscalated).concat(Object.keys(categories.preEscalate)).sort();
+
+            // Remove duplicates and ensure we only show the last 6 months if there are more than 6 months of data
+            labels = [...new Set(labels)];
+            if (labels.length > 24) {
+                labels = labels.slice(-24); // Considering around 4 weeks per month, 24 weeks for 6 months
+            }
+
+            const execEscalatedData = labels.map(week => ({ x: new Date(week), y: categories.execEscalated[week] || 0 }));
+            const preEscalateData = labels.map(week => ({ x: new Date(week), y: categories.preEscalate[week] || 0 }));
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Pre Escalate Tickets',
+                            backgroundColor: 'rgba(255, 204, 0, 0.5)',
+                            borderColor: 'rgba(255, 204, 0, 1)',
+                            data: preEscalateData,
+                            stack: 'Stack 0'
+                        },
+                        {
+                            label: 'Exec Escalated Tickets',
+                            backgroundColor: 'rgba(220, 0, 0, 0.5)',
+                            borderColor: 'rgba(220, 0, 0, 1)',
+                            data: execEscalatedData,
+                            stack: 'Stack 0'
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'week',
+                                tooltipFormat: 'PP',
+                                displayFormats: {
+                                    week: 'PP'
+                                }
+                            },
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'Sunday Midnight',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Tickets',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const app = {
+            data() {
+                return {
+                    jsonData: []
+                };
+            },
+            async created() {
+                getData().then(tickets => {
+                    const categorizedData = categorizeTickets(tickets);
+                    renderChart(categorizedData);
+                }).catch(error => {
+                    console.error('Error loading data:', error);
+                });
+            }
+        };
+
+        Vue.createApp(app).mount('#app');
+    </script>
+
+    <script>
+        (async function compileAndExecute() {
+            const tsCode = document.getElementById('typescript-code').textContent;
+            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
+            eval(jsCode);
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Support Ticket Velocity</title>
+    <meta name="tags" content="extole,support,all,tickets,velocity">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Support Ticket Velocity</h2>
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+    <script id="typescript-code" type="text/typescript">
+        interface SupportTicket {
+            key: string;
+            project: string;
+            created: Date;
+            type: string;
+            status: string;
+            statusChanged: Date;
+            category: string | null;
+            resolved: Date | null;
+            due: Date | null;
+            start: Date;
+            priority: string;
+            reporter: string | null;
+            assignee: string | null;
+            client: string | null;
+            clientId: string | null;
+            pod: string | null;
+            pairCsm: string | null;
+            pairSupport: string | null;
+            clientPriority: string | null;
+            timeSeconds: number;
+        }
+
+        async function getData(): Promise<SupportTicket[]> {
+            const url = '/support/tickets';
+
+            try {
+                const response = await fetch(url, { method: 'GET' });
+                if (!response.ok) {
+                    alert(`Error: unable to fetch ${url}`);
+                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
+                }
+                const rawData: any[] = await response.json();
+                const data: SupportTicket[] = rawData.map(ticket => ({
+                    ...ticket,
+                    created: new Date(Date.parse(ticket.created)),
+                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
+                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null,
+                    start: new Date(Date.parse(ticket.start))
+                }));
+
+                // Filter out tickets assigned to the Extole client and those with a start date later than today
+                const today = new Date();
+                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole' && ticket.start <= today && ticket.type != "Epic" && ticket.resolved != null);
+                return filteredData;
+            } catch (error) {
+                alert(`Error: problem fetching ${url}`);
+                console.error('Fetch error:', error);
+                throw error;
+            }
+        }
+
+        function countTicketsPerWeek(tickets: SupportTicket[]) {
+            const startCounts: { [endOfWeekDate: string]: number } = {};
+            const resolveCounts: { [endOfWeekDate: string]: number } = {};
+            
+            tickets.forEach(ticket => {
+                const startDate = ticket.start;
+                const resolutionDate = ticket.resolved || new Date(); // Use current date if not resolved
+
+                const startWeekEnd = getWeekEndDate(startDate);
+                const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
+
+                if (resolveCounts[resolvedWeekEnd] === undefined) {
+                    resolveCounts[resolvedWeekEnd] = 0;
+                }
+                resolveCounts[resolvedWeekEnd]++;
+
+                if (startCounts[startWeekEnd] === undefined) {
+                    startCounts[startWeekEnd] = 0;
+                }
+                startCounts[startWeekEnd]++;
+            });
+
+            return { startCounts, resolveCounts };
+        }
+
+        function getWeekEndDate(date: Date) {
+            const dayOfWeek = date.getUTCDay();
+            const weekEndDate = new Date(date);
+            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+        }
+
+        function renderChart(startCounts: { [endOfWeekDate: string]: number }, resolveCounts: { [endOfWeekDate: string]: number }) {
+            const ctx = document.getElementById('chart') as HTMLCanvasElement;
+            if (!ctx) return;
+            let weeks = Object.keys(startCounts).sort();
+            
+            // Remove the first week unconditionally
+            if (weeks.length > 1) {
+                weeks.shift();
+            }
+            // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
+            if (weeks.length > 24) {
+                weeks = weeks.slice(-24);
+            }
+
+            const createData = weeks.map(week => ({ x: new Date(week), y: startCounts[week] || 0 }));
+            const resolveData = weeks.map(week => ({ x: new Date(week), y: resolveCounts[week] || 0 }));
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Tickets Started',
+                            backgroundColor: 'rgba(139, 34, 34, 0.2)',
+                            borderColor: 'rgba(200, 30, 30, 1)',
+                            fill: false,
+                            data: createData,
+                            borderWidth: 4 
+                        },
+                        {
+                            label: 'Tickets Closed',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(34, 139, 34, 1)',
+                            fill: false,
+                            data: resolveData,
+                            borderWidth: 4 
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'week',
+                                tooltipFormat: 'PP',
+                                displayFormats: {
+                                    week: 'PP'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Week Ending',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true, // Ensure y-axis starts at 0
+                            title: {
+                                display: true,
+                                text: 'Number of Tickets',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const app = {
+            data() {
+                return {
+                    jsonData: []
+                };
+            },
+            async created() {
+                getData().then(tickets => {
+                    const { startCounts, resolveCounts } = countTicketsPerWeek(tickets);
+                    renderChart(startCounts, resolveCounts);
+                }).catch(error => {
+                    console.error('Error loading data:', error);
+                });
+            }
+        };
+
+        Vue.createApp(app).mount('#app');
+    </script>
+
+    <script>
+        (async function compileAndExecute() {
+            const tsCode = document.getElementById('typescript-code').textContent;
+            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
+            eval(jsCode);
+        })();
+    </script>
+</body>
+</html>

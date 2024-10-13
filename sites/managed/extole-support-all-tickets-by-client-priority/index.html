@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Support Tickets By Client Priority</title>
+    <meta name="tags" content="extole,support,all,tickets,priority">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Support Tickets by Client Priority Each Week</h2>
+            <canvas id="priorityChart"></canvas>
+        </div>
+    </div>
+
+    <script id="typescript-code" type="text/typescript">
+        interface SupportTicket {
+            key: string;
+            project: string;
+            created: Date;
+            type: string;
+            status: string;
+            statusChanged: Date;
+            category: string | null;
+            resolved: Date | null;
+            due: Date | null;
+                     start: Date;
+            priority: string;
+            reporter: string | null;
+            assignee: string | null;
+            client: string | null;
+            clientId: string | null;
+            pod: string | null;
+            pairCsm: string | null;
+            pairSupport: string | null;
+            clientPriority: string | null;
+            timeSeconds: number;
+        }
+
+        async function getData(): Promise<SupportTicket[]> {
+            const url = '/support/tickets';
+
+            try {
+                const response = await fetch(url, { method: 'GET' });
+                if (!response.ok) {
+                    alert(`Error: unable to fetch ${url}`);
+                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
+                }
+                const rawData: any[] = await response.json();
+                const data: SupportTicket[] = rawData.map(ticket => ({
+                    ...ticket,
+                    created: new Date(Date.parse(ticket.created)),
+                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
+                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
+                }));
+                return data;
+            } catch (error) {
+                alert(`Error: problem fetching ${url}`);
+                console.error('Fetch error:', error);
+                throw error;
+            }
+        }
+
+        function countTicketsByClientPriorityPerWeek(tickets: SupportTicket[]) {
+            const createCounts: { [priority: string]: { [endOfWeekDate: string]: number } } = {};
+
+            tickets.forEach(ticket => {
+                const creationDate = ticket.created;
+                const createdWeekEnd = getWeekEndDate(creationDate);
+                const priority = ticket.clientPriority || 'Unspecified';
+
+                if (!createCounts[priority]) {
+                    createCounts[priority] = {};
+                }
+                createCounts[priority][createdWeekEnd] = (createCounts[priority][createdWeekEnd] || 0) + 1;
+            });
+
+            return createCounts;
+        }
+
+        function getWeekEndDate(date: Date) {
+            const dayOfWeek = date.getUTCDay();
+            const weekEndDate = new Date(date);
+            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+        }
+
+        function renderPriorityChart(createCounts: { [priority: string]: { [endOfWeekDate: string]: number } }) {
+            const ctx = document.getElementById('priorityChart') as HTMLCanvasElement;
+            if (!ctx) return;
+
+            const priorities = Object.keys(createCounts);
+            let weeks: string[] = [];
+
+            priorities.forEach(priority => {
+                weeks = weeks.concat(Object.keys(createCounts[priority]));
+            });
+            weeks = Array.from(new Set(weeks)).sort();
+
+            // Remove the first week unconditionally
+            if (weeks.length > 1) {
+                weeks.shift();
+            }
+            // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
+            if (weeks.length > 24) {
+                weeks = weeks.slice(-24);
+            }
+
+            const datasets = priorities.map(priority => {
+                const data = weeks.map(week => ({ x: new Date(week), y: createCounts[priority][week] || 0 }));
+                return {
+                    label: `Priority ${priority}`,
+                    data: data,
+                    fill: false,
+                    borderWidth: 4 
+                };
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: datasets
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'week',
+                                tooltipFormat: 'PP',
+                                displayFormats: {
+                                    week: 'PP'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Week Ending',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true, // Ensure y-axis starts at 0
+                            title: {
+                                display: true,
+                                text: 'Number of Tickets',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const app = {
+            data() {
+                return {
+                    jsonData: []
+                };
+            },
+            async created() {
+                getData().then(tickets => {
+                    const createCounts = countTicketsByClientPriorityPerWeek(tickets);
+                    renderPriorityChart(createCounts);
+                }).catch(error => {
+                    console.error('Error loading data:', error);
+                });
+            }
+        };
+
+        Vue.createApp(app).mount('#app');
+    </script>
+
+    <script>
+        (async function compileAndExecute() {
+            const tsCode = document.getElementById('typescript-code').textContent;
+            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
+            eval(jsCode);
+        })();
+    </script>
+</body>
+</html>

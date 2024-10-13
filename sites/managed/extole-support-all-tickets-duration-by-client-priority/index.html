@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Support Ticket Duration by Client Priority</title>
+    <meta name="tags" content="extole,support,all,tickets,client_priority,duration">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Support Ticket Duration by Client Priority</h2>
+            <canvas id="durationChart"></canvas>
+        </div>
+    </div>
+
+    <script id="typescript-code" type="text/typescript">
+        interface SupportTicket {
+            key: string;
+            project: string;
+            created: Date;
+            type: string;
+            status: string;
+            statusChanged: Date;
+            category: string | null;
+            resolved: Date | null;
+            due: Date | null;
+                     start: Date;
+            priority: string;
+            reporter: string | null;
+            assignee: string | null;
+            client: string | null;
+            clientId: string | null;
+            pod: string | null;
+            pairCsm: string | null;
+            pairSupport: string | null;
+            clientPriority: string | null;
+            timeSeconds: number;
+        }
+
+        async function getData(): Promise<SupportTicket[]> {
+            const url = '/support/tickets';
+
+            try {
+                const response = await fetch(url, { method: 'GET' });
+                if (!response.ok) {
+                    alert(`Error: unable to fetch ${url}`);
+                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
+                }
+                const rawData: any[] = await response.json();
+                const data: SupportTicket[] = rawData.map(ticket => ({
+                    ...ticket,
+                    created: new Date(Date.parse(ticket.created)),
+                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
+                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
+                }));
+
+		const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole');
+                return filteredData;
+            } catch (error) {
+                alert(`Error: problem fetching ${url}`);
+                console.error('Fetch error:', error);
+                throw error;
+            }
+        }
+
+        function filterTicketsByDate(tickets: SupportTicket[], startDate: Date) {
+            return tickets.filter(ticket => ticket.created >= startDate);
+        }
+
+        function calculateTicketDurationsByClientPriority(tickets: SupportTicket[]) {
+            const now = new Date();
+            const durationMap: { [clientPriority: string]: { [weekEndDate: string]: number[] } } = {};
+
+            tickets.forEach(ticket => {
+                const resolved = ticket.resolved || now;
+                const duration = (resolved.getTime() - ticket.created.getTime()) / (1000 * 60 * 60 * 24); // Duration in days
+                const clientPriority = ticket.clientPriority || 'Unspecified';
+                const weekEndDate = getWeekEndDate(ticket.created);
+
+                if (!durationMap[clientPriority]) {
+                    durationMap[clientPriority] = {};
+                }
+                if (!durationMap[clientPriority][weekEndDate]) {
+                    durationMap[clientPriority][weekEndDate] = [];
+                }
+
+                durationMap[clientPriority][weekEndDate].push(duration);
+            });
+
+            return durationMap;
+        }
+
+        function getWeekEndDate(date: Date) {
+            const dayOfWeek = date.getUTCDay();
+            const weekEndDate = new Date(date);
+            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+        }
+
+        function renderDurationChart(durationMap: { [clientPriority: string]: { [weekEndDate: string]: number[] } }) {
+            const ctx = document.getElementById('durationChart') as HTMLCanvasElement;
+            if (!ctx) return;
+
+            const clientPriorities = Object.keys(durationMap);
+            let weeks: Set<string> = new Set();
+
+            clientPriorities.forEach(clientPriority => {
+                weeks = new Set([...weeks, ...Object.keys(durationMap[clientPriority])]);
+            });
+
+            let weekArray = Array.from(weeks).sort();
+            // Ensure we only show the last 24 weeks (6 months)
+            if (weekArray.length > 24) {
+                weekArray = weekArray.slice(-24);
+            }
+
+            const datasets = clientPriorities.map(clientPriority => {
+                const data = weekArray.map(week => {
+                    const weeklyDurations = durationMap[clientPriority][week] || [];
+                    const avgDuration = weeklyDurations.length
+                        ? weeklyDurations.reduce((sum, duration) => sum + duration, 0) / weeklyDurations.length
+                        : 0;
+                    return { x: new Date(week), y: avgDuration };
+                });
+                return {
+                    label: `Client Priority ${clientPriority}`,
+                    data,
+                    fill: false,
+                    borderWidth: 4
+                };
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'week',
+                                tooltipFormat: 'PP',
+                                displayFormats: {
+                                    week: 'PP'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Week Ending',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true, // Ensure y-axis starts at 0
+                            title: {
+                                display: true,
+                                text: 'Average Ticket Duration (days)',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const app = {
+            data() {
+                return {
+                    jsonData: []
+                };
+            },
+            async created() {
+                const startDate = new Date();
+                startDate.setMonth(startDate.getMonth() - 6);
+                getData().then(tickets => {
+                    const filteredTickets = filterTicketsByDate(tickets, startDate);
+                    const durationMap = calculateTicketDurationsByClientPriority(filteredTickets);
+                    renderDurationChart(durationMap);
+                }).catch(error => {
+                    console.error('Error loading data:', error);
+                });
+            }
+        };
+
+        Vue.createApp(app).mount('#app');
+    </script>
+
+    <script>
+        (async function compileAndExecute() {
+            const tsCode = document.getElementById('typescript-code').textContent;
+            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
+            eval(jsCode);
+        })();
+    </script>
+</body>
+</html>
