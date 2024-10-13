@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.cyster.web.weave.scenarios.WebsiteException;
 import com.cyster.web.weave.scenarios.WebsiteProvider;
 import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Type;
 
@@ -83,7 +84,7 @@ public class LocalWebsiteProvider implements WebsiteProvider {
     }
 
     @Override
-    public Website copy(Website website) {
+    public Website copy(Website website) throws WebsiteException {
         var newWebsite = create();
 
         clone(website, newWebsite);
@@ -103,7 +104,7 @@ public class LocalWebsiteProvider implements WebsiteProvider {
         return new WebsiteImpl(baseUri, baseDirectory, name, type);
     }
 
-    private Website clone(Website fromWebsite, Website toWebsite) {
+    private Website clone(Website fromWebsite, Website toWebsite) throws WebsiteException {
         for(var assetName: fromWebsite.getAssets()) {
             toWebsite.putAsset(assetName, fromWebsite.getAsset(assetName).content());
         }

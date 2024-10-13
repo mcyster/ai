@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cyster.web.rest.LocalWebsiteProvider;
 import com.cyster.web.weave.scenarios.ManagedWebsites;
 import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
+import com.cyster.web.weave.scenarios.WebsiteException;
 import com.cyster.web.weave.scenarios.WebsiteProvider.Website;
 
 @RestController
@@ -44,7 +45,7 @@ public class SiteController {
 
     @PostMapping("/pages/{name}")
     public WebsiteResponse getSite(
-        @PathVariable("name") String name) {
+        @PathVariable("name") String name) throws WebsiteException {
 
         var site = managedWebsites.getSite(name);
 

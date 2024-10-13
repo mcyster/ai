@@ -70,7 +70,12 @@ Use the web_developer_file_put tool to create or update the website as requested
     public ConversationBuilder createConversationBuilder(Request parameters, ManagedWebsites context) {        
         String messageTemplate = "There is a website with id %s at %s (we're in developer mode, so localhost is ok)";
         
-        ManagedWebsite website = context.getSite(parameters.websiteId());
+        ManagedWebsite website;
+        try {
+            website = context.getSite(parameters.websiteId());
+        } catch (WebsiteException exception) {
+            throw new RuntimeException("Unable to load website: " + parameters.websiteId, exception);
+        }
 
         String message = String.format(messageTemplate, website.site().getId(), website.site().getUri());
                     

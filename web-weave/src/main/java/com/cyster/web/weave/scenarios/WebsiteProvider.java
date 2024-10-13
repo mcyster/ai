@@ -7,7 +7,7 @@ public interface WebsiteProvider {
     List<Website> getSites();
     Website getSite(String name);
     Website create();
-    Website copy(Website site);
+    Website copy(Website site) throws WebsiteException;
 
     interface Website {
         String getId();
@@ -19,7 +19,7 @@ public interface WebsiteProvider {
         List<String> getAssets();
 
         Asset putAsset(String name, String content);
-        Asset getAsset(String name);
+        Asset getAsset(String name) throws WebsiteException;
 
         interface Asset {
             String filename();

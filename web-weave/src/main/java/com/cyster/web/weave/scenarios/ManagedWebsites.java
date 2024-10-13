@@ -3,7 +3,11 @@ package com.cyster.web.weave.scenarios;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -14,6 +18,8 @@ import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Asset;
 import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Type;
 
 public class ManagedWebsites {
+    private static final Logger logger = LoggerFactory.getLogger(ManagedWebsites.class);
+
     private static final List<String> RESERVED_TAGS = Arrays.asList("managed", "unmanaged", "start", "curated");
 
     private WebsiteProvider websiteProvider;
@@ -33,7 +39,15 @@ public class ManagedWebsites {
     
     public List<ManagedWebsite> getSites(List<String> tags) {
         return websiteProvider.getSites().stream()
-            .map(this::create)
+            .map(site -> {
+                try {
+                    return create(site);
+                } catch (WebsiteException exception) {
+                    logger.warn("Uaname to load site: " + site.getId() + " - ignoring", exception);
+                    return null;
+                }
+            })
+            .filter(Objects::nonNull) 
             .filter(site -> tags.isEmpty() || tags.stream()
                 .allMatch(inputTag -> site.tags().stream()
                     .anyMatch(tag -> inputTag.equalsIgnoreCase(tag))
@@ -42,23 +56,23 @@ public class ManagedWebsites {
             .collect(Collectors.toList());
     }
     
-    public ManagedWebsite getSite(String id) {
+    public ManagedWebsite getSite(String id) throws WebsiteException {
         return create(websiteProvider.getSite(id));
     }
     
-    public ManagedWebsite create() {
+    public ManagedWebsite create() throws WebsiteException {
         return create(websiteProvider.create());
     }
     
-    public ManagedWebsite copy(ManagedWebsite website) {
+    public ManagedWebsite copy(ManagedWebsite website) throws WebsiteException {
         return create(websiteProvider.copy(website.site));
     }
 
-    private ManagedWebsite create(Website website) {
+    private ManagedWebsite create(Website website) throws WebsiteException {
         String name = website.getId();
         List<String> tags = new ArrayList<>();
         
-        Asset indexAsset = website.getAsset("index.html");
+        Asset indexAsset = website.getAsset("index.html"); 
         Document document = Jsoup.parse(indexAsset.content());
 
         name = document.title();

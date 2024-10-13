@@ -32,8 +32,13 @@ public class WebsiteCopyTool implements WebsiteDeveloperTool<Request> {
     @Override
     public Object execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
 
-        ManagedWebsite website = context.getSite(request.websiteId);
-        ManagedWebsite newWebsite = context.copy(website);
+        ManagedWebsite newWebsite;
+        try {
+            ManagedWebsite website = context.getSite(request.websiteId);
+            newWebsite = context.copy(website);
+        } catch (WebsiteException exception) {
+            throw new ToolException("Unable to copy website: " + request.websiteId, exception);
+        }
         
         return newWebsite;
     }

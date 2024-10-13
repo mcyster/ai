@@ -35,7 +35,12 @@ class WebsiteFilePutTool implements WebsiteDeveloperTool<Request> {
     @Override
     public Object execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
 
-        ManagedWebsite website = context.getSite(request.websiteId);
+        ManagedWebsite website;
+        try {
+            website = context.getSite(request.websiteId);
+        } catch (WebsiteException exception) {
+            throw new ToolException("Unable to load website: " + request.websiteId, exception);
+        }
         
         if (request.filename() == "index.html" && !request.content().contains(CHAT_INCLUDE)) {
             throw new FatalToolException("Do not remove the script tag: " + CHAT_INCLUDE);

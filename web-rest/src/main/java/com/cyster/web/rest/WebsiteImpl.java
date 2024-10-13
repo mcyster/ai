@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.cyster.web.weave.scenarios.WebsiteException;
 import com.cyster.web.weave.scenarios.WebsiteProvider.Website;
 
 class WebsiteImpl implements Website {
@@ -89,21 +90,21 @@ class WebsiteImpl implements Website {
     }
 
     @Override
-    public Asset getAsset(String name) {
+    public Asset getAsset(String name) throws WebsiteException {
         if (!Files.exists(directory)) {
-            throw new RuntimeException("Unable to find website directory: " + directory);
+            throw new WebsiteException("Unable to find website directory: " + directory);
         }
 
         Path file = directory.resolve(name);
         if (!Files.exists(file)) {            
-            throw new RuntimeException("Unable to find file: " + name + " from directory: " + directory);
+            throw new WebsiteException("Unable to find file: " + name + " from directory: " + directory);
         }
 
         String content;
         try {
             content = Files.readString(file);
         } catch (IOException exception) {
-            throw new RuntimeException("Unable to read file: " + name + " from directory " + directory);
+            throw new WebsiteException("Unable to read file: " + name + " from directory " + directory);
         }
 
         return new TextAsset(name, content);
