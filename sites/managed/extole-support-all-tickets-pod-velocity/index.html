@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Extole Ticket Pod Lead Rate</title>
-    <meta name="tags" content="extole,support,tickets,pod,lead">
+    <title>Support Ticket Velocity by Pod</title>
+    <meta name="tags" content="extole,support,all,tickets,velocity,pod">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,23 +25,12 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Extole Ticket Pod Lead Rate (goal &lt; 20%)</h2>
+            <h2 id="graphTitle">Support Ticket Velocity per Pod</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
 
     <script id="typescript-code" type="text/typescript">
-        function generateColors(numColors: number): string[] {
-            const colors = [];
-            const hueStep = 360 / numColors;
-            for (let i = 0; i < numColors; i++) {
-                const hue = i * hueStep;
-                const color = `hsl(${hue}, 50%, 45%)`;
-                colors.push(color);
-            }
-            return colors;
-        }
-
         interface SupportTicket {
             key: string;
             project: string;
@@ -65,13 +54,6 @@
             timeSeconds: number;
         }
 
-        const podLeads = {
-            Flow: 'gmarjin@extole.com',
-            UI: 'abalan@extole.com',
-            Guru: 'abarbovschi@extole.com',
-            T1: 'mvacarciuc@extole.com'
-        };
-
         async function getData(): Promise<SupportTicket[]> {
             const url = '/support/tickets';
 
@@ -91,8 +73,9 @@
                     due: ticket.due ? new Date(Date.parse(ticket.due)) : null
                 }));
 
-                // Filter for resolved tickets assigned to the Extole client
-                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() != 'extole' && ticket.resolved !== null);
+                const filteredData = data.filter(ticket => 
+                    ticket.client?.toLowerCase() != 'extole' && 
+                    ticket.resolved !== null);
                 console.log('Filtered Data:', filteredData); // Debugging data
                 return filteredData;
             } catch (error) {
@@ -103,8 +86,7 @@
         }
 
         function countTicketsPerWeekPerPod(tickets: SupportTicket[]) {
-            const podResolveCounts: { [pod: string]: { [endOfWeekDate: string]: { total: number; lead: number } } } = {};
-            const podAssigneeCounts: { [pod: string]: Set<string> } = {};
+            const podResolveCounts: { [pod: string]: { [endOfWeekDate: string]: number } } = {};
             const lastSixMonths = new Date();
             lastSixMonths.setMonth(lastSixMonths.getMonth() - 6);
 
@@ -113,41 +95,24 @@
                 const resolutionDate = ticket.resolved || new Date(); // Use current date if not resolved
                 if (resolutionDate < lastSixMonths) return; // Skip data older than 6 months
 
-                const resolvedWeekEnd = getWeekEndDate(resolutionDate);
-                let podKey = getPodKey(ticket.pod);
+                const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
+                let podKey = "Other";
+                const podLower = ticket.pod.toLowerCase();
+                if (podLower.includes("ui") || podLower.includes("flow") || podLower.includes("guru") || podLower.includes("t1")) {
+                    podKey = ticket.pod;
+                }
 
                 if (!podResolveCounts[podKey]) {
                     podResolveCounts[podKey] = {};
                 }
                 if (!podResolveCounts[podKey][resolvedWeekEnd]) {
-                    podResolveCounts[podKey][resolvedWeekEnd] = { total: 0, lead: 0};
+                    podResolveCounts[podKey][resolvedWeekEnd] = 0;
                 }
-                podResolveCounts[podKey][resolvedWeekEnd].total++;
-                if (ticket.assignee === podLeads[podKey]) {
-                    podResolveCounts[podKey][resolvedWeekEnd].lead++;
-                }
-
-                if (!podAssigneeCounts[podKey]) {
-                    podAssigneeCounts[podKey] = new Set();
-                }
-                if (ticket.assignee) {
-                    podAssigneeCounts[podKey].add(ticket.assignee);
-                }
+                podResolveCounts[podKey][resolvedWeekEnd]++;
             });
 
             console.log('Pod Resolve Counts:', podResolveCounts); // Debugging data
-            console.log('Pod Assignee Counts:', podAssigneeCounts); // Debugging data
-            return { podResolveCounts, podAssigneeCounts };
-        }
-
-        function getPodKey(pod: string): string {
-            // Normalize pod names for mapping
-            const normalizedPod = pod.toLowerCase();
-            if (normalizedPod.includes("flow")) return "Flow";
-            if (normalizedPod.includes("ui")) return "UI";
-            if (normalizedPod.includes("guru")) return "Guru";
-            if (normalizedPod.includes("t1")) return "T1";
-            return "Other";
+            return podResolveCounts;
         }
 
         function getWeekEndDate(date: Date) {
@@ -158,28 +123,36 @@
             return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
         }
 
-        function renderChart(includes: { podResolveCounts: { [pod: string]: { [endOfWeekDate: string]: { total: number; lead: number } } }, podAssigneeCounts: { [pod: string]: Set<string> } }) {
+        function generateColors(numColors: number): string[] {
+            const colors = [];
+            const hueStep = 360 / numColors;
+            for (let i = 0; i < numColors; i++) {
+                const hue = i * hueStep;
+                const color = `hsl(${hue}, 50%, 45%)`;
+                colors.push(color);
+            }
+            return colors;
+        }
+
+        function renderChart(podResolveCounts: { [pod: string]: { [endOfWeekDate: string]: number } }) {
             const ctx = document.getElementById('chart') as HTMLCanvasElement;
             if (!ctx) return;
 
-            const numPods = Object.keys(includes.podResolveCounts).length;
-            const colors = generateColors(numPods);
+            const podKeys = Object.keys(podResolveCounts);
+            const colors = generateColors(podKeys.length);
 
-            const datasets = Object.entries(includes.podResolveCounts).map(([pod, counts], index) => {
-                let weeks = Object.keys(counts).sort();
+            const datasets = podKeys.map((pod, index) => {
+                let weeks = Object.keys(podResolveCounts[pod]).sort();
 
                 // Remove the first week unconditionally
                 if (weeks.length > 1) {
                     weeks.shift();
                 }
 
-                const resolveData = weeks.map(week => ({
-                    x: new Date(week), 
-                    y: counts[week].total === 0 ? 0 : (counts[week].lead / counts[week].total)
-                }));
+                const resolveData = weeks.map(week => ({ x: new Date(week), y: podResolveCounts[pod][week] || 0 }));
 
                 return {
-                    label: `${pod} Task Lead Rate (${includes.podAssigneeCounts[pod].size})`,
+                    label: `${pod}`,
                     backgroundColor: colors[index],
                     borderColor: colors[index],
                     fill: false,
@@ -222,7 +195,7 @@
                             beginAtZero: true, // Ensure y-axis starts at 0
                             title: {
                                 display: true,
-                                text: 'Lead Task Rate',
+                                text: 'Number of Tickets',
                                 font: {
                                     size: 16,
                                     weight: 'bold'
@@ -231,9 +204,6 @@
                             ticks: {
                                 font: {
                                     weight: 'bold'
-                                },
-                                callback: function(value: any) {
-                                    return `${(value * 100).toFixed(0)}%`;
                                 }
                             }
                         }
@@ -250,8 +220,8 @@
             },
             async created() {
                 getData().then(tickets => {
-                    const podCounts = countTicketsPerWeekPerPod(tickets);
-                    renderChart(podCounts);
+                    const podResolveCounts = countTicketsPerWeekPerPod(tickets);
+                    renderChart(podResolveCounts);
                 }).catch(error => {
                     console.error('Error loading data:', error);
                 });
