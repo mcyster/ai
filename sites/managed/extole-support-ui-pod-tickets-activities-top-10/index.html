@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Extole Guru Pod Ticket Velocity by Assignee</title>
-    <meta name="tags" content="extole,support,tickets,velocity,guru-pod">
+    <title>UI Pod Top 10 Activities</title>
+    <meta name="tags" content="extole,support,tickets,activities,ui-pod">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Extole Guru Pod Ticket Velocity by Assignee</h2>
+            <h2 id="graphTitle">UI Pod - Top 10 Activities</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -64,7 +64,6 @@
                     throw new Error(`Error fetching "${url}": ${response.statusText}`);
                 }
                 const rawData: any[] = await response.json();
-                console.log('Raw Data:', rawData); // Debugging data
                 const data: SupportTicket[] = rawData.map(ticket => ({
                     ...ticket,
                     created: new Date(Date.parse(ticket.created)),
@@ -72,11 +71,7 @@
                     resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
                     due: ticket.due ? new Date(Date.parse(ticket.due)) : null
                 }));
-
-                // Filter for resolved tickets assigned to the Extole client
-                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() != 'extole' && ticket.resolved !== null && ticket.pod?.toLowerCase().includes('guru'));
-                console.log('Filtered Data:', filteredData); // Debugging data
-                return filteredData;
+                return data;
             } catch (error) {
                 alert(`Error: problem fetching ${url}`);
                 console.error('Fetch error:', error);
@@ -84,30 +79,20 @@
             }
         }
 
-        function countTicketsPerWeekByAssignee(tickets: SupportTicket[]) {
-            const resolveCounts: { [assignee: string]: { [endOfWeekDate: string]: number } } = {};
-            const lastSixMonths = new Date();
-            lastSixMonths.setMonth(lastSixMonths.getMonth() - 6);
+        function countTicketsPerCategoryPerWeek(tickets: SupportTicket[]) {
+            const categoryCounts: { [category: string]: { [weekEndDate: string]: number } } = {};
 
             tickets.forEach(ticket => {
-                const resolutionDate = ticket.resolved || new Date(); // Use current date if not resolved
-                if (resolutionDate < lastSixMonths) return; // Skip data older than 6 months
+                const creationDate = ticket.created;
+                const category = ticket.category || 'Uncategorized';
+                const weekEndDate = getWeekEndDate(creationDate);
 
-                const resolvedWeekEnd = getWeekEndDate(resolutionDate);
-
-                if (ticket.assignee) {
-                    if (!resolveCounts[ticket.assignee]) {
-                        resolveCounts[ticket.assignee] = {};
-                    }
-                    if (!resolveCounts[ticket.assignee][resolvedWeekEnd]) {
-                        resolveCounts[ticket.assignee][resolvedWeekEnd] = 0;
-                    }
-                    resolveCounts[ticket.assignee][resolvedWeekEnd]++;
+                if (!categoryCounts[category]) {
+                    categoryCounts[category] = {};
                 }
+                categoryCounts[category][weekEndDate] = (categoryCounts[category][weekEndDate] || 0) + 1;
             });
-
-            console.log('Resolve Counts per Week by Assignee:', resolveCounts); // Debugging data
-            return resolveCounts;
+            return categoryCounts;
         }
 
         function getWeekEndDate(date: Date) {
@@ -118,30 +103,51 @@
             return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
         }
 
-        function renderChart(resolveCounts: { [assignee: string]: { [endOfWeekDate: string]: number } }) {
+        function getTopCategories(categoryCounts: { [category: string]: { [weekEndDate: string]: number } }, limit: number = 10) {
+            const categoryTotals: { [category: string]: number } = {};
+            for (const category in categoryCounts) {
+                categoryTotals[category] = Object.values(categoryCounts[category]).reduce((sum, count) => sum + count, 0);
+            }
+
+            return Object.entries(categoryTotals)
+                .sort(([, totalA], [, totalB]) => totalB - totalA)
+                .slice(0, limit)
+                .map(([category]) => category);
+        }
+
+        function renderChart(categoryCounts: { [category: string]: { [weekEndDate: string]: number } }, topCategories: string[]) {
             const ctx = document.getElementById('chart') as HTMLCanvasElement;
             if (!ctx) return;
 
-            const assignees = Object.keys(resolveCounts);
-            const numColors = assignees.length;
-            const colors = generateColors(numColors); // Use the new function
+            let weeks = new Set<string>();
+            topCategories.forEach(category => {
+                Object.keys(categoryCounts[category]).forEach(week => weeks.add(week));
+            });
+            weeks = new Set(Array.from(weeks).sort());
 
-            const datasets = assignees.map((assignee, index) => {
-                const weeks = Object.keys(resolveCounts[assignee]).sort();
-                const data = weeks.map(week => ({ x: new Date(week), y: resolveCounts[assignee][week] || 0 }));
+            // Filter weeks to include only the last 6 months
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            weeks = new Set(Array.from(weeks).filter(week => new Date(week) >= sixMonthsAgo));
+
+            const colors = generateColors(topCategories.length);
+            const datasets = topCategories.map((category, index) => {
+                const data = Array.from(weeks).map(week => ({ x: new Date(week), y: categoryCounts[category][week] || 0 }));
                 return {
-                    label: assignee,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: colors[index],
+                    label: category,
+                    backgroundColor: colors[index], // Set the backgroundColor to match the borderColor
+                    borderColor: colors[index], // Use the same color for the border
                     fill: false,
                     data,
-                    borderWidth: 4 // Double the previous weight (2)
+                    borderWidth: 4
                 };
             });
 
             new Chart(ctx, {
                 type: 'line',
-                data: { datasets },
+                data: {
+                    datasets
+                },
                 options: {
                     scales: {
                         x: {
@@ -156,21 +162,31 @@
                             title: {
                                 display: true,
                                 text: 'Week Ending',
-                                font: { size: 16, weight: 'bold' }
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
                             },
                             ticks: {
-                                font: { size: 14, weight: 'bold' }
+                                font: {
+                                    weight: 'bold'
+                                }
                             }
                         },
                         y: {
-                            beginAtZero: true,
+                            beginAtZero: true, // Ensure y-axis starts at 0
                             title: {
                                 display: true,
                                 text: 'Number of Tickets',
-                                font: { size: 16, weight: 'bold' }
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
                             },
                             ticks: {
-                                font: { size: 14, weight: 'bold' }
+                                font: {
+                                    weight: 'bold'
+                                }
                             }
                         }
                     }
@@ -191,12 +207,16 @@
 
         const app = {
             data() {
-                return { jsonData: [] };
+                return {
+                    jsonData: []
+                };
             },
             async created() {
                 getData().then(tickets => {
-                    const resolveCounts = countTicketsPerWeekByAssignee(tickets);
-                    renderChart(resolveCounts);
+                    tickets = tickets.filter(ticket => ticket.pod === 'Support UI Pod'); // Filter by pod
+                    const categoryCounts = countTicketsPerCategoryPerWeek(tickets);
+                    const topCategories = getTopCategories(categoryCounts);
+                    renderChart(categoryCounts, topCategories);
                 }).catch(error => {
                     console.error('Error loading data:', error);
                 });

@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Extole UI Pod Ticket Velocity by Assignee</title>
-    <meta name="tags" content="extole,support,tickets,velocity,ui-pod">
+    <title>Flow Pod Ticket Velocity by Assignee</title>
+    <meta name="tags" content="extole,support,tickets,velocity,flow-pod">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Extole UI Pod Ticket Velocity by Assignee</h2>
+            <h2 id="graphTitle">Flow Pod - Ticket Velocity by Assignee</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -41,7 +41,7 @@
             category: string | null;
             resolved: Date | null;
             due: Date | null;
-                     start: Date;
+            start: Date;
             priority: string;
             reporter: string | null;
             assignee: string | null;
@@ -73,9 +73,12 @@
                     due: ticket.due ? new Date(Date.parse(ticket.due)) : null
                 }));
 
-                // Filter for resolved tickets assigned to the Extole client
-                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() != 'extole' && ticket.resolved !== null && ticket.pod?.toLowerCase().includes('ui'));
-                console.log('Filtered Data:', filteredData); // Debugging data
+                const filteredData = data.filter(ticket => 
+                    ticket.client?.toLowerCase() !== 'extole' && 
+                    ticket.type != "Epic" && 
+                    ticket.resolved != null && 
+                    ticket.pod?.toLowerCase().includes("flow"));
+
                 return filteredData;
             } catch (error) {
                 alert(`Error: problem fetching ${url}`);

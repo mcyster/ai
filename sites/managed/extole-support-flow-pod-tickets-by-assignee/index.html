@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Support Tickets Closed by Assignee per Week for the UI Pod</title>
-    <meta name="tags" content="extole,support,tickets,ui-pod,assignee">
+    <title>Flow Pod Support Tickets Closed by Assignee per Week</title>
+    <meta name="tags" content="extole,support,tickets,flow-pod,assignee">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Support Tickets Closed by Assignee per Week for the UI Pod</h2>
+            <h2 id="graphTitle">Flow Pod - Tickets Closed by Assignee per Week</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -64,7 +64,7 @@
                     throw new Error(`Error fetching "${url}": ${response.statusText}`);
                 }
                 const rawData: any[] = await response.json();
-                const filteredData = rawData.filter(ticket => ticket.pod === 'Support UI Pod');
+                const filteredData = rawData.filter(ticket => ticket.pod === 'Support Flow Pod');
                 const data: SupportTicket[] = filteredData.map(ticket => ({
                     ...ticket,
                     created: new Date(Date.parse(ticket.created)),

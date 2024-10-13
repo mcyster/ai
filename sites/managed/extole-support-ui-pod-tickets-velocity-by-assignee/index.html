@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Extole Flow Pod Ticket Velocity by Assignee</title>
-    <meta name="tags" content="extole,support,tickets,velocity,flow-pod">
+    <title>UI Pod Ticket Velocity by Assignee</title>
+    <meta name="tags" content="extole,support,tickets,velocity,ui-pod">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Extole Flow Pod Ticket Velocity by Assignee</h2>
+            <h2 id="graphTitle">UI Pod - Ticket Velocity by Assignee</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -74,7 +74,7 @@
                 }));
 
                 // Filter for resolved tickets assigned to the Extole client
-                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() != 'extole' && ticket.resolved !== null && ticket.pod?.toLowerCase().includes('flow'));
+                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() != 'extole' && ticket.resolved !== null && ticket.pod?.toLowerCase().includes('ui'));
                 console.log('Filtered Data:', filteredData); // Debugging data
                 return filteredData;
             } catch (error) {
