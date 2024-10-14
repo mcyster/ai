@@ -31,20 +31,25 @@ public class SupportTicketService {
     
     public class TicketQueryBuilder {
         Optional<Integer> limit = Optional.empty();
-        String filter = "created >= -1w";
+        String filter = "";
         
         public TicketQueryBuilder withTrailing7Months() {
-            filter = "(created > startOfMonth(\"-7M\") OR resolved > startOfMonth(\"-7M\"))";
+            filter = " AND (created > startOfMonth(\"-7M\") OR resolved > startOfMonth(\"-7M\"))";
             return this;
         }
 
         public TicketQueryBuilder withTrailingWeek() {
-            filter = "created >= -1w";
+            filter = " AND created >= -1w";
             return this;
         }
 
         public TicketQueryBuilder withTicket(String ticketNumber) {
-            filter = "issueKey = " + ticketNumber;
+            filter = " AND issueKey = " + ticketNumber;
+            return this;
+        }
+
+        public TicketQueryBuilder withEpicsOnly() {
+            filter = " AND type = Epic";
             return this;
         }
         
@@ -55,7 +60,7 @@ public class SupportTicketService {
         
         public List<FullSupportTicket> query() throws SupportTicketException {
             String query = "project in (\"HELP\", \"SUP\", \"LAUNCH\", \"SPEED\")"
-                + " AND " + filter
+                + filter
                 + " ORDER BY CREATED ASC";
             
             return fetchFullTickets(query, limit);

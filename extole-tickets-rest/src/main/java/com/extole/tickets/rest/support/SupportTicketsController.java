@@ -74,6 +74,11 @@ public class SupportTicketsController {
         return loadTickets(limit);
     }
 
+    @GetMapping("/epics")
+    public List<SupportTicketResponse> getEpics(@RequestParam Optional<Integer> limit) throws SupportTicketException {
+        return loadEpics(limit);
+    }
+
     @GetMapping("/tickets/full")
     public List<FullSupportTicketResponse> getFullTickets(@RequestParam Optional<Integer> limit) throws SupportTicketException {
         return loadFullTickets(limit);
@@ -117,7 +122,7 @@ public class SupportTicketsController {
     private List<FullSupportTicketResponse> loadFullTickets(Optional<Integer> limit) throws SupportTicketException {
         List<FullSupportTicketResponse> tickets;
 
-        Path cacheFilename = getCacheFilename(getHash(limit));
+        Path cacheFilename = getCacheFilename("support-tickets-", getHash(limit));
         if (Files.exists(cacheFilename)) {
             String json;
             try {
@@ -163,13 +168,74 @@ public class SupportTicketsController {
         return response;
     }
 
+
+    private List<SupportTicketResponse> loadEpics(Optional<Integer> limit) throws SupportTicketException {
+        List<FullSupportTicketResponse> tickets = loadFullEpics(limit);
+
+        List<SupportTicketResponse> shortTickets = new ArrayList<>();
+        for(var ticket: tickets) {
+            shortTickets.add(ticket.ticket());
+        }
+        
+        return shortTickets;
+    }
+
+    private List<FullSupportTicketResponse> loadFullEpics(Optional<Integer> limit) throws SupportTicketException {
+        List<FullSupportTicketResponse> tickets;
+
+        Path cacheFilename = getCacheFilename("support-epics-", getHash(limit));
+        if (Files.exists(cacheFilename)) {
+            String json;
+            try {
+                json = new String(Files.readAllBytes(cacheFilename));
+            } catch (IOException exception) {
+                throw new RuntimeException(exception);
+            }
+
+            try {
+                tickets = objectMapper.readValue(json, new TypeReference<List<FullSupportTicketResponse>>(){});
+            } catch (JsonProcessingException exception) {
+                throw new RuntimeException(exception);
+            }
+        } else {
+            tickets = fetchFullEpics(limit);
+
+            try (FileWriter file = new FileWriter(cacheFilename.toString())) {
+                file.write(objectMapper.writeValueAsString(tickets));
+            } catch (IOException exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+
+        return tickets;
+    }
     
-    private Path getCacheFilename(String uniqueHash) {
+    private List<FullSupportTicketResponse> fetchFullEpics(Optional<Integer> limit) throws SupportTicketException {
+        var ticketQueryBuilder = supportTicketService.ticketQueryBuilder();
+                
+        ticketQueryBuilder.withEpicsOnly();
+        
+        if (limit.isPresent()) {
+            ticketQueryBuilder.withLimit(limit.get());
+        }
+        
+        List<FullSupportTicket> tickets = ticketQueryBuilder.query();
+        List<FullSupportTicketResponse> response = new ArrayList<>();
+        for(var ticket: tickets) {
+            response.add(FullSupportTicketResponse.fromFullSupportTicket(ticket));
+        }
+        
+        return response;
+    }
+
+    
+    private Path getCacheFilename(String name, String uniqueHash) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String date = formatter.format(new Date());
 
-        return tempDirectory.resolve("support-tickets-" + uniqueHash + "-" + date + ".json");
+        return tempDirectory.resolve(name + uniqueHash + "-" + date + ".json");
     }
+
 
     public static String getHash(Object... parameters) {
         StringBuilder concatenated = new StringBuilder();

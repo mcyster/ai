@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Support Runbooks by Pod</title>
+    <meta name="tags" content="extole,support,all,tickets,pod,lead">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Support Runbooks by Pod</h2>
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+    <script id="typescript-code" type="text/typescript">
+        function generateColors(numColors: number): string[] {
+            const colors = [];
+            const hueStep = 360 / numColors;
+            for (let i = 0; i < numColors; i++) {
+                const hue = i * hueStep;
+                const color = `hsl(${hue}, 50%, 45%)`;
+                colors.push(color);
+            }
+            return colors;
+        }
+
+        interface SupportTicket {
+            key: string;
+            project: string;
+            created: Date;
+            type: string;
+            status: string;
+            statusChanged: Date;
+            category: string | null;
+            resolved: Date | null;
+            due: Date | null;
+            start: Date;
+            priority: string;
+            reporter: string | null;
+            assignee: string | null;
+            client: string | null;
+            clientId: string | null;
+            pod: string | null;
+            pairCsm: string | null;
+            pairSupport: string | null;
+            clientPriority: string | null;
+            timeSeconds: number;
+        }
+
+        async function getData(): Promise<SupportTicket[]> {
+            const url = '/support/epics';
+
+            try {
+                const response = await fetch(url, { method: 'GET' });
+                if (!response.ok) {
+                    alert(`Error: unable to fetch ${url}`);
+                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
+                }
+                const rawData: any[] = await response.json();
+                const data: SupportTicket[] = rawData.map(ticket => ({
+                    ...ticket,
+                    created: new Date(Date.parse(ticket.created)),
+                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
+                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
+                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
+                }));
+                return data;
+            } catch (error) {
+                alert(`Error: problem fetching ${url}`);
+                console.error('Fetch error:', error);
+                throw error;
+            }
+        }
+
+        function countUnresolvedEpicsPerWeekPerPod(tickets: SupportTicket[]) {
+            const epicCountsPerPod: { [pod: string]: { [endOfWeekDate: string]: number } } = {};
+
+	        // Create a sorted list of week-ending dates over the last six months
+            const now = new Date();
+            const currentWeekEnd = getWeekEndDate(now);
+            const sixMonthsAgo = new Date(now);
+            sixMonthsAgo.setMonth(now.getMonth() - 6);
+            const weeks = [];
+            let week = getWeekEndDate(sixMonthsAgo);
+            while (week <= currentWeekEnd) {
+                weeks.push(week);
+                const nextWeek = new Date(week);
+                nextWeek.setUTCDate(nextWeek.getUTCDate() + 7);
+                week = getWeekEndDate(nextWeek);
+            }
+
+            tickets.forEach(ticket => {
+                if (ticket.type !== 'Epic') return;
+
+                // Update logic to account for unresolved Epics as of the end of each week
+                weeks.forEach(weekEndDate => {
+                    if (ticket.created <= new Date(weekEndDate) && (!ticket.resolved || ticket.resolved > new Date(weekEndDate))) {
+                        let podKey = getPodKey(ticket.pod);
+
+                        if (!epicCountsPerPod[podKey]) {
+                            epicCountsPerPod[podKey] = {};
+                        }
+                        if (!epicCountsPerPod[podKey][weekEndDate]) {
+                            epicCountsPerPod[podKey][weekEndDate] = 0;
+                        }
+                        epicCountsPerPod[podKey][weekEndDate]++;
+                    }
+                });
+            });
+
+            return epicCountsPerPod;
+        }
+
+        function getPodKey(pod: string): string {
+            if (pod == null) {
+                pod = "Other"
+            }
+            
+            const normalizedPod = pod.toLowerCase();
+            if (normalizedPod.includes("flow")) return "Flow";
+            if (normalizedPod.includes("ui")) return "UI";
+            if (normalizedPod.includes("guru")) return "Guru";
+            if (normalizedPod.includes("t1")) return "T1";
+            return "Other";
+        }
+
+        function getWeekEndDate(date: Date) {
+            const dayOfWeek = date.getUTCDay();
+            const weekEndDate = new Date(date);
+            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+        }
+
+        function renderChart(epicCounts: { [pod: string]: { [endOfWeekDate: string]: number } }) {
+            const ctx = document.getElementById('chart') as HTMLCanvasElement;
+            if (!ctx) return;
+
+            const numPods = Object.keys(epicCounts).length;
+            const colors = generateColors(numPods);
+
+            const datasets = Object.entries(epicCounts).map(([pod, counts], index) => {
+                const weekData = Object.keys(counts).map(week => ({
+                    x: new Date(week),
+                    y: counts[week]
+                }));
+
+                return {
+                    label: `${pod}`,
+                    backgroundColor: colors[index],
+                    borderColor: colors[index],
+                    fill: false,
+                    data: weekData,
+                    borderWidth: 2
+                };
+            });
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: datasets
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'week',
+                                tooltipFormat: 'PP',
+                                displayFormats: {
+                                    week: 'PP'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Week Ending',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Epic Count',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const app = {
+            async created() {
+                getData().then(tickets => {
+                    const epicCounts = countUnresolvedEpicsPerWeekPerPod(tickets);
+                    renderChart(epicCounts);
+                }).catch(error => {
+                    console.error('Error loading data:', error);
+                });
+            }
+        };
+
+        Vue.createApp(app).mount('#app');
+    </script>
+
+    <script>
+        (async function compileAndExecute() {
+            const tsCode = document.getElementById('typescript-code').textContent;
+            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
+            eval(jsCode);
+        })();
+    </script>
+</body>
+</html>
