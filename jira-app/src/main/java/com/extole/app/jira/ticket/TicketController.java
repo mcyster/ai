@@ -65,7 +65,7 @@ public class TicketController {
                  .body("No secret specified");
     	}
     
-    	if (this.jiraWebhookSecret.isPresent() && !secret.equals(this.jiraWebhookSecret)) {
+    	if (this.jiraWebhookSecret.isPresent() && !secret.equals(this.jiraWebhookSecret.get())) {
     		logger.error("Secret parameter does not match JIRA_WEBHOOK_SECRET");
    	        return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
