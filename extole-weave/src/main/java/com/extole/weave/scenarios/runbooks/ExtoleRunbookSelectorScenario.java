@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
@@ -15,7 +17,6 @@ import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.extole.weave.scenarios.activity.ExtoleSupportActivityScenario.Response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.mustachejava.DefaultMustacheFactory;
 import com.github.mustachejava.Mustache;
@@ -23,6 +24,8 @@ import com.github.mustachejava.MustacheFactory;
 
 @Component
 public class ExtoleRunbookSelectorScenario implements Scenario<Void, Void> {
+    private static final Logger logger = LoggerFactory.getLogger(ExtoleRunbookSelectorScenario.class);
+    
     public final String NAME = "extoleRunbookSelector";
     private final String DESCRIPTION = "Find the best Runbook given a set of keywords (intended for testing)";
 
@@ -34,6 +37,7 @@ public class ExtoleRunbookSelectorScenario implements Scenario<Void, Void> {
     
     public ExtoleRunbookSelectorScenario(AiWeaveService aiWeaveService, ExtoleRunbookToolFactory runbookToolFactory,
             ExtoleRunbookDefault defaultRunbook) {
+        
         this.aiWeaveService = aiWeaveService;
         this.tools.add(runbookToolFactory.getRunbookSearchTool());
         this.defaultRunbookName = defaultRunbook.getName();

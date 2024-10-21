@@ -47,13 +47,15 @@ public class ExtoleRunbookConfiguration implements ExtoleRunbookScenarioLoader {
 
     private void registerRunbooks(ApplicationContext context) throws IOException, ExtoleRunbookConfigurationException {
         if (context instanceof ConfigurableApplicationContext) {
+            logger.info("Runbooks - load");
+
             ConfigurableApplicationContext configurableContext = (ConfigurableApplicationContext) context;
             PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
             Resource[] resources = resolver.getResources("classpath:/extole/runbooks/*.yml");
 
             ObjectMapper mapper = new YAMLMapper();
-
+            
             for (Resource resource : resources) {
                 logger.info("Loading Extole Runbook: " + resource.getURI().toString());
                 var name = capitalize(removeExtension(resource.getFilename()));
@@ -85,8 +87,8 @@ public class ExtoleRunbookConfiguration implements ExtoleRunbookScenarioLoader {
                     logger.error("Failed to load resource as a ExtoleConfigurableTimeRangeReportTool.Configuration from " + resource.getDescription(), exception);
                 }
             }
+            logger.info("Runbooks - loaded");
         }
-
     }
 
     private static String capitalize(String input) {

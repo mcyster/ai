@@ -2,7 +2,10 @@
 
 # Next
 
-- check for expired files
+- fix startup time
+- check for expired files - rebuild / handle
+- ticket to client scenario 
+- ticket to runbook scenario
 - ensure we beep-boop can respond to HELP, SUP, LAUNCH, SPEED
 - review noitficiations, callout suggestions in tickit
 - o1

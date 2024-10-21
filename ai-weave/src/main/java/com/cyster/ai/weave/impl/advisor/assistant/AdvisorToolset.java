@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.cyster.ai.weave.impl.code.CodeInterpreterToolImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiSchema;
@@ -17,6 +18,7 @@ import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
 
 import io.github.stefanbratanov.jvm.openai.CreateAssistantRequest;
 import io.github.stefanbratanov.jvm.openai.Function;
+import io.github.stefanbratanov.jvm.openai.Tool.FileSearchTool.FileSearch;
 import io.github.stefanbratanov.jvm.openai.ToolResources;
 
 class AdvisorToolset<C> {
@@ -40,7 +42,8 @@ class AdvisorToolset<C> {
                 fileIds = codeInterpreterTool.getFileIds();
             }
             else if (tool.getName().equals(SearchToolImpl.NAME)) {
-                requestBuilder.tool(new io.github.stefanbratanov.jvm.openai.Tool.FileSearchTool());
+                var search = new FileSearch(Optional.of(10), Optional.empty());
+                requestBuilder.tool(new io.github.stefanbratanov.jvm.openai.Tool.FileSearchTool(Optional.of(search)));
 
                 // TODO add type, create tools from AdvisorService, base type apply(requestBuilder)
                 @SuppressWarnings("unchecked")

@@ -100,7 +100,9 @@ public class AssistantAdvisorThread<CONTEXT> {
 
         var requestBuilder = CreateRunRequest.newBuilder()
             .assistantId(this.assistantId);
-        ThreadRun run = runsClient.createRun(thread.id(), requestBuilder.build());
+        
+        Optional<List<String>> include = Optional.empty();
+        ThreadRun run = runsClient.createRun(thread.id(), include, requestBuilder.build());
 
         String lastStatus = "";
         do {
