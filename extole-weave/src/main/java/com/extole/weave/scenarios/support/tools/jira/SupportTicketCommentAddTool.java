@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -69,6 +70,20 @@ class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
         {
             AtlassianDocumentMapper atlassianDocumentMapper = new AtlassianDocumentMapper();
             payload.set("body", atlassianDocumentMapper.fromMarkdown(request.comment));
+            
+            ArrayNode properties = JsonNodeFactory.instance.arrayNode();
+            
+            ObjectNode internalCommentProperty = JsonNodeFactory.instance.objectNode();
+            internalCommentProperty.put("key", "sd.public.comment");
+            
+            ObjectNode internalCommentValue = JsonNodeFactory.instance.objectNode();
+            internalCommentValue.put("internal", true);
+            
+            properties.add(internalCommentProperty);
+            
+            internalCommentProperty.set("value", internalCommentValue);
+            
+            payload.set("properties",  properties);       
         }
 
         if (testMode) {
