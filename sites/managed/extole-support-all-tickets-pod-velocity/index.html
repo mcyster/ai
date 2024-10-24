@@ -91,15 +91,23 @@
             lastSixMonths.setMonth(lastSixMonths.getMonth() - 6);
 
             tickets.forEach(ticket => {
-                if (!ticket.pod) return; // Skip tickets without a pod
+	        var pod = ticket.pod;
+		if (ticket.key?.startsWith("HELP")) {
+                    pod = "Support T1 Pod";
+                }
+
+		if (!pod) {
+		    pod = "Other";
+		}
+
                 const resolutionDate = ticket.resolved || new Date(); // Use current date if not resolved
                 if (resolutionDate < lastSixMonths) return; // Skip data older than 6 months
 
                 const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
                 let podKey = "Other";
-                const podLower = ticket.pod.toLowerCase();
+                const podLower = pod.toLowerCase();
                 if (podLower.includes("ui") || podLower.includes("flow") || podLower.includes("guru") || podLower.includes("t1")) {
-                    podKey = ticket.pod;
+                    podKey = pod;
                 }
 
                 if (!podResolveCounts[podKey]) {
