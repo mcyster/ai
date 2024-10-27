@@ -1,31 +1,33 @@
 package com.extole.weave.scenarios.support.tools.jira;
 
+
 import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
-import com.cyster.jira.client.adf.writer.AtlassianDocumentMapper;
 import com.extole.jira.support.SupportTicketException;
 import com.extole.jira.support.SupportTicketService;
 import com.extole.weave.scenarios.support.tools.ExtoleSupportTool;
-import com.extole.weave.scenarios.support.tools.jira.SupportTicketCommentAddTool.Request;
+import com.extole.weave.scenarios.support.tools.jira.SupportTicketClientSetTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
-class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
-    private static final Logger logger = LogManager.getLogger(SupportTicketCommentAddTool.class);
+public class SupportTicketClientSetTool implements ExtoleSupportTool<Request> {
+    private static final Logger logger = LogManager.getLogger(SupportTicketClientSetTool.class);
 
     private SupportTicketService supportTicketService;
 
-    SupportTicketCommentAddTool(SupportTicketService supportTicketService) {
+    SupportTicketClientSetTool(SupportTicketService supportTicketService,
+        @Value("${JIRA_TEST_MODE:false}") boolean testMode) {
         this.supportTicketService = supportTicketService;
     }
 
@@ -36,7 +38,7 @@ class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
 
     @Override
     public String getDescription() {
-        return "Post a comment to a the support ticket system";
+        return "Specify the organization (aka client) associated with a ticket";
     }
 
     @Override
@@ -50,41 +52,21 @@ class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
             throw new ToolException("Attribute 'key' not specified");
         }
 
-        if (request.comment == null || request.comment.isEmpty()) {
-            throw new ToolException("Attribute 'comment' must be specified");
-        }
-
-        ObjectNode payload = JsonNodeFactory.instance.objectNode();
-        {
-            AtlassianDocumentMapper atlassianDocumentMapper = new AtlassianDocumentMapper();
-            payload.set("body", atlassianDocumentMapper.fromMarkdown(request.comment));
-            
-            ArrayNode properties = JsonNodeFactory.instance.arrayNode();
-            
-            ObjectNode internalCommentProperty = JsonNodeFactory.instance.objectNode();
-            internalCommentProperty.put("key", "sd.public.comment");
-            
-            ObjectNode internalCommentValue = JsonNodeFactory.instance.objectNode();
-            internalCommentValue.put("internal", true);
-            
-            properties.add(internalCommentProperty);
-            
-            internalCommentProperty.set("value", internalCommentValue);
-            
-            payload.set("properties",  properties);       
+        if (request.clientShortName == null || request.clientShortName.isEmpty()) {
+            throw new ToolException("Attribute 'clientShortName' must be specified");
         }
 
         try {
-			supportTicketService.addComment(request.key, request.comment);
+			supportTicketService.setClient(request.key, request.clientShortName);
 		} catch (SupportTicketException exception) {
-			throw new ToolException("Error adding comment to ticket: " + request.key, exception);
+			throw new ToolException("Unable to set clientShortName: " + request.clientShortName + " on ticket: " + request.key, exception);
 		}
 
         ObjectNode response = JsonNodeFactory.instance.objectNode();
         response.put("key", request.key);
         return response;
     }
-
+   
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass());
     }
@@ -94,8 +76,8 @@ class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
         @JsonProperty(required = true)
         public String key;
 
-        @JsonPropertyDescription("comment in Markdown format")
+        @JsonPropertyDescription("Client Short Name")
         @JsonProperty(required = true)
-        public String comment;
+        public String clientShortName;
     }
 }

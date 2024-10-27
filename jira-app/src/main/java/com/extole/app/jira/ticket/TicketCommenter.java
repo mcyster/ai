@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
+import com.extole.weave.scenarios.client.ExtoleSupportTicketClientScenario;
 import com.extole.weave.scenarios.runbooks.ExtoleSupportTicketScenario;
 
 @Service
@@ -22,9 +23,11 @@ public class TicketCommenter {
     private static final Logger ticketLogger = LogManager.getLogger("tickets");
 
     private ExtoleSupportTicketScenario supportTicketScenario;
+    private ExtoleSupportTicketClientScenario supportTicketClientScenario;
 
-    public TicketCommenter(ExtoleSupportTicketScenario supportTicketScenario) {
+    public TicketCommenter(ExtoleSupportTicketScenario supportTicketScenario, ExtoleSupportTicketClientScenario supportTicketClientScenario) {
         this.supportTicketScenario = supportTicketScenario;
+        this.supportTicketClientScenario = supportTicketClientScenario;
     }
 
     @Async("ticketCommentTaskExecutor")
@@ -38,11 +41,34 @@ public class TicketCommenter {
     }
 
     void processMessage(String ticketNumber, Optional<String> prompt) {
-        logger.info("Ticket - processing " + ticketNumber + " asynchronously on thread " + Thread.currentThread().getName());
 
+        clientForTicket(ticketNumber);
+        
+        commentOnTicket(ticketNumber, prompt);
+    }
+
+    private void clientForTicket(String ticketNumber) {
+        Message response;
+
+        var parameters = new com.extole.weave.scenarios.client.ExtoleSupportTicketClientScenario.Parameters(ticketNumber);        
+        try {
+            var conversation = supportTicketClientScenario.createConversationBuilder(parameters, null).start();
+
+            response = conversation.respond();
+        } catch (ConversationException exception) {
+            logger.error("Problem processing ticket: " + ticketNumber, exception);
+            return;
+        }
+        logger.info("Ticket - client idenfified " + ticketNumber + " : " + response);
+    }
+
+    private void commentOnTicket(String ticketNumber, Optional<String> prompt) {
+    	Message response;
+
+        logger.info("Ticket - processing " + ticketNumber + " asynchronously on thread " + Thread.currentThread().getName());
+    	
         var parameters = new com.extole.weave.scenarios.runbooks.ExtoleSupportTicketScenario.Parameters(ticketNumber);
 
-        Message response;
         try {
             var conversation = supportTicketScenario.createConversationBuilder(parameters, null).start();
 
@@ -60,7 +86,7 @@ public class TicketCommenter {
 
         ticketLogger.info(ticketNumber + " " + response.toString());
     }
-
+    
     @Bean(name = "ticketCommentTaskExecutor")
     public ThreadPoolTaskExecutor getTaskExecutor() {
         var taskExecutor = new ThreadPoolTaskExecutor();

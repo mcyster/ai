@@ -11,6 +11,7 @@ import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.weave.scenarios.support.tools.jira.SupportTicketGetTool;
+import com.extole.weave.scenarios.support.tools.jira.SupportTicketClientSetTool;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.extole.weave.scenarios.client.ExtoleSupportTicketClientScenario.Parameters;
 import com.extole.weave.scenarios.support.tools.ExtoleClientGetTool;
@@ -18,7 +19,7 @@ import com.extole.weave.scenarios.support.tools.ExtoleClientSearchTool;
 
 @Component
 public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, Void> {
-    private final String DESCRIPTION = "Find the Extole client id associated for the specified ticket";
+    private final String DESCRIPTION = "Find the Extole client associated for the specified ticket";
 
     private AiWeaveService aiWeaveService;
     private Optional<Scenario<Parameters, Void>> scenario = Optional.empty();
@@ -29,10 +30,12 @@ public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, V
     
     public ExtoleSupportTicketClientScenario(AiWeaveService aiWeaveService, 
         SupportTicketGetTool ticketGetTool,
+        SupportTicketClientSetTool ticketOrganizationSetTool,
         ExtoleClientGetTool extoleClientGetTool,
         ExtoleClientSearchTool extoleClientSearchTool) {
         this.aiWeaveService = aiWeaveService;
         this.tools.add(ticketGetTool);
+        this.tools.add(ticketOrganizationSetTool);
         this.tools.add(extoleClientGetTool);
         this.tools.add(extoleClientSearchTool);
         
@@ -85,6 +88,8 @@ URLs often often in the form client_id=CLIENT_ID
 If you find a client_id, verify the clientId and get the client name and short name using the %s
 
 If you cant find a client_id load all clients using %s and see if you can find a matching name or short name in the ticket.
+
+If a client is found set the organization on the ticket use the client short name.
 
 If no client is found use NOT_FOUND for the client_id, name and short_name.
 

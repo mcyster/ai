@@ -10,9 +10,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.cyster.jira.client.adf.reader.MarkDownDocumentMapper;
+import com.cyster.jira.client.adf.writer.AtlassianDocumentMapper;
 import com.cyster.jira.client.web.JiraWebClientFactory;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import reactor.core.publisher.Mono;
 
 @Component
 public class SupportTicketService {
@@ -20,9 +26,11 @@ public class SupportTicketService {
     private static int MAX_RETRIES = 5;
     
     private JiraWebClientFactory jiraWebClientFactory;
+    private SupportTicketClients supportTicketClients;
     
-    SupportTicketService(JiraWebClientFactory jiraWebClientFactory) {
+    SupportTicketService(JiraWebClientFactory jiraWebClientFactory, SupportTicketClients supportTicketClients) {
         this.jiraWebClientFactory = jiraWebClientFactory;
+        this.supportTicketClients = supportTicketClients; 
     }
     
     public TicketQueryBuilder ticketQueryBuilder() {
@@ -77,6 +85,95 @@ public class SupportTicketService {
         return Optional.of(tickets.get(0));
     }
     
+    public void addComment(String ticketNumber, String comment)  throws SupportTicketException {
+        if (isAtlassianDocumentFormat(comment)) {
+            throw new SupportTicketException("Attribute 'comment' must be in markdown format");
+        }
+
+        ObjectNode payload = JsonNodeFactory.instance.objectNode();
+        {
+            AtlassianDocumentMapper atlassianDocumentMapper = new AtlassianDocumentMapper();
+            payload.set("body", atlassianDocumentMapper.fromMarkdown(comment));
+            
+            ArrayNode properties = JsonNodeFactory.instance.arrayNode();
+            
+            ObjectNode internalCommentProperty = JsonNodeFactory.instance.objectNode();
+            internalCommentProperty.put("key", "sd.public.comment");
+            
+            ObjectNode internalCommentValue = JsonNodeFactory.instance.objectNode();
+            internalCommentValue.put("internal", true);
+            
+            properties.add(internalCommentProperty);
+            
+            internalCommentProperty.set("value", internalCommentValue);
+            
+            payload.set("properties",  properties);       
+        }
+
+        JsonNode result;
+        try {
+            result = this.jiraWebClientFactory.getWebClient().post()
+            .uri(uriBuilder -> uriBuilder.path("/rest/api/3/issue/" + ticketNumber + "/comment").build())
+            .accept(MediaType.APPLICATION_JSON)
+            .contentType(MediaType.APPLICATION_JSON)
+            .bodyValue(payload)
+            .retrieve()
+            .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response ->
+                response.bodyToMono(String.class).flatMap(errorBody ->
+                    Mono.error(new SupportTicketException("Problems posting comment to ticket.  Bad request code: " + response.statusCode() + " body: " + errorBody + " payload:" + payload.toString()))
+                )
+            )
+            .bodyToMono(JsonNode.class)
+            .block();
+        } catch(Throwable exception) {
+            if (exception.getCause() instanceof SupportTicketException) {
+                throw (SupportTicketException)exception.getCause();
+            }
+            throw exception;
+        }
+
+        if (result == null || !result.has("id")) {
+            throw new SupportTicketException("Failed to add comment, unexpected response");
+        }
+    }
+    
+    public void setClient(String ticketNumber, String clientShortName)  throws SupportTicketException {
+        var organizationIndex = supportTicketClients.getJiraOrganizationIndexFromClientShortName(clientShortName);
+	
+        ObjectNode payload = JsonNodeFactory.instance.objectNode();
+        {            
+            ObjectNode fields = JsonNodeFactory.instance.objectNode();
+                        
+            ArrayNode values = JsonNodeFactory.instance.arrayNode();
+            values.add(organizationIndex);
+            fields.set("customfield_11100", values);     
+            
+            payload.set("fields",  fields);       
+        }
+
+        try {
+            this.jiraWebClientFactory.getWebClient().put()
+                .uri(uriBuilder -> uriBuilder.path("/rest/api/3/issue/" + ticketNumber).build())
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(payload)
+                .retrieve()
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response ->
+                response.bodyToMono(String.class).map(errorBody ->
+                    new SupportTicketException("Problems posting organization " + organizationIndex + " to ticket" +
+                        "Bad request code: " + response.statusCode() + " body: " + errorBody + " payload:" + payload.toString())
+                    ).flatMap(Mono::error)
+                )
+            .toBodilessEntity()
+            .block();
+        } catch(Throwable exception) {
+            if (exception.getCause() instanceof SupportTicketException) {
+                throw (SupportTicketException)exception.getCause();
+            }
+            throw exception;
+        }
+    }
+    
     private List<FullSupportTicket> fetchFullTickets(String query, Optional<Integer> limit) throws SupportTicketException {
 
         List<String> fields = new ArrayList<>() {{
@@ -92,6 +189,7 @@ public class SupportTicketService {
             add("statuscategorychangedate");
             add("reporter");
             add("assignee");
+            add("customfield_11100");
             add("customfield_11301");
             add("customfield_11302");
             add("customfield_11312");
@@ -173,7 +271,7 @@ public class SupportTicketService {
          return tickets;
      }
         
-    private static List<FullSupportTicket> issuesToFullTicketResponses(ArrayNode issues) {
+    private List<FullSupportTicket> issuesToFullTicketResponses(ArrayNode issues) {
         List<FullSupportTicket> tickets = new ArrayList<>();
 
         for(JsonNode issue: issues) {
@@ -183,7 +281,7 @@ public class SupportTicketService {
         return tickets;      
     }
  
-    private static FullSupportTicket issueToFullTicketResponse(JsonNode issue) {
+    private FullSupportTicket issueToFullTicketResponse(JsonNode issue) {
         var ticketBuilder = FullSupportTicket.newBuilder();
         ticketBuilder.ticket(issueToTicketResponse(issue));
         
@@ -223,13 +321,25 @@ public class SupportTicketService {
         return ticketBuilder.build();   
     }
        
-    private static SupportTicket issueToTicketResponse(JsonNode issue) {
+    private SupportTicket issueToTicketResponse(JsonNode issue) {
         JsonNode fields = issue.path("fields");
 
-        String client = null;
+        String clientShortName = null;
+        JsonNode organizationField = fields.path("customfield_11100");
+        JsonNode organizationNode = organizationField.isArray() && organizationField.size() > 0 ? organizationField.get(0) : null;
+
+        if (organizationNode != null && organizationNode.has("value")) {
+            var organizationIndex = organizationNode.path("value").asInt();
+            try {
+				clientShortName = supportTicketClients.getClientShortNameForJiraOrganizationIndex(organizationIndex);
+			} catch (SupportTicketException e) {
+				clientShortName = null;
+			}
+        }
+        
         String value = fields.path("customfield_11312").path("value").asText();
         if (value != null && !value.trim().isEmpty()) {
-            client = value.split("-")[0].trim();
+            clientShortName = value.split("-")[0].trim();
         }
 
         var ticketBuilder = SupportTicket.newBuilder();
@@ -246,7 +356,7 @@ public class SupportTicketService {
         ticketBuilder.priority(fields.path("priority").path("name").asText());
         ticketBuilder.reporter(fields.path("reporter").path("emailAddress").asText(null));
         ticketBuilder.assignee(fields.path("assignee").path("emailAddress").asText(null));
-        ticketBuilder.client(client);
+        ticketBuilder.client(clientShortName);
         ticketBuilder.clientId(fields.path("customfield_11320").asText(null));
         ticketBuilder.pod(fields.path("customfield_11326").asText(null));
         ticketBuilder.pairCsm(fields.path("customfield_11375").path("emailAddress").asText(null));
@@ -268,4 +378,21 @@ public class SupportTicketService {
         
         return ticketBuilder.build();
     }
+    
+    private static boolean isAtlassianDocumentFormat(String input) {
+        ObjectMapper mapper = new ObjectMapper();
+
+        try {
+            JsonNode rootNode = mapper.readTree(input);
+
+            if (rootNode.has("type") && "doc".equals(rootNode.get("type").asText()) && rootNode.has("content")) {
+                return true;
+            }
+        } catch (Exception e) {
+            return false;
+        }
+
+        return false;
+    }
+ 
 }
