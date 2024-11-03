@@ -49,7 +49,7 @@ public class SupportTicketGetTool implements ExtoleSupportTool<Request> {
         try {
             ticket = supportTicketService.getTicket(request.key);
         } catch (SupportTicketException exception) {
-            throw new ToolException("Error while loading support tikcet: " + request.key, exception);
+            throw new ToolException("Error while loading support ticket: " + request.key, exception);
         }
         
         if (ticket.isEmpty()) {

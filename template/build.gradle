@@ -1,0 +1,6 @@
+
+version = '0.0.1-SNAPSHOT'
+
+dependencies {
+    implementation 'com.github.spullara.mustache.java:compiler:0.9.10'
+}

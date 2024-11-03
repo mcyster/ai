@@ -21,11 +21,11 @@ dependencies {
    
      implementation 'net.thisptr:jackson-jq:1.0.0-preview.20240207'
    
-    implementation 'com.github.spullara.mustache.java:compiler:0.9.10'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.16.2'
     implementation 'com.google.guava:guava:33.0.0-jre'
     implementation 'com.opencsv:opencsv:5.9'
 
+    implementation project(':template')
     implementation project(':ai-weave')
     implementation project(':jira-client')
     implementation project(':extole-jira')

@@ -1,16 +1,11 @@
 package com.extole.weave.scenarios.report;
 
-import java.io.StringReader;
-import java.io.StringWriter;
-
-
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.Mustache;
-import com.github.mustachejava.MustacheFactory;
+
 import com.cyster.ai.weave.service.scenario.Scenario;
+import com.cyster.template.StringTemplate;
 import com.extole.weave.scenarios.help.ExtoleHelpScenario;
 import com.extole.weave.scenarios.report.ExtoleReportScenario.Parameters;
 import com.extole.weave.session.ExtoleSessionContext;
@@ -53,16 +48,12 @@ public class ExtoleReportScenario implements Scenario<Parameters, ExtoleSessionC
 
     @Override
     public ConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSessionContext context) {
-        String message = "You are looking at the report with id: {{report_id}}";
+        String messageTemplate = "You are looking at the report with id: {{report_id}}";
 
-        MustacheFactory mostacheFactory = new DefaultMustacheFactory();
-        Mustache mustache = mostacheFactory.compile(new StringReader(message), "message");
-        var messageWriter = new StringWriter();
-        mustache.execute(messageWriter, parameters);
-        messageWriter.flush();
+        String message = new StringTemplate(messageTemplate).render(parameters);
 
         return this.helpScenario.createConversationBuilder(null, context)
-            .addMessage(messageWriter.toString());
+            .addMessage(message);
     }
 
 }

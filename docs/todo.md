@@ -2,6 +2,7 @@
 
 # Next
 
+- set "strict": true on tool parameters
 - fix startup time
 - check for expired files - rebuild / handle
 - ticket to client scenario 

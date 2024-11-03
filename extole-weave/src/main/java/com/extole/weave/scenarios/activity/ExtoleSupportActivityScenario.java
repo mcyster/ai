@@ -1,7 +1,5 @@
 package com.extole.weave.scenarios.activity;
 
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -12,11 +10,8 @@ import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.extole.weave.scenarios.activity.ExtoleSupportTicketActivityScenario.Response;
+import com.cyster.template.StringTemplate;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.Mustache;
-import com.github.mustachejava.MustacheFactory;
 
 @Component
 public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
@@ -111,12 +106,7 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
                 put("defaultActivity", DEFAULT_ACTIVITY);
             }};
             
-            MustacheFactory mostacheFactory = new DefaultMustacheFactory();
-            Mustache mustache = mostacheFactory.compile(new StringReader(instructionsTemplate), "instructions");
-            var messageWriter = new StringWriter();
-            mustache.execute(messageWriter, parameters);
-            messageWriter.flush();
-            var instructions = messageWriter.toString();
+            String instructions = new StringTemplate(instructionsTemplate).render(parameters);
 
             System.out.println("!!!!!!!! extole suppport activity instructions: " + instructions);
             

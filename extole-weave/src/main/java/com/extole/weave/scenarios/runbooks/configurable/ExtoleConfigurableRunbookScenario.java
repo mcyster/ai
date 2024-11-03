@@ -1,22 +1,17 @@
 package com.extole.weave.scenarios.runbooks.configurable;
 
-import java.io.StringReader;
-import java.io.StringWriter;
-
+import com.cyster.template.StringTemplate;
 import com.extole.weave.scenarios.runbooks.RunbookScenario;
 import com.extole.weave.scenarios.runbooks.RunbookScenarioParameters;
 import com.extole.weave.scenarios.support.ExtoleSupportHelpScenario;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.Mustache;
-import com.github.mustachejava.MustacheFactory;
 
 public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
     private String name;
     private String description;
     private String keywords;
-    private String instructions;
+    private String instructionsTemplate;
     
     private ExtoleSupportHelpScenario helpScenario;
 
@@ -24,7 +19,7 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
         this.name = name;
         this.description = configuration.getDescription();
         this.keywords = configuration.getKeywords();
-        this.instructions = configuration.getInstructions();
+        this.instructionsTemplate = configuration.getInstructions();
         this.helpScenario = helpScenario;
     }
 
@@ -54,17 +49,11 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
 
     @Override
     public ConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters, Void context) {
-        MustacheFactory mostacheFactory = new DefaultMustacheFactory();
-        Mustache mustache = mostacheFactory.compile(new StringReader(instructions), "instructions");
-        var messageWriter = new StringWriter();
-        mustache.execute(messageWriter, parameters);
-        messageWriter.flush();
+        String instructions = new StringTemplate(instructionsTemplate).render(parameters);
 
-        var interpretedInstructions = messageWriter.toString();
-                
-        System.out.println("!!!! Runbook: " + this.name + " instructions" + interpretedInstructions);
+        System.out.println("!!!! Runbook: " + this.name + " instructions" + instructions);
 
-        return this.helpScenario.createConversationBuilder(null, null).setOverrideInstructions(interpretedInstructions);
+        return this.helpScenario.createConversationBuilder(null, null).setOverrideInstructions(instructions);
     }
     
     public static class Configuration {

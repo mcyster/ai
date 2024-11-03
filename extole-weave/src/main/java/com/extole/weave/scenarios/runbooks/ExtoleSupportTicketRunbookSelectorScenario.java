@@ -1,7 +1,5 @@
 package com.extole.weave.scenarios.runbooks;
 
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,11 +13,9 @@ import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
+import com.cyster.template.StringTemplate;
 import com.extole.weave.scenarios.support.tools.jira.SupportTicketGetTool;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.mustachejava.DefaultMustacheFactory;
-import com.github.mustachejava.Mustache;
-import com.github.mustachejava.MustacheFactory;
 import com.extole.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorScenario.Parameters;
 
 @Component
@@ -134,14 +130,9 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
                 put("schema", schema);
                 put("defaultRunbookName", defaultRunbookName);
             }};
-            
-            MustacheFactory mostacheFactory = new DefaultMustacheFactory();
-            Mustache mustache = mostacheFactory.compile(new StringReader(instructionsTemplate), "instructions");
-            var messageWriter = new StringWriter();
-            mustache.execute(messageWriter, parameters);
-            messageWriter.flush();
-            var instructions = messageWriter.toString();
     
+            String instructions = new StringTemplate(instructionsTemplate).render(parameters);
+
             System.out.println("!!!!!!!! extole support ticket runbook instructions: " + instructions);
             
             AssistantScenarioBuilder<Parameters, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
