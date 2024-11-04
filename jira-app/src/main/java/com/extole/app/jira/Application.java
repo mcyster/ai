@@ -23,7 +23,7 @@ import com.extole.client.ExtoleClientScan;
 import com.extole.jira.ExtoleJiraScan;
 import com.extole.rest.ExtoleRestScan;
 import com.extole.tickets.rest.ExtoleTicketsScan;
-import com.extole.weave.ExtoleWeaveScan;
+import com.extole.zuper.weave.ExtoleWeaveScan;
 
 @SpringBootApplication
 @Import(value = { 

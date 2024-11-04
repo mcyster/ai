@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
-import com.extole.weave.scenarios.client.ExtoleSupportTicketClientScenario;
-import com.extole.weave.scenarios.runbooks.ExtoleSupportTicketScenario;
+import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario;
+import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketScenario;
 
 @Service
 @EnableAsync
@@ -50,7 +50,7 @@ public class TicketCommenter {
     private void clientForTicket(String ticketNumber) {
         Message response;
 
-        var parameters = new com.extole.weave.scenarios.client.ExtoleSupportTicketClientScenario.Parameters(ticketNumber);        
+        var parameters = new com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario.Parameters(ticketNumber);        
         try {
             var conversation = supportTicketClientScenario.createConversationBuilder(parameters, null).start();
 
@@ -67,7 +67,7 @@ public class TicketCommenter {
 
         logger.info("Ticket - processing " + ticketNumber + " asynchronously on thread " + Thread.currentThread().getName());
     	
-        var parameters = new com.extole.weave.scenarios.runbooks.ExtoleSupportTicketScenario.Parameters(ticketNumber);
+        var parameters = new com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketScenario.Parameters(ticketNumber);
 
         try {
             var conversation = supportTicketScenario.createConversationBuilder(parameters, null).start();

@@ -1,0 +1,14 @@
+
+plugins {
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'io.spring.dependency-management' version "${dependencyManagementVersion}"
+    id 'java'
+}
+
+version = '0.0.1-SNAPSHOT'
+
+dependencies {
+    implementation 'org.springframework:spring-context' 
+
+    implementation project(':ai-weave')
+}

@@ -23,9 +23,8 @@ import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
-import com.cyster.weave.service.scenariosession.ScenarioSession;
-import com.cyster.weave.service.scenariosession.ScenarioSessionStore;
-import com.extole.weave.session.ExtoleSessionContext;
+import com.cyster.weave.session.service.scenariosession.ScenarioSession;
+import com.cyster.weave.session.service.scenariosession.ScenarioSessionStore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -39,12 +38,14 @@ public class ConversationController {
     private ScenarioSessionStore scenarioSessionStore;
     private ScenarioSet scenarioStore;
     private ObjectMapper objectMapper;
-
+    private List<ScenarioContextFactory<?>> contextFactories;
+    
     private static final Logger logger = LogManager.getLogger(ConversationController.class);
 
-    public ConversationController(ScenarioSessionStore scenarioSessionStore, ScenarioSet scenarioStore) {
+    public ConversationController(ScenarioSessionStore scenarioSessionStore, ScenarioSet scenarioStore, List<ScenarioContextFactory<?>> contextFactories) {
         this.scenarioSessionStore = scenarioSessionStore;
         this.scenarioStore = scenarioStore;
+        this.contextFactories = contextFactories;
         this.objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
     }
@@ -201,26 +202,7 @@ public class ConversationController {
         return new MessageResponse.Builder(level).create(response.getType().toString(), response.getContent(),
                 response.operation());
     }
-
-    // TODO make this pluggable
-    private ExtoleSessionContext getSessionContext(MultiValueMap<String, String> headers)
-            throws ScenarioContextException {
-        if (headers == null || !headers.containsKey("authorization")) {
-            throw new ScenarioContextException("Unable to create ExtoleSessionContext expected Authorization header");
-        }
-        String authorizationHeader = headers.getFirst("authorization");
-
-        if (authorizationHeader != null) {
-            var accessToken = authorizationHeader.replace("Bearer ", "");
-            if (accessToken.length() > 0) {
-                return new ExtoleSessionContext(accessToken);
-            }
-        }
-
-        throw new ScenarioContextException(
-                "Unable to create ExtoleSessionContext, Authorization header exists but not token found");
-    }
-
+    
     @SuppressWarnings("unchecked")
     private <PARAMETERS, CONTEXT> ScenarioSession<PARAMETERS, CONTEXT> createScenarioSession(
             Scenario<PARAMETERS, CONTEXT> scenario, Map<String, Object> parameterMap,
@@ -243,12 +225,20 @@ public class ConversationController {
                     exception);
         }
 
+        boolean match = false;
         CONTEXT context = null;
-        if (scenario.getContextClass() == ExtoleSessionContext.class) {
-            context = (CONTEXT) getSessionContext(headers);
+        for (ScenarioContextFactory<?> factory : contextFactories) {
+            if (factory.getContextClass().equals(scenario.getContextClass())) {
+                context = (CONTEXT) factory.createContext(headers);
+                match = true;
+            }
         }
-
+        if (!match) {
+      	    throw new ScenarioContextException("No Context Factory Found for Scenario: " + scenario.getName());
+        }
+        
         return scenarioSessionStore.addSession(scenario, parameters,
                 scenario.createConversationBuilder(parameters, context).start());
     }
+
 }

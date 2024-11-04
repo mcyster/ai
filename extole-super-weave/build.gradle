@@ -1,0 +1,43 @@
+
+plugins {
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'io.spring.dependency-management' version "${dependencyManagementVersion}"
+    id 'java'
+}
+
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.8.0.202311291450-r'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:6.8.0.202311291450-r'
+
+    implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema-jakarta:2.16.1'
+   
+     implementation 'net.thisptr:jackson-jq:1.0.0-preview.20240207'
+   
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.16.2'
+    implementation 'com.google.guava:guava:33.0.0-jre'
+    implementation 'com.opencsv:opencsv:5.9'
+
+    implementation project(':template')
+    implementation project(':ai-weave')
+    implementation project(':jira-client')
+    implementation project(':extole-jira')
+    implementation project(':scheduler-weave')
+    implementation project(':web-weave')
+    implementation project(':extole-client')
+        
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+}
+
+bootJar {
+    enabled = false
+}
+
+

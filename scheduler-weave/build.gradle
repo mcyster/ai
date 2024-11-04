@@ -20,6 +20,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema-jakarta:2.16.1'
 
     implementation project(':ai-weave')
+    implementation project(':weave-session')
     implementation project(':cyster-weave')
 
 

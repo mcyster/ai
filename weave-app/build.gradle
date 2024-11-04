@@ -29,7 +29,7 @@ dependencies {
     implementation project(':extole-tickets-rest')
     implementation project(':extole-client')
     implementation project(':scheduler-weave')    
-    implementation project(':extole-weave')
+    implementation project(':extole-super-weave')
     implementation project(':cyster-weave')
     implementation project(':web-weave')
     implementation project(':weave-rest')
