@@ -234,7 +234,7 @@ public class ConversationController {
             }
         }
         if (!match) {
-      	    throw new ScenarioContextException("No Context Factory Found for Scenario: " + scenario.getName());
+      	    throw new ScenarioContextException("No Context Factory Found for Scenario: " + scenario.getName() + " with context type: " + scenario.getContextClass().getName());
         }
         
         return scenarioSessionStore.addSession(scenario, parameters,

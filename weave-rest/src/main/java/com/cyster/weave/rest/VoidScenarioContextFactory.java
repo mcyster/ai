@@ -1,4 +1,4 @@
-package com.extole.app.jira;
+package com.cyster.weave.rest;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;

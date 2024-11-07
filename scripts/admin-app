@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+set -eu
+set -o pipefail
+
+usage="Usage: $(basename $0) [-h][-r]
+    -h - help
+    -r - restart
+
+Starts the admin-app in the background
+"
+
+restart=0
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|-\?)
+            echo "$usage"
+            exit 0
+        ;;
+        -r)
+            restart=1
+        ;;
+        *)
+	    break
+        ;;
+    esac
+    shift
+done
+
+if [ -z "$AI_HOME" ]; then
+    echo "Error: AI_HOME not defined, have you setup the environment" 1>&2
+    exit 1
+fi
+
+if [ -z "$EXTOLE_SUPER_USER_API_KEY" ]; then
+    echo "Error: no environment variable EXTOLE_SUPER_USER_API_KEY" 1>&2
+    exit 1
+fi
+
+if ! command -v java &>/dev/null; then
+    echo "Error: java not found" 1>&2
+    exit 1
+fi
+
+app_home=$AI_HOME/admin-app
+
+mkdir -p $app_home/logs
+
+jar="$(find $app_home/libs -name "admin-app*.jar" | sort | tail -1)"
+
+if [ $restart -eq 1 ]; then
+    if pgrep -n -f $jar >/dev/null; then
+        echo -n "admin-app stopping..."
+        pkill -f $jar
+
+        end=$((SECONDS+240))
+        while pgrep -f $jar >/dev/null; do
+            if [ $SECONDS -ge $end ]; then
+                echo "failed."
+                echo "Failed to stop admin-app within 2 minutes." 1>&2
+                exit 1
+            fi
+            sleep 5
+            echo -n "."
+        done
+        echo "stopped."
+    fi
+fi
+
+if pgrep -f libs/admin-app >/dev/null; then
+    echo "admin-app already running on $(pgrep -f libs/admin-app)"
+    exit 0
+fi
+
+echo "admin-app $jar last modified $(stat -c '%y' $jar)"
+
+if [ -z "${ADMIN_APP_PROFILE:-}" ]; then
+    ADMIN_APP_PROFILE=prod
+fi
+
+cd $app_home
+nohup java -jar "$jar" --spring.profiles.active="$ADMIN_APP_PROFILE" > "$app_home/logs/admin-app-output.log" 2>&1 &
+
+echo "admin-app running in background as process: $!"
+

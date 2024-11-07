@@ -1,11 +1,13 @@
 package com.extole.app.admin;
 
+import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
 
 import com.cyster.weave.rest.conversation.ScenarioContextException;
 import com.cyster.weave.rest.conversation.ScenarioContextFactory;
 import com.extole.admin.weave.session.ExtoleSessionContext;
 
+@Component
 public class ExtoleScenarioContextFactory implements ScenarioContextFactory<ExtoleSessionContext> {
 
 	@Override

@@ -80,6 +80,7 @@ You help with questions around using the Extole SaaS Marketing platform.
     
             this.scenario = Optional.of(builder.getOrCreate());
         }
-        return this;
+        
+        return this.scenario.get();
     }
 }
