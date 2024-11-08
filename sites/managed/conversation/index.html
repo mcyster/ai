@@ -52,6 +52,16 @@
         const urlParams = new URLSearchParams(window.location.search);
         const conversationId = urlParams.get('id');
 
+        // Prefill form values from URL
+        document.addEventListener("DOMContentLoaded", () => {
+            const scenario = urlParams.get('scenario');
+            const prompt = urlParams.get('prompt');
+            const parameters = urlParams.get('parameters');
+            if (scenario) document.getElementById('scenario').value = decodeURIComponent(scenario);
+            if (prompt) document.getElementById('prompt').value = decodeURIComponent(prompt);
+            if (parameters) document.getElementById('parameters').value = decodeURIComponent(parameters);
+        });
+
         if (conversationId) {
             fetch(`/conversations/${conversationId}`)
                 .then(response => response.json())
@@ -70,6 +80,11 @@
                 event.preventDefault();
                 const form = event.target;
                 const prompt = form.prompt.value;
+
+                // Update URL with current form values
+                const currUrl = new URL(window.location.href);
+                currUrl.searchParams.set('prompt', prompt);
+                window.history.pushState({}, '', currUrl);
     
                 fetch(`/conversations/${conversationId}/messages`, {
                     method: 'POST',
@@ -108,6 +123,13 @@
                         }
                     });
                 }
+
+                // Update URL with current form values
+                const currUrl = new URL(window.location.href);
+                currUrl.searchParams.set('scenario', scenario);
+                currUrl.searchParams.set('prompt', prompt);
+                currUrl.searchParams.set('parameters', parametersText);
+                window.history.pushState({}, '', currUrl);
     
                 const requestData = { scenario, prompt, parameters };
 
