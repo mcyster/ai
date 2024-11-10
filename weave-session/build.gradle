@@ -12,3 +12,8 @@ dependencies {
 
     implementation project(':ai-weave')
 }
+
+
+bootJar {
+    enabled = false
+}

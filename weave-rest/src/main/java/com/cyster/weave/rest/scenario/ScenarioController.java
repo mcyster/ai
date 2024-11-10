@@ -1,13 +1,12 @@
 package com.cyster.weave.rest.scenario;
 
 import java.util.Comparator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,14 +28,12 @@ public class ScenarioController {
     @GetMapping("/scenarios")
     public Set<ScenarioResponse> index() {
         logger.debug("List scenarios");
-        
+
         return scenarioStore.getScenarios().stream()
-            .map(scenario -> new ScenarioResponse.Builder()
-                .setName(scenario.getName())
-                .setDescription(scenario.getDescription())
-                .setParameterClass(scenario.getParameterClass())
-                .build())
-            .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(ScenarioResponse::getName))));
+                .map(scenario -> new ScenarioResponse.Builder().setName(scenario.getName())
+                        .setDescription(scenario.getDescription()).setParameterClass(scenario.getParameterClass())
+                        .build())
+                .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(ScenarioResponse::getName))));
 
     }
 
@@ -46,13 +43,10 @@ public class ScenarioController {
         try {
             scenario = scenarioStore.getScenario(scenarioName);
         } catch (ScenarioException e) {
-           throw new ScenarioNotFoundException("Not found: " + scenarioName);
+            throw new ScenarioNotFoundException("Not found: " + scenarioName);
         }
 
-        return new ScenarioResponse.Builder()
-            .setName(scenario.getName())
-            .setDescription(scenario.getDescription())
-            .setParameterClass(scenario.getParameterClass())
-            .build();
+        return new ScenarioResponse.Builder().setName(scenario.getName()).setDescription(scenario.getDescription())
+                .setParameterClass(scenario.getParameterClass()).build();
     }
 }
