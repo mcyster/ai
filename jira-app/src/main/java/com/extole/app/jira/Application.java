@@ -12,13 +12,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
 import com.cyster.jira.client.JiraClientScan;
-import com.cyster.rest.ApplicationServerConfig;
 import com.cyster.rest.CysterRestScan;
 import com.cyster.scheduler.SchedulerWeaveScan;
 import com.cyster.weave.CysterWeaveScan;
 import com.cyster.weave.rest.WeaveRestScan;
 import com.cyster.web.rest.WebRestScan;
 import com.cyster.web.weave.WebDeveloperScan;
+import com.extole.app.admin.ApplicationServerConfig;
 import com.extole.client.ExtoleClientScan;
 import com.extole.jira.ExtoleJiraScan;
 import com.extole.rest.ExtoleRestScan;

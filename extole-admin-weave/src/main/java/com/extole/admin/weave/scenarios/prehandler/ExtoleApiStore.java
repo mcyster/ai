@@ -28,7 +28,6 @@ public class ExtoleApiStore {
     }
 
     public <CONTEXT> SearchTool<CONTEXT> createStoreTool() {
-
         String hash = loadOrUpdateLocalRepository();
 
         var documentStore = aiWeaveService.directoryDocumentStoreBuilder()

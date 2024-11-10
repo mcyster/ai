@@ -23,6 +23,7 @@ import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
+import com.cyster.rest.controllers.config.DefaultContentTypeJson;
 import com.cyster.weave.session.service.scenariosession.ScenarioSession;
 import com.cyster.weave.session.service.scenariosession.ScenarioSessionStore;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -69,6 +70,7 @@ public class ConversationController {
                 .collect(Collectors.toList());
     }
 
+    @DefaultContentTypeJson
     @PostMapping("/conversations")
     public ConversationResponse createConversation(
             @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level,
@@ -113,6 +115,7 @@ public class ConversationController {
                 .setMessages(session.get().getConversation().getMessages()).build();
     }
 
+    @DefaultContentTypeJson
     @PostMapping("/conversations/messages")
     public ConvenienceMessageResponse startConversation(
             @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level,
@@ -175,6 +178,7 @@ public class ConversationController {
         return messages;
     }
 
+    @DefaultContentTypeJson
     @PostMapping("/conversations/{id}/messages")
     public MessageResponse continueConversation(@PathVariable("id") String id,
             @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level,

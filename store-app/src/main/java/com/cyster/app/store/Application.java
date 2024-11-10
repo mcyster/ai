@@ -10,8 +10,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
-import com.cyster.rest.ApplicationServerConfig;
 import com.cyster.store.CysterStoreScan;
+import com.extole.app.admin.ApplicationServerConfig;
 
 @SpringBootApplication
 @Import(value = { CysterStoreScan.class })

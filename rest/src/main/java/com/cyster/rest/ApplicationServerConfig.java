@@ -9,13 +9,17 @@ import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertySource;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ApplicationServerConfig {
     private ApplicationContext context;
 
     private static final Logger logger = LogManager.getLogger(ApplicationServerConfig.class);
 
     public ApplicationServerConfig(ApplicationContext context) {
+    	logger.debug("Application Servce Context");
+    	
         this.context = context;
     }
 

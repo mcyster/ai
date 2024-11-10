@@ -98,7 +98,7 @@ public class AiWeaveServiceImpl implements AiWeaveService {
     public <RESPONSE> RESPONSE extractResponse(Class<RESPONSE> responseClass, String input) throws ToolException {        
         Optional<String> json = extractJson(input);
         if (json.isEmpty()) {
-            throw new ToolException("Expected json payload");
+            throw new ToolException("Expected json payload, but input is empty");
         }
         
         ObjectMapper objectMapper = new ObjectMapper();

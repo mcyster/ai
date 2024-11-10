@@ -15,6 +15,10 @@ public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    public GlobalExceptionHandler() {
+    	logger.debug("GlobalExceptionHandler setup");
+    }
+    
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<String> handleGeneralException(Exception exception) {

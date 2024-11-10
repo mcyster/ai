@@ -19,16 +19,15 @@ import com.extole.client.ExtoleClientScan;
 import com.extole.admin.weave.ExtoleAdminWeaveScan;
 
 @SpringBootApplication
-@Import(value = { 
+@Import(value = {
+    CysterRestScan.class,
     CysterWeaveScan.class,
     SchedulerWeaveScan.class,
     WeaveRestScan.class, 
     ExtoleClientScan.class, 
     ExtoleAdminWeaveScan.class, 
-    CysterRestScan.class 
 })
-public class Application {
-
+public class Application {    
     private static final Logger logger = LogManager.getLogger(Application.class);
 
     public static void main(String[] args) {
@@ -47,5 +46,7 @@ public class Application {
             logger.info(config.getDescription());
         };
     }
+    
+
 
 }
