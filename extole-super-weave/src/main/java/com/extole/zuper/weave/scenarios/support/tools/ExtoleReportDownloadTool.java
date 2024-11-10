@@ -1,10 +1,7 @@
 package com.extole.zuper.weave.scenarios.support.tools;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -14,9 +11,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
+import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.client.web.ExtoleWebClientException;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleReportDownloadTool.Request;
-import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -61,21 +58,16 @@ class ExtoleReportDownloadTool implements ExtoleSupportTool<Request> {
 
         try {
             result = this.extoleWebClientFactory.getWebClientById(request.clientId()).get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/v4/reports/" + request.reportId() + "/download.json")
-                    .queryParam("offset", request.offset())
-                    .queryParam("limit", request.limit())
-                    .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .onErrorResume(WebClientResponseException.class, exception -> {
-                    if (exception.getCause() instanceof DataBufferLimitException) {
-                        return Mono.error(new ToolException("Data buffer limit exceeded, perhaps reduce the row limit", exception));
-                    }
-                    return Mono.error(exception);
-                })                
-                .block();
+                    .uri(uriBuilder -> uriBuilder.path("/v4/reports/" + request.reportId() + "/download.json")
+                            .queryParam("offset", request.offset()).queryParam("limit", request.limit()).build())
+                    .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class)
+                    .onErrorResume(WebClientResponseException.class, exception -> {
+                        if (exception.getCause() instanceof DataBufferLimitException) {
+                            return Mono.error(new ToolException(
+                                    "Data buffer limit exceeded, perhaps reduce the row limit", exception));
+                        }
+                        return Mono.error(exception);
+                    }).block();
         } catch (ExtoleWebClientException exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientResponseException.Forbidden exception) {
@@ -89,58 +81,43 @@ class ExtoleReportDownloadTool implements ExtoleSupportTool<Request> {
         if (result == null || !result.isArray()) {
             throw new ToolException("Fetch failed unexpected result");
         }
-        
+
         if (request.jqExpression != null && !request.jqExpression.isBlank()) {
             ArrayNode jqResults = JsonNodeFactory.instance.arrayNode();
 
             try {
                 Scope rootScope = Scope.newEmptyScope();
                 Scope childScope = Scope.newChildScope(rootScope);
-    
+
                 JsonQuery jq = JsonQuery.compile(".[] | {event_id, name, message}", Version.LATEST);
-                
+
                 Output output = (JsonNode item) -> {
                     jqResults.add(item);
                 };
-                
+
                 jq.apply(childScope, result, output);
-                
+
             } catch (JsonQueryException exception) {
-                throw new ToolException("Failed to run report through jq expression: " + request.jqExpression, exception);
+                throw new ToolException("Failed to run report through jq expression: " + request.jqExpression,
+                        exception);
             }
             result = jqResults;
         }
-        
+
         return result;
     }
 
     static record Request(
-        @JsonPropertyDescription("The 1 to 12 digit id for a client.")
-        @JsonProperty(required = true)
-        String clientId,
+            @JsonPropertyDescription("The 1 to 12 digit id for a client.") @JsonProperty(required = true) String clientId,
 
-        @JsonPropertyDescription("The id of the report")
-        @JsonProperty(required = true)
-        String reportId,
-        
-        @JsonPropertyDescription("The row of the report to start downloading from, defaults to 0")
-        @JsonProperty(required = false)
-        Integer offset,
-        
-        @JsonPropertyDescription("The maximum number of rows to download from the report, defaults to 10")
-        @JsonProperty(required = false)
-        Integer limit,
+            @JsonPropertyDescription("The id of the report") @JsonProperty(required = true) String reportId,
 
-        @JsonPropertyDescription("Parse the output of the report through the jq expression before returning")
-        @JsonProperty(required = false)
-        String jqExpression
-    ) {
-        public Request(
-                String clientId,
-                String reportId,
-                Integer offset,
-                Integer limit,
-                String jqExpression) {
+            @JsonPropertyDescription("The row of the report to start downloading from, defaults to 0") @JsonProperty(required = false) Integer offset,
+
+            @JsonPropertyDescription("The maximum number of rows to download from the report, defaults to 10") @JsonProperty(required = false) Integer limit,
+
+            @JsonPropertyDescription("Parse the output of the report through the jq expression before returning") @JsonProperty(required = false) String jqExpression) {
+        public Request(String clientId, String reportId, Integer offset, Integer limit, String jqExpression) {
             this.clientId = clientId;
             this.reportId = reportId;
             this.offset = offset == null ? 0 : offset;
@@ -149,4 +126,3 @@ class ExtoleReportDownloadTool implements ExtoleSupportTool<Request> {
         }
     }
 }
-

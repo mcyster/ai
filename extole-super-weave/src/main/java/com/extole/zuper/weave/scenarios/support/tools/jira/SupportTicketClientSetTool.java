@@ -1,10 +1,7 @@
 package com.extole.zuper.weave.scenarios.support.tools.jira;
 
-
 import java.util.Objects;
 
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,20 +13,17 @@ import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketClientSetTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
 public class SupportTicketClientSetTool implements ExtoleSupportTool<Request> {
     public static final String CLIENT_NOT_FOUND = "not_found";
-    
-    private static final Logger logger = LoggerFactory.getLogger(SupportTicketClientSetTool.class);
 
     private SupportTicketService supportTicketService;
 
     SupportTicketClientSetTool(SupportTicketService supportTicketService,
-        @Value("${JIRA_TEST_MODE:false}") boolean testMode) {
+            @Value("${JIRA_TEST_MODE:false}") boolean testMode) {
         this.supportTicketService = supportTicketService;
     }
 
@@ -63,22 +57,24 @@ public class SupportTicketClientSetTool implements ExtoleSupportTool<Request> {
             response.put("key", request.key);
             return response;
         }
-        
+
         try {
             supportTicketService.setClient(request.key, request.clientShortName);
         } catch (SupportTicketException exception) {
-            throw new ToolException("Unable to set clientShortName: " + request.clientShortName + " on ticket: " + request.key, exception);
+            throw new ToolException(
+                    "Unable to set clientShortName: " + request.clientShortName + " on ticket: " + request.key,
+                    exception);
         }
 
         ObjectNode response = JsonNodeFactory.instance.objectNode();
         response.put("key", request.key);
         return response;
     }
-   
+
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass());
     }
-    
+
     static class Request {
         @JsonPropertyDescription("ticket key")
         @JsonProperty(required = true)

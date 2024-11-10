@@ -8,13 +8,12 @@ import java.util.Optional;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.client.web.ExtoleWebClientException;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
+import com.extole.client.web.ExtoleWebClientException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -90,14 +89,14 @@ public class ExtoleReportBuilder {
     }
 
     /**
-     * Will reuse a report if its age is less than maxAge (default DEFAULT_MAX_AGE) and the parameters are identical
-     * (for this feature to find a report, use descriptive periods or periods with a resolution less than maxAge)
+     * Will reuse a report if its age is less than maxAge (default DEFAULT_MAX_AGE)
+     * and the parameters are identical (for this feature to find a report, use
+     * descriptive periods or periods with a resolution less than maxAge)
      */
     public ExtoleReportBuilder withMaxAge(Duration duration) {
         this.maxAge = duration;
         return this;
     }
-
 
     public ObjectNode build() throws ToolException {
         WebClient webClient;
@@ -117,16 +116,9 @@ public class ExtoleReportBuilder {
 
         JsonNode report = getReportByTag(reportTag, maxAge);
         if (report == null) {
-            report = webClient.post()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/v4/reports")
-                    .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(payload)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+            report = webClient.post().uri(uriBuilder -> uriBuilder.path("/v4/reports").build())
+                    .accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON).bodyValue(payload)
+                    .retrieve().bodyToMono(JsonNode.class).block();
 
             if (report == null || !report.path("report_id").isEmpty()) {
                 throw new ToolException("Internal error, failed to generate report");
@@ -137,30 +129,25 @@ public class ExtoleReportBuilder {
         enrichedResult.put("report_id", report.path("report_id").asText());
         enrichedResult.put("download_uri", report.path("download_uri").asText());
         enrichedResult.put("view_uri", "https://my.extole.com/reports/view?client_id=" + this.clientId.get() + "#"
-            + report.path("report_id").asText());
-
+                + report.path("report_id").asText());
 
         if (this.waitForResult) {
             var reportId = report.path("report_id").asText();
             var clientId = this.clientId.orElse("1890234003");
-            
-            final Duration maxWaitTime = Duration.ofMinutes(2);  // 1minute may be upper limit for open ai tool
+
+            final Duration maxWaitTime = Duration.ofMinutes(2); // 1minute may be upper limit for open ai tool
             final Instant startTime = Instant.now();
-            
+
             while (!report.path("status").asText().equalsIgnoreCase("DONE")) {
-                report = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                        .path("/v4/reports/" + reportId)
-                        .build())
-                    .accept(MediaType.APPLICATION_JSON)
-                    .retrieve()
-                    .bodyToMono(JsonNode.class)
-                    .block();
+                report = webClient.get().uri(uriBuilder -> uriBuilder.path("/v4/reports/" + reportId).build())
+                        .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class).block();
 
                 if (Duration.between(startTime, Instant.now()).compareTo(maxWaitTime) > 0) {
-                    throw new RuntimeException("Maximum wait time of " + maxWaitTime.toMinutes() + " minutes exceeded while waiting for report " + reportId + " in client " + clientId + " to finish.");
+                    throw new RuntimeException("Maximum wait time of " + maxWaitTime.toMinutes()
+                            + " minutes exceeded while waiting for report " + reportId + " in client " + clientId
+                            + " to finish.");
                 }
-                
+
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException exception) {
@@ -168,14 +155,8 @@ public class ExtoleReportBuilder {
                 }
             }
 
-            var info = webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/v4/reports/" + reportId + "/info")
-                    .build())
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
-
+            var info = webClient.get().uri(uriBuilder -> uriBuilder.path("/v4/reports/" + reportId + "/info").build())
+                    .retrieve().bodyToMono(JsonNode.class).block();
 
             enrichedResult.put("total_rows", info.path("total_rows").asInt());
 
@@ -184,29 +165,17 @@ public class ExtoleReportBuilder {
 
             if (this.format.equalsIgnoreCase("json")) {
                 ArrayNode result = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                        .path("/v4/reports/" + reportId + "/download" + "." + this.format)
-                        .queryParam("offset", this.offset)
-                        .queryParam("limit", this.limit)
-                        .build())
-                    .accept(this.mediaType)
-                    .retrieve()
-                    .bodyToMono(ArrayNode.class)
-                    .block();
+                        .uri(uriBuilder -> uriBuilder.path("/v4/reports/" + reportId + "/download" + "." + this.format)
+                                .queryParam("offset", this.offset).queryParam("limit", this.limit).build())
+                        .accept(this.mediaType).retrieve().bodyToMono(ArrayNode.class).block();
 
                 page.put("row_count", result.size());
                 enrichedResult.putArray("data").addAll(result);
             } else if (this.format.equalsIgnoreCase("csv")) {
                 String csv = webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                        .path("/v4/reports/" + reportId + "/download" + "." + this.format)
-                        .queryParam("offset", this.offset)
-                        .queryParam("limit", this.limit)
-                        .build())
-                    .accept(this.mediaType)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
+                        .uri(uriBuilder -> uriBuilder.path("/v4/reports/" + reportId + "/download" + "." + this.format)
+                                .queryParam("offset", this.offset).queryParam("limit", this.limit).build())
+                        .accept(this.mediaType).retrieve().bodyToMono(String.class).block();
 
                 page.put("row_count", csv.split("\r?\n").length);
                 enrichedResult.put("data", csv);
@@ -226,21 +195,15 @@ public class ExtoleReportBuilder {
         JsonNode reports;
         try {
             WebClient webClient = this.webClientFactory.getWebClientById(this.clientId.get());
-    
+
             reports = webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/v4/reports")
-                    .queryParam("required_tags", reportTag)
-                    .queryParam("limit", 1)
-                    .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                    .uri(uriBuilder -> uriBuilder.path("/v4/reports").queryParam("required_tags", reportTag)
+                            .queryParam("limit", 1).build())
+                    .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class).block();
         } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
-            throw new FatalToolException("extoleSuperUserToken is invalid", exception);        
+            throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         }
-        
+
         if (!reports.isArray() || reports.size() == 0) {
             return null;
         }
@@ -273,7 +236,7 @@ public class ExtoleReportBuilder {
         StringBuilder hexString = new StringBuilder();
         for (int i = 0; i < digestBytes.length; i++) {
             String hex = Integer.toHexString(0xff & digestBytes[i]);
-            if(hex.length() == 1) {
+            if (hex.length() == 1) {
                 hexString.append('0');
             }
             hexString.append(hex);

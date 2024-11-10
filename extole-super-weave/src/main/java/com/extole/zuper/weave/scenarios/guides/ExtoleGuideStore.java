@@ -3,17 +3,14 @@ package com.extole.zuper.weave.scenarios.guides;
 import java.io.File;
 import java.io.IOException;
 
-
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.springframework.stereotype.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.SearchTool;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 // @Component
 public class ExtoleGuideStore {
@@ -32,14 +29,11 @@ public class ExtoleGuideStore {
         String hash = loadOrUpdateLocalRepository();
 
         var documentStore = aiWeaveService.directoryDocumentStoreBuilder()
-          .withDirectory(localJavaApiRepository.toPath())
-          .withHash(hash)
-          .create();
+                .withDirectory(localJavaApiRepository.toPath()).withHash(hash).create();
 
-        @SuppressWarnings("unchecked")  // TBD
+        @SuppressWarnings("unchecked") // TBD
         SearchTool.Builder<CONTEXT> builder = (SearchTool.Builder<CONTEXT>) aiWeaveService.searchToolBuilder()
-            .withName("extole-guides")
-            .withDocumentStore(documentStore);
+                .withName("extole-guides").withDocumentStore(documentStore);
 
         return builder.create();
     }
@@ -47,10 +41,7 @@ public class ExtoleGuideStore {
     private String loadOrUpdateLocalRepository() {
         if (!localJavaApiRepository.exists()) {
             try {
-                Git.cloneRepository()
-                    .setURI(remoteJavaApiRepository)
-                    .setDirectory(localJavaApiRepository)
-                    .call();
+                Git.cloneRepository().setURI(remoteJavaApiRepository).setDirectory(localJavaApiRepository).call();
             } catch (GitAPIException exception) {
                 logger.error("Unable to clone the java api repository: " + remoteJavaApiRepository, exception);
             }

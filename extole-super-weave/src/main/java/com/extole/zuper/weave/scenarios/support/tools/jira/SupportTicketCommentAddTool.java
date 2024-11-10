@@ -2,8 +2,6 @@ package com.extole.zuper.weave.scenarios.support.tools.jira;
 
 import java.util.Objects;
 
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
@@ -21,8 +19,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
 class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
-    private static final Logger logger = LoggerFactory.getLogger(SupportTicketCommentAddTool.class);
-
     private SupportTicketService supportTicketService;
 
     SupportTicketCommentAddTool(SupportTicketService supportTicketService) {
@@ -58,20 +54,20 @@ class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
         {
             AtlassianDocumentMapper atlassianDocumentMapper = new AtlassianDocumentMapper();
             payload.set("body", atlassianDocumentMapper.fromMarkdown(request.comment));
-            
+
             ArrayNode properties = JsonNodeFactory.instance.arrayNode();
-            
+
             ObjectNode internalCommentProperty = JsonNodeFactory.instance.objectNode();
             internalCommentProperty.put("key", "sd.public.comment");
-            
+
             ObjectNode internalCommentValue = JsonNodeFactory.instance.objectNode();
             internalCommentValue.put("internal", true);
-            
+
             properties.add(internalCommentProperty);
-            
+
             internalCommentProperty.set("value", internalCommentValue);
-            
-            payload.set("properties",  properties);       
+
+            payload.set("properties", properties);
         }
 
         try {
@@ -88,7 +84,7 @@ class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass());
     }
-    
+
     static class Request {
         @JsonPropertyDescription("ticket key")
         @JsonProperty(required = true)

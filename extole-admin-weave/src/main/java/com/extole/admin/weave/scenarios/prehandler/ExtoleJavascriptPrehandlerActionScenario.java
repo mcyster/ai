@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
@@ -15,6 +17,8 @@ import com.extole.admin.weave.session.ExtoleSessionContext;
 
 @Component
 public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, ExtoleSessionContext> {
+    private static final Logger logger = LoggerFactory.getLogger(ExtoleJavascriptPrehandlerActionScenario.class);
+
     private AiWeaveService aiWeaveService;
     private Optional<Scenario<Void, ExtoleSessionContext>> scenario = Optional.empty();
     private ExtoleApiStore extoleStore;
@@ -46,10 +50,10 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
 
     @Override
     public com.cyster.ai.weave.service.scenario.Scenario.ConversationBuilder createConversationBuilder(Void parameters,
-        ExtoleSessionContext context) {
+            ExtoleSessionContext context) {
         return this.getScenario().createConversationBuilder(parameters, context);
     }
-    
+
     private Scenario<Void, ExtoleSessionContext> getScenario() {
         if (this.scenario.isEmpty()) {
 
@@ -58,56 +62,58 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
             if (resourceUrl == null) {
                 throw new IllegalArgumentException("Resource not found: " + resourcePath);
             }
+
             Path javascriptActionContextPath;
             try {
                 javascriptActionContextPath = Paths.get(resourceUrl.toURI());
             } catch (URISyntaxException e) {
                 throw new RuntimeException("Unable to convert resourceUrl to URI");
             }
+            logger.debug("javascriptActionContextPath at: " + javascriptActionContextPath);
 
             String instructions = """
-            The JavaScript code described here executes with a variable 'context' of type PrehandlerActionContext.
-            It should create a processedRawEvent using the ProcessedRawEventBuilder available from the context.
+                    The JavaScript code described here executes with a variable 'context' of type PrehandlerActionContext.
+                    It should create a processedRawEvent using the ProcessedRawEventBuilder available from the context.
 
-            To understand how to use the 'context' you need explore the api for classes like:
-            - PrehandlerActionContext
-            - PrehandlerContext
-            - GlobalContext
-            - LoggerContext
-            - ClientContext
-            - GlobalServices
-            - ProcessedRawEventBuilder
-""";
+                    To understand how to use the 'context' you need explore the api for classes like:
+                       - PrehandlerActionContext
+                       - PrehandlerContext
+                       - GlobalContext
+                       - LoggerContext
+                       - ClientContext
+                       - GlobalServices
+                       - ProcessedRawEventBuilder
+                            """;
             instructions = """
-A prehandler can modify a raw event before its processed by Extole.
-The request is modified using the ProcessedRawEventBuilder available as getEventBuilder from the context variable.
+                    A prehandler can modify a raw event before its processed by Extole.
+                    The request is modified using the ProcessedRawEventBuilder available as getEventBuilder from the context variable.
 
-A prehandler code snippet prehandler_javascript_code is executed in the following context.
+                    A prehandler code snippet prehandler_javascript_code is executed in the following context.
 
-var context = PrehandlerActionContext(javaPrehandlerContext);
-(function(context) {
-  // ... prehandler_javascript_code here ...
-})(context)
+                    var context = PrehandlerActionContext(javaPrehandlerContext);
+                    (function(context) {
+                      // ... prehandler_javascript_code here ...
+                    })(context)
 
-To understand how to use the 'context' you need explore the api for classes like:
- - PrehandlerActionContext
- - PrehandlerContext
- - GlobalContext
- - LoggerContext
- - ClientContext
- - GlobalServices
- - ProcessedRawEventBuilder
+                    To understand how to use the 'context' you need explore the api for classes like:
+                     - PrehandlerActionContext
+                     - PrehandlerContext
+                     - GlobalContext
+                     - LoggerContext
+                     - ClientContext
+                     - GlobalServices
+                     - ProcessedRawEventBuilder
 
- Where possible, link to interfaces and classes mentioned in your response.
-""";
+                     Where possible, link to interfaces and classes mentioned in your response.
+                    """;
 
-            AssistantScenarioBuilder<Void, ExtoleSessionContext>  builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
+            AssistantScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService
+                    .getOrCreateAssistantScenario(getName());
 
-            builder
-                .setInstructions(instructions);
-            
+            builder.setInstructions(instructions);
+
             // TODO update to use SearchTool
-            //.withFile(javascriptActionContextPath);
+            // .withFile(javascriptActionContextPath);
 
             builder.withTool(extoleStore.createStoreTool());
 

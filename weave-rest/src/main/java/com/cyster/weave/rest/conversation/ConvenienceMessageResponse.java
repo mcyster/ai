@@ -1,12 +1,9 @@
 package com.cyster.weave.rest.conversation;
 
-import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public record ConvenienceMessageResponse(
-    String id,
-    MessageResponse response) {
+public record ConvenienceMessageResponse(String id, MessageResponse response) {
 
     @Override
     public String toString() {

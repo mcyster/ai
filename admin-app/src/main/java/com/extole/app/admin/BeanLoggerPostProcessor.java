@@ -3,7 +3,6 @@ package com.extole.app.admin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.stereotype.Component;
 
 //@Component
 public class BeanLoggerPostProcessor implements BeanPostProcessor {
