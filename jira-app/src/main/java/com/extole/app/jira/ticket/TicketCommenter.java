@@ -63,10 +63,10 @@ public class TicketCommenter {
     }
 
     private void commentOnTicket(String ticketNumber, Optional<String> prompt) {
-    	Message response;
+        Message response;
 
         logger.info("Ticket - processing " + ticketNumber + " asynchronously on thread " + Thread.currentThread().getName());
-    	
+        
         var parameters = new com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketScenario.Parameters(ticketNumber);
 
         try {

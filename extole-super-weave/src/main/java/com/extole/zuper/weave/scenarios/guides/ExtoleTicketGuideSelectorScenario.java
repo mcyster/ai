@@ -29,10 +29,10 @@ public class ExtoleTicketGuideSelectorScenario implements Scenario<Parameters, V
     
     public ExtoleTicketGuideSelectorScenario(AiWeaveService aiWeaveService, 
             SupportTicketGetTool ticketGetTool,
-    		ExtoleGuideStore extoleGuideStore) {
-    	
-    	SearchTool<Void> storeSearchTool = extoleGuideStore.createStoreTool();
-    	
+            ExtoleGuideStore extoleGuideStore) {
+        
+        SearchTool<Void> storeSearchTool = extoleGuideStore.createStoreTool();
+        
         this.aiWeaveService = aiWeaveService;
         this.tools.add(storeSearchTool);
         this.tools.add(ticketGetTool);

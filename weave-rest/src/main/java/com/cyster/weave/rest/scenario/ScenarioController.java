@@ -28,8 +28,8 @@ public class ScenarioController {
 
     @GetMapping("/scenarios")
     public Set<ScenarioResponse> index() {
-    	logger.debug("List scenarios");
-    	
+        logger.debug("List scenarios");
+        
         return scenarioStore.getScenarios().stream()
             .map(scenario -> new ScenarioResponse.Builder()
                 .setName(scenario.getName())

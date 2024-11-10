@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     public GlobalExceptionHandler() {
-    	logger.debug("GlobalExceptionHandler setup");
+        logger.debug("GlobalExceptionHandler setup");
     }
     
     @ExceptionHandler(Exception.class)

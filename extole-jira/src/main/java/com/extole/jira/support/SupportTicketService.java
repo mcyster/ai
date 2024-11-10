@@ -139,7 +139,7 @@ public class SupportTicketService {
     
     public void setClient(String ticketNumber, String clientShortName)  throws SupportTicketException {
         var organizationIndex = supportTicketClients.getJiraOrganizationIndexFromClientShortName(clientShortName);
-	
+    
         ObjectNode payload = JsonNodeFactory.instance.objectNode();
         {            
             ObjectNode fields = JsonNodeFactory.instance.objectNode();
@@ -331,10 +331,10 @@ public class SupportTicketService {
         if (organizationNode != null && organizationNode.has("value")) {
             var organizationIndex = organizationNode.path("value").asInt();
             try {
-				clientShortName = supportTicketClients.getClientShortNameForJiraOrganizationIndex(organizationIndex);
-			} catch (SupportTicketException e) {
-				clientShortName = null;
-			}
+                clientShortName = supportTicketClients.getClientShortNameForJiraOrganizationIndex(organizationIndex);
+            } catch (SupportTicketException e) {
+                clientShortName = null;
+            }
         }
         
         String value = fields.path("customfield_11312").path("value").asText();

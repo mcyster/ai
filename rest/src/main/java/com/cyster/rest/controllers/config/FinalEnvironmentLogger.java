@@ -23,7 +23,7 @@ public class FinalEnvironmentLogger {
 
     @EventListener(ApplicationReadyEvent.class)
     public void logFinalEnvironmentValues() {
-    	
+        
         String[] activeProfiles = environment.getActiveProfiles();
         if (activeProfiles.length > 0) {
             logger.info("Active profiles: {}", String.join(", ", activeProfiles));

@@ -22,7 +22,7 @@ public class OpenAiSchemaTest {
     void beforeEach(TestInfo testInfo) {
         System.out.println("Running test: " + testInfo.getDisplayName());
     }
-	  
+      
     @Test
     public void testOneRequiredAttribute() {
         String expectedSchema = """
@@ -35,7 +35,7 @@ public class OpenAiSchemaTest {
     }
   },
   "required" : [ "attribute" ]
-}        		
+}                
 """;
         assertTrue(check(OneRequiredAttribute.class, expectedSchema), "generated schema does not match expected schema");
     }
@@ -51,7 +51,7 @@ public class OpenAiSchemaTest {
       "description" : "the first and only optional attribute"
     }
   }
-}	
+}    
 """;
         assertTrue(check(OneOptionalAttribute.class, expectedSchema), "generated schema does not match expected schema");
     }
@@ -123,19 +123,19 @@ public class OpenAiSchemaTest {
     }
 
     private static boolean check(Class<?> clazz, String expectedSchema) {
-    	var jsonSchema = schema(clazz);
+        var jsonSchema = schema(clazz);
 
         var schema = new OpenAiSchema(jsonSchema);
 
         var openAiSchema = schema.toJsonNode();
          
-    	if (!compare(openAiSchema, expectedSchema)) {
+        if (!compare(openAiSchema, expectedSchema)) {
             System.out.println("JacksonSchema: " + jsonSchema);
-    		System.out.println("Expected Schema:" + expectedSchema);
+            System.out.println("Expected Schema:" + expectedSchema);
             System.out.println("Generated Schema: " + openAiSchema.toPrettyString());
             return false;
-    	}
-    	return true;
+        }
+        return true;
     }
 
     private static boolean compare(JsonNode nodeSchema, String expectedSchema) {

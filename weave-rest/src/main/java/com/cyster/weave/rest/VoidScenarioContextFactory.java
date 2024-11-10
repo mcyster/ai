@@ -8,14 +8,14 @@ import com.cyster.weave.rest.conversation.ScenarioContextFactory;
 @Component
 public class VoidScenarioContextFactory implements ScenarioContextFactory<Void> {
 
-	@Override
-	public Class<Void> getContextClass() {
-		return Void.class;
-	}
+    @Override
+    public Class<Void> getContextClass() {
+        return Void.class;
+    }
 
-	@Override
-	public Void createContext(MultiValueMap<String, String> headers) {
-		return null;
-	}
+    @Override
+    public Void createContext(MultiValueMap<String, String> headers) {
+        return null;
+    }
 
 }

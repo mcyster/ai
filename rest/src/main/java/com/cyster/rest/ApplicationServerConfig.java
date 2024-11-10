@@ -18,8 +18,8 @@ public class ApplicationServerConfig {
     private static final Logger logger = LoggerFactory.getLogger(ApplicationServerConfig.class);
 
     public ApplicationServerConfig(ApplicationContext context) {
-    	logger.debug("Application Servce Context");
-    	
+        logger.debug("Application Servce Context");
+        
         this.context = context;
     }
 

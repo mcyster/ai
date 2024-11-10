@@ -53,25 +53,25 @@ public class TicketController {
 
     @PostMapping("/ticket")
     public ResponseEntity<String> ticketEvent(
-    		@RequestParam("secret") String secret, 
-    		@RequestBody JsonNode request) throws BadRequestException, FatalException {
-    	
-    	logger.info("ticket secret: " + secret + " configuredSecret: " + this.jiraWebhookSecret.orElse(""));
-    	
-    	if (this.jiraWebhookSecret.isPresent() && secret == null) {
-    		logger.error("No secret parameter specified in request");
-    	     return ResponseEntity
+            @RequestParam("secret") String secret, 
+            @RequestBody JsonNode request) throws BadRequestException, FatalException {
+        
+        logger.info("ticket secret: " + secret + " configuredSecret: " + this.jiraWebhookSecret.orElse(""));
+        
+        if (this.jiraWebhookSecret.isPresent() && secret == null) {
+            logger.error("No secret parameter specified in request");
+             return ResponseEntity
                  .status(HttpStatus.BAD_REQUEST)
                  .body("No secret specified");
-    	}
+        }
     
-    	if (this.jiraWebhookSecret.isPresent() && !secret.equals(this.jiraWebhookSecret.get())) {
-    		logger.error("Secret parameter does not match JIRA_WEBHOOK_SECRET");
-   	        return ResponseEntity
+        if (this.jiraWebhookSecret.isPresent() && !secret.equals(this.jiraWebhookSecret.get())) {
+            logger.error("Secret parameter does not match JIRA_WEBHOOK_SECRET");
+               return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body("Secret does not match configured secret");
-    	}
-    	
+        }
+        
         eventLogger.info(request.toString());
 
         if (!request.has("issue")) {
@@ -121,14 +121,14 @@ public class TicketController {
 
                String cleanedComment = MENTION_PATTERN.matcher(comment).replaceAll("");
                try {
-	               if (cleanedComment.isBlank()) {
-	                   ticketCommenter.process(ticketNumber);
-	               } else {
-	                   ticketCommenter.process(ticketNumber, cleanedComment);
-	               }
+                   if (cleanedComment.isBlank()) {
+                       ticketCommenter.process(ticketNumber);
+                   } else {
+                       ticketCommenter.process(ticketNumber, cleanedComment);
+                   }
                } catch(Exception exception) {
-            	   logger.error("Failed to process ticket - " + ticketNumber, exception);
-            	   throw exception;
+                   logger.error("Failed to process ticket - " + ticketNumber, exception);
+                   throw exception;
                }
             }
             break;

@@ -24,21 +24,21 @@ class SupportTicketClients {
     }
     
     public Integer getJiraOrganizationIndexFromClientShortName(String clientShortName) throws SupportTicketException {
-    	var clients = getClients();
-    	if (!clients.containsKey(clientShortName)) {
-    		throw new SupportTicketException("Client shortName not found: " + clientShortName);
-    	}
-    	return clients.get(clientShortName);
+        var clients = getClients();
+        if (!clients.containsKey(clientShortName)) {
+            throw new SupportTicketException("Client shortName not found: " + clientShortName);
+        }
+        return clients.get(clientShortName);
     }
 
     public String getClientShortNameForJiraOrganizationIndex(Integer organizationIndex) throws SupportTicketException {
-    	var clients = getClients();
-    	
-    	 return clients.entrySet().stream()
-    		        .filter(entry -> entry.getValue().equals(organizationIndex))
-    		        .map(Map.Entry::getKey)
-    		        .findFirst()
-    		        .orElseThrow(() -> new  SupportTicketException("Organization index not found: " + organizationIndex));
+        var clients = getClients();
+        
+         return clients.entrySet().stream()
+                    .filter(entry -> entry.getValue().equals(organizationIndex))
+                    .map(Map.Entry::getKey)
+                    .findFirst()
+                    .orElseThrow(() -> new  SupportTicketException("Organization index not found: " + organizationIndex));
     }
     
     private Map<String, Integer> getClients() throws SupportTicketException {
@@ -52,14 +52,14 @@ class SupportTicketClients {
         if (needsRefresh()) {
             clients.set(loadClients());
             lastUpdated.set(Instant.now());
-        }	
+        }    
     }
     
     private boolean needsRefresh() {
-    	if (lastUpdated.get() == null) {
-    		return true;
-    	}
-    	
+        if (lastUpdated.get() == null) {
+            return true;
+        }
+        
         return ChronoUnit.HOURS.between(lastUpdated.get(), Instant.now()) >= 1;
     }
 
@@ -72,7 +72,7 @@ class SupportTicketClients {
         
         try {
             while (true) {
-            	final int start = offset;
+                final int start = offset;
                 JsonNode result = this.jiraWebClientFactory.getWebClient().get()
                     .uri(uriBuilder -> uriBuilder
                         .path("/rest/servicedeskapi/organization")

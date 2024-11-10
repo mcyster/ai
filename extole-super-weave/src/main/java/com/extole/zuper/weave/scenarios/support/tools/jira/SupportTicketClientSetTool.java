@@ -22,8 +22,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
 public class SupportTicketClientSetTool implements ExtoleSupportTool<Request> {
-	public static final String CLIENT_NOT_FOUND = "not_found";
-	
+    public static final String CLIENT_NOT_FOUND = "not_found";
+    
     private static final Logger logger = LoggerFactory.getLogger(SupportTicketClientSetTool.class);
 
     private SupportTicketService supportTicketService;
@@ -65,10 +65,10 @@ public class SupportTicketClientSetTool implements ExtoleSupportTool<Request> {
         }
         
         try {
-			supportTicketService.setClient(request.key, request.clientShortName);
-		} catch (SupportTicketException exception) {
-			throw new ToolException("Unable to set clientShortName: " + request.clientShortName + " on ticket: " + request.key, exception);
-		}
+            supportTicketService.setClient(request.key, request.clientShortName);
+        } catch (SupportTicketException exception) {
+            throw new ToolException("Unable to set clientShortName: " + request.clientShortName + " on ticket: " + request.key, exception);
+        }
 
         ObjectNode response = JsonNodeFactory.instance.objectNode();
         response.put("key", request.key);

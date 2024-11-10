@@ -17,12 +17,12 @@ public class OpenAiSchema {
         this.schemaNode = mapper.valueToTree(schema);
     }
 
-    public ObjectNode toJsonNode() {    	
+    public ObjectNode toJsonNode() {        
         return transformToOpenAiSchema("", this.schemaNode, this.mapper);
     }
 
     ObjectNode getJacksonSchema() {
-    	return schemaNode;
+        return schemaNode;
     }
     
     private static ObjectNode transformToOpenAiSchema(String path, ObjectNode schemaNode, ObjectMapper mapper) {
@@ -47,7 +47,7 @@ public class OpenAiSchema {
                     }
                     ((ObjectNode) fieldValue).remove("required");
                 }
-            	
+                
                 if (fieldValue.isObject()) {
                     if (fieldValue.has("type") && fieldValue.path("type").asText().equals("object")) {
                         transformToOpenAiSchema(path + "." + fieldName, (ObjectNode) fieldValue, mapper);

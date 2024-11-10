@@ -97,11 +97,11 @@ Provide your answer in JSON format as described by this schema:
 """;
             
             Map<String, Object> parameters = Map.of(
-            	    "ticketGetTool", ticketGetTool.getName(),
-            	    "clientGetTool", extoleClientGetTool.getName(),
-            	    "clientSetTool", extoleClientSetTool.getName(),
-            	    "schema", aiWeaveService.getJsonSchema(Response.class)
-            	);
+                    "ticketGetTool", ticketGetTool.getName(),
+                    "clientGetTool", extoleClientGetTool.getName(),
+                    "clientSetTool", extoleClientSetTool.getName(),
+                    "schema", aiWeaveService.getJsonSchema(Response.class)
+                );
 
             String instructions = new StringTemplate(instructionsTemplate).render(parameters);
             

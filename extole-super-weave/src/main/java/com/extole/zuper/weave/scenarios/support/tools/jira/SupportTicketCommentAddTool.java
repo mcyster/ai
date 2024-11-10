@@ -75,10 +75,10 @@ class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
         }
 
         try {
-			supportTicketService.addComment(request.key, request.comment);
-		} catch (SupportTicketException exception) {
-			throw new ToolException("Error adding comment to ticket: " + request.key, exception);
-		}
+            supportTicketService.addComment(request.key, request.comment);
+        } catch (SupportTicketException exception) {
+            throw new ToolException("Error adding comment to ticket: " + request.key, exception);
+        }
 
         ObjectNode response = JsonNodeFactory.instance.objectNode();
         response.put("key", request.key);
