@@ -3,8 +3,8 @@ package com.extole.client.web;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 
 import reactor.core.publisher.Mono;
@@ -26,7 +26,7 @@ public class ExtoleWebClientFactory {
     public static class WebClientBuilder {
         WebClient.Builder webClientBuilder;
 
-        private static final Logger logger = LogManager.getLogger(ExtoleWebClientBuilder.class);
+        private static final Logger logger = LoggerFactory.getLogger(ExtoleWebClientBuilder.class);
 
         public WebClientBuilder(String baseJiraUrl) {
             this.webClientBuilder = WebClient.builder()

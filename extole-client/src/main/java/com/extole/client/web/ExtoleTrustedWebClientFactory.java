@@ -3,8 +3,8 @@ package com.extole.client.web;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class ExtoleTrustedWebClientFactory {
     public final String extoleBaseUri = "https://api.extole.io/";
 
-    private static final Logger logger = LogManager.getLogger(ExtoleTrustedWebClientFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExtoleTrustedWebClientFactory.class);
 
     private static final int KEY_LENGTH_MIN = 25;
     private static final int KEY_PEEK_LENGTH = 4;

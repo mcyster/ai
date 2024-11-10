@@ -2,8 +2,8 @@ package com.cyster.jira.client.web;
 
 import java.nio.charset.StandardCharsets;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -15,7 +15,7 @@ public class JiraWebClientBuilder {
 
     WebClient.Builder webClientBuilder;
 
-    private static final Logger logger = LogManager.getLogger(JiraWebClientBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(JiraWebClientBuilder.class);
 
     JiraWebClientBuilder(String baseJiraUrl) {
         ExchangeStrategies strategies = ExchangeStrategies.builder()

@@ -1,7 +1,7 @@
 package com.extole.zuper.weave.scenarios.support.tools;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 class ExtolePersonSearchTool implements ExtoleSupportTool<Request> {
-    private static final Logger logger = LogManager.getLogger(ExtoleTrustedWebClientFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExtoleTrustedWebClientFactory.class);
 
     private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 

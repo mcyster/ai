@@ -2,8 +2,8 @@ package com.extole.zuper.weave.scenarios.support.tools.reports;
 
 import java.util.Objects;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -106,7 +106,7 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
     private static final String NOTIFICATION_ID_PATTERN = "[a-z0-9]{18,20}";
     private static final String USER_ID_PATTERN = "\\d+";
 
-    private static final Logger logger = LogManager.getLogger(ExtoleSupportTool.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExtoleSupportTool.class);
 
     private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 

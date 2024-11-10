@@ -3,8 +3,8 @@ package com.extole.zuper.weave.scenarios.support.tools;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -32,7 +32,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 class ExtoleReportDownloadTool implements ExtoleSupportTool<Request> {
-    private static final Logger logger = LogManager.getLogger(ExtoleTrustedWebClientFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExtoleTrustedWebClientFactory.class);
 
     private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 

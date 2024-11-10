@@ -15,8 +15,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -39,7 +39,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RestController
 @RequestMapping("/support")
 public class SupportTicketsController {
-    private static final Logger logger = LogManager.getLogger(SupportTicketsController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SupportTicketsController.class);
 
     private SupportTicketService supportTicketService;
     private Path tempDirectory;

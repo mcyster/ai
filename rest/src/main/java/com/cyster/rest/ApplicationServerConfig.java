@@ -2,8 +2,8 @@ package com.cyster.rest;
 
 import java.util.Arrays;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.EnumerablePropertySource;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 public class ApplicationServerConfig {
     private ApplicationContext context;
 
-    private static final Logger logger = LogManager.getLogger(ApplicationServerConfig.class);
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationServerConfig.class);
 
     public ApplicationServerConfig(ApplicationContext context) {
     	logger.debug("Application Servce Context");

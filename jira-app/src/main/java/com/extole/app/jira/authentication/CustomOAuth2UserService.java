@@ -8,13 +8,13 @@ import org.springframework.stereotype.Service;
 
 import com.extole.app.jira.root.RootController;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.security.core.AuthenticationException;
 
 @Service
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
-    private static final Logger logger = LogManager.getLogger(RootController.class);
+    private static final Logger logger = LoggerFactory.getLogger(RootController.class);
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws AuthenticationException {

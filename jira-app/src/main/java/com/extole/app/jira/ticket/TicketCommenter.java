@@ -2,8 +2,8 @@ package com.extole.app.jira.ticket;
 
 import java.util.Optional;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -19,8 +19,8 @@ import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketScenario;
 @Service
 @EnableAsync
 public class TicketCommenter {
-    private static final Logger logger = LogManager.getLogger(TicketCommenter.class);
-    private static final Logger ticketLogger = LogManager.getLogger("tickets");
+    private static final Logger logger = LoggerFactory.getLogger(TicketCommenter.class);
+    private static final Logger ticketLogger = LoggerFactory.getLogger("tickets");
 
     private ExtoleSupportTicketScenario supportTicketScenario;
     private ExtoleSupportTicketClientScenario supportTicketClientScenario;

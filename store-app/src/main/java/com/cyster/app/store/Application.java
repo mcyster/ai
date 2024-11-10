@@ -1,7 +1,7 @@
 package com.cyster.app.store;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,7 +17,7 @@ import com.extole.app.admin.ApplicationServerConfig;
 @Import(value = { CysterStoreScan.class })
 public class Application {
 
-    private static final Logger logger = LogManager.getLogger(Application.class);
+    private static final Logger logger = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);

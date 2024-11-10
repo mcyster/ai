@@ -2,8 +2,8 @@ package com.extole.zuper.weave.scenarios.support.tools.jira;
 
 import java.util.Objects;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
 class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
-    private static final Logger logger = LogManager.getLogger(SupportTicketCommentAddTool.class);
+    private static final Logger logger = LoggerFactory.getLogger(SupportTicketCommentAddTool.class);
 
     private SupportTicketService supportTicketService;
 
