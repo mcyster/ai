@@ -10,9 +10,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.DocumentStore;
+import com.cyster.ai.weave.service.DocumentStore.Document;
 import com.cyster.ai.weave.service.SearchTool;
 
 import io.github.stefanbratanov.jvm.openai.CreateVectorStoreFileBatchRequest;
@@ -65,42 +67,45 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
         try {
             var directory = Files.createTempDirectory("store-" + safeName(this.name));
 
-            documentStore.stream().forEach(document -> {
-                var name = document.getName();
-                var extension = ".txt";
+            System.out.println("XXXXXX documentStore: " + documentStore);
 
-                int lastDotIndex = name.lastIndexOf('.');
-                if (lastDotIndex != -1) {
-                    extension = name.substring(lastDotIndex + 1);
-                    name = name.substring(0, lastDotIndex);
-                }
+            try (Stream<Document> documentStream = documentStore.stream()) {
+                documentStream.forEach(document -> {
+                    var name = document.getName();
+                    var extension = ".txt";
 
-                var safeName = safeName(name);
-                var safeExtension = "." + safeName(extension);
+                    int lastDotIndex = name.lastIndexOf('.');
+                    if (lastDotIndex != -1) {
+                        extension = name.substring(lastDotIndex + 1);
+                        name = name.substring(0, lastDotIndex);
+                    }
 
-                Path realFile = Paths.get(directory.toString(), safeName + safeExtension);
+                    var safeName = safeName(name);
+                    var safeExtension = "." + safeName(extension);
 
-                try {
-                    Files.createFile(realFile);
+                    Path realFile = Paths.get(directory.toString(), safeName + safeExtension);
 
-                    document.read(inputStream -> {
-                        try {
-                            Files.copy(inputStream, realFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                        } catch (IOException exception) {
-                            throw new RuntimeException(exception);
-                        }
+                    try {
+                        Files.createFile(realFile);
 
-                        var fileUpload = new UploadFileRequest(realFile, "assistants");
-                        var file = this.openAiService.createClient(FilesClient.class).uploadFile(fileUpload);
-                        files.add(file.id());
-                    });
-                    Files.delete(realFile);
+                        document.read(inputStream -> {
+                            try {
+                                Files.copy(inputStream, realFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                            } catch (IOException exception) {
+                                throw new RuntimeException(exception);
+                            }
 
-                } catch (IOException exception) {
-                    throw new RuntimeException(exception);
-                }
+                            var fileUpload = new UploadFileRequest(realFile, "assistants");
+                            var file = this.openAiService.createClient(FilesClient.class).uploadFile(fileUpload);
+                            files.add(file.id());
+                        });
+                        Files.delete(realFile);
 
-            });
+                    } catch (IOException exception) {
+                        throw new RuntimeException(exception);
+                    }
+                });
+            }
 
             if (directory != null) {
                 Files.delete(directory);
@@ -117,24 +122,21 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
             int end = Math.min(totalFileCount, i + batchSize);
             List<String> fileBatch = files.subList(i, end);
             if (vectorStore == null) {
-                Map<String, String> metadata = new HashMap<>() {{
-                    put(METADATA_HASH, documentStore.getHash());
-                }};
-                
-                var request = CreateVectorStoreRequest.newBuilder()
-                        .name(this.name)
-                        .fileIds(fileBatch)
-                        .metadata(metadata)
-                        .expiresAfter(ExpiresAfter.lastActiveAt(7))
-                        .build();
+                Map<String, String> metadata = new HashMap<>() {
+                    {
+                        put(METADATA_HASH, documentStore.getHash());
+                    }
+                };
+
+                var request = CreateVectorStoreRequest.newBuilder().name(this.name).fileIds(fileBatch)
+                        .metadata(metadata).expiresAfter(ExpiresAfter.lastActiveAt(7)).build();
 
                 vectorStore = this.openAiService.createClient(VectorStoresClient.class).createVectorStore(request);
             } else {
-                var request = CreateVectorStoreFileBatchRequest.newBuilder()
-                    .fileIds(fileBatch)
-                    .build();
+                var request = CreateVectorStoreFileBatchRequest.newBuilder().fileIds(fileBatch).build();
 
-                this.openAiService.createClient(VectorStoreFileBatchesClient.class).createVectorStoreFileBatch(vectorStore.id(), request);
+                this.openAiService.createClient(VectorStoreFileBatchesClient.class)
+                        .createVectorStoreFileBatch(vectorStore.id(), request);
             }
         }
 
@@ -150,8 +152,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
 
         PaginatedVectorStores response = null;
         do {
-            PaginationQueryParameters.Builder queryBuilder = PaginationQueryParameters.newBuilder()
-                .limit(99);
+            PaginationQueryParameters.Builder queryBuilder = PaginationQueryParameters.newBuilder().limit(99);
             if (response != null) {
                 queryBuilder.after(response.lastId());
             }

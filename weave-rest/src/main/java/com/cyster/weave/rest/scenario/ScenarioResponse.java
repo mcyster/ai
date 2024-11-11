@@ -7,7 +7,6 @@ import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
 
 public class ScenarioResponse {
-
     private String name;
     private String description;
     private Class<?> parameterClass;
@@ -27,8 +26,8 @@ public class ScenarioResponse {
     }
 
     public JsonSchema getParameters() {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonSchemaGenerator schemaGenerator = new JsonSchemaGenerator(mapper);
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonSchemaGenerator schemaGenerator = new JsonSchemaGenerator(objectMapper);
 
         try {
             return schemaGenerator.generateSchema(parameterClass);

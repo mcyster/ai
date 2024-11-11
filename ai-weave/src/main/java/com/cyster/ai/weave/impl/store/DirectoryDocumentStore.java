@@ -33,21 +33,13 @@ public class DirectoryDocumentStore implements DocumentStore {
 
     @Override
     public Stream<Document> stream() {
-        Stream<Document> documents;
-
-        try (Stream<Path> paths = Files.walk(directory)) {
-           documents = paths
-                .filter(Files::isRegularFile)
-                .filter(path -> !hasDotInPath(path))
-                .map(path -> new FileDocument(path.toFile()));
+        try {
+            return Files.walk(directory).filter(Files::isRegularFile).filter(path -> !hasDotInPath(path))
+                    .map(path -> new FileDocument(path.toFile()));
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
-
-        return documents;
     }
-
-
 
     private static boolean hasDotInPath(Path path) {
         for (Path part : path) {
@@ -119,7 +111,6 @@ public class DirectoryDocumentStore implements DocumentStore {
         private Path directory = null;
         private String hash = null;
 
-
         @Override
         public DirectoryDocumentStoreBuilder withDirectory(Path directory) {
             this.directory = directory;
@@ -136,7 +127,6 @@ public class DirectoryDocumentStore implements DocumentStore {
         public DirectoryDocumentStore create() {
             return new DirectoryDocumentStore(this.directory, this.hash);
         }
-
 
     }
 }

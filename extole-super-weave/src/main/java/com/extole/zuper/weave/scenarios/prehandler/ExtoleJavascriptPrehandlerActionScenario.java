@@ -1,5 +1,9 @@
-package com.extole.admin.weave.scenarios.prehandler;
+package com.extole.zuper.weave.scenarios.prehandler;
 
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -9,14 +13,13 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.extole.admin.weave.session.ExtoleSessionContext;
 
 @Component
-public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, ExtoleSessionContext> {
+public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, Void> {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleJavascriptPrehandlerActionScenario.class);
 
     private AiWeaveService aiWeaveService;
-    private Optional<Scenario<Void, ExtoleSessionContext>> scenario = Optional.empty();
+    private Optional<Scenario<Void, Void>> scenario = Optional.empty();
     private ExtoleApiStore extoleStore;
 
     ExtoleJavascriptPrehandlerActionScenario(AiWeaveService aiWeaveService, ExtoleApiStore extoleStore) {
@@ -40,19 +43,33 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
     }
 
     @Override
-    public Class<ExtoleSessionContext> getContextClass() {
-        return ExtoleSessionContext.class;
+    public Class<Void> getContextClass() {
+        return Void.class;
     }
 
     @Override
     public com.cyster.ai.weave.service.scenario.Scenario.ConversationBuilder createConversationBuilder(Void parameters,
-            ExtoleSessionContext context) {
+            Void context) {
         return this.getScenario().createConversationBuilder(parameters, context);
     }
 
-    private Scenario<Void, ExtoleSessionContext> getScenario() {
-
+    private Scenario<Void, Void> getScenario() {
         if (this.scenario.isEmpty()) {
+
+            String resourcePath = "/extole/scenario/prehandler_action_context.js";
+            URL resourceUrl = ExtoleJavascriptPrehandlerActionScenario.class.getResource(resourcePath);
+            if (resourceUrl == null) {
+                throw new IllegalArgumentException("Resource not found: " + resourcePath);
+            }
+
+            Path javascriptActionContextPath;
+            try {
+                javascriptActionContextPath = Paths.get(resourceUrl.toURI());
+            } catch (URISyntaxException e) {
+                throw new RuntimeException("Unable to convert resourceUrl to URI");
+            }
+            logger.debug("javascriptActionContextPath at: " + javascriptActionContextPath);
+
             String instructions = """
                     The JavaScript code described here executes with a variable 'context' of type PrehandlerActionContext.
                     It should create a processedRawEvent using the ProcessedRawEventBuilder available from the context.
@@ -89,10 +106,13 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
                      Where possible, link to interfaces and classes mentioned in your response.
                     """;
 
-            AssistantScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService
-                    .getOrCreateAssistantScenario(getName());
+            AssistantScenarioBuilder<Void, V> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
 
             builder.setInstructions(instructions);
+
+            // TODO update to use SearchTool
+            // .withFile(javascriptActionContextPath);
+
             builder.withTool(extoleStore.createStoreTool());
 
             this.scenario = Optional.of(builder.getOrCreate());

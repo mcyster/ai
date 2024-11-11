@@ -47,6 +47,21 @@ Define
       - GOOGLE_CLIENT_ID
       - GOOGLE_CLIENT_SECRET
 
+### Github setup
+
+Setup an ssh key for github, generate a key and define in ~/.ssh/config something like:
+```
+Host github.com
+    User git
+    IdentityFile ~/.ssh/id_rsa
+```
+
+Test with
+```
+ssh -T git@github.com
+```
+
+
 #### Google from the Command line
   - Goto [Goole Cloud](https://console.cloud.google.com)
     - Goto IAM & Admin > Service Accounts

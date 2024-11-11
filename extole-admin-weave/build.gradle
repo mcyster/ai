@@ -14,9 +14,9 @@ repositories {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     
-    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.8.0.202311291450-r'
-    implementation 'org.eclipse.jgit:org.eclipse.jgit.ssh.jsch:6.8.0.202311291450-r'
-
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:7.0.0.202409031743-r'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit.ssh.apache:7.0.0.202409031743-r'
+    
     implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema-jakarta:2.16.1'
    
      implementation 'net.thisptr:jackson-jq:1.0.0-preview.20240207'

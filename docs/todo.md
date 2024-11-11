@@ -2,6 +2,7 @@
 
 # Next
 
+- Decorator to convert Scenario<Void, ExtoleSessionContext> to Scenario<Void, Void>
 - set "strict": true on tool parameters
 - fix startup time
 - check for expired files - rebuild / handle

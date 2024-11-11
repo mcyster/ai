@@ -115,7 +115,7 @@ ssh -T git@github.com
 ## Extole Superuser Key
 Define
 ```
-export EXTOLE_SUPERi_USER_API_KEY=XXXX
+export EXTOLE_SUPER_USER_API_KEY=XXXX
 ```
 
 Test with

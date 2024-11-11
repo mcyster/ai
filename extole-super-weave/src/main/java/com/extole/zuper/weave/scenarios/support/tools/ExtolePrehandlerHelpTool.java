@@ -1,4 +1,4 @@
-package com.extole.admin.weave.scenarios.prehandler;
+package com.extole.zuper.weave.scenarios.support.tools;
 
 import java.util.Objects;
 
@@ -12,11 +12,11 @@ import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message.Type;
-import com.extole.client.web.ExtoleWebClientException;
-import com.extole.admin.weave.ExtoleAdminTool;
-import com.extole.admin.weave.session.ExtoleSessionContext;
-import com.extole.admin.weave.scenarios.prehandler.ExtolePrehandlerHelpTool.Request;
+import com.extole.admin.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionScenario;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
+import com.extole.client.web.ExtoleWebClientException;
+import com.extole.zuper.weave.scenarios.support.tools.ExtolePrehandlerHelpTool.Request;
+import com.extole.zuper.weave.session.ExtoleSessionContext;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,12 +24,12 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
-class ExtolePrehandlerHelpTool implements ExtoleAdminTool<Request> {
+class ExtolePrehandlerHelpTool implements ExtoleSupportTool<Request> {
     private ExtoleJavascriptPrehandlerActionScenario scenario;
     private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 
     ExtolePrehandlerHelpTool(ExtoleJavascriptPrehandlerActionScenario scenario,
-        ExtoleTrustedWebClientFactory extoleWebClientFactory) {
+            ExtoleTrustedWebClientFactory extoleWebClientFactory) {
         this.scenario = scenario;
         this.extoleWebClientFactory = extoleWebClientFactory;
     }
@@ -59,15 +59,9 @@ class ExtolePrehandlerHelpTool implements ExtoleAdminTool<Request> {
         JsonNode result;
         try {
             result = this.extoleWebClientFactory.getSuperUserWebClient().post()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/v4/tokens")
-                    .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(payload)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                    .uri(uriBuilder -> uriBuilder.path("/v4/tokens").build()).accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).bodyValue(payload).retrieve().bodyToMono(JsonNode.class)
+                    .block();
         } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientException exception) {
@@ -92,7 +86,7 @@ class ExtolePrehandlerHelpTool implements ExtoleAdminTool<Request> {
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass(), scenario.hash());
     }
-    
+
     static class Request {
         @JsonProperty(required = true)
         public String client_id;
