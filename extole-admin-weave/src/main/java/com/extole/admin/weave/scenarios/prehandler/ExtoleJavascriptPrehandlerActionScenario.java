@@ -95,7 +95,7 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Parame
                       - `ProcessedRawEventBuilder`
                      Load these classes using the the search tool.
 
-                    The context is readonly, to modify events you must use getEventBuilder() and work with a ProcessedRawEventBuilder
+                    The context is readonly, to modify events you must use getEventBuilder() and work with a ProcessedRawEventBuilder.
 
                      Coding Style
                      - **Readability over performance**: Prioritize clear, easy-to-read code.

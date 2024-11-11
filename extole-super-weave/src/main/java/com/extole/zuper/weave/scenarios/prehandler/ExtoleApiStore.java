@@ -4,22 +4,14 @@ import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.TransportConfigCallback;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.transport.SshSessionFactory;
-import org.eclipse.jgit.transport.Transport;
-import org.eclipse.jgit.transport.ssh.jsch.JschConfigSessionFactory;
-import org.eclipse.jgit.transport.ssh.jsch.OpenSshConfig;
-import org.eclipse.jgit.util.FS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.SearchTool;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
 
 @Component
 public class ExtoleApiStore {
@@ -50,41 +42,11 @@ public class ExtoleApiStore {
         logger.debug("loadOrUpdateLocalRepositorty from: " + remoteJavaApiRepository + " to: "
                 + localJavaApiRepository.toString());
 
-        // Define a custom SshSessionFactory that specifies the identity file
-        SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
-            @Override
-            protected void configure(OpenSshConfig.Host host, com.jcraft.jsch.Session session) {
-                // Configure any session parameters if needed
-            }
-
-            @Override
-            protected JSch createDefaultJSch(FS fs) throws JSchException {
-                String idPath = System.getProperty("user.home") + "/.ssh/id_rsa";
-                System.out.println("XXXXXX Create default ssh key from: " + idPath);
-                JSch jsch = super.createDefaultJSch(fs);
-                jsch.addIdentity(System.getProperty(idPath));
-                return jsch;
-            }
-        };
-
-        // Set up the TransportConfigCallback to apply the custom SshSessionFactory
-        TransportConfigCallback transportConfigCallback = new TransportConfigCallback() {
-            @Override
-            public void configure(Transport transport) {
-                System.out.println("XXXXXX Transport: " + transport.toString());
-
-                if (transport instanceof org.eclipse.jgit.transport.SshTransport) {
-                    ((org.eclipse.jgit.transport.SshTransport) transport).setSshSessionFactory(sshSessionFactory);
-                }
-            }
-        };
-
         if (!localJavaApiRepository.exists()) {
             logger.debug("creating locale repository as it was not found at: " + localJavaApiRepository.toString());
 
             try {
-                Git.cloneRepository().setURI(remoteJavaApiRepository).setDirectory(localJavaApiRepository)
-                        .setTransportConfigCallback(transportConfigCallback).call();
+                Git.cloneRepository().setURI(remoteJavaApiRepository).setDirectory(localJavaApiRepository).call();
             } catch (GitAPIException exception) {
                 logger.error("Unable to clone the java api repository: " + remoteJavaApiRepository, exception);
             }
