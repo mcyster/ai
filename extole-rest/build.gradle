@@ -13,7 +13,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'javax.servlet:javax.servlet-api:4.0.1'
       
-    implementation 'com.github.spullara.mustache.java:compiler:0.9.10'
     implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema-jakarta'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
 
