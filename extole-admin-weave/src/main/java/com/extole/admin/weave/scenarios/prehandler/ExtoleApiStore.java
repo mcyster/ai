@@ -43,7 +43,7 @@ public class ExtoleApiStore {
                 + localJavaApiRepository.toString());
 
         if (!localJavaApiRepository.exists()) {
-            logger.debug("creating locale repository as it was not found at: " + localJavaApiRepository.toString());
+            logger.debug("Creating locale repository as it was not found at: " + localJavaApiRepository.toString());
 
             try {
                 Git.cloneRepository().setURI(remoteJavaApiRepository).setDirectory(localJavaApiRepository).call();
@@ -51,7 +51,7 @@ public class ExtoleApiStore {
                 logger.error("Unable to clone the java api repository: " + remoteJavaApiRepository, exception);
             }
         } else {
-            logger.debug("updating locale repository at: " + localJavaApiRepository.toString());
+            logger.debug("Updating local repository at: " + localJavaApiRepository.toString());
 
             try {
                 Git git = Git.open(localJavaApiRepository);
@@ -75,6 +75,7 @@ public class ExtoleApiStore {
             logger.error("Unable to update the java api repository: " + localJavaApiRepository, exception);
         }
 
+        logger.debug("Updated local repository at: " + localJavaApiRepository.toString());
         return latestCommitHash;
     }
 }

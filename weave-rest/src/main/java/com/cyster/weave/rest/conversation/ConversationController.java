@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,7 +26,6 @@ import com.cyster.ai.weave.service.scenario.ScenarioSet;
 import com.cyster.weave.session.service.scenariosession.ScenarioSession;
 import com.cyster.weave.session.service.scenariosession.ScenarioSessionStore;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
@@ -39,15 +38,17 @@ public class ConversationController {
     private ScenarioSet scenarioStore;
     private ObjectMapper objectMapper;
     private List<ScenarioContextFactory<?>> contextFactories;
-    
+
     private static final Logger logger = LoggerFactory.getLogger(ConversationController.class);
 
-    public ConversationController(ScenarioSessionStore scenarioSessionStore, ScenarioSet scenarioStore, List<ScenarioContextFactory<?>> contextFactories) {
+    public ConversationController(ScenarioSessionStore scenarioSessionStore, ScenarioSet scenarioStore,
+            List<ScenarioContextFactory<?>> contextFactories) {
         this.scenarioSessionStore = scenarioSessionStore;
         this.scenarioStore = scenarioStore;
         this.contextFactories = contextFactories;
         this.objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
+        // objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES,
+        // true); // doesn't respect required = false annotation
     }
 
     @GetMapping("/conversations")
@@ -202,7 +203,7 @@ public class ConversationController {
         return new MessageResponse.Builder(level).create(response.getType().toString(), response.getContent(),
                 response.operation());
     }
-    
+
     @SuppressWarnings("unchecked")
     private <PARAMETERS, CONTEXT> ScenarioSession<PARAMETERS, CONTEXT> createScenarioSession(
             Scenario<PARAMETERS, CONTEXT> scenario, Map<String, Object> parameterMap,
@@ -234,9 +235,10 @@ public class ConversationController {
             }
         }
         if (!match) {
-              throw new ScenarioContextException("No Context Factory Found for Scenario: " + scenario.getName() + " with context type: " + scenario.getContextClass().getName());
+            throw new ScenarioContextException("No Context Factory Found for Scenario: " + scenario.getName()
+                    + " with context type: " + scenario.getContextClass().getName());
         }
-        
+
         return scenarioSessionStore.addSession(scenario, parameters,
                 scenario.createConversationBuilder(parameters, context).start());
     }

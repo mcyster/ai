@@ -26,7 +26,6 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Parame
             ExtolePrehandlerGetTool extolePrehandlerGetTool) {
         this.aiWeaveService = aiWeaveService;
         this.extoleStore = extoleStore;
-        this.extoleStore = extoleStore;
         this.extolePrehandlerGetTool = extolePrehandlerGetTool;
     }
 
