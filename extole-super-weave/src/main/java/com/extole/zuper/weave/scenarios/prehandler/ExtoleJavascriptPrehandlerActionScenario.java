@@ -106,7 +106,7 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
                      Where possible, link to interfaces and classes mentioned in your response.
                     """;
 
-            AssistantScenarioBuilder<Void, V> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
+            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
 
             builder.setInstructions(instructions);
 

@@ -12,11 +12,10 @@ import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message.Type;
-import com.extole.admin.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionScenario;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.client.web.ExtoleWebClientException;
+import com.extole.zuper.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionScenario;
 import com.extole.zuper.weave.scenarios.support.tools.ExtolePrehandlerHelpTool.Request;
-import com.extole.zuper.weave.session.ExtoleSessionContext;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -72,10 +71,8 @@ class ExtolePrehandlerHelpTool implements ExtoleSupportTool<Request> {
             throw new ToolException("Unable to get client specific access token");
         }
 
-        var prehandlerContext = new ExtoleSessionContext(result.path("access_token").asText());
-
         try {
-            var conversation = scenario.createConversationBuilder(null, prehandlerContext).start();
+            var conversation = scenario.createConversationBuilder(null, null).start();
             conversation.addMessage(Type.USER, request.question);
             return conversation.respond(operation);
         } catch (ConversationException exception) {

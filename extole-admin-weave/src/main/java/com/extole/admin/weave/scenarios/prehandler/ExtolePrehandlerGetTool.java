@@ -1,4 +1,4 @@
-package com.extole.zuper.weave.scenarios.support.tools;
+package com.extole.admin.weave.scenarios.prehandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,19 +10,21 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
+import com.extole.admin.weave.ExtoleAdminTool;
+import com.extole.admin.weave.scenarios.prehandler.ExtolePrehandlerGetTool.Request;
+import com.extole.admin.weave.session.ExtoleSessionContext;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
-import com.extole.client.web.ExtoleWebClientException;
-import com.extole.zuper.weave.scenarios.support.tools.ExtolePrehandlerGetTool.Request;
+import com.extole.client.web.ExtoleWebClientFactory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
-class ExtolePrehandlerGetTool implements ExtoleSupportTool<Request> {
+class ExtolePrehandlerGetTool implements ExtoleAdminTool<Request> {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleTrustedWebClientFactory.class);
 
-    private ExtoleTrustedWebClientFactory extoleWebClientFactory;
+    private ExtoleWebClientFactory extoleWebClientFactory;
 
-    ExtolePrehandlerGetTool(ExtoleTrustedWebClientFactory extoleWebClientFactory) {
+    ExtolePrehandlerGetTool(ExtoleWebClientFactory extoleWebClientFactory) {
         this.extoleWebClientFactory = extoleWebClientFactory;
     }
 
@@ -42,13 +44,14 @@ class ExtolePrehandlerGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
+    public Object execute(Request request, ExtoleSessionContext context, OperationLogger operation)
+            throws ToolException {
         JsonNode result;
         try {
-            result = this.extoleWebClientFactory.getWebClientById(request.client_id).get()
+            result = this.extoleWebClientFactory.getWebClient(context.getAccessToken()).get()
                     .uri(uriBuilder -> uriBuilder.path("/v6/prehandlers/" + request.prehandler_id).build())
                     .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class).block();
-        } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
+        } catch (WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientException exception) {
             throw new ToolException("Internal error, unable to get clients", exception);
@@ -70,5 +73,4 @@ class ExtolePrehandlerGetTool implements ExtoleSupportTool<Request> {
         @JsonProperty(required = true)
         public String prehandler_id;
     }
-
 }
