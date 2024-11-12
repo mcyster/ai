@@ -102,8 +102,10 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
                      - ClientContext
                      - GlobalServices
                      - ProcessedRawEventBuilder
+                     This classes have been transformed into json, so only the attributes are avalilabe to use in a query.
 
-                     Where possible, link to interfaces and classes mentioned in your response.
+
+                    Where possible, link to interfaces and classes mentioned in your response.
                     """;
 
             AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());

@@ -14,6 +14,7 @@ import com.extole.admin.weave.scenarios.help.tools.ExtoleClientTimelineTool;
 import com.extole.admin.weave.scenarios.help.tools.ExtoleClientTool;
 import com.extole.admin.weave.scenarios.help.tools.ExtoleMeTool;
 import com.extole.admin.weave.scenarios.help.tools.ExtoleMyAuthorizationsTool;
+import com.extole.admin.weave.scenarios.help.tools.ExtoleReportGetTool;
 import com.extole.admin.weave.session.ExtoleSessionContext;
 
 @Component
@@ -23,18 +24,17 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
     private AiWeaveService aiWeaveService;
     private Optional<Scenario<Void, ExtoleSessionContext>> scenario = Optional.empty();
     private List<Tool<?, ExtoleSessionContext>> tools = new ArrayList<>();
-    
-    ExtoleHelpScenario(AiWeaveService aiWeaveService,
-        ExtoleMeTool extoleMeTool,
-        ExtoleClientTool extoleClientTool,
-        ExtoleMyAuthorizationsTool extoleMyAuthorizationsTool,
-        ExtoleClientTimelineTool extoleClientTimelineTool) {
+
+    ExtoleHelpScenario(AiWeaveService aiWeaveService, ExtoleMeTool extoleMeTool, ExtoleClientTool extoleClientTool,
+            ExtoleMyAuthorizationsTool extoleMyAuthorizationsTool, ExtoleClientTimelineTool extoleClientTimelineTool,
+            ExtoleReportGetTool extoleReportTool) {
         this.aiWeaveService = aiWeaveService;
-        
+
         this.tools.add(extoleMeTool);
         this.tools.add(extoleClientTool);
         this.tools.add(extoleMyAuthorizationsTool);
         this.tools.add(extoleClientTimelineTool);
+        this.tools.add(extoleReportTool);
     }
 
     @Override
@@ -52,7 +52,6 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
         return Void.class;
     }
 
-
     @Override
     public Class<ExtoleSessionContext> getContextClass() {
         return ExtoleSessionContext.class;
@@ -62,25 +61,26 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
     public ConversationBuilder createConversationBuilder(Void parameters, ExtoleSessionContext context) {
         return this.getScenario().createConversationBuilder(parameters, context);
     }
-    
+
     private Scenario<Void, ExtoleSessionContext> getScenario() {
 
         if (this.scenario.isEmpty()) {
             String instructions = """
-You help with questions around using the Extole SaaS Marketing platform.
-""";
+                    You help with questions around using the Extole SaaS Marketing platform.
+                    """;
 
-            AssistantScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
+            AssistantScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService
+                    .getOrCreateAssistantScenario(getName());
 
             builder.setInstructions(instructions);
-                
-            for(var tool: this.tools) {
+
+            for (var tool : this.tools) {
                 builder.withTool(tool);
             }
-    
+
             this.scenario = Optional.of(builder.getOrCreate());
         }
-        
+
         return this.scenario.get();
     }
 }
