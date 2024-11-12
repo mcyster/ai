@@ -45,7 +45,7 @@ public class ExtoleReportDescriptionScenario implements Scenario<Parameters, Ext
                 You are looking at the report with id: {{reportId}}
 
                 Provide a brief user friendly business level description of the report.
-                Do not mention the executory type, format or time range of the report as thse are already visible in the UI.
+                Do not mention the name of the report, executor type, format or time range of the report as these are already visible in the UI.
                 """;
 
         String message = new StringTemplate(messageTemplate).render(parameters);
