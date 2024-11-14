@@ -1,0 +1,42 @@
+
+plugins {
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'io.spring.dependency-management' version "${dependencyManagementVersion}"
+    id 'application'
+    id 'java'
+}
+
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'jakarta.servlet:jakarta.servlet-api:6.1.0'
+
+    implementation 'org.springframework:spring-webmvc' 
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    implementation 'com.fasterxml.jackson.module:jackson-module-jsonSchema-jakarta' // shouldn't need at this level?
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'  // TBD if still need
+
+    implementation project(':ai-weave')
+    implementation project(':rest')
+    implementation project(':jira-client')
+    implementation project(':extole-jira')
+    implementation project(':extole-tickets-rest')
+    implementation project(':extole-client')
+    implementation project(':scheduler-weave')
+    implementation project(':extole-super-weave')
+    implementation project(':cyster-weave')
+    implementation project(':web-weave')
+    implementation project(':weave-rest')
+    implementation project(':web-rest')
+    implementation project(':extole-rest')
+    
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+}
+

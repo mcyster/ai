@@ -67,8 +67,6 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
         try {
             var directory = Files.createTempDirectory("store-" + safeName(this.name));
 
-            System.out.println("XXXXXX documentStore: " + documentStore);
-
             try (Stream<Document> documentStream = documentStore.stream()) {
                 documentStream.forEach(document -> {
                     var name = document.getName();
