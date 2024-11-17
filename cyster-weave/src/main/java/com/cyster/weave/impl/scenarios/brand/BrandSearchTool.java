@@ -1,14 +1,16 @@
 package com.cyster.weave.impl.scenarios.brand;
 
 import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
+import com.cyster.weave.impl.scenarios.brand.BrandSearchTool.BrandSearchRequest;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -17,16 +19,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 // https://docs.brandfetch.com/reference/get-started
 
+@Component
+@Conditional(BrandEnabledCondition.class)
 class BrandSearchTool implements Tool<BrandSearchRequest, Void> {
-    private Optional<String> brandFetchApiKey;
+    private String brandFetchApiKey;
 
-    BrandSearchTool(Optional<String> brandFetchApiKey) {
+    BrandSearchTool(@Value("${brandFetchApiKey:#{environment.BRANDFETCH_API_KEY}}") String brandFetchApiKey) {
         this.brandFetchApiKey = brandFetchApiKey;
     }
 
     @Override
     public String getName() {
-        return "brandSearch";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override
@@ -41,8 +45,7 @@ class BrandSearchTool implements Tool<BrandSearchRequest, Void> {
 
     @Override
     public Object execute(BrandSearchRequest searchRequest, Void context, OperationLogger operation) {
-        var webClient = WebClient.builder().baseUrl("https://api.brandfetch.io/")
-            .build();
+        var webClient = WebClient.builder().baseUrl("https://api.brandfetch.io/").build();
 
         if (brandFetchApiKey.isEmpty()) {
             return toJsonNode("{ \"error\": \"brandFetchApiKey is required\" }");
@@ -51,15 +54,9 @@ class BrandSearchTool implements Tool<BrandSearchRequest, Void> {
         var pathParameters = new HashMap<String, String>();
         pathParameters.put("query", searchRequest.query);
 
-        var result = webClient.get()
-            .uri(uriBuilder -> uriBuilder
-                .path("/v2/search/{query}")
-                .build(pathParameters))
-            .header("Authorization", "Bearer " + brandFetchApiKey.get())
-            .accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .bodyToMono(JsonNode.class)
-            .block();
+        var result = webClient.get().uri(uriBuilder -> uriBuilder.path("/v2/search/{query}").build(pathParameters))
+                .header("Authorization", "Bearer " + brandFetchApiKey).accept(MediaType.APPLICATION_JSON).retrieve()
+                .bodyToMono(JsonNode.class).block();
 
         return result;
     }
@@ -74,12 +71,10 @@ class BrandSearchTool implements Tool<BrandSearchRequest, Void> {
         }
         return jsonNode;
     }
-}
 
-class BrandSearchRequest {
-    @JsonPropertyDescription("Brand name or part of brand name to find")
-    @JsonProperty(required = true)
-    public String query;
+    static record BrandSearchRequest(
+            @JsonPropertyDescription("Brand name or part of brand name to find") @JsonProperty(required = true) String query) {
+    }
 }
 
 class BrandSearchResult {
@@ -115,17 +110,5 @@ class BrandSearchResult {
 
     public Boolean isClaimed() {
         return claimed;
-    }
-}
-
-class BrandSearchResponse {
-    public List<BrandSearchResult> brands;
-
-    public BrandSearchResponse(List<BrandSearchResult> brands) {
-        this.brands = brands;
-    }
-
-    public List<BrandSearchResult> getContent() {
-        return this.brands;
     }
 }

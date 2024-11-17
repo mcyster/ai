@@ -1,8 +1,9 @@
 package com.cyster.weave.impl.scenarios.brand;
 
 import java.util.HashMap;
-import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -18,16 +19,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 // https://docs.brandfetch.com/reference/get-started
 
 @Component
+@Conditional(BrandEnabledCondition.class)
 class BrandFetchTool implements Tool<BrandFetchRequest, Void> {
-    private Optional<String> brandFetchApiKey;
+    private String brandFetchApiKey;
 
-    BrandFetchTool(Optional<String> brandFetchApiKey) {
+    BrandFetchTool(@Value("${brandFetchApiKey:#{environment.BRANDFETCH_API_KEY}}") String brandFetchApiKey) {
         this.brandFetchApiKey = brandFetchApiKey;
     }
 
     @Override
     public String getName() {
-        return "brandFetch";
+        return this.getClass().getSimpleName().replace("Tool", "");
     }
 
     @Override
@@ -52,8 +54,8 @@ class BrandFetchTool implements Tool<BrandFetchRequest, Void> {
         pathParameters.put("domainName", fetchRequest.domainName);
 
         var result = webClient.get().uri(uriBuilder -> uriBuilder.build(pathParameters))
-                .header("Authorization", "Bearer " + brandFetchApiKey.get()).accept(MediaType.APPLICATION_JSON)
-                .retrieve().bodyToMono(JsonNode.class).block();
+                .header("Authorization", "Bearer " + brandFetchApiKey).accept(MediaType.APPLICATION_JSON).retrieve()
+                .bodyToMono(JsonNode.class).block();
 
         return result;
     }
