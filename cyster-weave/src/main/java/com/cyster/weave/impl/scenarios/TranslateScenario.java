@@ -45,14 +45,9 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
         return this.chatScenario.createConversationBuilder(null, context).setOverrideInstructions(instructions);
     }
 
-    static class Parameters {
-        @JsonPropertyDescription("language to translate from, ISO 639-1, defaults to en")
-        @JsonProperty(required = false)
-        public String language;
-
-        @JsonPropertyDescription("the language to which to translate the text, ISO 639-1")
-        @JsonProperty(required = true)
-        public String target_language;
+    static record Parameters(
+            @JsonPropertyDescription("language to translate from, ISO 639-1, defaults to en") @JsonProperty(required = false) String language,
+            @JsonPropertyDescription("the language to which to translate the text, ISO 639-1") @JsonProperty(required = true) String target_language) {
     }
 
 }

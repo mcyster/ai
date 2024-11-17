@@ -2,7 +2,7 @@ package com.cyster.weave.impl.scenarios.brand;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
@@ -17,8 +17,8 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 public class BrandScenario implements Scenario<Void, Void> {
     private final String DESCRIPTION = "Provides details about company brands";
     private AiWeaveService aiWeaveService;
-    private Optional<Scenario<Void, Void>> scenario = Optional.empty();
     private List<Tool<?, Void>> tools = new ArrayList<>();
+    private final AtomicReference<Scenario<Void, Void>> scenario = new AtomicReference<>();
 
     public BrandScenario(AiWeaveService aiWeaveService, BrandFetchTool brandFetchTool,
             BrandSearchTool brandSearchTool) {
@@ -52,20 +52,23 @@ public class BrandScenario implements Scenario<Void, Void> {
     }
 
     private Scenario<Void, Void> getScenario() {
-        if (this.scenario.isEmpty()) {
-            var instructions = """
-                    You focus on find details on Company brands.
-                    """;
+        return scenario.updateAndGet(existing -> {
+            if (existing == null) {
+                var instructions = """
+                        You focus on find details on Company brands.
+                        """;
 
-            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
+                AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService
+                        .getOrCreateAssistantScenario(getName());
 
-            builder.setInstructions(instructions);
-            for (var tool : this.tools) {
-                builder.withTool(tool);
+                builder.setInstructions(instructions);
+                for (var tool : this.tools) {
+                    builder.withTool(tool);
+                }
+
+                return builder.getOrCreate();
             }
-
-            this.scenario = Optional.of(builder.getOrCreate());
-        }
-        return this.scenario.get();
+            return existing;
+        });
     }
 }
