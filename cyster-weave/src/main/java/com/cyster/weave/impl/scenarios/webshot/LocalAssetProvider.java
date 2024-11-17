@@ -37,7 +37,7 @@ public class LocalAssetProvider implements AssetProvider {
     @Override
     public AssetId putAsset(Type type, InputStream content) {
         AssetId assetId = AssetId.fromString(UUID.randomUUID().toString() + "." + type.toString().toLowerCase());
-        Path assetPath = this.assets.resolve(assetId + "." + type.toString().toLowerCase());
+        Path assetPath = this.assets.resolve(assetId.toString());
 
         try {
             Files.copy(content, assetPath);
