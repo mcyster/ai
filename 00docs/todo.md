@@ -2,16 +2,15 @@
 
 # Next
 
+- Screenshot scenario
 - Decorator to convert Scenario<Void, ExtoleSessionContext> to Scenario<Void, Void>
 - set "strict": true on tool parameters
 - fix startup time
-- check for expired files - rebuild / handle
+- check for expired gtp files - rebuild / handle
 - ticket to client scenario 
 - ticket to runbook scenario
 - ensure we beep-boop can respond to HELP, SUP, LAUNCH, SPEED
 - review noitficiations, callout suggestions in tickit
-- o1
-- split app extole-support, extole-help 
 - lint, listen on client events
 - vector store for confluence runbooks, via github
 - conversation messages, support nesting
@@ -32,7 +31,6 @@
 
 Make libraries
 - Split out Extole, have extole reference via libraries
-- 
 
 ## Scheduler
 

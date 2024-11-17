@@ -28,12 +28,10 @@ dependencies {
     implementation project(':extole-tickets-rest')
     implementation project(':extole-client')
     implementation project(':scheduler-weave')    
-    implementation project(':extole-super-weave')
     implementation project(':cyster-weave')
     implementation project(':web-weave')
     implementation project(':weave-rest')
     implementation project(':web-rest')
-    implementation project(':extole-rest')
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

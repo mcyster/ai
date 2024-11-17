@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Optional;
 
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
@@ -16,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 // https://docs.brandfetch.com/reference/get-started
 
+@Component
 class BrandFetchTool implements Tool<BrandFetchRequest, Void> {
     private Optional<String> brandFetchApiKey;
 
@@ -40,8 +42,7 @@ class BrandFetchTool implements Tool<BrandFetchRequest, Void> {
 
     @Override
     public Object execute(BrandFetchRequest fetchRequest, Void context, OperationLogger operation) {
-        var webClient = WebClient.builder().baseUrl("https://api.brandfetch.io/v2/brands/{domainName}")
-            .build();
+        var webClient = WebClient.builder().baseUrl("https://api.brandfetch.io/v2/brands/{domainName}").build();
 
         if (brandFetchApiKey.isEmpty()) {
             return toJsonNode("{ \"error\": \"brandFetchApiKey is required\" }");
@@ -50,18 +51,13 @@ class BrandFetchTool implements Tool<BrandFetchRequest, Void> {
         var pathParameters = new HashMap<String, String>();
         pathParameters.put("domainName", fetchRequest.domainName);
 
-        var result = webClient.get()
-            .uri(uriBuilder -> uriBuilder
-                .build(pathParameters))
-            .header("Authorization", "Bearer " + brandFetchApiKey.get())
-            .accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .bodyToMono(JsonNode.class)
-            .block();
+        var result = webClient.get().uri(uriBuilder -> uriBuilder.build(pathParameters))
+                .header("Authorization", "Bearer " + brandFetchApiKey.get()).accept(MediaType.APPLICATION_JSON)
+                .retrieve().bodyToMono(JsonNode.class).block();
 
         return result;
     }
-    
+
     private static JsonNode toJsonNode(String json) {
         JsonNode jsonNode;
         try {

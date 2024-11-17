@@ -17,7 +17,7 @@ import com.cyster.scheduler.SchedulerWeaveScan;
 import com.cyster.weave.CysterWeaveScan;
 import com.cyster.weave.rest.WeaveRestScan;
 import com.cyster.web.rest.WebRestScan;
-import com.cyster.web.weave.WebDeveloperScan;
+import com.cyster.web.weave.WebWeaveScan;
 import com.extole.client.ExtoleClientScan;
 import com.extole.jira.ExtoleJiraScan;
 import com.extole.rest.ExtoleRestScan;
@@ -25,7 +25,7 @@ import com.extole.tickets.rest.ExtoleTicketsScan;
 import com.extole.zuper.weave.ExtoleWeaveScan;
 
 @SpringBootApplication
-@Import(value = { CysterWeaveScan.class, SchedulerWeaveScan.class, WeaveRestScan.class, WebDeveloperScan.class,
+@Import(value = { CysterWeaveScan.class, SchedulerWeaveScan.class, WeaveRestScan.class, WebWeaveScan.class,
         ExtoleClientScan.class, JiraClientScan.class, ExtoleJiraScan.class, ExtoleTicketsScan.class,
         ExtoleWeaveScan.class, WebRestScan.class, ExtoleRestScan.class, CysterRestScan.class })
 public class Application {

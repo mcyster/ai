@@ -26,7 +26,8 @@ class WebsiteImpl implements Website {
         this.id = id;
         this.type = type;
         try {
-            this.uri = new URI(baseUri.getScheme(), baseUri.getAuthority(), path, baseUri.getQuery(), baseUri.getFragment());
+            this.uri = new URI(baseUri.getScheme(), baseUri.getAuthority(), path, baseUri.getQuery(),
+                    baseUri.getFragment());
         } catch (URISyntaxException e) {
             throw new RuntimeException("Unable to build website uri");
         }
@@ -96,7 +97,7 @@ class WebsiteImpl implements Website {
         }
 
         Path file = directory.resolve(name);
-        if (!Files.exists(file)) {            
+        if (!Files.exists(file)) {
             throw new WebsiteException("Unable to find file: " + name + " from directory: " + directory);
         }
 
