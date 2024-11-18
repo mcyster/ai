@@ -18,6 +18,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetId;
 
 // https://www.url2png.com/
+// TBD If url requires login / session cookie
 
 @Component
 @Conditional(WebshotEnabledCondition.class)
