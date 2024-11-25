@@ -103,13 +103,8 @@ function countTicketsPerWeek(tickets: SupportTicket[]) {
         const startDate = ticket.fields.startDate;
         const resolutionDate = ticket.fields.resolvedDate || new Date(); // Use current date if not resolved
 
-        console.log("startDate", typeof ticket.fields.startDate, ticket.fields.startDate);
-        console.log("resolutionDate", typeof ticket.fields.resolvedDate, ticket.fields.resolvedDate);
-
         const startWeekEnd = getWeekEndDate(startDate);
-        console.log("startWeek", startWeek);
         const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
-        console.log("resolvedWeek", resolvedWeek);
 
         if (resolveCounts[resolvedWeekEnd] === undefined) {
             resolveCounts[resolvedWeekEnd] = 0;
@@ -237,7 +232,7 @@ const app = {
             const ticketCountsPerWeek = countTicketsPerWeek(filteredTickets);
             console.log("ticketCountsPerWeek", ticketCountsPerWeek);
 
-            renderChart(ticketCountsPerWeek);
+            renderChart(ticketCountsPerWeek.startCounts, ticketCountsPerWeek.resolveCounts);
         }).catch(error => {
             console.error('Error loading data:', error);
         }); 
