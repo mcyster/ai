@@ -8,17 +8,14 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,11 +23,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.extole.jira.support.FullSupportTicket;
-import com.extole.jira.support.SupportTicket;
+import com.cyster.jira.client.ticket.Ticket;
+import com.cyster.jira.client.ticket.TicketException;
 import com.extole.jira.support.SupportTicketService;
-import com.extole.jira.support.SupportTicketComment;
-import com.extole.jira.support.SupportTicketException;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -44,11 +39,9 @@ public class SupportTicketsController {
     private SupportTicketService supportTicketService;
     private Path tempDirectory;
     private final ObjectMapper objectMapper;
-    
-    public SupportTicketsController(
-        @Value("${AI_HOME}") String aiHome, 
-        SupportTicketService supportTicketService, 
-        ObjectMapper objectMapper) {
+
+    public SupportTicketsController(@Value("${AI_HOME}") String aiHome, SupportTicketService supportTicketService,
+            ObjectMapper objectMapper) {
         Path directory = Paths.get(aiHome);
         if (!Files.exists(directory)) {
             throw new IllegalArgumentException("AI_HOME (" + aiHome + ") does not exist");
@@ -66,61 +59,45 @@ public class SupportTicketsController {
         }
 
         this.supportTicketService = supportTicketService;
-        this.objectMapper = objectMapper;
+
+        ObjectMapper customizedMapper = objectMapper.copy();
+        customizedMapper.configOverride(ZonedDateTime.class)
+                .setFormat(JsonFormat.Value.forPattern("yyyy-MM-dd'T'HH:mm:ssXXX"));
+
+        this.objectMapper = customizedMapper;
     }
 
     @GetMapping("/tickets")
-    public List<SupportTicketResponse> getTickets(@RequestParam Optional<Integer> limit) throws SupportTicketException {
+    public List<Ticket> getTickets(@RequestParam Optional<Integer> limit) throws TicketException {
         return loadTickets(limit);
     }
 
     @GetMapping("/epics")
-    public List<SupportTicketResponse> getEpics(@RequestParam Optional<Integer> limit) throws SupportTicketException {
-        return loadEpics(limit);
-    }
-
-    @GetMapping("/tickets/full")
-    public List<FullSupportTicketResponse> getFullTickets(@RequestParam Optional<Integer> limit) throws SupportTicketException {
-        return loadFullTickets(limit);
+    public List<Ticket> getEpics(@RequestParam Optional<Integer> limit) throws TicketException {
+        return null; // loadEpics(limit);
     }
 
     @GetMapping("/tickets/{ticketNumber}")
-    public FullSupportTicketResponse getTickets(@PathVariable String ticketNumber) throws SupportTicketException {
-        var ticketQueryBuilder = supportTicketService.ticketQueryBuilder();
-        
-        ticketQueryBuilder.withTicket(ticketNumber);
-        
-        List<FullSupportTicket> tickets = ticketQueryBuilder.query();
-        if (tickets.size() == 0) {
-            return null;  // not found ...
+    public Ticket getTicket(@PathVariable String ticketNumber) throws TicketException {
+        var ticket = supportTicketService.getTicket(ticketNumber);
+
+        if (ticket.isEmpty()) {
+            throw new TicketException("Ticket " + ticketNumber + " not found");
         }
-        
-        return FullSupportTicketResponse.fromFullSupportTicket(tickets.get(0));
+        return ticket.get();
     }
 
-    
     @Scheduled(initialDelayString = "PT30M", fixedRateString = "PT1H")
     public void performScheduledTask() {
         try {
             loadTickets(Optional.empty());
-        } catch (SupportTicketException e) {
+        } catch (TicketException e) {
             logger.error("Unable to load support tickets", e);
         }
     }
 
-    private List<SupportTicketResponse> loadTickets(Optional<Integer> limit) throws SupportTicketException {
-        List<FullSupportTicketResponse> tickets = loadFullTickets(limit);
-
-        List<SupportTicketResponse> shortTickets = new ArrayList<>();
-        for(var ticket: tickets) {
-            shortTickets.add(ticket.ticket());
-        }
-        
-        return shortTickets;
-    }
-
-    private List<FullSupportTicketResponse> loadFullTickets(Optional<Integer> limit) throws SupportTicketException {
-        List<FullSupportTicketResponse> tickets;
+    private List<Ticket> loadTickets(Optional<Integer> limit) throws TicketException {
+        List<Ticket> tickets;
 
         Path cacheFilename = getCacheFilename("support-tickets-", getHash(limit));
         if (Files.exists(cacheFilename)) {
@@ -132,12 +109,13 @@ public class SupportTicketsController {
             }
 
             try {
-                tickets = objectMapper.readValue(json, new TypeReference<List<FullSupportTicketResponse>>(){});
+                tickets = objectMapper.readValue(json, new TypeReference<List<Ticket>>() {
+                });
             } catch (JsonProcessingException exception) {
                 throw new RuntimeException(exception);
             }
         } else {
-            tickets = fetchFullTickets(limit);
+            tickets = fetchTickets(limit);
 
             try (FileWriter file = new FileWriter(cacheFilename.toString())) {
                 file.write(objectMapper.writeValueAsString(tickets));
@@ -148,40 +126,24 @@ public class SupportTicketsController {
 
         return tickets;
     }
-    
-    private List<FullSupportTicketResponse> fetchFullTickets(Optional<Integer> limit) throws SupportTicketException {
+
+    private List<Ticket> fetchTickets(Optional<Integer> limit) throws TicketException {
         var ticketQueryBuilder = supportTicketService.ticketQueryBuilder();
-                
-        ticketQueryBuilder.withTrailing7Months();
-        //ticketQueryBuilder.withTrailingWeek();
-        
+
+        ticketQueryBuilder.addFilter("(created > startOfMonth(\"-7M\") OR resolved > startOfMonth(\"-7M\"))");
+        // ticketQueryBuilder.addFilter("created >= -1w");
+
         if (limit.isPresent()) {
             ticketQueryBuilder.withLimit(limit.get());
         }
-        
-        List<FullSupportTicket> tickets = ticketQueryBuilder.query();
-        List<FullSupportTicketResponse> response = new ArrayList<>();
-        for(var ticket: tickets) {
-            response.add(FullSupportTicketResponse.fromFullSupportTicket(ticket));
-        }
-        
-        return response;
+
+        List<Ticket> tickets = ticketQueryBuilder.query();
+
+        return tickets;
     }
 
-
-    private List<SupportTicketResponse> loadEpics(Optional<Integer> limit) throws SupportTicketException {
-        List<FullSupportTicketResponse> tickets = loadFullEpics(limit);
-
-        List<SupportTicketResponse> shortTickets = new ArrayList<>();
-        for(var ticket: tickets) {
-            shortTickets.add(ticket.ticket());
-        }
-        
-        return shortTickets;
-    }
-
-    private List<FullSupportTicketResponse> loadFullEpics(Optional<Integer> limit) throws SupportTicketException {
-        List<FullSupportTicketResponse> tickets;
+    private List<Ticket> loadEpics(Optional<Integer> limit) throws TicketException {
+        List<Ticket> tickets;
 
         Path cacheFilename = getCacheFilename("support-epics-", getHash(limit));
         if (Files.exists(cacheFilename)) {
@@ -193,7 +155,8 @@ public class SupportTicketsController {
             }
 
             try {
-                tickets = objectMapper.readValue(json, new TypeReference<List<FullSupportTicketResponse>>(){});
+                tickets = objectMapper.readValue(json, new TypeReference<List<Ticket>>() {
+                });
             } catch (JsonProcessingException exception) {
                 throw new RuntimeException(exception);
             }
@@ -209,33 +172,27 @@ public class SupportTicketsController {
 
         return tickets;
     }
-    
-    private List<FullSupportTicketResponse> fetchFullEpics(Optional<Integer> limit) throws SupportTicketException {
+
+    private List<Ticket> fetchFullEpics(Optional<Integer> limit) throws TicketException {
         var ticketQueryBuilder = supportTicketService.ticketQueryBuilder();
-                
-        ticketQueryBuilder.withEpicsOnly();
-        
+
+        // ticketQueryBuilder.withEpicsOnly();
+
         if (limit.isPresent()) {
             ticketQueryBuilder.withLimit(limit.get());
         }
-        
-        List<FullSupportTicket> tickets = ticketQueryBuilder.query();
-        List<FullSupportTicketResponse> response = new ArrayList<>();
-        for(var ticket: tickets) {
-            response.add(FullSupportTicketResponse.fromFullSupportTicket(ticket));
-        }
-        
-        return response;
+
+        List<Ticket> tickets = ticketQueryBuilder.query();
+
+        return tickets;
     }
 
-    
     private Path getCacheFilename(String name, String uniqueHash) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         String date = formatter.format(new Date());
 
         return tempDirectory.resolve(name + uniqueHash + "-" + date + ".json");
     }
-
 
     public static String getHash(Object... parameters) {
         StringBuilder concatenated = new StringBuilder();
@@ -272,94 +229,4 @@ public class SupportTicketsController {
         }
     }
 
-    
-    public static record FullSupportTicketResponse (
-            SupportTicketResponse ticket, 
-            String description, 
-            List<TicketCommentResponse> comments
-    ) {
-        public static FullSupportTicketResponse fromFullSupportTicket(FullSupportTicket ticket) {
-            
-            SupportTicketResponse ticketResponse = SupportTicketResponse.fromSupportTicket(ticket.ticket());
-            List<TicketCommentResponse> comments = new ArrayList<>();
-            for(var comment: ticket.comments()) {
-               comments.add(TicketCommentResponse.fromTicketComment(comment));
-            }
-            
-            return new FullSupportTicketResponse(ticketResponse, ticket.description(), comments); 
-        }
-    }
-            
-    public static record SupportTicketResponse (
-            String key,
-            String project,
-            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") ZonedDateTime created,
-            String type,
-            String status,
-            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") ZonedDateTime statusChanged,
-            Optional<String> category,
-            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")  Optional<ZonedDateTime> resolved,
-            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") Optional<ZonedDateTime> due,
-            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") ZonedDateTime start,
-            String priority,
-            Optional<String> reporter,
-            Optional<String> assignee,
-            Optional<String> client,
-            Optional<String> clientId,
-            Optional<String> pod,
-            Optional<String> pairCsm,
-            Optional<String> pairSupport,
-            Optional<String> clientPriority,
-            Integer timeSeconds,
-            List<String> labels
-    ) {
-        public static SupportTicketResponse fromSupportTicket(SupportTicket ticket) {
-            ZoneId utcZone = ZoneId.of("UTC");
-
-            ZonedDateTime created = ticket.created().withZoneSameInstant(utcZone);
-            ZonedDateTime statusChanged = ticket.statusChanged().withZoneSameInstant(utcZone);
-            Optional<ZonedDateTime> resolved = ticket.resolved().map(date -> date.withZoneSameInstant(utcZone));
-            
-            Optional<ZonedDateTime> due = ticket.due().map(date -> date.withZoneSameInstant(utcZone));
-            ZonedDateTime start = ticket.start().withZoneSameInstant(utcZone);
-
-            return new SupportTicketResponse(
-                ticket.key(),
-                ticket.project(),
-                created,
-                ticket.type(),
-                ticket.status(),
-                statusChanged,
-                ticket.category(),
-                resolved,
-                due,
-                start,
-                ticket.priority(),
-                ticket.reporter(),
-                ticket.assignee(),
-                ticket.client(),
-                ticket.clientId(),
-                ticket.pod(),
-                ticket.pairCsm(),
-                ticket.pairSupport(),
-                ticket.clientPriority(),
-                ticket.timeSeconds(),
-                ticket.labels()
-            );
-        }
-    }
-
-    public static record TicketCommentResponse (
-            String description, 
-            String author, 
-            @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ssXXX") ZonedDateTime created
-    ) {
-        public static TicketCommentResponse fromTicketComment(SupportTicketComment comment) {
-            ZoneId utcZone = ZoneId.of("UTC");
-
-            return new TicketCommentResponse(comment.description(), comment.author(), comment.created().withZoneSameInstant(utcZone));
-        }
-    }
-
 }
-

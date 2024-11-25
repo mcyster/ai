@@ -31,220 +31,244 @@
     </div>
 
     <script id="typescript-code" type="text/typescript">
-        interface SupportTicket {
-            key: string;
-            project: string;
-            created: Date;
-            type: string;
-            status: string;
-            statusChanged: Date;
-            category: string | null;
-            resolved: Date | null;
-            due: Date | null;
-                     start: Date;
-            priority: string;
-            reporter: string | null;
-            assignee: string | null;
-            client: string | null;
-            clientId: string | null;
-            pod: string | null;
-            pairCsm: string | null;
-            pairSupport: string | null;
-            clientPriority: string | null;
-            timeSeconds: number;
+interface SupportTicket {
+  key: string;
+  project: string;
+  description: string;
+  comments: string[];
+  fields: {
+    summary: string;
+    clientId: string | null;
+    pod: string | null;
+    clientShortName: string | null;
+    statusChangedDate: string;
+    activitiyUsage: string | null;
+    project: string;
+    reporter: string;
+    priority: string;
+    labels: string[];
+    requestedDueDate: string | null;
+    requestStartDate: string | null;
+    issueType: string;
+    timeSeconds: number;
+    createdDate: string;
+    startDate: string;
+    clientPriority: string | null;
+    assignee: string | null;
+    category: string;
+    status: string;
+    resolvedDate: string | null;
+    pairCsm: string | null;
+  };
+}
+
+async function getSupportTickets(): Promise<SupportTicket[]> {
+    const url = '/support/tickets';
+
+    try {
+        const response = await fetch(url, { method: 'GET' });
+        if (!response.ok) {
+            alert(`Error: unable to fetch ${url}`);
+            throw new Error(`Error fetching "${url}": ${response.statusText}`);
         }
+        const rawData: any[] = await response.json();
 
-        async function getData(): Promise<SupportTicket[]> {
-            const url = '/support/tickets';
-
-            try {
-                const response = await fetch(url, { method: 'GET' });
-                if (!response.ok) {
-                    alert(`Error: unable to fetch ${url}`);
-                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
-                }
-                const rawData: any[] = await response.json();
-                console.log('Raw Data:', rawData); // Debugging data
-                const data: SupportTicket[] = rawData.map(ticket => ({
-                    ...ticket,
-                    created: new Date(Date.parse(ticket.created)),
-                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
-                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
-                }));
-
-                const filteredData = data.filter(ticket => 
-                    ticket.client?.toLowerCase() != 'extole' && 
-                    ticket.resolved !== null);
-                console.log('Filtered Data:', filteredData); // Debugging data
-                return filteredData;
-            } catch (error) {
-                alert(`Error: problem fetching ${url}`);
-                console.error('Fetch error:', error);
-                throw error;
+        const data: SupportTicket[] = rawData.map(ticket => ({
+            ...ticket,
+            fields: {
+                ...ticket.fields,
+                createdDate: new Date(Date.parse(ticket.fields.createdDate)),
+                startDate: ticket.fields.startDate ? new Date(Date.parse(ticket.fields.startDate)) : null
+                statusChangedDate: new Date(Date.parse(ticket.fields.statusChangedDate)),
+                resolvedDate: ticket.fields.resolvedDate ? new Date(Date.parse(ticket.fields.resolvedDate)) : null,
+                requestedDueDate: ticket.fields.requestedDueDate ? new Date(Date.parse(ticket.fields.requestDueDate)) : null,
+                requestedStartDate: ticket.fields.requestStartDate ? new Date(Date.parse(ticket.fields.requestedStartDate)) : null
             }
+        }));
+
+        return data;
+    } catch (error) {
+        alert(`Error: problem fetching ${url}`);
+        console.error('Fetch error:', error);
+        throw error;
+    }
+}
+
+function countTicketsPerWeekPerPod(tickets: SupportTicket[]) {
+    const podResolveCounts: { [pod: string]: { [endOfWeekDate: string]: number } } = {};
+    const lastSixMonths = new Date();
+    lastSixMonths.setMonth(lastSixMonths.getMonth() - 6);
+
+    tickets.forEach(ticket => {
+        var pod = ticket.fields.pod;
+        if (ticket.key?.startsWith("HELP")) {
+            pod = "T1";
         }
 
-        function countTicketsPerWeekPerPod(tickets: SupportTicket[]) {
-            const podResolveCounts: { [pod: string]: { [endOfWeekDate: string]: number } } = {};
-            const lastSixMonths = new Date();
-            lastSixMonths.setMonth(lastSixMonths.getMonth() - 6);
-
-            tickets.forEach(ticket => {
-	        var pod = ticket.pod;
-		if (ticket.key?.startsWith("HELP")) {
-                    pod = "Support T1 Pod";
-                }
-
-		if (!pod) {
-		    pod = "Other";
-		}
-
-                const resolutionDate = ticket.resolved || new Date(); // Use current date if not resolved
-                if (resolutionDate < lastSixMonths) return; // Skip data older than 6 months
-
-                const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
-                let podKey = "Other";
-                const podLower = pod.toLowerCase();
-                if (podLower.includes("ui") || podLower.includes("flow") || podLower.includes("guru") || podLower.includes("t1")) {
-                    podKey = pod;
-                }
-
-                if (!podResolveCounts[podKey]) {
-                    podResolveCounts[podKey] = {};
-                }
-                if (!podResolveCounts[podKey][resolvedWeekEnd]) {
-                    podResolveCounts[podKey][resolvedWeekEnd] = 0;
-                }
-                podResolveCounts[podKey][resolvedWeekEnd]++;
-            });
-
-            console.log('Pod Resolve Counts:', podResolveCounts); // Debugging data
-            return podResolveCounts;
+        if (!pod) {
+            pod = "Other";
         }
 
-        function getWeekEndDate(date: Date) {
-            const dayOfWeek = date.getUTCDay();
-            const weekEndDate = new Date(date);
-            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
-            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
-            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+        const resolutionDate = ticket.fields.resolvedDate || new Date(); // Use current date if not resolved
+        if (resolutionDate < lastSixMonths) return; // Skip data older than 6 months
+
+        const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
+        let podKey = "Other";
+        const podLower = pod.toLowerCase();
+        if (podLower.includes("ui") || podLower.includes("flow") || podLower.includes("guru") || podLower.includes("t1")) {
+            podKey = pod;
         }
 
-        function generateColors(numColors: number): string[] {
-            const colors = [];
-            const hueStep = 360 / numColors;
-            for (let i = 0; i < numColors; i++) {
-                const hue = i * hueStep;
-                const color = `hsl(${hue}, 50%, 45%)`;
-                colors.push(color);
-            }
-            return colors;
+        if (!podResolveCounts[podKey]) {
+            podResolveCounts[podKey] = {};
+        }
+        if (!podResolveCounts[podKey][resolvedWeekEnd]) {
+            podResolveCounts[podKey][resolvedWeekEnd] = 0;
+        }
+        podResolveCounts[podKey][resolvedWeekEnd]++;
+    });
+
+    return podResolveCounts;
+}
+
+function getWeekEndDate(date: Date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
+
+function generateColors(numColors: number): string[] {
+    const colors = [];
+    const hueStep = 360 / numColors;
+    for (let i = 0; i < numColors; i++) {
+        const hue = i * hueStep;
+        const color = `hsl(${hue}, 50%, 45%)`;
+        colors.push(color);
+    }
+    return colors;
+}
+
+let chartInstance: any = null;
+
+function renderChart(podResolveCounts: { [pod: string]: { [endOfWeekDate: string]: number } }) {
+    const ctx = document.getElementById('chart') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    const podKeys = Object.keys(podResolveCounts);
+    const colors = generateColors(podKeys.length);
+
+    const datasets = podKeys.map((pod, index) => {
+        let weeks = Object.keys(podResolveCounts[pod]).sort();
+
+        // Remove the first week unconditionally
+        if (weeks.length > 1) {
+            weeks.shift();
         }
 
-        function renderChart(podResolveCounts: { [pod: string]: { [endOfWeekDate: string]: number } }) {
-            const ctx = document.getElementById('chart') as HTMLCanvasElement;
-            if (!ctx) return;
+        const resolveData = weeks.map(week => ({ x: new Date(week), y: podResolveCounts[pod][week] || 0 }));
 
-            const podKeys = Object.keys(podResolveCounts);
-            const colors = generateColors(podKeys.length);
+        return {
+            label: `${pod}`,
+            backgroundColor: colors[index],
+            borderColor: colors[index],
+            fill: false,
+            data: resolveData,
+            borderWidth: 4
+        };
+    });
 
-            const datasets = podKeys.map((pod, index) => {
-                let weeks = Object.keys(podResolveCounts[pod]).sort();
-
-                // Remove the first week unconditionally
-                if (weeks.length > 1) {
-                    weeks.shift();
-                }
-
-                const resolveData = weeks.map(week => ({ x: new Date(week), y: podResolveCounts[pod][week] || 0 }));
-
-                return {
-                    label: `${pod}`,
-                    backgroundColor: colors[index],
-                    borderColor: colors[index],
-                    fill: false,
-                    data: resolveData,
-                    borderWidth: 4
-                };
-            });
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    datasets: datasets
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: datasets
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
                 },
-                options: {
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'week',
-                                tooltipFormat: 'PP',
-                                displayFormats: {
-                                    week: 'PP'
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Week Ending',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    weight: 'bold'
-                                }
-                            }
-                        },
-                        y: {
-                            beginAtZero: true, // Ensure y-axis starts at 0
-                            title: {
-                                display: true,
-                                text: 'Number of Tickets',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    weight: 'bold'
-                                }
-                            }
+                y: {
+                    beginAtZero: true, // Ensure y-axis starts at 0
+                    title: {
+                        display: true,
+                        text: 'Number of Tickets',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
                         }
                     }
                 }
-            });
-        }
-
-        const app = {
-            data() {
-                return {
-                    jsonData: []
-                };
-            },
-            async created() {
-                getData().then(tickets => {
-                    const podResolveCounts = countTicketsPerWeekPerPod(tickets);
-                    renderChart(podResolveCounts);
-                }).catch(error => {
-                    console.error('Error loading data:', error);
-                });
             }
-        };
+        }
+    });
+}
 
-        Vue.createApp(app).mount('#app');
+const app = {
+    data() {
+        return {
+            jsonData: []
+        };
+    },
+    async created() {
+        getSupportTickets().then(tickets => {
+            console.log('tickets:', tickets); 
+
+            const filteredTickets = tickets.filter(ticket => 
+                ticket.fields.clientShortName?.toLowerCase() != 'extole' && 
+                ticket.fields.resolvedDate !== null
+            );
+            console.log('filteredTickets:', filteredTickets); 
+
+            const podResolveCounts = countTicketsPerWeekPerPod(filteredTickets);
+            console.log("podResolveCounts", podResolveCounts);
+
+            renderChart(podResolveCounts);
+        }).catch(error => {
+            console.error('Error loading data:', error);
+        });
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
     </script>
 
     <script>
-        (async function compileAndExecute() {
-            const tsCode = document.getElementById('typescript-code').textContent;
-            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
-            eval(jsCode);
-        })();
+const tsCode = document.getElementById('typescript-code').textContent;
+const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
+eval(jsCode);
     </script>
+
 </body>
 </html>

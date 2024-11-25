@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.jira.client.adf.writer.AtlassianDocumentMapper;
-import com.extole.jira.support.SupportTicketException;
+import com.cyster.jira.client.ticket.TicketException;
 import com.extole.jira.support.SupportTicketService;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketCommentAddTool.Request;
@@ -71,8 +71,8 @@ class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
         }
 
         try {
-            supportTicketService.addComment(request.key, request.comment);
-        } catch (SupportTicketException exception) {
+            supportTicketService.ticketCommentBuilder(request.key).withComment(request.comment).post();
+        } catch (TicketException exception) {
             throw new ToolException("Error adding comment to ticket: " + request.key, exception);
         }
 

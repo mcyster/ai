@@ -49,14 +49,13 @@ interface SupportTicket {
     priority: string;
     labels: string[];
     requestedDueDate: string | null;
-    requestStartDate: string | null;
     issueType: string;
     timeSeconds: number;
     createdDate: string;
-    startDate: string;
     clientPriority: string | null;
     assignee: string | null;
     category: string;
+    startDate: string | null;
     status: string;
     resolvedDate: string | null;
     pairCsm: string | null;
@@ -79,11 +78,10 @@ async function getSupportTickets(): Promise<SupportTicket[]> {
             fields: {
                 ...ticket.fields,
                 createdDate: new Date(Date.parse(ticket.fields.createdDate)),
-                startDate: ticket.fields.startDate ? new Date(Date.parse(ticket.fields.startDate)) : null
                 statusChangedDate: new Date(Date.parse(ticket.fields.statusChangedDate)),
                 resolvedDate: ticket.fields.resolvedDate ? new Date(Date.parse(ticket.fields.resolvedDate)) : null,
                 requestedDueDate: ticket.fields.requestedDueDate ? new Date(Date.parse(ticket.fields.requestDueDate)) : null,
-                requestedStartDate: ticket.fields.requestStartDate ? new Date(Date.parse(ticket.fields.requestedStartDate)) : null
+                startDate: ticket.fields.startDate ? new Date(Date.parse(ticket.fields.startDate)) : null
             }
         }));
 
@@ -100,16 +98,11 @@ function countTicketsPerWeek(tickets: SupportTicket[]) {
     const resolveCounts: { [endOfWeekDate: string]: number } = {};
             
     tickets.forEach(ticket => {
-        const startDate = ticket.fields.startDate;
-        const resolutionDate = ticket.fields.resolvedDate || new Date(); // Use current date if not resolved
-
-        console.log("startDate", typeof ticket.fields.startDate, ticket.fields.startDate);
-        console.log("resolutionDate", typeof ticket.fields.resolvedDate, ticket.fields.resolvedDate);
+        const startDate = ticket.start;
+        const resolutionDate = ticket.resolved || new Date(); // Use current date if not resolved
 
         const startWeekEnd = getWeekEndDate(startDate);
-        console.log("startWeek", startWeek);
         const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
-        console.log("resolvedWeek", resolvedWeek);
 
         if (resolveCounts[resolvedWeekEnd] === undefined) {
             resolveCounts[resolvedWeekEnd] = 0;
@@ -229,7 +222,7 @@ const app = {
             console.log('tickets:', tickets);
 
             const filteredTickets = tickets.filter(ticket =>
-                ticket.fields.clientShortName?.toLowerCase() != 'extole' &&
+                ticket.clientShortName?.toLowerCase() != 'extole' &&
                 ticket.fields.resolvedDate !== null
             );
             console.log('filteredTickets:', filteredTickets);

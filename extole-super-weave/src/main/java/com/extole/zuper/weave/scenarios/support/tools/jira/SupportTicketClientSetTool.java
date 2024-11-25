@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.jira.support.SupportTicketException;
+import com.cyster.jira.client.ticket.TicketException;
 import com.extole.jira.support.SupportTicketService;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketClientSetTool.Request;
@@ -60,7 +60,7 @@ public class SupportTicketClientSetTool implements ExtoleSupportTool<Request> {
 
         try {
             supportTicketService.setClient(request.key, request.clientShortName);
-        } catch (SupportTicketException exception) {
+        } catch (TicketException exception) {
             throw new ToolException(
                     "Unable to set clientShortName: " + request.clientShortName + " on ticket: " + request.key,
                     exception);

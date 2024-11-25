@@ -77,6 +77,7 @@
                 const filteredData = data.filter(ticket => 
                     !ticket.labels.includes("exec_escalated") && 
                     ticket.client !== "Extole" &&
+ 		    ticket.status != "Closed - Won't Do" &&
                     !ticket.key?.includes("HELP") &&
                     ticket.type != "Epic"
                 );
@@ -101,6 +102,7 @@
             const currentDate = new Date();
 
             tickets.forEach(ticket => {
+	        console.log("ticket", ticket.status);
                 const endDate = ticket.resolved && ticket.resolved < currentDate ? ticket.resolved : currentDate;
 
                 for (let date = new Date(ticket.start); date < endDate; date.setUTCDate(date.getUTCDate() + 7)) {
