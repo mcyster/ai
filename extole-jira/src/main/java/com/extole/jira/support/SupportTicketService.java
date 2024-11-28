@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import com.cyster.jira.client.ticket.Ticket;
 import com.cyster.jira.client.ticket.TicketCommentBuilder;
 import com.cyster.jira.client.ticket.TicketException;
 import com.cyster.jira.client.ticket.TicketQueryBuilder;
@@ -19,9 +18,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import reactor.core.publisher.Mono;
 
 @Component
-public class SupportTicketService implements TicketService {
+public class SupportTicketService implements TicketService<SupportTicket> {
     private final JiraWebClientFactory jiraWebClientFactory;
-    private final TicketService ticketService;
+    private final TicketService<SupportTicket> ticketService;
     private final SupportTicketClients supportTicketClients;
 
     SupportTicketService(TicketServiceFactory ticketServiceFactory, JiraWebClientFactory jiraWebClientFactory,
@@ -32,12 +31,12 @@ public class SupportTicketService implements TicketService {
     }
 
     @Override
-    public TicketQueryBuilder ticketQueryBuilder() {
+    public TicketQueryBuilder<SupportTicket> ticketQueryBuilder() {
         return ticketService.ticketQueryBuilder();
     }
 
     @Override
-    public Optional<Ticket> getTicket(String key) throws TicketException {
+    public Optional<SupportTicket> getTicket(String key) throws TicketException {
         return ticketService.getTicket(key);
     }
 

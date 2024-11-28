@@ -4,11 +4,11 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public interface TicketMapper {
+public interface TicketMapper<TICKET> {
 
     List<String> projects();
 
     List<String> fields();
 
-    Ticket issueToTicket(JsonNode issue);
+    TICKET issueToTicket(JsonNode issue);
 }

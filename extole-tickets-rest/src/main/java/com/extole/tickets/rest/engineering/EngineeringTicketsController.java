@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cyster.jira.client.ticket.Ticket;
 import com.cyster.jira.client.ticket.TicketException;
+import com.extole.jira.engineering.EngineeringTicket;
 import com.extole.jira.engineering.EngineeringTicketService;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -68,12 +68,12 @@ public class EngineeringTicketsController {
     }
 
     @GetMapping("/tickets")
-    public List<Ticket> getTickets(@RequestParam Optional<Integer> limit) throws TicketException {
+    public List<EngineeringTicket> getTickets(@RequestParam Optional<Integer> limit) throws TicketException {
         return loadTickets(limit);
     }
 
     @GetMapping("/tickets/{ticketNumber}")
-    public Ticket getTicket(@PathVariable String ticketNumber) throws TicketException {
+    public EngineeringTicket getTicket(@PathVariable String ticketNumber) throws TicketException {
         var ticket = engineeringTicketService.getTicket(ticketNumber);
 
         if (ticket.isEmpty()) {
@@ -91,8 +91,8 @@ public class EngineeringTicketsController {
         }
     }
 
-    private List<Ticket> loadTickets(Optional<Integer> limit) throws TicketException {
-        List<Ticket> tickets;
+    private List<EngineeringTicket> loadTickets(Optional<Integer> limit) throws TicketException {
+        List<EngineeringTicket> tickets;
 
         Path cacheFilename = getCacheFilename(getHash(limit));
         if (Files.exists(cacheFilename)) {
@@ -104,7 +104,7 @@ public class EngineeringTicketsController {
             }
 
             try {
-                tickets = objectMapper.readValue(json, new TypeReference<List<Ticket>>() {
+                tickets = objectMapper.readValue(json, new TypeReference<List<EngineeringTicket>>() {
                 });
             } catch (JsonProcessingException exception) {
                 throw new RuntimeException(exception);
@@ -122,7 +122,7 @@ public class EngineeringTicketsController {
         return tickets;
     }
 
-    private List<Ticket> fetchTickets(Optional<Integer> limit) throws TicketException {
+    private List<EngineeringTicket> fetchTickets(Optional<Integer> limit) throws TicketException {
         var ticketQueryBuilder = engineeringTicketService.ticketQueryBuilder();
 
         ticketQueryBuilder.addFilter("(created > startOfMonth(\"-7M\") OR resolved > startOfMonth(\"-7M\"))");
@@ -132,7 +132,7 @@ public class EngineeringTicketsController {
             ticketQueryBuilder.withLimit(limit.get());
         }
 
-        List<Ticket> tickets = ticketQueryBuilder.query();
+        List<EngineeringTicket> tickets = ticketQueryBuilder.query();
 
         return tickets;
     }

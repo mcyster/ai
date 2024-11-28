@@ -3,7 +3,6 @@ package com.cyster.jira.client.ticket.impl;
 import java.util.List;
 import java.util.Optional;
 
-import com.cyster.jira.client.ticket.Ticket;
 import com.cyster.jira.client.ticket.TicketCommentBuilder;
 import com.cyster.jira.client.ticket.TicketException;
 import com.cyster.jira.client.ticket.TicketMapper;
@@ -11,25 +10,25 @@ import com.cyster.jira.client.ticket.TicketQueryBuilder;
 import com.cyster.jira.client.ticket.TicketService;
 import com.cyster.jira.client.web.JiraWebClientFactory;
 
-public class TicketServiceImpl implements TicketService {
+public class TicketServiceImpl<TICKET> implements TicketService<TICKET> {
     private final JiraWebClientFactory jiraWebClientFactory;
-    private final TicketMapper ticketMapper;
+    private final TicketMapper<TICKET> ticketMapper;
 
-    public TicketServiceImpl(JiraWebClientFactory jiraWebClientFactory, TicketMapper ticketMapper) {
+    public TicketServiceImpl(JiraWebClientFactory jiraWebClientFactory, TicketMapper<TICKET> ticketMapper) {
         this.jiraWebClientFactory = jiraWebClientFactory;
         this.ticketMapper = ticketMapper;
     }
 
-    public TicketQueryBuilder ticketQueryBuilder() {
-        return new TicketQueryBuilderImpl(jiraWebClientFactory, ticketMapper);
+    public TicketQueryBuilder<TICKET> ticketQueryBuilder() {
+        return new TicketQueryBuilderImpl<TICKET>(jiraWebClientFactory, ticketMapper);
     }
 
-    public Optional<Ticket> getTicket(String key) throws TicketException {
-        var ticketQueryBuilder = new TicketQueryBuilderImpl(jiraWebClientFactory, ticketMapper);
+    public Optional<TICKET> getTicket(String key) throws TicketException {
+        var ticketQueryBuilder = new TicketQueryBuilderImpl<TICKET>(jiraWebClientFactory, ticketMapper);
 
         ticketQueryBuilder.addFilter("key = \"" + key + "\"");
 
-        List<Ticket> tickets = ticketQueryBuilder.query();
+        List<TICKET> tickets = ticketQueryBuilder.query();
 
         if (tickets.size() == 0) {
             return Optional.empty();

@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.cyster.jira.client.ticket.impl.TicketQueryBuilderImpl;
 
-public interface TicketQueryBuilder {
+public interface TicketQueryBuilder<TICKET> {
 
     TicketQueryBuilderImpl withProject(String project);
 
@@ -16,6 +16,6 @@ public interface TicketQueryBuilder {
 
     TicketQueryBuilderImpl withOrder(String orderBy);
 
-    List<Ticket> query() throws TicketException;
+    List<TICKET> query() throws TicketException;
 
 }

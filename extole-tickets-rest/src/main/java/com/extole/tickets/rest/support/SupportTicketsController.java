@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
-import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -23,10 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.cyster.jira.client.ticket.Ticket;
 import com.cyster.jira.client.ticket.TicketException;
+import com.cyster.jira.client.ticket.impl.Ticket;
+import com.extole.jira.support.SupportTicket;
 import com.extole.jira.support.SupportTicketService;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,15 +59,12 @@ public class SupportTicketsController {
 
         this.supportTicketService = supportTicketService;
 
-        ObjectMapper customizedMapper = objectMapper.copy();
-        customizedMapper.configOverride(ZonedDateTime.class)
-                .setFormat(JsonFormat.Value.forPattern("yyyy-MM-dd'T'HH:mm:ssXXX"));
+        this.objectMapper = objectMapper;
 
-        this.objectMapper = customizedMapper;
     }
 
     @GetMapping("/tickets")
-    public List<Ticket> getTickets(@RequestParam Optional<Integer> limit) throws TicketException {
+    public List<SupportTicket> getTickets(@RequestParam Optional<Integer> limit) throws TicketException {
         return loadTickets(limit);
     }
 
@@ -78,7 +74,7 @@ public class SupportTicketsController {
     }
 
     @GetMapping("/tickets/{ticketNumber}")
-    public Ticket getTicket(@PathVariable String ticketNumber) throws TicketException {
+    public SupportTicket getTicket(@PathVariable String ticketNumber) throws TicketException {
         var ticket = supportTicketService.getTicket(ticketNumber);
 
         if (ticket.isEmpty()) {
@@ -96,8 +92,8 @@ public class SupportTicketsController {
         }
     }
 
-    private List<Ticket> loadTickets(Optional<Integer> limit) throws TicketException {
-        List<Ticket> tickets;
+    private List<SupportTicket> loadTickets(Optional<Integer> limit) throws TicketException {
+        List<SupportTicket> tickets;
 
         Path cacheFilename = getCacheFilename("support-tickets-", getHash(limit));
         if (Files.exists(cacheFilename)) {
@@ -109,7 +105,7 @@ public class SupportTicketsController {
             }
 
             try {
-                tickets = objectMapper.readValue(json, new TypeReference<List<Ticket>>() {
+                tickets = objectMapper.readValue(json, new TypeReference<List<SupportTicket>>() {
                 });
             } catch (JsonProcessingException exception) {
                 throw new RuntimeException(exception);
@@ -127,7 +123,7 @@ public class SupportTicketsController {
         return tickets;
     }
 
-    private List<Ticket> fetchTickets(Optional<Integer> limit) throws TicketException {
+    private List<SupportTicket> fetchTickets(Optional<Integer> limit) throws TicketException {
         var ticketQueryBuilder = supportTicketService.ticketQueryBuilder();
 
         ticketQueryBuilder.addFilter("(created > startOfMonth(\"-7M\") OR resolved > startOfMonth(\"-7M\"))");
@@ -137,13 +133,13 @@ public class SupportTicketsController {
             ticketQueryBuilder.withLimit(limit.get());
         }
 
-        List<Ticket> tickets = ticketQueryBuilder.query();
+        List<SupportTicket> tickets = ticketQueryBuilder.query();
 
         return tickets;
     }
 
-    private List<Ticket> loadEpics(Optional<Integer> limit) throws TicketException {
-        List<Ticket> tickets;
+    private List<SupportTicket> loadEpics(Optional<Integer> limit) throws TicketException {
+        List<SupportTicket> tickets;
 
         Path cacheFilename = getCacheFilename("support-epics-", getHash(limit));
         if (Files.exists(cacheFilename)) {
@@ -155,7 +151,7 @@ public class SupportTicketsController {
             }
 
             try {
-                tickets = objectMapper.readValue(json, new TypeReference<List<Ticket>>() {
+                tickets = objectMapper.readValue(json, new TypeReference<List<SupportTicket>>() {
                 });
             } catch (JsonProcessingException exception) {
                 throw new RuntimeException(exception);
@@ -173,7 +169,7 @@ public class SupportTicketsController {
         return tickets;
     }
 
-    private List<Ticket> fetchFullEpics(Optional<Integer> limit) throws TicketException {
+    private List<SupportTicket> fetchFullEpics(Optional<Integer> limit) throws TicketException {
         var ticketQueryBuilder = supportTicketService.ticketQueryBuilder();
 
         // ticketQueryBuilder.withEpicsOnly();
@@ -182,7 +178,7 @@ public class SupportTicketsController {
             ticketQueryBuilder.withLimit(limit.get());
         }
 
-        List<Ticket> tickets = ticketQueryBuilder.query();
+        List<SupportTicket> tickets = ticketQueryBuilder.query();
 
         return tickets;
     }

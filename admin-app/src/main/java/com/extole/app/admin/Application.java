@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 
 import com.cyster.rest.ApplicationServerConfig;
-import com.cyster.rest.CysterRestScan;
+import com.cyster.rest.RestScan;
 import com.cyster.scheduler.SchedulerWeaveScan;
 import com.cyster.weave.CysterWeaveScan;
 import com.cyster.weave.rest.WeaveRestScan;
@@ -20,7 +20,7 @@ import com.extole.admin.weave.ExtoleAdminWeaveScan;
 
 @SpringBootApplication
 @Import(value = {
-    CysterRestScan.class,
+    RestScan.class,
     CysterWeaveScan.class,
     SchedulerWeaveScan.class,
     WeaveRestScan.class, 

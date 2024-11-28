@@ -1,5 +1,6 @@
 package com.extole.jira.engineering;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -15,13 +16,12 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.cyster.jira.client.adf.reader.MarkDownDocumentMapper;
-import com.cyster.jira.client.ticket.Ticket;
 import com.cyster.jira.client.ticket.TicketMapper;
 import com.cyster.jira.client.web.JiraWebClientFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-class EngineeringTicketMapper implements TicketMapper {
+class EngineeringTicketMapper implements TicketMapper<EngineeringTicket> {
     private static final DateTimeFormatter ZONED_DATE_TIME_FORMATTER = DateTimeFormatter
             .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
@@ -61,8 +61,8 @@ class EngineeringTicketMapper implements TicketMapper {
         return fields;
     }
 
-    public Ticket issueToTicket(JsonNode issue) {
-        var ticketBuilder = Ticket.newBuilder();
+    public EngineeringTicket issueToTicket(JsonNode issue) {
+        var ticketBuilder = EngineeringTicket.builder();
 
         ticketBuilder.key(issue.path("key").asText());
         ticketBuilder.project(issue.path("project").path("name").asText());
@@ -88,7 +88,7 @@ class EngineeringTicketMapper implements TicketMapper {
                         description = new MarkDownDocumentMapper().fromAtlassianDocumentFormat(bodyNode);
                     }
 
-                    String createdDate = toUtcString(commentNode.path("created").asText(null));
+                    Instant createdDate = toInstant(commentNode.path("created").asText(null));
 
                     ticketBuilder.addComment(description, author, createdDate);
                 }
@@ -97,34 +97,34 @@ class EngineeringTicketMapper implements TicketMapper {
 
         JsonNode fields = issue.path("fields");
 
-        ticketBuilder.addField("project", fields.path("project").path("key").asText());
-        ticketBuilder.addField("summary", fields.path("summary").asText());
+        ticketBuilder.project(fields.path("project").path("key").asText());
+        ticketBuilder.summary(fields.path("summary").asText());
 
-        ticketBuilder.addField("createdDate", toUtcString(fields.path("created").asText(null)));
-        ticketBuilder.addField("issueType", fields.path("issuetype").path("name").asText());
-        ticketBuilder.addField("status", fields.path("status").path("name").asText());
+        ticketBuilder.createdDate(toInstant(fields.path("created").asText(null)));
+        ticketBuilder.issueType(fields.path("issuetype").path("name").asText());
+        ticketBuilder.status(fields.path("status").path("name").asText());
 
-        ticketBuilder.addField("statusChangedDate", toUtcString(fields.path("statuscategorychangedate").asText()));
-        ticketBuilder.addField("category", fields.path("parent").path("fields").path("summary").asText(null));
-        ticketBuilder.addField("resolvedDate", toUtcString(fields.path("resolutiondate").asText(null)));
-        ticketBuilder.addField("priority", fields.path("priority").path("name").asText());
-        ticketBuilder.addField("reporter", fields.path("reporter").path("emailAddress").asText(null));
-        ticketBuilder.addField("assignee", fields.path("assignee").path("emailAddress").asText(null));
+        ticketBuilder.statusChangeDate(toInstant(fields.path("statuscategorychangedate").asText()));
+
+        ticketBuilder.resolvedDate(toInstant(fields.path("resolutiondate").asText(null)));
+        ticketBuilder.priority(fields.path("priority").path("name").asText("unspecified"));
+        ticketBuilder.reporter(fields.path("reporter").path("emailAddress").asText(null));
+        ticketBuilder.assignee(fields.path("assignee").path("emailAddress").asText(null));
 
         var labelNode = fields.path("labels");
         if (labelNode.isArray()) {
             var labels = StreamSupport.stream(labelNode.spliterator(), false).map(JsonNode::asText)
                     .collect(Collectors.toList());
-            ticketBuilder.addField("labels", labels);
+            ticketBuilder.labels(labels);
         }
 
-        ticketBuilder.addField("team", fields.path("customfield_10800").path("name").asText());
+        ticketBuilder.team(fields.path("customfield_10800").path("name").asText());
 
-        ticketBuilder.addField("epic", fields.path("parent").path("fields").path("summary").asText(null));
+        ticketBuilder.epic(fields.path("parent").path("fields").path("summary").asText(null));
 
         String epicKey = fields.path("parent").path("key").asText();
         if (epicKey != null && !epicKey.isBlank() && epics.containsKey(epicKey)) {
-            ticketBuilder.addField("initiative", epics.get(epicKey).initiative());
+            ticketBuilder.initiative(epics.get(epicKey).initiative().orElse("Other"));
         }
 
         return ticketBuilder.build();
@@ -226,7 +226,7 @@ class EngineeringTicketMapper implements TicketMapper {
     public static record Epic(String key, String epic, Optional<String> initiative) {
     };
 
-    private String toUtcString(String date) {
+    private Instant toInstant(String date) {
         if (date == null) {
             return null;
         }
@@ -234,6 +234,6 @@ class EngineeringTicketMapper implements TicketMapper {
         ZonedDateTime zonedDateTime = ZonedDateTime.parse(date, ZONED_DATE_TIME_FORMATTER);
         ZonedDateTime utcTime = zonedDateTime.withZoneSameInstant(ZoneId.of("UTC"));
 
-        return utcTime.toString();
+        return utcTime.toInstant();
     }
 }

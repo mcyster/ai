@@ -2,10 +2,10 @@ package com.cyster.jira.client.ticket;
 
 import java.util.Optional;
 
-public interface TicketService {
-    TicketQueryBuilder ticketQueryBuilder();
+public interface TicketService<TICKET> {
+    TicketQueryBuilder<TICKET> ticketQueryBuilder();
 
-    Optional<Ticket> getTicket(String key) throws TicketException;
+    Optional<TICKET> getTicket(String key) throws TicketException;
 
     TicketCommentBuilder ticketCommentBuilder(String key);
 

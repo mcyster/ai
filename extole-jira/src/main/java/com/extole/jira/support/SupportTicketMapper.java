@@ -1,5 +1,7 @@
 package com.extole.jira.support;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -11,17 +13,14 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.cyster.jira.client.adf.reader.MarkDownDocumentMapper;
-import com.cyster.jira.client.ticket.Ticket;
 import com.cyster.jira.client.ticket.TicketMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
-class SupportTicketMapper implements TicketMapper {
+class SupportTicketMapper implements TicketMapper<SupportTicket> {
     private static final DateTimeFormatter ZONED_DATE_TIME_FORMATTER = DateTimeFormatter
             .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final DateTimeFormatter DATE_OUTPUT_FORMATTER = DateTimeFormatter
-            .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     private final List<String> fields = new ArrayList<>() {
         {
@@ -65,8 +64,8 @@ class SupportTicketMapper implements TicketMapper {
         return fields;
     }
 
-    public Ticket issueToTicket(JsonNode issue) {
-        var ticketBuilder = Ticket.newBuilder();
+    public SupportTicket issueToTicket(JsonNode issue) {
+        var ticketBuilder = SupportTicket.builder();
 
         ticketBuilder.key(issue.path("key").asText());
         ticketBuilder.project(issue.path("fields").path("project").path("name").asText());
@@ -92,7 +91,7 @@ class SupportTicketMapper implements TicketMapper {
                         description = new MarkDownDocumentMapper().fromAtlassianDocumentFormat(bodyNode);
                     }
 
-                    String createdDate = toUtcString(commentNode.path("created").asText(null));
+                    Instant createdDate = toInstant(commentNode.path("created").asText(null));
 
                     ticketBuilder.addComment(description, author, createdDate);
                 }
@@ -101,26 +100,35 @@ class SupportTicketMapper implements TicketMapper {
 
         JsonNode fields = issue.path("fields");
 
-        ticketBuilder.addField("summary", fields.path("summary").asText());
-        ticketBuilder.addField("project", fields.path("project").path("name").asText());
-        ticketBuilder.addField("createdDate", toUtcString(fields.path("created").asText(null)));
-        ticketBuilder.addField("issueType", fields.path("issuetype").path("name").asText());
-        ticketBuilder.addField("status", fields.path("status").path("name").asText());
+        ticketBuilder.summary(fields.path("summary").asText());
+        ticketBuilder.project(fields.path("project").path("name").asText());
 
-        ticketBuilder.addField("statusChangedDate", toUtcString(fields.path("statuscategorychangedate").asText(null)));
-        ticketBuilder.addField("category", fields.path("parent").path("fields").path("summary").asText(null));
-        ticketBuilder.addField("resolvedDate", toUtcString(fields.path("resolutiondate").asText(null)));
+        Instant createdDate = toInstant(fields.path("created").asText(null));
+        ticketBuilder.createdDate(createdDate);
+
+        ticketBuilder.issueType(fields.path("issuetype").path("name").asText());
+        ticketBuilder.status(fields.path("status").path("name").asText());
+
+        ticketBuilder.statusChangeDate(toInstant(fields.path("statuscategorychangedate").asText(null)));
+
+        ticketBuilder.runbook(fields.path("parent").path("fields").path("summary").asText(null));
+        ticketBuilder.runbookUsage(fields.path("customfield_11379").asText(null));
+
+        ticketBuilder.activity("tbd");
+        ticketBuilder.detailedActivity("tbd");
+
+        ticketBuilder.resolvedDate(toInstant(fields.path("resolutiondate").asText(null)));
 
         var labelNode = fields.path("labels");
         if (labelNode.isArray()) {
             var labels = StreamSupport.stream(labelNode.spliterator(), false).map(JsonNode::asText)
                     .collect(Collectors.toList());
-            ticketBuilder.addField("labels", labels);
+            ticketBuilder.labels(labels);
         }
 
-        ticketBuilder.addField("priority", fields.path("priority").path("name").asText());
-        ticketBuilder.addField("reporter", fields.path("reporter").path("emailAddress").asText(null));
-        ticketBuilder.addField("assignee", fields.path("assignee").path("emailAddress").asText(null));
+        ticketBuilder.priority(fields.path("priority").path("name").asText("unspecified"));
+        ticketBuilder.reporter(fields.path("reporter").path("emailAddress").asText(null));
+        ticketBuilder.assignee(fields.path("assignee").path("emailAddress").asText(null));
 
         String clientShortName = null;
         JsonNode organizationField = fields.path("customfield_11100");
@@ -137,47 +145,44 @@ class SupportTicketMapper implements TicketMapper {
                 ;
             }
         }
-        ticketBuilder.addField("clientShortName", clientShortName);
+        ticketBuilder.clientShortName(clientShortName);
 
-        ticketBuilder.addField("clientId", fields.path("customfield_11320").asText(null));
+        ticketBuilder.clientId(fields.path("customfield_11320").asText(null));
 
         String pod = fields.path("customfield_11326").asText(null);
         if (pod != null) {
             pod = pod.replaceAll("(?i)^support\\s*", "").replaceAll("(?i)\\s*pod$", "");
         }
-        ticketBuilder.addField("pod", pod);
+        ticketBuilder.pod(pod);
 
-        ticketBuilder.addField("pairCsm", fields.path("customfield_11375").path("emailAddress").asText(null));
-        ticketBuilder.addField("clientPriority", fields.path("customfield_11373").asText(null));
-        ticketBuilder.addField("timeSeconds", fields.path("aggregatetimespent").asInt());
+        ticketBuilder.csm(fields.path("customfield_11375").path("emailAddress").asText(null));
+        ticketBuilder.clientPriority(fields.path("customfield_11373").asText("Unspecified"));
+        ticketBuilder.duration(Duration.ofSeconds(fields.path("aggregatetimespent").asInt()));
 
-        String requestedDueDate = toUtcString(fields.path("customfield_11390").asText(null));
-        ticketBuilder.addField("requestedDueDate", requestedDueDate);
+        Instant requestedDueDate = toInstant(fields.path("customfield_11390").asText(null));
+        ticketBuilder.requestedDueDate(requestedDueDate);
+
+        ticketBuilder.createdDate(createdDate);
 
         if (requestedDueDate != null) {
-            ZonedDateTime dueDate = ZonedDateTime.parse(requestedDueDate, DateTimeFormatter.ISO_ZONED_DATE_TIME);
-
-            ZonedDateTime startDate = dueDate.minus(8, ChronoUnit.DAYS);
-            ticketBuilder.addField("requestedStartDate", startDate.format(DATE_OUTPUT_FORMATTER));
-
-            ZonedDateTime createdDate = ZonedDateTime.parse(toUtcString(fields.path("created").asText(null)),
-                    DateTimeFormatter.ISO_ZONED_DATE_TIME);
+            Instant startDate = requestedDueDate.minus(8, ChronoUnit.DAYS);
+            ticketBuilder.requestedStartDate(startDate);
 
             if (startDate.isAfter(createdDate)) {
-                ticketBuilder.addField("startDate", startDate.format(DATE_OUTPUT_FORMATTER));
+                ticketBuilder.startDate(startDate);
             } else {
-                ticketBuilder.addField("startDate", createdDate.format(DATE_OUTPUT_FORMATTER));
+                ticketBuilder.startDate(createdDate);
             }
 
         } else {
-            ticketBuilder.addField("requestedStartDate", null);
-            ticketBuilder.addField("startDate", ZonedDateTime.parse(toUtcString(fields.path("created").asText(null))));
+            ticketBuilder.requestedStartDate(null);
+            ticketBuilder.startDate(createdDate);
         }
 
         return ticketBuilder.build();
     }
 
-    private String toUtcString(String date) {
+    private Instant toInstant(String date) {
         if (date == null) {
             return null;
         }
@@ -190,6 +195,6 @@ class SupportTicketMapper implements TicketMapper {
             zonedDateTime = localDate.atStartOfDay(ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC"));
         }
 
-        return zonedDateTime.format(DATE_OUTPUT_FORMATTER);
+        return zonedDateTime.toInstant();
     }
 }

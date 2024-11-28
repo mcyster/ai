@@ -11,37 +11,36 @@ import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.jira.client.ticket.Ticket;
 import com.cyster.jira.client.ticket.TicketException;
 import com.cyster.jira.client.ticket.TicketMapper;
 import com.cyster.jira.client.ticket.TicketQueryBuilder;
 import com.cyster.jira.client.web.JiraWebClientFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class TicketQueryBuilderImpl implements TicketQueryBuilder {
+public class TicketQueryBuilderImpl<TICKET> implements TicketQueryBuilder<TICKET> {
     private static final int MAX_TICKETS_PER_REQUEST = 1024;
     private static final int MAX_RETRIES = 5;
     private static final Logger logger = LoggerFactory.getLogger(TicketQueryBuilder.class);
 
     private final JiraWebClientFactory jiraWebClientFactory;
-    private final TicketMapper ticketMapper;
+    private final TicketMapper<TICKET> ticketMapper;
     private Optional<Integer> limit = Optional.empty();
     private String filter = "type != Epic";
     private String order = "ORDER BY created ASC";
 
-    public TicketQueryBuilderImpl(JiraWebClientFactory jiraWebClientFactory, TicketMapper ticketMapper) {
+    public TicketQueryBuilderImpl(JiraWebClientFactory jiraWebClientFactory, TicketMapper<TICKET> ticketMapper) {
         this.jiraWebClientFactory = jiraWebClientFactory;
         this.ticketMapper = ticketMapper;
 
         this.withProjects(ticketMapper.projects());
     }
 
-    public TicketQueryBuilderImpl withProject(String project) {
+    public TicketQueryBuilderImpl<TICKET> withProject(String project) {
         addFilter("project = " + project);
         return this;
     }
 
-    public TicketQueryBuilderImpl withProjects(List<String> projects) {
+    public TicketQueryBuilderImpl<TICKET> withProjects(List<String> projects) {
         if (!projects.isEmpty()) {
             addFilter("project in ( "
                     + projects.stream().map(project -> "\"" + project + "\"").collect(Collectors.joining(", ")) + " )");
@@ -49,13 +48,13 @@ public class TicketQueryBuilderImpl implements TicketQueryBuilder {
         return this;
     }
 
-    public TicketQueryBuilderImpl withLimit(Integer limit) {
+    public TicketQueryBuilderImpl<TICKET> withLimit(Integer limit) {
         this.limit = Optional.of(limit);
 
         return this;
     }
 
-    public TicketQueryBuilderImpl addFilter(String filter) {
+    public TicketQueryBuilderImpl<TICKET> addFilter(String filter) {
         if (this.filter.isEmpty()) {
             this.filter = filter;
         } else {
@@ -65,12 +64,12 @@ public class TicketQueryBuilderImpl implements TicketQueryBuilder {
         return this;
     }
 
-    public TicketQueryBuilderImpl withOrder(String orderBy) {
+    public TicketQueryBuilderImpl<TICKET> withOrder(String orderBy) {
         order = orderBy;
         return this;
     }
 
-    public List<Ticket> query() throws TicketException {
+    public List<TICKET> query() throws TicketException {
         String query = filter + " " + order;
 
         int maxResultsPerRequest = 100;
@@ -81,7 +80,7 @@ public class TicketQueryBuilderImpl implements TicketQueryBuilder {
 
         logger.info("Jira query: " + query);
 
-        List<Ticket> tickets = new ArrayList<>();
+        List<TICKET> tickets = new ArrayList<>();
         do {
             JsonNode response;
             try {

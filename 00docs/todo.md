@@ -2,7 +2,9 @@
 
 # Next
 
-- Screenshot scenario
+- provide ability to get a url reference to the current conversation
+- update jira interface to be AI-Friendly: simple, consistent, semanting naming, structured, natural (e.g. markdown)
+- get details on ip for checking fuzz/fraud etc
 - Decorator to convert Scenario<Void, ExtoleSessionContext> to Scenario<Void, Void>
 - set "strict": true on tool parameters
 - fix startup time

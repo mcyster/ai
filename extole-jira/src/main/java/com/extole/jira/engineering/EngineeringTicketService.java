@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.jira.client.ticket.Ticket;
 import com.cyster.jira.client.ticket.TicketCommentBuilder;
 import com.cyster.jira.client.ticket.TicketException;
 import com.cyster.jira.client.ticket.TicketQueryBuilder;
@@ -13,9 +12,9 @@ import com.cyster.jira.client.ticket.TicketServiceFactory;
 import com.cyster.jira.client.web.JiraWebClientFactory;
 
 @Component
-public class EngineeringTicketService implements TicketService {
+public class EngineeringTicketService implements TicketService<EngineeringTicket> {
 
-    private final TicketService ticketService;
+    private final TicketService<EngineeringTicket> ticketService;
 
     EngineeringTicketService(TicketServiceFactory ticketServiceFactory, JiraWebClientFactory jiraWebClientFactory) {
         this.ticketService = ticketServiceFactory
@@ -23,12 +22,12 @@ public class EngineeringTicketService implements TicketService {
     }
 
     @Override
-    public TicketQueryBuilder ticketQueryBuilder() {
+    public TicketQueryBuilder<EngineeringTicket> ticketQueryBuilder() {
         return ticketService.ticketQueryBuilder();
     }
 
     @Override
-    public Optional<Ticket> getTicket(String key) throws TicketException {
+    public Optional<EngineeringTicket> getTicket(String key) throws TicketException {
         return ticketService.getTicket(key);
     }
 

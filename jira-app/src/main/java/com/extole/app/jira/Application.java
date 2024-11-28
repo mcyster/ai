@@ -12,7 +12,7 @@ import org.springframework.core.env.Environment;
 
 import com.cyster.jira.client.JiraClientScan;
 import com.cyster.rest.ApplicationServerConfig;
-import com.cyster.rest.CysterRestScan;
+import com.cyster.rest.RestScan;
 import com.cyster.scheduler.SchedulerWeaveScan;
 import com.cyster.weave.CysterWeaveScan;
 import com.cyster.weave.rest.WeaveRestScan;
@@ -25,9 +25,9 @@ import com.extole.tickets.rest.ExtoleTicketsScan;
 import com.extole.zuper.weave.ExtoleWeaveScan;
 
 @SpringBootApplication
-@Import(value = { CysterWeaveScan.class, SchedulerWeaveScan.class, WeaveRestScan.class, WebWeaveScan.class,
-        ExtoleClientScan.class, JiraClientScan.class, ExtoleJiraScan.class, ExtoleTicketsScan.class,
-        ExtoleWeaveScan.class, WebRestScan.class, ExtoleRestScan.class, CysterRestScan.class })
+@Import(value = { RestScan.class, CysterWeaveScan.class, SchedulerWeaveScan.class, WeaveRestScan.class,
+        WebWeaveScan.class, ExtoleClientScan.class, JiraClientScan.class, ExtoleJiraScan.class, ExtoleTicketsScan.class,
+        ExtoleWeaveScan.class, WebRestScan.class, ExtoleRestScan.class })
 public class Application {
 
     private static final Logger logger = LoggerFactory.getLogger(Application.class);

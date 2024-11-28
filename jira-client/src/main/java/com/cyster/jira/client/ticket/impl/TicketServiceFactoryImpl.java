@@ -16,13 +16,13 @@ public class TicketServiceFactoryImpl implements TicketServiceFactory {
     }
 
     @Override
-    public TicketService createTicketService(TicketMapper ticketMapper) {
-        return new TicketServiceImpl(jiraWebClientFactory, ticketMapper);
+    public <TICKET> TicketService<TICKET> createTicketService(TicketMapper<TICKET> ticketMapper) {
+        return new TicketServiceImpl<TICKET>(jiraWebClientFactory, ticketMapper);
     }
 
     @Override
-    public TicketService createTicketService() {
-        return new TicketServiceImpl(jiraWebClientFactory, new DefaultTicketMapper());
+    public TicketService<Ticket> createTicketService() {
+        return new TicketServiceImpl<Ticket>(jiraWebClientFactory, new DefaultTicketMapper());
     }
 
 }
