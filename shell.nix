@@ -12,6 +12,10 @@ in
       oauth2l
     ];
 
+    LANG = "en_US.UTF-8";
+    LC_ALL = "en_US.UTF-8";
+    LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
+
     shellHook = ''
       export AI_HOME=${builtins.getEnv "PWD"}
       export SPRING_AI_OPENAI_API_KEY=$OPENAI_API_KEY

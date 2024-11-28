@@ -13,46 +13,48 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.cyster.web.rest.ResourceHandlerConfig;
+import com.cyster.web.rest.WebConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableWebMvc
 public class WeaveAppConfig implements WebMvcConfigurer {
-    private List<ResourceHandlerConfig> resourceHandlerConfigs;
+    private List<WebConfig> webConfigs;
     private List<Converter<?, ?>> converters;
     private final ObjectMapper objectMapper;
 
-    public WeaveAppConfig(ApplicationContext applicationContext, List<ResourceHandlerConfig> resourceHandlerConfigs,
+    public WeaveAppConfig(ApplicationContext applicationContext, List<WebConfig> resourceHandlerConfigs,
             List<Converter<?, ?>> converters, ObjectMapper objectMapper) {
-        this.resourceHandlerConfigs = resourceHandlerConfigs;
+        this.webConfigs = resourceHandlerConfigs;
         this.converters = converters;
         this.objectMapper = objectMapper;
     }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        if (this.resourceHandlerConfigs == null || resourceHandlerConfigs.size() == 0) {
+        if (this.webConfigs == null || webConfigs.size() == 0) {
             throw new RuntimeException("Error no ResourceHandlerConfigs, expected at least one");
         }
 
-        for (var config : resourceHandlerConfigs) {
-            config.addTo(registry);
+        for (var config : webConfigs) {
+            config.addResourceHandlers(registry);
         }
 
         registry.addResourceHandler("/**").addResourceLocations("classpath:/static/");
     }
 
     @Override
+    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+        for (var config : webConfigs) {
+            config.addContentNegotiations(configurer);
+        }
+    }
+    
+    @Override
     public void addFormatters(FormatterRegistry registry) {
         for (var converter : converters) {
             registry.addConverter(converter);
         }
-    }
-
-    @Override
-    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer.mediaType("ts", org.springframework.http.MediaType.valueOf("application/typescript"));
     }
 
     @Override

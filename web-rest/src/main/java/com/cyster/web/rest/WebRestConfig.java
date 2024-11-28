@@ -55,8 +55,8 @@ public class WebRestConfig {
     }
 
     @Bean
-    public ResourceHandlerConfig getSiteResourceHandler() {
-        return new ResourceHandlerConfig(this.sites);
+    public WebConfig getSiteResourceHandler() {
+        return new WebConfig(this.sites);
     }
 
     private static URI baseUri(ApplicationContext context) {

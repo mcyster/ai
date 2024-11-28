@@ -8,21 +8,22 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.cyster.web.rest.ResourceHandlerConfig;
+import com.cyster.web.rest.WebConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableWebMvc
 public class JiraAppConfig implements WebMvcConfigurer {
-    private List<ResourceHandlerConfig> resourceHandlerConfigs;
+    private List<WebConfig> resourceHandlerConfigs;
     private List<Converter<?, ?>> converters;
     private final ObjectMapper objectMapper;
 
-    public JiraAppConfig(ApplicationContext applicationContext, List<ResourceHandlerConfig> resourceHandlerConfigs,
+    public JiraAppConfig(ApplicationContext applicationContext, List<WebConfig> resourceHandlerConfigs,
             List<Converter<?, ?>> converters, ObjectMapper objectMapper) {
         this.resourceHandlerConfigs = resourceHandlerConfigs;
         this.converters = converters;
@@ -36,12 +37,19 @@ public class JiraAppConfig implements WebMvcConfigurer {
         }
 
         for (var config : resourceHandlerConfigs) {
-            config.addTo(registry);
+            config.addResourceHandlers(registry);
         }
 
         registry.addResourceHandler("/**").addResourceLocations("classpath:/static/");
     }
 
+    @Override
+    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+        for (var config : resourceHandlerConfigs) {
+            config.addContentNegotiations(configurer);
+        }
+    }
+    
     @Override
     public void addFormatters(FormatterRegistry registry) {
         for (var converter : converters) {
@@ -53,4 +61,6 @@ public class JiraAppConfig implements WebMvcConfigurer {
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         converters.add(new MappingJackson2HttpMessageConverter(objectMapper));
     }
+    
+
 }
