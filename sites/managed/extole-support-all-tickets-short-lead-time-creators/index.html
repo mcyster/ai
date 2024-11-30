@@ -25,225 +25,177 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Short Lead Time (<7 days) Tickets Per Week</h2>
+            <h2 id="graphTitle">Short Lead Time Tickets Per Week</h2>
             <canvas id="shortLeadTimeChart"></canvas>
         </div>
     </div>
 
-    <script id="typescript-code" type="text/typescript">
-        interface SupportTicket {
-            key: string;
-            project: string;
-            created: Date;
-            type: string;
-            status: string;
-            statusChanged: Date;
-            category: string | null;
-            resolved: Date | null;
-            due: Date | null;
-                     start: Date;
-            priority: string;
-            reporter: string | null;
-            assignee: string | null;
-            client: string | null;
-            clientId: string | null;
-            pod: string | null;
-            pairCsm: string | null;
-            pairSupport: string | null;
-            clientPriority: string | null;
-            timeSeconds: number;
+   <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
+    <script>
+
+function filterTicketsByDate(tickets, startDate) {
+    return tickets.filter(ticket => ticket.createdDate >= startDate);
+}
+
+function filterShortLeadTimeTickets(tickets) {
+    return tickets.filter(ticket => ticket.dueDate && (ticket.dueDate.getTime() - ticket.createdDate.getTime()) / (1000 * 60 * 60 * 24) <= 7);
+}
+
+function countTicketsPerWeekPerUser(tickets) {
+    const weekUserMap = {};
+
+    tickets.forEach(ticket => {
+        const weekEndDate = getWeekEndDate(ticket.createdDate);
+        const reporter = ticket.reporter || 'Unknown';
+        if (!weekUserMap[weekEndDate]) {
+            weekUserMap[weekEndDate] = {};
         }
-
-        async function getData(): Promise<SupportTicket[]> {
-            const url = '/support/tickets';
-
-            try {
-                const response = await fetch(url, { method: 'GET' });
-                if (!response.ok) {
-                    alert(`Error: unable to fetch ${url}`);
-                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
-                }
-                const rawData: any[] = await response.json();
-                const data: SupportTicket[] = rawData.map(ticket => ({
-                    ...ticket,
-                    created: new Date(Date.parse(ticket.created)),
-                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
-                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
-                }));
-
-                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole');
-                return filteredData;
-            } catch (error) {
-                alert(`Error: problem fetching ${url}`);
-                console.error('Fetch error:', error);
-                throw error;
-            }
+        if (!weekUserMap[weekEndDate][reporter]) {
+            weekUserMap[weekEndDate][reporter] = 0;
         }
+        weekUserMap[weekEndDate][reporter] += 1;
+    });
 
-        function filterTicketsByDate(tickets: SupportTicket[], startDate: Date) {
-            return tickets.filter(ticket => ticket.created >= startDate);
+    return weekUserMap;
+}
+
+function getWeekEndDate(date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
+
+function countTicketsByCreator(tickets) {
+    const creatorMap = {};
+
+    tickets.forEach(ticket => {
+        const reporter = ticket.reporter || 'Unknown';
+        if (!creatorMap[reporter]) {
+            creatorMap[reporter] = 0;
         }
+        creatorMap[reporter] += 1;
+    });
 
-        function filterShortLeadTimeTickets(tickets: SupportTicket[]): SupportTicket[] {
-            return tickets.filter(ticket => ticket.due && (ticket.due.getTime() - ticket.created.getTime()) / (1000 * 60 * 60 * 24) <= 7);
-        }
+    return creatorMap;
+}
 
-        function countTicketsPerWeekPerUser(tickets: SupportTicket[]) {
-            const weekUserMap: { [weekEndDate: string]: { [reporter: string]: number } } = {};
+function getTopCreatorsFiltered(creatorMap) {
+    return Object.keys(creatorMap)
+        .map(reporter => ({ reporter, count: creatorMap[reporter] }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8); // limiting to top 8
+}
 
-            tickets.forEach(ticket => {
-                const weekEndDate = getWeekEndDate(ticket.created);
-                const reporter = ticket.reporter || 'Unknown';
-                if (!weekUserMap[weekEndDate]) {
-                    weekUserMap[weekEndDate] = {};
-                }
-                if (!weekUserMap[weekEndDate][reporter]) {
-                    weekUserMap[weekEndDate][reporter] = 0;
-                }
-                weekUserMap[weekEndDate][reporter] += 1;
-            });
+function generateColors(numColors) {
+    const colors = [];
+    const hueStep = 360 / numColors;
+    for (let i = 0; i < numColors; i++) {
+        const hue = i * hueStep;
+        const color = `hsl(${hue}, 50%, 45%)`;
+        colors.push(color);
+    }
+    return colors;
+}
 
-            return weekUserMap;
-        }
+function renderShortLeadTimeChart(weekUserMap, topCreators) {
+    const ctx = document.getElementById('shortLeadTimeChart');
+    if (!ctx) return;
 
-        function getWeekEndDate(date: Date) {
-            const dayOfWeek = date.getUTCDay();
-            const weekEndDate = new Date(date);
-            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
-            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
-            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
-        }
+    const weeks = Object.keys(weekUserMap).sort();
+    const colors = generateColors(topCreators.length);
 
-        function countTicketsByCreator(tickets: SupportTicket[]): { [reporter: string]: number } {
-            const creatorMap: { [reporter: string]: number } = {};
+    const dataSets = topCreators.map((creator, index) => {
+        const data = weeks.map(week => ({
+            x: new Date(week),
+            y: weekUserMap[week][creator.reporter] || 0
+        }));
+        return {
+            label: `${creator.reporter}`,
+            data,
+            fill: false,
+            borderWidth: 4,
+            borderColor: colors[index],
+            backgroundColor: colors[index].replace('45%', '70%'),
+            hidden: false
+        };
+    });
 
-            tickets.forEach(ticket => {
-                const reporter = ticket.reporter || 'Unknown';
-                if (!creatorMap[reporter]) {
-                    creatorMap[reporter] = 0;
-                }
-                creatorMap[reporter] += 1;
-            });
-
-            return creatorMap;
-        }
-
-        function getTopCreatorsFiltered(creatorMap: { [reporter: string]: number }): { reporter: string, count: number }[] {
-            const sortedCreators = Object.keys(creatorMap)
-                .map(reporter => ({ reporter, count: creatorMap[reporter] }))
-                .sort((a, b) => b.count - a.count)
-                .filter((_, index) => index < 8); // limiting to top 8
-
-            return sortedCreators;
-        }
-
-        function generateColors(numColors: number): string[] {
-            const colors = [];
-            const hueStep = 360 / numColors;
-            for (let i = 0; i < numColors; i++) {
-                const hue = i * hueStep;
-                const color = `hsl(${hue}, 50%, 45%)`;
-                colors.push(color); 
-            }
-            return colors;
-        }
-
-        function renderShortLeadTimeChart(weekUserMap: { [weekEndDate: string]: { [reporter: string]: number } }, topCreators: { reporter: string, count: number }[]) {
-            const ctx = document.getElementById('shortLeadTimeChart') as HTMLCanvasElement;
-            if (!ctx) return;
-
-            const weeks = Object.keys(weekUserMap).sort();
-            const colors = generateColors(topCreators.length);
-
-            const dataSets = topCreators.map((creator, index) => {
-                const data = weeks.map(week => ({ x: new Date(week), y: weekUserMap[week][creator.reporter] || 0 }));
-                return {
-                    label: `${creator.reporter}`,
-                    data,
-                    fill: false,
-                    borderWidth: 4,
-                    borderColor: colors[index],
-                    backgroundColor: colors[index].replace('45%', '70%'),
-                    hidden: false
-                };
-            });
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    datasets: dataSets
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: dataSets
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    }
                 },
-                options: {
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'week',
-                                tooltipFormat: 'PP',
-                                displayFormats: {
-                                    week: 'PP'
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Week Ending',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            }
-                        },
-                        y: {
-                            beginAtZero: true, // Ensure y-axis starts at 0
-                            title: {
-                                display: true,
-                                text: 'Number of Tickets',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            }
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Tickets',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
                         }
                     }
                 }
-            });
-        }
-
-        const app = {
-            data() {
-                return {
-                    jsonData: []
-                };
-            },
-            async created() {
-                const startDate = new Date();
-                startDate.setMonth(startDate.getMonth() - 6);
-                getData().then(tickets => {
-                    const filteredTickets = filterTicketsByDate(tickets, startDate);
-                    const shortLeadTimeTickets = filterShortLeadTimeTickets(filteredTickets);
-
-                    const weekUserMap = countTicketsPerWeekPerUser(shortLeadTimeTickets);
-                    const creatorMap = countTicketsByCreator(shortLeadTimeTickets);
-
-                    const topCreators = getTopCreatorsFiltered(creatorMap);
-
-                    renderShortLeadTimeChart(weekUserMap, topCreators);
-                }).catch(error => {
-                    console.error('Error loading data:', error);
-                });
             }
+        }
+    });
+}
+
+const app = {
+    data() {
+        return {
+            jsonData: []
         };
+    },
+    async created() {
+        getSupportTickets().then(tickets => {
+            const startDate = new Date();
+            startDate.setMonth(startDate.getMonth() - 6);
 
-        Vue.createApp(app).mount('#app');
-    </script>
+            console.log("tickets", tickets);
 
-    <script>
-        (async function compileAndExecute() {
-            const tsCode = document.getElementById('typescript-code').textContent;
-            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
-            eval(jsCode);
-        })();
+            const shortLeadTimeTickets = tickets
+                .filter(ticket => ticket.requestedStartDate && (ticket.requestedStartDate.getTime() < ticket.createdDate.getTime()));
+
+            console.log("shortLeadTimeTickets", shortLeadTimeTickets);
+
+            const weekUserMap = countTicketsPerWeekPerUser(shortLeadTimeTickets);
+            const creatorMap = countTicketsByCreator(shortLeadTimeTickets);
+        
+            const topCreators = getTopCreatorsFiltered(creatorMap);
+
+            renderShortLeadTimeChart(weekUserMap, topCreators);
+        }).catch(error => {
+            console.error('Error loading data:', error);
+        });
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
     </script>
 </body>
 </html>

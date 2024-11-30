@@ -30,197 +30,142 @@
         </div>
     </div>
 
-    <script id="typescript-code" type="text/typescript">
-        interface SupportTicket {
-            key: string;
-            project: string;
-            created: Date;
-            type: string;
-            status: string;
-            statusChanged: Date;
-            category: string | null;
-            resolved: Date | null;
-            due: Date | null;
-                     start: Date;
-            priority: string;
-            reporter: string | null;
-            assignee: string | null;
-            client: string | null;
-            clientId: string | null;
-            pod: string | null;
-            pairCsm: string | null;
-            pairSupport: string | null;
-            clientPriority: string | null;
-            timeSeconds: number;
+    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
+    <script>
+
+function calculateTicketDurationsByPriority(tickets) {
+    const now = new Date();
+    const durationMap = {};
+
+    tickets.forEach(ticket => {
+        const resolved = ticket.resolvedDate || now;
+        const duration = (resolved.getTime() - ticket.startDate.getTime()) / (1000 * 60 * 60 * 24); // Duration in days
+        const priority = ticket.priority || 'Unspecified';
+        const weekEndDate = getWeekEndDate(ticket.startDate);
+
+        if (!durationMap[priority]) {
+            durationMap[priority] = {};
+        }
+        if (!durationMap[priority][weekEndDate]) {
+            durationMap[priority][weekEndDate] = [];
         }
 
-        async function getData(): Promise<SupportTicket[]> {
-            const url = '/support/tickets';
+        durationMap[priority][weekEndDate].push(duration);
+    });
 
-            try {
-                const response = await fetch(url, { method: 'GET' });
-                if (!response.ok) {
-                    alert(`Error: unable to fetch ${url}`);
-                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
-                }
-                const rawData: any[] = await response.json();
-                const data: SupportTicket[] = rawData.map(ticket => ({
-                    ...ticket,
-                    created: new Date(Date.parse(ticket.created)),
-                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
-                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
-                }));
-                return data;
-            } catch (error) {
-                alert(`Error: problem fetching ${url}`);
-                console.error('Fetch error:', error);
-                throw error;
-            }
-        }
+    return durationMap;
+}
 
-        function filterTicketsByClient(tickets: SupportTicket[], clientName: string) {
-	    return tickets.filter(ticket => ticket.client?.toLowerCase() !== clientName.toLowerCase());
-        }
+function getWeekEndDate(date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
 
-        function filterTicketsByDate(tickets: SupportTicket[], startDate: Date) {
-            return tickets.filter(ticket => ticket.created >= startDate);
-        }
+function renderDurationChart(durationMap) {
+    const ctx = document.getElementById('durationChart');
+    if (!ctx) return;
 
-        function calculateTicketDurationsByPriority(tickets: SupportTicket[]) {
-            const now = new Date();
-            const durationMap: { [priority: string]: { [weekEndDate: string]: number[] } } = {};
+    const priorities = Object.keys(durationMap);
+    let weeks = new Set();
 
-            tickets.forEach(ticket => {
-                const resolved = ticket.resolved || now;
-                const duration = (resolved.getTime() - ticket.created.getTime()) / (1000 * 60 * 60 * 24); // Duration in days
-                const priority = ticket.priority || 'Unspecified';
-                const weekEndDate = getWeekEndDate(ticket.created);
+    priorities.forEach(priority => {
+        weeks = new Set([...weeks, ...Object.keys(durationMap[priority])]);
+    });
 
-                if (!durationMap[priority]) {
-                    durationMap[priority] = {};
-                }
-                if (!durationMap[priority][weekEndDate]) {
-                    durationMap[priority][weekEndDate] = [];
-                }
+    let weekArray = Array.from(weeks).sort();
+    // Ensure we only show the last 24 weeks (6 months)
+    if (weekArray.length > 24) {
+        weekArray = weekArray.slice(-24);
+    }
 
-                durationMap[priority][weekEndDate].push(duration);
-            });
+    const datasets = priorities.map(priority => {
+        const data = weekArray.map(week => {
+            const weeklyDurations = durationMap[priority][week] || [];
+            const avgDuration = weeklyDurations.length
+                ? weeklyDurations.reduce((sum, duration) => sum + duration, 0) / weeklyDurations.length
+                : 0;
+            return { x: new Date(week), y: avgDuration };
+        });
+        return {
+            label: `${priority}`,
+            data,
+            fill: false,
+            borderWidth: 4
+        };
+    });
 
-            return durationMap;
-        }
-
-        function getWeekEndDate(date: Date) {
-            const dayOfWeek = date.getUTCDay();
-            const weekEndDate = new Date(date);
-            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
-            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
-            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
-        }
-
-        function renderDurationChart(durationMap: { [priority: string]: { [weekEndDate: string]: number[] } }) {
-            const ctx = document.getElementById('durationChart') as HTMLCanvasElement;
-            if (!ctx) return;
-
-            const priorities = Object.keys(durationMap);
-            let weeks: Set<string> = new Set();
-
-            priorities.forEach(priority => {
-                weeks = new Set([...weeks, ...Object.keys(durationMap[priority])]);
-            });
-
-            let weekArray = Array.from(weeks).sort();
-            // Ensure we only show the last 24 weeks (6 months)
-            if (weekArray.length > 24) {
-                weekArray = weekArray.slice(-24);
-            }
-
-            const datasets = priorities.map(priority => {
-                const data = weekArray.map(week => {
-                    const weeklyDurations = durationMap[priority][week] || [];
-                    const avgDuration = weeklyDurations.length
-                        ? weeklyDurations.reduce((sum, duration) => sum + duration, 0) / weeklyDurations.length
-                        : 0;
-                    return { x: new Date(week), y: avgDuration };
-                });
-                return {
-                    label: `Priority ${priority}`,
-                    data,
-                    fill: false,
-                    borderWidth: 4
-                };
-            });
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    datasets
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    }
                 },
-                options: {
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'week',
-                                tooltipFormat: 'PP',
-                                displayFormats: {
-                                    week: 'PP'
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Week Ending',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            }
-                        },
-                        y: {
-                            beginAtZero: true, // Ensure y-axis starts at 0
-                            title: {
-                                display: true,
-                                text: 'Average Ticket Duration (days)',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            }
+                y: {
+                    beginAtZero: true, // Ensure y-axis starts at 0
+                    title: {
+                        display: true,
+                        text: 'Average Ticket Duration (days)',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
                         }
                     }
                 }
-            });
-        }
-
-        const app = {
-            data() {
-                return {
-                    jsonData: []
-                };
-            },
-            async created() {
-                const startDate = new Date();
-                startDate.setMonth(startDate.getMonth() - 6);
-                getData().then(tickets => {
-                    const filteredByClient = filterTicketsByClient(tickets, "Extole");
-                    const filteredTickets = filterTicketsByDate(filteredByClient, startDate);
-                    const durationMap = calculateTicketDurationsByPriority(filteredTickets);
-                    renderDurationChart(durationMap);
-                }).catch(error => {
-                    console.error('Error loading data:', error);
-                });
             }
+        }
+    });
+}
+
+const app = {
+    data() {
+        return {
+            jsonData: []
         };
+    },
+    async created() {
+        const startDate = new Date();
+        startDate.setMonth(startDate.getMonth() - 6);
 
-        Vue.createApp(app).mount('#app');
+        getSupportTickets().then(tickets => {
+            const filteredTickets = tickets
+                .filter(ticket => ticket.clientShortName && ticket.clientShortName.toLowerCase() !== "Extole".toLowerCase())
+                .filter(ticket => ticket.createdDate >= startDate);
+
+            console.log("filteredTickets", filteredTickets);
+
+            const durationMap = calculateTicketDurationsByPriority(filteredTickets);
+            renderDurationChart(durationMap);
+        }).catch(error => {
+            console.error('Error loading data:', error);
+        });
+    }
+};
+
+Vue.createApp(app).mount('#app');
     </script>
 
-    <script>
-        (async function compileAndExecute() {
-            const tsCode = document.getElementById('typescript-code').textContent;
-            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
-            eval(jsCode);
-        })();
-    </script>
 </body>
 </html>

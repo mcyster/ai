@@ -25,177 +25,122 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Short Lead Time (< 7 days) Tickets Per Week</h2>
+            <h2 id="graphTitle">Short Lead Time Tickets Per Week</h2>
             <canvas id="shortLeadTimeChart"></canvas>
         </div>
     </div>
 
-    <script id="typescript-code" type="text/typescript">
-        interface SupportTicket {
-            key: string;
-            project: string;
-            created: Date;
-            type: string;
-            status: string;
-            statusChanged: Date;
-            category: string | null;
-            resolved: Date | null;
-            due: Date | null;
-                     start: Date;
-            priority: string;
-            reporter: string | null;
-            assignee: string | null;
-            client: string | null;
-            clientId: string | null;
-            pod: string | null;
-            pairCsm: string | null;
-            pairSupport: string | null;
-            clientPriority: string | null;
-            timeSeconds: number;
+   <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
+    <script>
+
+function countTicketsPerWeek(tickets) {
+    const weekMap = {};
+
+    tickets.forEach(ticket => {
+        const weekEndDate = getWeekEndDate(ticket.createdDate);
+        if (!weekMap[weekEndDate]) {
+            weekMap[weekEndDate] = 0;
         }
+        weekMap[weekEndDate] += 1;
+    });
 
-        async function getData(): Promise<SupportTicket[]> {
-            const url = '/support/tickets';
+    return weekMap;
+}
 
-            try {
-                const response = await fetch(url, { method: 'GET' });
-                if (!response.ok) {
-                    alert(`Error: unable to fetch ${url}`);
-                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
-                }
-                const rawData: any[] = await response.json();
-                const data: SupportTicket[] = rawData.map(ticket => ({
-                    ...ticket,
-                    created: new Date(Date.parse(ticket.created)),
-                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
-                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
-                }));
+function getWeekEndDate(date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
 
-                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole');
-                return filteredData;
-            } catch (error) {
-                alert(`Error: problem fetching ${url}`);
-                console.error('Fetch error:', error);
-                throw error;
-            }
-        }
+function renderShortLeadTimeChart(weekMap) {
+    const ctx = document.getElementById('shortLeadTimeChart');
+    if (!ctx) return;
 
-        function filterTicketsByDate(tickets: SupportTicket[], startDate: Date) {
-            return tickets.filter(ticket => ticket.created >= startDate);
-        }
+    const weeks = Object.keys(weekMap).sort();
+    const data = weeks.map(week => ({ x: new Date(week), y: weekMap[week] }));
 
-        function filterShortLeadTimeTickets(tickets: SupportTicket[]): SupportTicket[] {
-            return tickets.filter(ticket => ticket.due && (ticket.due.getTime() - ticket.created.getTime()) / (1000 * 60 * 60 * 24) <= 7);
-        }
-
-        function countTicketsPerWeek(tickets: SupportTicket[]) {
-            const now = new Date();
-            const weekMap: { [weekEndDate: string]: number } = {};
-
-            tickets.forEach(ticket => {
-                const weekEndDate = getWeekEndDate(ticket.created);
-                if (!weekMap[weekEndDate]) {
-                    weekMap[weekEndDate] = 0;
-                }
-                weekMap[weekEndDate] += 1;
-            });
-
-            return weekMap;
-        }
-
-        function getWeekEndDate(date: Date) {
-            const dayOfWeek = date.getUTCDay();
-            const weekEndDate = new Date(date);
-            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
-            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
-            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
-        }
-
-        function renderShortLeadTimeChart(weekMap: { [weekEndDate: string]: number }) {
-            const ctx = document.getElementById('shortLeadTimeChart') as HTMLCanvasElement;
-            if (!ctx) return;
-
-            const weeks = Object.keys(weekMap).sort();
-            const data = weeks.map(week => ({ x: new Date(week), y: weekMap[week] }));
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    datasets: [{
-                        label: 'Short Lead Time Tickets',
-                        data,
-                        fill: false,
-                        borderWidth: 4,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)'
-                    }]
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'Short Lead Time Tickets',
+                data,
+                fill: false,
+                borderWidth: 4,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)'
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    }
                 },
-                options: {
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'week',
-                                tooltipFormat: 'PP',
-                                displayFormats: {
-                                    week: 'PP'
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Week Ending',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            }
-                        },
-                        y: {
-                            beginAtZero: true, // Ensure y-axis starts at 0
-                            title: {
-                                display: true,
-                                text: 'Number of Tickets',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            }
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Tickets',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
                         }
                     }
                 }
-            });
-        }
-
-        const app = {
-            data() {
-                return {
-                    jsonData: []
-                };
-            },
-            async created() {
-                const startDate = new Date();
-                startDate.setMonth(startDate.getMonth() - 6);
-                getData().then(tickets => {
-                    const filteredTickets = filterTicketsByDate(tickets, startDate);
-                    const shortLeadTimeTickets = filterShortLeadTimeTickets(filteredTickets);
-                    const weekMap = countTicketsPerWeek(shortLeadTimeTickets);
-                    renderShortLeadTimeChart(weekMap);
-                }).catch(error => {
-                    console.error('Error loading data:', error);
-                });
             }
+        }
+    });
+}
+
+const app = {
+    data() {
+        return {
+            jsonData: []
         };
+    },
+    async created() {
+        const startDate = new Date();
+        startDate.setMonth(startDate.getMonth() - 6);
 
-        Vue.createApp(app).mount('#app');
-    </script>
+        getSupportTickets().then(tickets => {
+            const filteredTickets = tickets.filter(ticket => ticket.createdDate >= startDate);
 
-    <script>
-        (async function compileAndExecute() {
-            const tsCode = document.getElementById('typescript-code').textContent;
-            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
-            eval(jsCode);
-        })();
+            console.log("filteredTIckets", filteredTickets);
+
+            const shortLeadTimeTickets = filteredTickets.filter(ticket => 
+                ticket.requestedStartDate && (ticket.requestedStartDate.getTime() < ticket.createdDate.getTime()) 
+            );
+            console.log("shortLeadTimeTickets", shortLeadTimeTickets);
+
+            const weekMap = countTicketsPerWeek(shortLeadTimeTickets);
+            renderShortLeadTimeChart(weekMap);
+        }).catch(error => {
+            console.error('Error loading data:', error);
+        });
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
     </script>
 </body>
 </html>

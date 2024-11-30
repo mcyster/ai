@@ -30,78 +30,19 @@
         </div>
     </div>
 
-    <script id="typescript-code" type="text/typescript">
-interface SupportTicket {
-  key: string;
-  project: string;
-  description: string;
-  comments: string[];
-  fields: {
-    summary: string;
-    clientId: string | null;
-    pod: string | null;
-    clientShortName: string | null;
-    statusChangedDate: string;
-    activitiyUsage: string | null;
-    project: string;
-    reporter: string;
-    priority: string;
-    labels: string[];
-    requestedDueDate: string | null;
-    requestStartDate: string | null;
-    issueType: string;
-    timeSeconds: number;
-    createdDate: string;
-    startDate: string;
-    clientPriority: string | null;
-    assignee: string | null;
-    category: string;
-    status: string;
-    resolvedDate: string | null;
-    pairCsm: string | null;
-  };
-}
+    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
 
-async function getSupportTickets(): Promise<SupportTicket[]> {
-    const url = '/support/tickets';
+    <script>
 
-    try {
-        const response = await fetch(url, { method: 'GET' });
-        if (!response.ok) {
-            alert(`Error: unable to fetch ${url}`);
-            throw new Error(`Error fetching "${url}": ${response.statusText}`);
-        }
-        const rawData: any[] = await response.json();
-
-        const data: SupportTicket[] = rawData.map(ticket => ({
-            ...ticket,
-            fields: {
-                ...ticket.fields,
-                createdDate: new Date(Date.parse(ticket.fields.createdDate)),
-                startDate: ticket.fields.startDate ? new Date(Date.parse(ticket.fields.startDate)) : null
-                statusChangedDate: new Date(Date.parse(ticket.fields.statusChangedDate)),
-                resolvedDate: ticket.fields.resolvedDate ? new Date(Date.parse(ticket.fields.resolvedDate)) : null,
-                requestedDueDate: ticket.fields.requestedDueDate ? new Date(Date.parse(ticket.fields.requestDueDate)) : null,
-                requestedStartDate: ticket.fields.requestStartDate ? new Date(Date.parse(ticket.fields.requestedStartDate)) : null
-            }
-        }));
-
-        return data;
-    } catch (error) {
-        alert(`Error: problem fetching ${url}`);
-        console.error('Fetch error:', error);
-        throw error;
-    }
-}
-
-function countTicketsPerWeekPerPod(tickets: SupportTicket[]) {
-    const podResolveCounts: { [pod: string]: { [endOfWeekDate: string]: number } } = {};
+function countTicketsPerWeekPerPod(tickets) {
+    const podResolveCounts = {};
     const lastSixMonths = new Date();
     lastSixMonths.setMonth(lastSixMonths.getMonth() - 6);
 
     tickets.forEach(ticket => {
-        var pod = ticket.fields.pod;
-        if (ticket.key?.startsWith("HELP")) {
+        var pod = ticket.pod;
+        if (ticket.key && ticket.key.startsWith("HELP")) {
             pod = "T1";
         }
 
@@ -109,7 +50,7 @@ function countTicketsPerWeekPerPod(tickets: SupportTicket[]) {
             pod = "Other";
         }
 
-        const resolutionDate = ticket.fields.resolvedDate || new Date(); // Use current date if not resolved
+        const resolutionDate = ticket.resolvedDate || new Date(); // Use current date if not resolved
         if (resolutionDate < lastSixMonths) return; // Skip data older than 6 months
 
         const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
@@ -131,7 +72,7 @@ function countTicketsPerWeekPerPod(tickets: SupportTicket[]) {
     return podResolveCounts;
 }
 
-function getWeekEndDate(date: Date) {
+function getWeekEndDate(date) {
     const dayOfWeek = date.getUTCDay();
     const weekEndDate = new Date(date);
     weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
@@ -139,7 +80,7 @@ function getWeekEndDate(date: Date) {
     return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
 }
 
-function generateColors(numColors: number): string[] {
+function generateColors(numColors) {
     const colors = [];
     const hueStep = 360 / numColors;
     for (let i = 0; i < numColors; i++) {
@@ -150,10 +91,10 @@ function generateColors(numColors: number): string[] {
     return colors;
 }
 
-let chartInstance: any = null;
+let chartInstance = null;
 
-function renderChart(podResolveCounts: { [pod: string]: { [endOfWeekDate: string]: number } }) {
-    const ctx = document.getElementById('chart') as HTMLCanvasElement;
+function renderChart(podResolveCounts) {
+    const ctx = document.getElementById('chart');
     if (!ctx) return;
 
     if (chartInstance) {
@@ -241,12 +182,13 @@ const app = {
         };
     },
     async created() {
+        console.log("HERE");
         getSupportTickets().then(tickets => {
             console.log('tickets:', tickets); 
 
             const filteredTickets = tickets.filter(ticket => 
-                ticket.fields.clientShortName?.toLowerCase() != 'extole' && 
-                ticket.fields.resolvedDate !== null
+                ticket.clientShortName && ticket.clientShortName.toLowerCase() != 'extole' && 
+                ticket.resolvedDate !== null
             );
             console.log('filteredTickets:', filteredTickets); 
 
@@ -262,12 +204,6 @@ const app = {
 
 Vue.createApp(app).mount('#app');
 
-    </script>
-
-    <script>
-const tsCode = document.getElementById('typescript-code').textContent;
-const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
-eval(jsCode);
     </script>
 
 </body>

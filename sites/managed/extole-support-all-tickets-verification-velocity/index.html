@@ -30,185 +30,134 @@
         </div>
     </div>
 
-    <script id="typescript-code" type="text/typescript">
-        interface SupportTicket {
-            key: string;
-            project: string;
-            created: Date;
-            type: string;
-            status: string;
-            statusChanged: Date;
-            category: string | null;
-            resolved: Date | null;
-            due: Date | null;
-                     start: Date;
-            priority: string;
-            reporter: string | null;
-            assignee: string | null;
-            client: string | null;
-            clientId: string | null;
-            pod: string | null;
-            pairCsm: string | null;
-            pairSupport: string | null;
-            clientPriority: string | null;
-            timeSeconds: number;
+   <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
+    <script>
+
+function countStatusesPerWeek(tickets, statusFrom, statusTo) {
+    const statusCounts = {};
+    console.log('Counting statuses for transition from', statusFrom, 'to', statusTo);
+    tickets.forEach(ticket => {
+        if (ticket.status.toLowerCase() === statusTo.toLowerCase()) {
+            const statusChangeDate = ticket.statusChangeDate;
+            const weekEndDate = getWeekEndDate(new Date(statusChangeDate));
+            statusCounts[weekEndDate] = (statusCounts[weekEndDate] || 0) + 1;
         }
+    });
+    console.log('Status counts:', statusCounts);
+    return statusCounts;
+}
 
-        async function getData(): Promise<SupportTicket[]> {
-            const url = '/support/tickets';
+function getWeekEndDate(date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
 
-            try {
-                const response = await fetch(url, { method: 'GET' });
-                if (!response.ok) {
-                    alert(`Error: unable to fetch ${url}`);
-                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
-                }
-                const rawData: any[] = await response.json();
-                const data: SupportTicket[] = rawData.map(ticket => ({
-                    ...ticket,
-                    created: new Date(Date.parse(ticket.created)),
-                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
-                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
-                }));
-                return data;
-            } catch (error) {
-                alert(`Error: problem fetching ${url}`);
-                console.error('Fetch error:', error);
-                throw error;
-            }
-        }
+function renderChart(verificationsCounts, verifiedProdCounts) {
+    console.log('Rendering chart with verification counts:', verificationsCounts);
+    console.log('Rendering chart with verified prod counts:', verifiedProdCounts);
+    const ctx = document.getElementById('chart');
+    if (!ctx) return;
+    let weeks = Object.keys(verificationsCounts).sort();
 
-        function countStatusesPerWeek(tickets: SupportTicket[], statusFrom: string, statusTo: string) {
-            const statusCounts: { [endOfWeekDate: string]: number } = {};
-            console.log('Counting statuses for transition from', statusFrom, 'to', statusTo);
-            tickets.forEach(ticket => {
-                if (ticket.status.toLowerCase() === statusTo.toLowerCase()) {
-                    const statusChangeDate = ticket.statusChanged;
-                    const weekEndDate = getWeekEndDate(statusChangeDate);
-                    statusCounts[weekEndDate] = (statusCounts[weekEndDate] || 0) + 1;
-                }
-            });
-            console.log('Status counts:', statusCounts);
-            return statusCounts;
-        }
+    // Remove the first week unconditionally
+    if (weeks.length > 1) {
+        weeks.shift();
+    }
+    // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
+    if (weeks.length > 24) {
+        weeks = weeks.slice(-24);
+    }
 
-        function getWeekEndDate(date: Date) {
-            const dayOfWeek = date.getUTCDay();
-            const weekEndDate = new Date(date);
-            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
-            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
-            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
-        }
+    const verificationsData = weeks.map(week => ({ x: new Date(week), y: verificationsCounts[week] || 0 }));
+    const verifiedProdData = weeks.map(week => ({ x: new Date(week), y: verifiedProdCounts[week] || 0 }));
 
-        function renderChart(verificationsCounts: { [endOfWeekDate: string]: number }, verifiedProdCounts: { [endOfWeekDate: string]: number }) {
-            console.log('Rendering chart with verification counts:', verificationsCounts);
-            console.log('Rendering chart with verified prod counts:', verifiedProdCounts);
-            const ctx = document.getElementById('chart') as HTMLCanvasElement;
-            if (!ctx) return;
-            let weeks = Object.keys(verificationsCounts).sort();
-            
-            // Remove the first week unconditionally
-            if (weeks.length > 1) {
-                weeks.shift();
-            }
-            // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
-            if (weeks.length > 24) {
-                weeks = weeks.slice(-24);
-            }
-
-            const verificationsData = weeks.map(week => ({ x: new Date(week), y: verificationsCounts[week] || 0 }));
-            const verifiedProdData = weeks.map(week => ({ x: new Date(week), y: verifiedProdCounts[week] || 0 }));
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    datasets: [
-                        {
-                            label: 'Tickets Moved To Verification',
-                            backgroundColor: 'rgba(139, 34, 34, 0.2)',
-                            borderColor: 'rgba(200, 30, 30, 1)',
-                            fill: false,
-                            data: verificationsData,
-                            borderWidth: 4 
-                        },
-                        {
-                            label: 'Tickets Moved to Verified Prod',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(34, 139, 34, 1)',
-                            fill: false,
-                            data: verifiedProdData,
-                            borderWidth: 4 
-                        }
-                    ]
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: 'Tickets Moved To Verification',
+                    backgroundColor: 'rgba(139, 34, 34, 0.2)',
+                    borderColor: 'rgba(200, 30, 30, 1)',
+                    fill: false,
+                    data: verificationsData,
+                    borderWidth: 4
                 },
-                options: {
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'week',
-                                tooltipFormat: 'PP',
-                                displayFormats: {
-                                    week: 'PP'
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Week Ending',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    weight: 'bold'
-                                }
-                            }
-                        },
-                        y: {
-                            beginAtZero: true, // Ensure y-axis starts at 0
-                            title: {
-                                display: true,
-                                text: 'Number of Tickets',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    weight: 'bold'
-                                }
-                            }
+                {
+                    label: 'Tickets Moved to Verified Prod',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(34, 139, 34, 1)',
+                    fill: false,
+                    data: verifiedProdData,
+                    borderWidth: 4
+                }
+            ]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Tickets',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
                         }
                     }
                 }
-            });
-        }
-
-        const app = {
-            async created() {
-                getData().then(tickets => {
-                    const verificationsCounts = countStatusesPerWeek(tickets, 'In Progress', 'Verification');
-                    const verifiedProdCounts = countStatusesPerWeek(tickets, 'Verification', 'Verified Prod');
-                    renderChart(verificationsCounts, verifiedProdCounts);
-                }).catch(error => {
-                    console.error('Error loading data:', error);
-                });
             }
-        };
+        }
+    });
+}
 
-        Vue.createApp(app).mount('#app');
+const app = {
+    async created() {
+        getSupportTickets().then(tickets => {
+            const verificationsCounts = countStatusesPerWeek(tickets, 'In Progress', 'Verification');
+            const verifiedProdCounts = countStatusesPerWeek(tickets, 'Verification', 'Verified Prod');
+            renderChart(verificationsCounts, verifiedProdCounts);
+        }).catch(error => {
+            console.error('Error loading data:', error);
+        });
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
     </script>
 
-    <script>
-        (async function compileAndExecute() {
-            const tsCode = document.getElementById('typescript-code').textContent;
-            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
-            eval(jsCode);
-        })();
-    </script>
 </body>
 </html>

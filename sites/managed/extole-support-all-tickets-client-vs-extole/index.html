@@ -30,212 +30,159 @@
         </div>
     </div>
 
-    <script id="typescript-code" type="text/typescript">
-        interface SupportTicket {
-            key: string;
-            project: string;
-            created: Date;
-            type: string;
-            status: string;
-            statusChanged: Date;
-            category: string | null;
-            resolved: Date | null;
-            due: Date | null;
-                     start: Date;
-                     start: Date;
-                     start: Date;
-                     started: Date;
-            priority: string;
-            reporter: string | null;
-            assignee: string | null;
-            client: string | null;
-            clientId: string | null;
-            pod: string | null;
-            pairCsm: string | null;
-            pairSupport: string | null;
-            clientPriority: string | null;
-            timeSeconds: number;
-        }
-
-        async function getData(): Promise<SupportTicket[]> {
-            const url = '/support/tickets';
-
-            try {
-                const response = await fetch(url, { method: 'GET' });
-                if (!response.ok) {
-                    alert(`Error: unable to fetch ${url}`);
-                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
-                }
-                const rawData: any[] = await response.json();
-                const data: SupportTicket[] = rawData.map(ticket => ({
-                    ...ticket,
-                    created: new Date(Date.parse(ticket.created)),
-                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
-                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
-                }));
-
-                return data;
-            } catch (error) {
-                alert(`Error: problem fetching ${url}`);
-                console.error('Fetch error:', error);
-                throw error;
-            }
-        }
-
-        function countOpenTicketsPerWeek(tickets: SupportTicket[], endDate: Date) {
-            const openCountsExtole: { [endOfWeekDate: string]: number } = {};
-            const openCountsNonExtole: { [endOfWeekDate: string]: number } = {};
-
-            const now = endDate;
-            const sixMonthsAgo = new Date(now);
-            sixMonthsAgo.setMonth(now.getMonth() - 6);
-
-            // Ensure that we only work with tickets created within the last 6 months
-            const ticketsWithinSixMonths = tickets.filter(ticket => ticket.created >= sixMonthsAgo && ticket.created <= now);
-
-            // Iterate through each week in the last 6 months to count open tickets
-            for (let date = new Date(sixMonthsAgo); date <= now; date.setDate(date.getDate() + 7)) {
-                const weekEndDate = getWeekEndDate(date);
-                openCountsExtole[weekEndDate] = 0;
-                openCountsNonExtole[weekEndDate] = 0;
-            }
-
-            ticketsWithinSixMonths.forEach(ticket => {
-                const creationDate = ticket.created;
-                const resolvedDate = ticket.resolved;
-                let weekEndDate;
-
-                for (let date = new Date(sixMonthsAgo); date <= now; date.setDate(date.getDate() + 7)) {
-                    weekEndDate = getWeekEndDate(date);
-                    if (creationDate <= date && (!resolvedDate || resolvedDate > date)) {
-                        if (ticket.client?.toLowerCase() === 'extole') {
-                            openCountsExtole[weekEndDate]++;
-                        } else {
-                            openCountsNonExtole[weekEndDate]++;
-                        }
-                    }
-                }
-            });
-
-            return { openCountsExtole, openCountsNonExtole };
-        }
-
-        function getWeekEndDate(date: Date) {
-            const dayOfWeek = date.getUTCDay();
-            const weekEndDate = new Date(date);
-            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
-            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
-            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
-        }
-
-        function renderChart(openCountsExtole: { [endOfWeekDate: string]: number }, openCountsNonExtole: { [endOfWeekDate: string]: number }) {
-            const ctx = document.getElementById('chart') as HTMLCanvasElement;
-            if (!ctx) return;
-            let weeks = Object.keys(openCountsExtole).sort();
-
-            // Ensure we only show the last 24 weeks (approximately 6 months) if there are more than 24 weeks of data
-            if (weeks.length > 24) {
-                weeks = weeks.slice(-24);
-            }
-
-            const openDataExtole = weeks.map(week => ({ x: new Date(week), y: openCountsExtole[week] || 0 }));
-            const openDataNonExtole = weeks.map(week => ({ x: new Date(week), y: openCountsNonExtole[week] || 0 }));
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    datasets: [
-                        {
-                            label: 'Tickets Open - Extole',
-                            backgroundColor: 'rgba(139, 34, 34, 0.2)',
-                            borderColor: 'rgba(200, 30, 30, 1)',
-                            fill: false,
-                            data: openDataExtole,
-                            borderWidth: 4 
-                        },
-                        {
-                            label: 'Tickets Open - Non-Extole',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(34, 139, 34, 1)',
-                            fill: false,
-                            data: openDataNonExtole,
-                            borderWidth: 4 
-                        }
-                    ]
-                },
-                options: {
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'week',
-                                tooltipFormat: 'PP',
-                                displayFormats: {
-                                    week: 'PP'
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Week Ending',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    weight: 'bold'
-                                }
-                            }
-                        },
-                        y: {
-                            beginAtZero: true, // Ensure y-axis starts at 0
-                            title: {
-                                display: true,
-                                text: 'Number of Tickets',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    weight: 'bold'
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        const app = {
-            data() {
-                return {
-                    jsonData: []
-                };
-            },
-            async created() {
-                const now = new Date(); // Get the current date for counting purposes
-                getData().then(tickets => {
-                    const { openCountsExtole, openCountsNonExtole } = countOpenTicketsPerWeek(tickets, now);
-                    renderChart(openCountsExtole, openCountsNonExtole);
-                }).catch(error => {
-                    console.error('Error loading data:', error);
-                });
-            }
-        };
-
-        Vue.createApp(app).mount('#app');
-    </script>
-
+    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
     <script>
-        (async function compileAndExecute() {
-            const tsCode = document.getElementById('typescript-code').textContent;
-            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
-            eval(jsCode);
-        })();
+function countOpenTicketsPerWeek(tickets, endDate) {
+    const openCountsExtole = {};
+    const openCountsNonExtole = {};
+
+    const now = endDate;
+    const sixMonthsAgo = new Date(now);
+    sixMonthsAgo.setMonth(now.getMonth() - 6);
+
+    // Ensure that we only work with tickets created within the last 6 months
+    const ticketsWithinSixMonths = tickets.filter(ticket => 
+        ticket.createdDate >= sixMonthsAgo && ticket.createdDate <= now
+    );
+
+    // Iterate through each week in the last 6 months to count open tickets
+    for (let date = new Date(sixMonthsAgo); date <= now; date.setDate(date.getDate() + 7)) {
+        const weekEndDate = getWeekEndDate(date);
+        openCountsExtole[weekEndDate] = 0;
+        openCountsNonExtole[weekEndDate] = 0;
+    }
+
+    ticketsWithinSixMonths.forEach(ticket => {
+        const creationDate = ticket.createdDate;
+        const resolvedDate = ticket.resolvedDate;
+        let weekEndDate;
+
+        for (let date = new Date(sixMonthsAgo); date <= now; date.setDate(date.getDate() + 7)) {
+            weekEndDate = getWeekEndDate(date);
+            if (creationDate <= date && (!resolvedDate || resolvedDate > date)) {
+                if (ticket.clientShortName && ticket.clientShortName.toLowerCase() === 'extole') {
+                    openCountsExtole[weekEndDate]++;
+                } else {
+                    openCountsNonExtole[weekEndDate]++;
+                }
+            }
+        }
+    });
+
+    return { openCountsExtole, openCountsNonExtole };
+}
+
+function getWeekEndDate(date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
+
+function renderChart(openCountsExtole, openCountsNonExtole) {
+    const ctx = document.getElementById('chart');
+    if (!ctx) return;
+
+    let weeks = Object.keys(openCountsExtole).sort();
+
+    // Ensure we only show the last 24 weeks (approximately 6 months) if there are more than 24 weeks of data
+    if (weeks.length > 24) {
+        weeks = weeks.slice(-24);
+    }
+
+    const openDataExtole = weeks.map(week => ({ x: new Date(week), y: openCountsExtole[week] || 0 }));
+    const openDataNonExtole = weeks.map(week => ({ x: new Date(week), y: openCountsNonExtole[week] || 0 }));
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: 'Tickets Open - Extole',
+                    backgroundColor: 'rgba(139, 34, 34, 0.2)',
+                    borderColor: 'rgba(200, 30, 30, 1)',
+                    fill: false,
+                    data: openDataExtole,
+                    borderWidth: 4
+                },
+                {
+                    label: 'Tickets Open - Non-Extole',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(34, 139, 34, 1)',
+                    fill: false,
+                    data: openDataNonExtole,
+                    borderWidth: 4
+                }
+            ]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true, // Ensure y-axis starts at 0
+                    title: {
+                        display: true,
+                        text: 'Number of Tickets',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+const app = {
+    data() {
+        return {
+            jsonData: []
+        };
+    },
+    async created() {
+        const now = new Date(); // Get the current date for counting purposes
+        getSupportTickets().then(tickets => {
+            const { openCountsExtole, openCountsNonExtole } = countOpenTicketsPerWeek(tickets, now);
+            renderChart(openCountsExtole, openCountsNonExtole);
+        }).catch(error => {
+            console.error('Error loading data:', error);
+        });
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
     </script>
+
 </body>
 </html>
