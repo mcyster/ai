@@ -30,70 +30,11 @@
         </div>
     </div>
 
+    <script type="text/typescript" src="http://localhost:8090/sites/managed/extole-support-all-tickets-velocity/tickets.ts"></script>
+
     <script id="typescript-code" type="text/typescript">
 
-interface SupportTicket {
-  key: string;
-  project: string;
-  description: string;
-  comments: string[];
-  fields: {
-    summary: string;
-    clientId: string | null;
-    pod: string | null;
-    clientShortName: string | null;
-    statusChangedDate: string;
-    activitiyUsage: string | null;
-    project: string;
-    reporter: string;
-    priority: string;
-    labels: string[];
-    requestedDueDate: string | null;
-    requestStartDate: string | null;
-    issueType: string;
-    timeSeconds: number;
-    createdDate: string;
-    startDate: string;
-    clientPriority: string | null;
-    assignee: string | null;
-    category: string;
-    status: string;
-    resolvedDate: string | null;
-    pairCsm: string | null;
-  };
-}
-
-async function getSupportTickets(): Promise<SupportTicket[]> {
-    const url = '/support/tickets';
-
-    try {
-        const response = await fetch(url, { method: 'GET' });
-        if (!response.ok) {
-            alert(`Error: unable to fetch ${url}`);
-            throw new Error(`Error fetching "${url}": ${response.statusText}`);
-        }
-        const rawData: any[] = await response.json();
-
-        const data: SupportTicket[] = rawData.map(ticket => ({
-            ...ticket,
-            fields: {
-                ...ticket.fields,
-                createdDate: new Date(Date.parse(ticket.fields.createdDate)),
-                startDate: ticket.fields.startDate ? new Date(Date.parse(ticket.fields.startDate)) : null
-                statusChangedDate: new Date(Date.parse(ticket.fields.statusChangedDate)),
-                resolvedDate: ticket.fields.resolvedDate ? new Date(Date.parse(ticket.fields.resolvedDate)) : null,
-                requestedDueDate: ticket.fields.requestedDueDate ? new Date(Date.parse(ticket.fields.requestDueDate)) : null,
-                requestedStartDate: ticket.fields.requestStartDate ? new Date(Date.parse(ticket.fields.requestedStartDate)) : null
-            }
-        }));
-
-        return data;
-    } catch (error) {
-        alert(`Error: problem fetching ${url}`);
-        console.error('Fetch error:', error);
-        throw error;
-    }
-}
+console.log("graph");
 
 function countTicketsPerWeek(tickets: SupportTicket[]) {
     const startCounts: { [endOfWeekDate: string]: number } = {};
@@ -239,16 +180,38 @@ const app = {
     }
 };
   
+console.log("here9");
 Vue.createApp(app).mount('#app');
-
     </script>
 
     <script>
-(async function compileAndExecute() {
-    const tsCode = document.getElementById('typescript-code').textContent;
-    const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
-    eval(jsCode);
-})();
+function compileAndRun() {
+    const tsCodeElements = document.querySelectorAll('script[type="text/typescript"]');
+    
+    tsCodeElements.forEach((tsCodeElement, index) => {
+        console.log(`TypeScript Node #${index + 1} Content:`, tsCodeElement.textContent);
+        
+        const tsCode = tsCodeElement.textContent || '';
+
+        // Compile TypeScript to JavaScript
+        const jsCode = window.ts.transpile(tsCode);
+
+        // Create a new script element to run the compiled JavaScript
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.text = jsCode;
+
+        // Append the script to the document to execute it
+        console.log(`Compiled JavaScript for Node #${index + 1}:`, script.textContent);
+        document.body.appendChild(script);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("here0");
+    compileAndRun();
+});
+
     </script>
 </body>
 </html>
