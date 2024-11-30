@@ -30,7 +30,8 @@
         </div>
     </div>
 
-    <script src="tickets.js"></script>
+    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
     <script>
 
 function countTicketsPerWeek(tickets) {
@@ -160,30 +161,25 @@ const app = {
             jsonData: []
         };
     },
-    created() {
-        getSupportTickets()
-            .then(tickets => {
-                console.log('tickets:', tickets);
+    async created() {
+        const tickets = await getSupportTickets();
 
-                const filteredTickets = tickets.filter(ticket =>
-                    ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' && ticket.resolvedDate !== null
-                );
-                console.log('filteredTickets:', filteredTickets);
+        const filteredTickets = tickets.filter(ticket =>
+            ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' && ticket.resolvedDate !== null
+        );
+        console.log('filteredTickets:', filteredTickets);
 
-                const ticketCountsPerWeek = countTicketsPerWeek(filteredTickets);
-                console.log("ticketCountsPerWeek", ticketCountsPerWeek);
+        const ticketCountsPerWeek = countTicketsPerWeek(filteredTickets);
+        console.log("ticketCountsPerWeek", ticketCountsPerWeek);
 
-                renderChart(ticketCountsPerWeek.startCounts, ticketCountsPerWeek.resolveCounts);
-            })
-            .catch(error => {
-                console.error('Error loading data:', error);
-            });
+        renderChart(ticketCountsPerWeek.startCounts, ticketCountsPerWeek.resolveCounts);
     }
 };
 
-console.log("here9");
 Vue.createApp(app).mount('#app');
+
     </script>
 
 </body>
 </html>
+
