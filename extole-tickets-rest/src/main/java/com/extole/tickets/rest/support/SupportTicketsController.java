@@ -28,7 +28,10 @@ import com.extole.jira.support.SupportTicket;
 import com.extole.jira.support.SupportTicketService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.jsonSchema.jakarta.factories.SchemaFactoryWrapper;
 
 @RestController
 @RequestMapping("/support")
@@ -68,11 +71,6 @@ public class SupportTicketsController {
         return loadTickets(limit);
     }
 
-    @GetMapping("/epics")
-    public List<Ticket> getEpics(@RequestParam Optional<Integer> limit) throws TicketException {
-        return null; // loadEpics(limit);
-    }
-
     @GetMapping("/tickets/{ticketNumber}")
     public SupportTicket getTicket(@PathVariable String ticketNumber) throws TicketException {
         var ticket = supportTicketService.getTicket(ticketNumber);
@@ -81,6 +79,18 @@ public class SupportTicketsController {
             throw new TicketException("Ticket " + ticketNumber + " not found");
         }
         return ticket.get();
+    }
+    
+    @GetMapping("/tickets/schema")
+    public Object getTicketsSchema() throws JsonMappingException {
+        SchemaFactoryWrapper schemaFactoryWrapper = new SchemaFactoryWrapper();
+        objectMapper.acceptJsonFormatVisitor(SupportTicket.class, schemaFactoryWrapper);
+        return schemaFactoryWrapper.finalSchema();
+    }
+    
+    @GetMapping("/epics")
+    public List<Ticket> getEpics(@RequestParam Optional<Integer> limit) throws TicketException {
+        return null; // loadEpics(limit);
     }
 
     @Scheduled(initialDelayString = "PT30M", fixedRateString = "PT1H")

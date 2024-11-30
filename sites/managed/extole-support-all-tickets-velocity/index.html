@@ -30,29 +30,29 @@
         </div>
     </div>
 
-    <script type="text/typescript" src="http://localhost:8090/sites/managed/extole-support-all-tickets-velocity/tickets.ts"></script>
+    <script src="tickets.js"></script>
+    <script>
 
-    <script id="typescript-code" type="text/typescript">
-
-console.log("graph");
-
-function countTicketsPerWeek(tickets: SupportTicket[]) {
-    const startCounts: { [endOfWeekDate: string]: number } = {};
-    const resolveCounts: { [endOfWeekDate: string]: number } = {};
-            
+function countTicketsPerWeek(tickets) {
+    const startCounts = {};
+    const resolveCounts = {};
+    
     tickets.forEach(ticket => {
-        const startDate = ticket.fields.startDate;
-        const resolutionDate = ticket.fields.resolvedDate || new Date(); // Use current date if not resolved
+        const startDate = ticket.startDate;
+        if (startDate == null) {
+            console.log("sadness");
+        }
+        const resolutionDate = ticket.resolvedDate || new Date(); // Use current date if not resolved
 
         const startWeekEnd = getWeekEndDate(startDate);
         const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
 
-        if (resolveCounts[resolvedWeekEnd] === undefined) {
+        if (!resolveCounts[resolvedWeekEnd]) {
             resolveCounts[resolvedWeekEnd] = 0;
         }
         resolveCounts[resolvedWeekEnd]++;
 
-        if (startCounts[startWeekEnd] === undefined) {
+        if (!startCounts[startWeekEnd]) {
             startCounts[startWeekEnd] = 0;
         }
         startCounts[startWeekEnd]++;
@@ -61,7 +61,7 @@ function countTicketsPerWeek(tickets: SupportTicket[]) {
     return { startCounts, resolveCounts };
 }
 
-function getWeekEndDate(date: Date) {
+function getWeekEndDate(date) {
     const dayOfWeek = date.getUTCDay();
     const weekEndDate = new Date(date);
     weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
@@ -69,8 +69,8 @@ function getWeekEndDate(date: Date) {
     return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
 }
 
-function renderChart(startCounts: { [endOfWeekDate: string]: number }, resolveCounts: { [endOfWeekDate: string]: number }) {
-    const ctx = document.getElementById('chart') as HTMLCanvasElement;
+function renderChart(startCounts, resolveCounts) {
+    const ctx = document.getElementById('chart');
     if (!ctx) return;
     let weeks = Object.keys(startCounts).sort();
     
@@ -160,58 +160,30 @@ const app = {
             jsonData: []
         };
     },
-    async created() {
-        getSupportTickets().then(tickets => {
-            console.log('tickets:', tickets);
+    created() {
+        getSupportTickets()
+            .then(tickets => {
+                console.log('tickets:', tickets);
 
-            const filteredTickets = tickets.filter(ticket =>
-                ticket.fields.clientShortName?.toLowerCase() != 'extole' &&
-                ticket.fields.resolvedDate !== null
-            );
-            console.log('filteredTickets:', filteredTickets);
-    
-            const ticketCountsPerWeek = countTicketsPerWeek(filteredTickets);
-            console.log("ticketCountsPerWeek", ticketCountsPerWeek);
+                const filteredTickets = tickets.filter(ticket =>
+                    ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' && ticket.resolvedDate !== null
+                );
+                console.log('filteredTickets:', filteredTickets);
 
-            renderChart(ticketCountsPerWeek.startCounts, ticketCountsPerWeek.resolveCounts);
-        }).catch(error => {
-            console.error('Error loading data:', error);
-        }); 
+                const ticketCountsPerWeek = countTicketsPerWeek(filteredTickets);
+                console.log("ticketCountsPerWeek", ticketCountsPerWeek);
+
+                renderChart(ticketCountsPerWeek.startCounts, ticketCountsPerWeek.resolveCounts);
+            })
+            .catch(error => {
+                console.error('Error loading data:', error);
+            });
     }
 };
-  
+
 console.log("here9");
 Vue.createApp(app).mount('#app');
     </script>
 
-    <script>
-function compileAndRun() {
-    const tsCodeElements = document.querySelectorAll('script[type="text/typescript"]');
-    
-    tsCodeElements.forEach((tsCodeElement, index) => {
-        console.log(`TypeScript Node #${index + 1} Content:`, tsCodeElement.textContent);
-        
-        const tsCode = tsCodeElement.textContent || '';
-
-        // Compile TypeScript to JavaScript
-        const jsCode = window.ts.transpile(tsCode);
-
-        // Create a new script element to run the compiled JavaScript
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.text = jsCode;
-
-        // Append the script to the document to execute it
-        console.log(`Compiled JavaScript for Node #${index + 1}:`, script.textContent);
-        document.body.appendChild(script);
-    });
-}
-
-document.addEventListener("DOMContentLoaded", function() {
-    console.log("here0");
-    compileAndRun();
-});
-
-    </script>
 </body>
 </html>
