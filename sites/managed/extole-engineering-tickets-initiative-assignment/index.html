@@ -29,156 +29,107 @@
         </div>
     </div>
 
-    <script id="typescript-code" type="text/typescript">
-        interface EngineeringTicketResponse {
-            key: string;
-            project: string;
-            type: string;
-            status: string;
-            statusChanged: string; // Corresponds to ZonedDateTime with format 'yyyy-MM-dd'T'HH:mm:ssXXX'
-            epic?: string; // Optional fields in Java can be represented as optional properties in TypeScript using '?'
-            initiative?: string;
-            created: string; // Corresponds to ZonedDateTime with format 'yyyy-MM-dd'T'HH:mm:ssXXX'
-            resolved?: string; // Corresponds to Optional<ZonedDateTime>
-            priority: string;
-            reporter?: string;
-            assignee?: string;
-            team?: string;
-            labels: string[];
-        }
-
-        async function getData(): Promise<EngineeringTicketResponse[]> {
-            const url = '/engineering/tickets';
-
-            try {
-                const response = await fetch(url, { method: 'GET' });
-                if (!response.ok) {
-                    alert(`Error: unable to fetch ${url}`);
-                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
-                }
-                const rawData: any[] = await response.json();
-                const data: EngineeringTicketResponse[] = rawData.map(ticket => ({
-                    ...ticket,
-                    created: new Date(Date.parse(ticket.created)),
-                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
-                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
-                }));
-
-                // Filter out tickets assigned to the Extole client
-                const filteredData = data.filter(ticket => ticket.client?.toLowerCase() !== 'extole');
-                return filteredData;
-            } catch (error) {
-                alert(`Error: problem fetching ${url}`);
-                console.error('Fetch error:', error);
-                throw error;
-            }
-        }
-
-        function countWeeklyTickets(tickets: EngineeringTicketResponse[]) {
-            const weeklyData: { [key: string]: { withInitiative: number, withoutInitiative: number } } = {};
-            const currentDate = new Date();
-            const sixMonthsAgo = new Date();
-            sixMonthsAgo.setMonth(currentDate.getMonth() - 6);
-
-            // Initialize weeklyData object for the last 6 months
-            for (let d = new Date(sixMonthsAgo); d <= currentDate; d.setDate(d.getDate() + 7)) {
-                const week = new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay()); // Align to Sunday
-                const weekKey = week.toISOString().slice(0, 10);
-                weeklyData[weekKey] = { withInitiative: 0, withoutInitiative: 0 };
-            }
-
-            tickets.forEach(ticket => {
-                const createdDate = new Date(ticket.created);
-                if (createdDate >= sixMonthsAgo && createdDate <= currentDate) {
-                    const week = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate() - createdDate.getDay()); // Align to Sunday
-                    const weekKey = week.toISOString().slice(0, 10);
-
-                    if (ticket.initiative) {
-                        weeklyData[weekKey].withInitiative++;
-                    } else {
-                        weeklyData[weekKey].withoutInitiative++;
-                    }
-                }
-            });
-
-            return weeklyData;
-        }
-
-        function renderChart(weeklyData: { [key: string]: { withInitiative: number, withoutInitiative: number } }) {
-            const ctx = document.getElementById('chart') as HTMLCanvasElement;
-            if (!ctx) return;
-
-            const labels = Object.keys(weeklyData);
-            const withInitiativeData = labels.map(week => weeklyData[week].withInitiative);
-            const withoutInitiativeData = labels.map(week => weeklyData[week].withoutInitiative);
-
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'With Initiative',
-                            data: withInitiativeData,
-                            backgroundColor: '#4CAF50',
-                            borderColor: '#4CAF50',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Without Initiative',
-                            data: withoutInitiativeData,
-                            backgroundColor: '#FF5722',
-                            borderColor: '#FF5722',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Number of Tickets Created'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Week Ending'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        const app = {
-            data() {
-                return {
-                    jsonData: []
-                };
-            },
-            async created() {
-                getData().then(tickets => {
-                    const weeklyData = countWeeklyTickets(tickets);
-                    renderChart(weeklyData);
-                }).catch(error => {
-                    console.error('Error loading data:', error);
-                });
-            }
-        };
-
-        Vue.createApp(app).mount('#app');
-    </script>
-
+  <!-- The attributes on a ticket can be found be loading ../extole/engineering-ticket.js -->
+    <script src="../extole/engineering-tickets.js"></script>
     <script>
-        (async function compileAndExecute() {
-            const tsCode = document.getElementById('typescript-code').textContent;
-            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
-            eval(jsCode);
-        })();
+function countWeeklyTickets(tickets) {
+    const weeklyData = {};
+    const currentDate = new Date();
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(currentDate.getMonth() - 6);
+
+    // Initialize weeklyData object for the last 6 months
+    for (let d = new Date(sixMonthsAgo); d <= currentDate; d.setDate(d.getDate() + 7)) {
+        const week = new Date(d.getFullYear(), d.getMonth(), d.getDate() - d.getDay()); // Align to Sunday
+        const weekKey = week.toISOString().slice(0, 10);
+        weeklyData[weekKey] = { withInitiative: 0, withoutInitiative: 0 };
+    }
+
+    tickets.forEach(ticket => {
+        const createdDate = new Date(ticket.createdDate);
+        if (createdDate >= sixMonthsAgo && createdDate <= currentDate) {
+            const week = new Date(createdDate.getFullYear(), createdDate.getMonth(), createdDate.getDate() - createdDate.getDay()); // Align to Sunday
+            const weekKey = week.toISOString().slice(0, 10);
+
+            if (ticket.initiative) {
+                weeklyData[weekKey].withInitiative++;
+            } else {
+                weeklyData[weekKey].withoutInitiative++;
+            }
+        }
+    });
+
+    return weeklyData;
+}
+
+function renderChart(weeklyData) {
+    const ctx = document.getElementById('chart');
+    if (!ctx) return;
+
+    const labels = Object.keys(weeklyData);
+    const withInitiativeData = labels.map(week => weeklyData[week].withInitiative);
+    const withoutInitiativeData = labels.map(week => weeklyData[week].withoutInitiative);
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'With Initiative',
+                    data: withInitiativeData,
+                    backgroundColor: '#4CAF50',
+                    borderColor: '#4CAF50',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Without Initiative',
+                    data: withoutInitiativeData,
+                    backgroundColor: '#FF5722',
+                    borderColor: '#FF5722',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Tickets Created'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Week Ending'
+                    }
+                }
+            }
+        }
+    });
+}
+
+const app = {
+    data() {
+        return {
+            jsonData: []
+        };
+    },
+    async created() {
+        try {
+            const tickets = await getEngineeringTickets();
+            const weeklyData = countWeeklyTickets(tickets);
+            renderChart(weeklyData);
+        } catch (error) {
+            console.error('Error loading data:', error);
+        }
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
     </script>
 </body>
 </html>
