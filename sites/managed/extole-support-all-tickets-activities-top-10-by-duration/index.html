@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Support Tickets Top 10 Activities by Duration</title>
-    <meta name="tags" content="extole,support,all,tickets,activities">
+    <title>Support Tickets Top 10 Runbooks by Elapsed Time</title>
+    <meta name="tags" content="extole,support,all,tickets,runbooks">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Total Ticket Duration per Activities per Week</h2>
+            <h2 id="graphTitle">Total Ticket by Elapsed Time per Runbooks per Week</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -130,7 +130,7 @@ function renderChart(categoryTimeSpent, topCategories) {
                     beginAtZero: true, // Ensure y-axis starts at 0
                     title: {
                         display: true,
-                        text: 'Total Ticket Duration (hours)',
+                        text: 'Total Elapsed TIme (hours)',
                         font: {
                             size: 16,
                             weight: 'bold'

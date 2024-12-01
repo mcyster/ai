@@ -30,186 +30,136 @@
         </div>
     </div>
 
-    <script id="typescript-code" type="text/typescript">
-        interface SupportTicket {
-            key: string;
-            project: string;
-            created: Date;
-            type: string;
-            status: string;
-            statusChanged: Date;
-            category: string | null;
-            resolved: Date | null;
-            due: Date | null;
-            start: Date;
-            priority: string;
-            reporter: string | null;
-            assignee: string | null;
-            client: string | null;
-            clientId: string | null;
-            pod: string | null;
-            pairCsm: string | null;
-            pairSupport: string | null;
-            clientPriority: string | null;
-            timeSeconds: number;
-        }
-
-        async function getData(): Promise<SupportTicket[]> {
-            const url = '/support/tickets';
-
-            try {
-                const response = await fetch(url, { method: 'GET' });
-                if (!response.ok) {
-                    alert(`Error: unable to fetch ${url}`);
-                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
-                }
-                const rawData: any[] = await response.json();
-                const data: SupportTicket[] = rawData.map(ticket => ({
-                    ...ticket,
-                    created: new Date(Date.parse(ticket.created)),
-                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
-                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
-                }));
-
-                const today = new Date();
-                const filteredData = data.filter(ticket => ticket.type != "Epic" && ticket.resolved != null && (ticket.pod?.toLowerCase().includes("t1") || ticket.key?.includes("HELP"));
-                return filteredData;
-            } catch (error) {
-                alert(`Error: problem fetching ${url}`);
-                console.error('Fetch error:', error);
-                throw error;
-            }
-        }
-
-        function countTicketsPerWeekByAssignee(tickets: SupportTicket[]) {
-            const resolveCounts: { [assignee: string]: { [endOfWeekDate: string]: number } } = {};
-            const lastSixMonths = new Date();
-            lastSixMonths.setMonth(lastSixMonths.getMonth() - 6);
-
-            tickets.forEach(ticket => {
-                const resolutionDate = ticket.resolved || new Date(); // Use current date if not resolved
-                if (resolutionDate < lastSixMonths) return; // Skip data older than 6 months
-
-                const resolvedWeekEnd = getWeekEndDate(resolutionDate);
-
-                if (ticket.assignee) {
-                    if (!resolveCounts[ticket.assignee]) {
-                        resolveCounts[ticket.assignee] = {};
-                    }
-                    if (!resolveCounts[ticket.assignee][resolvedWeekEnd]) {
-                        resolveCounts[ticket.assignee][resolvedWeekEnd] = 0;
-                    }
-                    resolveCounts[ticket.assignee][resolvedWeekEnd]++;
-                }
-            });
-
-            console.log('Resolve Counts per Week by Assignee:', resolveCounts); // Debugging data
-            return resolveCounts;
-        }
-
-        function getWeekEndDate(date: Date) {
-            const dayOfWeek = date.getUTCDay();
-            const weekEndDate = new Date(date);
-            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
-            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
-            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
-        }
-
-        function renderChart(resolveCounts: { [assignee: string]: { [endOfWeekDate: string]: number } }) {
-            const ctx = document.getElementById('chart') as HTMLCanvasElement;
-            if (!ctx) return;
-
-            const assignees = Object.keys(resolveCounts);
-            const numColors = assignees.length;
-            const colors = generateColors(numColors); // Use the new function
-
-            const datasets = assignees.map((assignee, index) => {
-                const weeks = Object.keys(resolveCounts[assignee]).sort();
-                const data = weeks.map(week => ({ x: new Date(week), y: resolveCounts[assignee][week] || 0 }));
-                return {
-                    label: assignee,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: colors[index],
-                    fill: false,
-                    data,
-                    borderWidth: 4 // Double the previous weight (2)
-                };
-            });
-
-            new Chart(ctx, {
-                type: 'line',
-                data: { datasets },
-                options: {
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'week',
-                                tooltipFormat: 'PP',
-                                displayFormats: {
-                                    week: 'PP'
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Week Ending',
-                                font: { size: 16, weight: 'bold' }
-                            },
-                            ticks: {
-                                font: { size: 14, weight: 'bold' }
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Number of Tickets',
-                                font: { size: 16, weight: 'bold' }
-                            },
-                            ticks: {
-                                font: { size: 14, weight: 'bold' }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function generateColors(numColors: number): string[] {
-            const colors = [];
-            const hueStep = 360 / numColors;
-            for (let i = 0; i < numColors; i++) {
-                const hue = i * hueStep;
-                const color = `hsl(${hue}, 50%, 45%)`;
-                colors.push(color);
-            }
-            return colors;
-        }
-
-        const app = {
-            data() {
-                return { jsonData: [] };
-            },
-            async created() {
-                getData().then(tickets => {
-                    const resolveCounts = countTicketsPerWeekByAssignee(tickets);
-                    renderChart(resolveCounts);
-                }).catch(error => {
-                    console.error('Error loading data:', error);
-                });
-            }
-        };
-
-        Vue.createApp(app).mount('#app');
-    </script>
-
+    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
     <script>
-        (async function compileAndExecute() {
-            const tsCode = document.getElementById('typescript-code').textContent;
-            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
-            eval(jsCode);
-        })();
+function countTicketsPerWeekByAssignee(tickets) {
+    const resolveCounts = {};
+    const lastSixMonths = new Date();
+    lastSixMonths.setMonth(lastSixMonths.getMonth() - 6);
+
+    tickets.forEach(ticket => {
+        const resolutionDate = ticket.resolvedDate || new Date(); // Use current date if not resolved
+        if (resolutionDate < lastSixMonths) return; // Skip data older than 6 months
+
+        const resolvedWeekEnd = getWeekEndDate(resolutionDate);
+
+        if (ticket.assignee) {
+            if (!resolveCounts[ticket.assignee]) {
+                resolveCounts[ticket.assignee] = {};
+            }
+            if (!resolveCounts[ticket.assignee][resolvedWeekEnd]) {
+                resolveCounts[ticket.assignee][resolvedWeekEnd] = 0;
+            }
+            resolveCounts[ticket.assignee][resolvedWeekEnd]++;
+        }
+    });
+
+    console.log('Resolve Counts per Week by Assignee:', resolveCounts); // Debugging data
+    return resolveCounts;
+}
+
+function getWeekEndDate(date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
+
+function renderChart(resolveCounts) {
+    const ctx = document.getElementById('chart');
+    if (!ctx) return;
+
+    const assignees = Object.keys(resolveCounts);
+    const numColors = assignees.length;
+    const colors = generateColors(numColors);
+
+    const datasets = assignees.map((assignee, index) => {
+        const weeks = Object.keys(resolveCounts[assignee]).sort();
+        const data = weeks.map(week => ({ x: new Date(week), y: resolveCounts[assignee][week] || 0 }));
+        return {
+            label: assignee,
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: colors[index],
+            fill: false,
+            data,
+            borderWidth: 4 // Double the previous weight (2)
+        };
+    });
+
+    new Chart(ctx, {
+        type: 'line',
+        data: { datasets },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    ticks: {
+                        font: { size: 14, weight: 'bold' }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Tickets',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    ticks: {
+                        font: { size: 14, weight: 'bold' }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function generateColors(numColors) {
+    const colors = [];
+    const hueStep = 360 / numColors;
+    for (let i = 0; i < numColors; i++) {
+        const hue = i * hueStep;
+        const color = `hsl(${hue}, 50%, 45%)`;
+        colors.push(color);
+    }
+    return colors;
+}
+
+const app = {
+    data() {
+        return { jsonData: [] };
+    },
+    created() {
+        getSupportTickets().then(tickets => {
+             const filteredTickets = tickets.filter(ticket =>
+                ticket.pod == "T1" || ticket.project == "Extole Help"
+            );
+            const resolveCounts = countTicketsPerWeekByAssignee(filteredTickets);
+            console.log('filteredTickets:', filteredTickets);
+
+
+            renderChart(resolveCounts);
+        }).catch(error => {
+            console.error('Error loading data:', error);
+        });
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
     </script>
 </body>
 </html>

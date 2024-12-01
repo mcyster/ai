@@ -30,213 +30,157 @@
         </div>
     </div>
 
-    <script id="typescript-code" type="text/typescript">
-        interface SupportTicket {
-            key: string;
-            project: string;
-            created: Date;
-            type: string;
-            status: string;
-            statusChanged: Date;
-            category: string | null;
-            resolved: Date | null;
-            due: Date | null;
-            start: Date;
-            priority: string;
-            reporter: string | null;
-            assignee: string | null;
-            client: string | null;
-            clientId: string | null;
-            pod: string | null;
-            pairCsm: string | null;
-            pairSupport: string | null;
-            clientPriority: string | null;
-            timeSeconds: number;
-            labels: string[];
-        }
 
-        async function getData(): Promise<SupportTicket[]> {
-            const url = '/support/tickets';
-
-            try {
-                const response = await fetch(url, { method: 'GET' });
-                if (!response.ok) {
-                    alert(`Error: unable to fetch ${url}`);
-                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
-                }
-                const rawData: any[] = await response.json();
-                const data: SupportTicket[] = rawData.map(ticket => ({
-                    ...ticket,
-                    created: new Date(Date.parse(ticket.created)),
-                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
-                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null,
-                    start: new Date(Date.parse(ticket.start))
-                }));
-
-                const filteredData = data.filter(ticket => 
-                    !ticket.labels.includes("exec_escalated") && 
-                    ticket.client !== "Extole" &&
-                    ticket.key?.includes("HELP") &&
-                    ticket.type != "Epic"
-                );
-                return filteredData;
-            } catch (error) {
-                alert(`Error: problem fetching ${url}`);
-                console.error('Fetch error:', error);
-                throw error;
-            }
-        }
-
-        function getSundayMidnite(date: Date) {
-            const dayOfWeek = date.getUTCDay();
-            const sundayMidnight = new Date(date);
-            sundayMidnight.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for Sunday
-            sundayMidnight.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
-            return sundayMidnight.toISOString().split('T')[0]; // Return ISO date format
-        }
-
-        function categorizeDurations(tickets: SupportTicket[]): { [endOfWeekDate: string]: { day1: number, day2: number, day5: number, day6Plus: number } } {
-            const categories: { [endOfWeekDate: string]: { day1: number, day2: number, day5: number, day6Plus: number } } = {};
-            const currentDate = new Date();
-
-            tickets.forEach(ticket => {
-                const endDate = ticket.resolved && ticket.resolved < currentDate ? ticket.resolved : currentDate;
-
-                for (let date = new Date(ticket.start); date < endDate; date.setUTCDate(date.getUTCDate() + 7)) {
-                    const sundayMidnite = getSundayMidnite(date);
-                    const duration = Math.ceil((date.getTime() - ticket.start.getTime()) / (1000 * 60 * 60 * 24)); // Days
-
-                    if (!categories[sundayMidnite]) {
-                        categories[sundayMidnite] = { day1: 0, day2: 0, day5: 0, day6Plus: 0 };
-                    }
-
-                    if (duration <= 1) {
-                        categories[sundayMidnite].day1 += 1;
-                    } else if (duration <= 2) {
-                        categories[sundayMidnite].day2 += 1;
-                    } else if (duration <= 5) {
-                        categories[sundayMidnite].day5 += 1;
-                    } else {
-                        categories[sundayMidnite].day6Plus += 1;
-                        console.log(ticket.key + " greater than 6 days old")
-                    }
-                }
-            });
-
-            return categories;
-        }
-
-        function renderChart(categories: { [endOfWeekDate: string]: { day1: number, day2: number, day5: number, day6Plus: number } }) {
-            const ctx = document.getElementById('chart') as HTMLCanvasElement;
-            if (!ctx) return;
-            let labels = Object.keys(categories).sort();
-
-            // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
-            if (labels.length > 24) {
-                labels = labels.slice(-24);
-            }
-
-            const day1Data = labels.map(week => ({ x: new Date(week), y: categories[week].day1 }));
-            const day2Data = labels.map(week => ({ x: new Date(week), y: categories[week].day2 }));
-            const day5Data = labels.map(week => ({ x: new Date(week), y: categories[week].day5 }));
-            const day6PlusData = labels.map(week => ({ x: new Date(week), y: categories[week].day6Plus }));
-
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: '1 Day',
-                            backgroundColor: 'rgba(34, 139, 34, 0.5)',
-                            data: day1Data
-                        },
-                        {
-                            label: '2 Days',
-                            backgroundColor: 'rgba(144, 238, 144, 0.5)',
-                            data: day2Data
-                        },
-                        {
-                            label: '5 Days',
-                            backgroundColor: 'rgba(255, 165, 0, 0.5)',
-                            data: day5Data
-                        },
-                        {
-                            label: '6+ Business Days',
-                            backgroundColor: 'rgba(220, 0, 0, 0.5)',
-                            data: day6PlusData
-                        }
-                    ]
-                },
-                options: {
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'week',
-                                tooltipFormat: 'PP',
-                                displayFormats: {
-                                    week: 'PP'
-                                }
-                            },
-                            stacked: true,
-                            title: {
-                                display: true,
-                                text: 'Sunday Midnight',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            }
-                        },
-                        y: {
-                            beginAtZero: true,
-                            stacked: true,
-                            title: {
-                                display: true,
-                                text: 'Number of Tickets',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    weight: 'bold'
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        const app = {
-            data() {
-                return {
-                    jsonData: []
-                };
-            },
-            async created() {
-                getData().then(tickets => {
-                    const categorizedData = categorizeDurations(tickets);
-                    renderChart(categorizedData);
-                }).catch(error => {
-                    console.error('Error loading data:', error);
-                });
-            }
-        };
-
-        Vue.createApp(app).mount('#app');
-    </script>
-
+    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
     <script>
-        (async function compileAndExecute() {
-            const tsCode = document.getElementById('typescript-code').textContent;
-            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
-            eval(jsCode);
-        })();
+function getSundayMidnite(date) {
+    const dayOfWeek = date.getUTCDay();
+    const sundayMidnight = new Date(date);
+    sundayMidnight.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for Sunday
+    sundayMidnight.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return sundayMidnight.toISOString().split('T')[0]; // Return ISO date format
+}
+
+function categorizeDurations(tickets) {
+    const categories = {};
+    const currentDate = new Date();
+
+    tickets.forEach(ticket => {
+        const endDate = ticket.resolvedDate && ticket.resolvedDate < currentDate ? ticket.resolvedDate : currentDate;
+
+        for (let date = new Date(ticket.startDate); date < endDate; date.setUTCDate(date.getUTCDate() + 7)) {
+            const sundayMidnite = getSundayMidnite(date);
+            const duration = Math.ceil((date.getTime() - ticket.startDate.getTime()) / (1000 * 60 * 60 * 24)); // Days
+
+            if (!categories[sundayMidnite]) {
+                categories[sundayMidnite] = { day1: 0, day2: 0, day5: 0, day6Plus: 0 };
+            }
+
+            if (duration <= 1) {
+                categories[sundayMidnite].day1 += 1;
+            } else if (duration <= 2) {
+                categories[sundayMidnite].day2 += 1;
+            } else if (duration <= 5) {
+                categories[sundayMidnite].day5 += 1;
+            } else {
+                categories[sundayMidnite].day6Plus += 1;
+                console.log(ticket.key + " greater than 6 days old");
+            }
+        }
+    });
+
+    return categories;
+}
+
+function renderChart(categories) {
+    const ctx = document.getElementById('chart');
+    if (!ctx) return;
+    let labels = Object.keys(categories).sort();
+
+    // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
+    if (labels.length > 24) {
+        labels = labels.slice(-24);
+    }
+
+    const day1Data = labels.map(week => ({ x: new Date(week), y: categories[week].day1 }));
+    const day2Data = labels.map(week => ({ x: new Date(week), y: categories[week].day2 }));
+    const day5Data = labels.map(week => ({ x: new Date(week), y: categories[week].day5 }));
+    const day6PlusData = labels.map(week => ({ x: new Date(week), y: categories[week].day6Plus }));
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: '1 Day',
+                    backgroundColor: 'rgba(34, 139, 34, 0.5)',
+                    data: day1Data
+                },
+                {
+                    label: '2 Days',
+                    backgroundColor: 'rgba(144, 238, 144, 0.5)',
+                    data: day2Data
+                },
+                {
+                    label: '5 Days',
+                    backgroundColor: 'rgba(255, 165, 0, 0.5)',
+                    data: day5Data
+                },
+                {
+                    label: '6+ Business Days',
+                    backgroundColor: 'rgba(220, 0, 0, 0.5)',
+                    data: day6PlusData
+                }
+            ]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: 'Sunday Midnight',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Tickets',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+const app = {
+    data() {
+        return {
+            jsonData: []
+        };
+    },
+    async created() {
+        const tickets = await getSupportTickets();
+
+        console.log('tickets', tickets);
+
+        const filteredTickets = tickets.filter(ticket =>
+            ticket.project == "Extole Help"
+        );
+        console.log('filteredTickets:', filteredTickets);
+
+        const categorizedData = categorizeDurations(filteredTickets);
+        renderChart(categorizedData);
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
     </script>
 </body>
 </html>
