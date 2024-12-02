@@ -17,14 +17,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import reactor.core.publisher.Mono;
 
 @Component
-class WebGetTool implements WebsiteDeveloperTool<Request>  {
+class WebGetTool implements WebsiteDeveloperTool<Request> {
 
     private final WebClient webClient;
-    
+
     WebGetTool(WebClient.Builder builder) {
         this.webClient = builder.build();
     }
-    
+
     @Override
     public String getName() {
         return this.getClass().getSimpleName().replace("Tool", "");
@@ -41,22 +41,24 @@ class WebGetTool implements WebsiteDeveloperTool<Request>  {
     }
 
     @Override
-    public Response execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
-        return webClient.get()
-            .uri(request.url)
-            .exchangeToMono(response -> handleResponse(response))
-            .block();
+    public Class<ManagedWebsites> getContextClass() {
+        return ManagedWebsites.class;
     }
-    
+
+    @Override
+    public Response execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
+        return webClient.get().uri(request.url).exchangeToMono(response -> handleResponse(response)).block();
+    }
+
     private Mono<Response> handleResponse(ClientResponse response) {
         String mimeType = response.headers().contentType().map(Object::toString).orElse("unknown");
 
-        return response.bodyToMono(byte[].class)
-                .map(body -> {
-                    byte[] uncompressedBody = decompressIfNecessary(body, response.headers().asHttpHeaders().getFirst("Content-Encoding"));
-                    String bodyAsString = new String(uncompressedBody);
-                    return new Response(bodyAsString, mimeType);
-                });
+        return response.bodyToMono(byte[].class).map(body -> {
+            byte[] uncompressedBody = decompressIfNecessary(body,
+                    response.headers().asHttpHeaders().getFirst("Content-Encoding"));
+            String bodyAsString = new String(uncompressedBody);
+            return new Response(bodyAsString, mimeType);
+        });
     }
 
     private byte[] decompressIfNecessary(byte[] body, String contentEncoding) {
@@ -85,14 +87,10 @@ class WebGetTool implements WebsiteDeveloperTool<Request>  {
         }
     }
 
+    static record Request(@JsonProperty(required = true) String url) {
+    }
 
-    static record Request(
-        @JsonProperty(required = true) String url
-    ) {}
-
-    static record Response(
-        String mimeType,
-        String body
-    ) {}
+    static record Response(String mimeType, String body) {
+    }
 
 }

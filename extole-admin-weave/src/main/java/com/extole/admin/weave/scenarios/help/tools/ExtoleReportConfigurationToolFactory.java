@@ -54,8 +54,13 @@ class ExtoleReportConfigurationTool implements Tool<ExtoleReportConfigurationToo
     }
 
     @Override
+    public Class<Void> getContextClass() {
+        return Void.class;
+    }
+
+    @Override
     public Object execute(ExtoleReportConfigurationToolParameters parameters, Void context, OperationLogger operation) {
-        return this.getExecutor().apply((ExtoleReportConfigurationToolParameters)parameters);
+        return this.getExecutor().apply((ExtoleReportConfigurationToolParameters) parameters);
     }
 
     public Function<ExtoleReportConfigurationToolParameters, Object> getExecutor() {
@@ -72,11 +77,8 @@ class ExtoleReportConfigurationTool implements Tool<ExtoleReportConfigurationToo
         JsonNode jsonNode;
         try {
             jsonNode = webClient.get().uri("/{id}", reportHandle.id)
-                .header("Authorization", "Bearer " + this.accessToken.get())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(ObjectNode.class)
-                .block();
+                    .header("Authorization", "Bearer " + this.accessToken.get()).accept(MediaType.APPLICATION_JSON)
+                    .retrieve().bodyToMono(ObjectNode.class).block();
         } catch (WebClientResponseException exception) {
             if (exception.getStatusCode().value() == 403) {
                 return toJsonNode("{ \"error\": \"access_denied\" }");
@@ -100,6 +102,7 @@ class ExtoleReportConfigurationTool implements Tool<ExtoleReportConfigurationToo
         }
         return jsonNode;
     }
+
 }
 
 @Component

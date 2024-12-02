@@ -7,24 +7,24 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-
 import com.cyster.ai.weave.impl.advisor.Advisor;
 import com.cyster.ai.weave.impl.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.ToolContextFactory;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 
 import io.github.stefanbratanov.jvm.openai.Assistant;
 import io.github.stefanbratanov.jvm.openai.AssistantsClient;
+import io.github.stefanbratanov.jvm.openai.AssistantsClient.PaginatedAssistants;
 import io.github.stefanbratanov.jvm.openai.CreateAssistantRequest;
 import io.github.stefanbratanov.jvm.openai.File;
 import io.github.stefanbratanov.jvm.openai.FilesClient;
 import io.github.stefanbratanov.jvm.openai.PaginationQueryParameters;
 import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
-import io.github.stefanbratanov.jvm.openai.AssistantsClient.PaginatedAssistants;
 
-public class AssistantAdvisorImpl<C> implements Advisor<C> {
+public class AssistantAdvisorImpl<SCENARIO_CONTEXT> implements Advisor<SCENARIO_CONTEXT> {
 
     public static String VERSION = "0.1";
     public static String METADATA_VERSION = "version";
@@ -32,9 +32,9 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
 
     private OpenAiService openAiService;
     private Assistant assistant;
-    private Toolset<C> toolset;
+    private Toolset toolset;
 
-    public AssistantAdvisorImpl(OpenAiService openAiService, Assistant assistant, Toolset<C> toolset) {
+    public AssistantAdvisorImpl(OpenAiService openAiService, Assistant assistant, Toolset toolset) {
         this.openAiService = openAiService;
         this.assistant = assistant;
         this.toolset = toolset;
@@ -49,45 +49,42 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
     }
 
     @Override
-    public ConversationBuilder<C> createConversation() {
-        return new ConversationBuilder<C>(this);
+    public ConversationBuilder<SCENARIO_CONTEXT> createConversation() {
+        return new ConversationBuilder<SCENARIO_CONTEXT>(this);
     }
 
-    public static class ConversationBuilder<C2> implements Advisor.AdvisorConversationBuilder<C2> {
+    public static class ConversationBuilder<CONTEXT> implements Advisor.AdvisorConversationBuilder<CONTEXT> {
         private Optional<String> overrideInstructions = Optional.empty();
-        private C2 context = null;
-        private AssistantAdvisorImpl<C2> advisor;
+        private CONTEXT context = null;
+        private AssistantAdvisorImpl<CONTEXT> advisor;
         private List<String> messages = new ArrayList<String>();
 
-        private ConversationBuilder(AssistantAdvisorImpl<C2> advisor) {
+        private ConversationBuilder(AssistantAdvisorImpl<CONTEXT> advisor) {
             this.advisor = advisor;
         }
 
         @Override
-        public ConversationBuilder<C2> withContext(C2 context) {
+        public ConversationBuilder<CONTEXT> withContext(CONTEXT context) {
             this.context = context;
             return this;
         }
 
         @Override
-        public ConversationBuilder<C2> setOverrideInstructions(String instructions) {
+        public ConversationBuilder<CONTEXT> setOverrideInstructions(String instructions) {
             this.overrideInstructions = Optional.of(instructions);
             return this;
         }
 
         @Override
-        public ConversationBuilder<C2> addMessage(String message) {
+        public ConversationBuilder<CONTEXT> addMessage(String message) {
             this.messages.add(message);
             return this;
         }
 
         @Override
         public Conversation start() {
-            var conversation = new AssistantAdvisorConversation<C2>(this.advisor.openAiService,
-                this.advisor.assistant.id(),
-                this.advisor.toolset,
-                overrideInstructions,
-                context);
+            var conversation = new AssistantAdvisorConversation<CONTEXT>(this.advisor.openAiService,
+                    this.advisor.getName(), this.advisor.getId(), this.advisor.toolset, overrideInstructions, context);
 
             for (var message : this.messages) {
                 conversation.addMessage(Type.USER, message);
@@ -97,40 +94,44 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
         }
     }
 
-    public static class Builder<C2> implements AdvisorBuilder<C2> {
+    public static class Builder<CONTEXT> implements AdvisorBuilder<CONTEXT> {
         private static final String MODEL = "gpt-4o";
 
         private final OpenAiService openAiService;
         private final String name;
-        private Optional<String> instructions = Optional.empty();
-        private Toolset.Builder<C2> toolsetBuilder = new Toolset.Builder<C2>();
-        private List<Path> filePaths = new ArrayList<Path>();
+        private final Toolset.Builder toolsetBuilder;
 
-        public Builder(OpenAiService openAiService, String name) {
+        private final List<Path> filePaths = new ArrayList<Path>();
+        private Optional<String> instructions = Optional.empty();
+
+        public Builder(OpenAiService openAiService, ToolContextFactory toolContextFactory, String name) {
             this.openAiService = openAiService;
             this.name = name;
+            this.toolsetBuilder = new Toolset.Builder(toolContextFactory);
+
         }
 
         @Override
-        public Builder<C2> setInstructions(String instructions) {
+        public Builder<CONTEXT> setInstructions(String instructions) {
             this.instructions = Optional.of(instructions);
             return this;
         }
 
         @Override
-        public <T> AdvisorBuilder<C2> withTool(Tool<T, C2> tool) {
+        public <TOOL_PARAMETERS, TOOL_CONTEXT> AdvisorBuilder<CONTEXT> withTool(
+                Tool<TOOL_PARAMETERS, TOOL_CONTEXT> tool) {
             this.toolsetBuilder.addTool(tool);
             return this;
         }
 
         @Override
-        public AdvisorBuilder<C2> withFile(Path path) {
+        public AdvisorBuilder<CONTEXT> withFile(Path path) {
             this.filePaths.add(path);
             return this;
         }
 
         @Override
-        public Advisor<C2> getOrCreate() {
+        public Advisor<CONTEXT> getOrCreate() {
             String hash = String.valueOf(assistantHash());
 
             var assistant = this.findAssistant(hash);
@@ -138,17 +139,15 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
                 assistant = Optional.of(this.create(hash));
             }
 
-            return new AssistantAdvisorImpl<C2>(this.openAiService, assistant.get(), this.toolsetBuilder.create());
+            return new AssistantAdvisorImpl<CONTEXT>(this.openAiService, assistant.get(), this.toolsetBuilder.create());
         }
 
         private Assistant create(String hash) {
             List<String> fileIds = new ArrayList<String>();
             for (var filePath : this.filePaths) {
                 FilesClient filesClient = this.openAiService.createClient(FilesClient.class);
-                UploadFileRequest uploadInputFileRequest = UploadFileRequest.newBuilder()
-                    .file(filePath)
-                    .purpose("assistants")
-                    .build();
+                UploadFileRequest uploadInputFileRequest = UploadFileRequest.newBuilder().file(filePath)
+                        .purpose("assistants").build();
                 File file = filesClient.uploadFile(uploadInputFileRequest);
                 fileIds.add(file.id());
             }
@@ -157,13 +156,11 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
             metadata.put(METADATA_VERSION, VERSION);
             metadata.put(METADATA_IDENTITY, hash);
 
-            var toolset = new AdvisorToolset<C2>(this.toolsetBuilder.create());
+            var toolset = new AdvisorToolset(this.toolsetBuilder.create());
 
             AssistantsClient assistantsClient = this.openAiService.createClient(AssistantsClient.class);
-            CreateAssistantRequest.Builder requestBuilder = CreateAssistantRequest.newBuilder()
-                .name(this.name)
-                .model(MODEL)
-                .metadata(metadata);
+            CreateAssistantRequest.Builder requestBuilder = CreateAssistantRequest.newBuilder().name(this.name)
+                    .model(MODEL).metadata(metadata);
 
             toolset.applyTools(requestBuilder);
 
@@ -181,8 +178,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
 
             PaginatedAssistants response = null;
             do {
-                PaginationQueryParameters.Builder queryBuilder = PaginationQueryParameters.newBuilder()
-                    .limit(99);
+                PaginationQueryParameters.Builder queryBuilder = PaginationQueryParameters.newBuilder().limit(99);
                 if (response != null) {
                     queryBuilder.after(response.lastId());
                 }
@@ -203,7 +199,7 @@ public class AssistantAdvisorImpl<C> implements Advisor<C> {
         }
 
         private int assistantHash() {
-            return Objects.hash(MODEL, VERSION, name, instructions, filePaths, this.toolsetBuilder.create().getTools());   
+            return Objects.hash(MODEL, VERSION, name, instructions, filePaths, this.toolsetBuilder.create().getTools());
         }
     }
 }

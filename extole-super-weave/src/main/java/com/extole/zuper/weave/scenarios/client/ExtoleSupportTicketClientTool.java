@@ -11,14 +11,16 @@ import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario.Parameters;
 
 @Component
-public class ExtoleSupportTicketClientTool implements Tool<Parameters, Void> {
+public class ExtoleSupportTicketClientTool implements Tool<Parameters, ExtoleSuperContext> {
     private AiWeaveService aiWeaveService;
     private ExtoleSupportTicketClientScenario extoleTicketClientScenario;
 
-    ExtoleSupportTicketClientTool(AiWeaveService aiWeaveService, ExtoleSupportTicketClientScenario extoleTicketClientScenario) {
+    ExtoleSupportTicketClientTool(AiWeaveService aiWeaveService,
+            ExtoleSupportTicketClientScenario extoleTicketClientScenario) {
         this.aiWeaveService = aiWeaveService;
         this.extoleTicketClientScenario = extoleTicketClientScenario;
     }
@@ -39,25 +41,32 @@ public class ExtoleSupportTicketClientTool implements Tool<Parameters, Void> {
     }
 
     @Override
-    public Object execute(Parameters request, Void context, OperationLogger operation) throws ToolException {
-        Conversation conversation = extoleTicketClientScenario.createConversationBuilder(request, null)
-            .addMessage("Ticket Number: " + request.ticketNumber())
-            .start();
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Parameters request, ExtoleSuperContext context, OperationLogger operation)
+            throws ToolException {
+        Conversation conversation = extoleTicketClientScenario.createConversationBuilder(request, context)
+                .addMessage("Ticket Number: " + request.ticketNumber()).start();
 
         Message message;
         try {
             message = conversation.respond(operation);
         } catch (ConversationException exception) {
-           throw new ToolException("findRunbook failed to start conversation", exception);
+            throw new ToolException("findRunbook failed to start conversation", exception);
         }
 
         System.out.println("!!! find clientId convo: " + message);
-        
-        return aiWeaveService.extractResponse(com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario.Response.class, message.getContent());
+
+        return aiWeaveService.extractResponse(
+                com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario.Response.class,
+                message.getContent());
     }
-   
+
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass(), extoleTicketClientScenario.hash());
     }
-}
 
+}

@@ -44,6 +44,11 @@ class ExtoleEventStreamEventsGetTool implements ExtoleAdminTool<Request> {
     }
 
     @Override
+    public Class<ExtoleSessionContext> getContextClass() {
+        return ExtoleSessionContext.class;
+    }
+
+    @Override
     public Object execute(Request request, ExtoleSessionContext context, OperationLogger operation)
             throws ToolException {
 
@@ -76,4 +81,5 @@ class ExtoleEventStreamEventsGetTool implements ExtoleAdminTool<Request> {
             @JsonPropertyDescription("Offset into events to fetch, defaults to 0") @JsonProperty(required = false) Integer offset,
             @JsonPropertyDescription("Limit on the number of events to fetch, defaults to 2") @JsonProperty(required = false) Integer limit) {
     }
+
 }

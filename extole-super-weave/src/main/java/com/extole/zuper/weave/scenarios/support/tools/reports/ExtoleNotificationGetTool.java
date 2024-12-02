@@ -2,8 +2,8 @@ package com.extole.zuper.weave.scenarios.support.tools.reports;
 
 import java.util.Objects;
 
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBufferLimitException;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -15,10 +15,11 @@ import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.client.web.ExtoleWebClientException;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.zuper.weave.scenarios.support.tools.reports.ExtoleNotificationGetTool.Request;
-import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,7 +30,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
 public class ExtoleNotificationGetTool implements ExtoleSupportTool<Request> {
-    private Tool<Request, Void> tool;
+    private Tool<Request, ExtoleSuperContext> tool;
 
     ExtoleNotificationGetTool(ExtoleTrustedWebClientFactory extoleWebClientFactory, AiWeaveService aiWeaveService) {
         this.tool = aiWeaveService.cachingTool(new UncachedNotificationGetTool(extoleWebClientFactory));
@@ -51,10 +52,16 @@ public class ExtoleNotificationGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request parameters, Void context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Request parameters, ExtoleSuperContext context, OperationLogger operation)
+            throws ToolException {
         return this.tool.execute(parameters, context, operation);
     }
-    
+
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass(), tool.hash());
     }
@@ -79,9 +86,8 @@ public class ExtoleNotificationGetTool implements ExtoleSupportTool<Request> {
             }
 
             Request value = (Request) object;
-            return Objects.equals(clientId, value.clientId)
-                && Objects.equals(userId, value.userId)
-                && Objects.equals(notificationId, value.notificationId);
+            return Objects.equals(clientId, value.clientId) && Objects.equals(userId, value.userId)
+                    && Objects.equals(notificationId, value.notificationId);
         }
 
         @Override
@@ -96,7 +102,7 @@ public class ExtoleNotificationGetTool implements ExtoleSupportTool<Request> {
                 return mapper.writeValueAsString(this);
             } catch (JsonProcessingException exception) {
                 throw new RuntimeException("Error converting object of class " + this.getClass().getName() + " JSON",
-                    exception);
+                        exception);
             }
         }
     }
@@ -130,7 +136,12 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
         JsonNode notification = null;
 
         if (request.notificationId == null || request.notificationId.isBlank()) {
@@ -138,16 +149,14 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
         }
 
         if (!request.notificationId.matches(NOTIFICATION_ID_PATTERN)) {
-            throw new ToolException("notificationId " + request.notificationId +
-                    " must be 18 to 20 characters and alphanumeric (lowercase alpha only)");
+            throw new ToolException("notificationId " + request.notificationId
+                    + " must be 18 to 20 characters and alphanumeric (lowercase alpha only)");
         }
-
 
         if (request.userId != null && !request.userId.isBlank()) {
             if (!request.userId.matches(USER_ID_PATTERN)) {
                 throw new ToolException("userId must be 1 or more numeric characters");
             }
-
 
             notification = getClientEventByNotificationIdAndUserId(request);
         }
@@ -158,26 +167,22 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
         return notification;
     }
 
-    private JsonNode getClientEventByNotificationIdAndUserId(Request request)
-        throws ToolException {
+    private JsonNode getClientEventByNotificationIdAndUserId(Request request) throws ToolException {
         JsonNode response;
         try {
             response = this.extoleWebClientFactory.getWebClientById(request.clientId).get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/v6/notifications/" + request.userId)
-                    .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                    .uri(uriBuilder -> uriBuilder.path("/v6/notifications/" + request.userId).build())
+                    .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class).block();
         } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientException exception) {
             if (exception.getCause() instanceof DataBufferLimitException) {
-                logger.warn("Buffer overflow while getting notifications for user: " + request.userId + " at client: " + request.clientId);
+                logger.warn("Buffer overflow while getting notifications for user: " + request.userId + " at client: "
+                        + request.clientId);
                 response = null;
             } else {
-                throw new ToolException("Internal error, unable to get notications for user: " + request.userId + " at client: " + request.clientId, exception);
+                throw new ToolException("Internal error, unable to get notications for user: " + request.userId
+                        + " at client: " + request.clientId, exception);
             }
         }
 
@@ -192,7 +197,7 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
             JsonNode notificationNode = responseArray.get(i);
 
             if (notificationNode.has("event_id")
-                && notificationNode.path("event_id").asText().equals(request.notificationId)) {
+                    && notificationNode.path("event_id").asText().equals(request.notificationId)) {
 
                 notification = notificationNode;
             }
@@ -207,24 +212,25 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
             parameters.put("event_id", request.notificationId);
         }
 
-        var reportBuilder = new ExtoleReportBuilder(this.extoleWebClientFactory)
-            .withClientId(request.clientId)
-            .withName("notification_by_event_id")
-            .withDisplayName("Notification By Event ID - " + request.notificationId)
-            .withParameters(parameters);
+        var reportBuilder = new ExtoleReportBuilder(this.extoleWebClientFactory).withClientId(request.clientId)
+                .withName("notification_by_event_id")
+                .withDisplayName("Notification By Event ID - " + request.notificationId).withParameters(parameters);
 
         ObjectNode response = reportBuilder.build();
         if (response == null || response.path("data").isEmpty()) {
-            throw new ToolException("Problem searching for notification: " + request.notificationId + " in client: " + request.clientId);
+            throw new ToolException("Problem searching for notification: " + request.notificationId + " in client: "
+                    + request.clientId);
         }
 
         if (response.path("data").isEmpty() || !response.path("data").isArray()) {
-            throw new ToolException("Problem loading notification: " + request.notificationId + " in client: " + request.clientId);
+            throw new ToolException(
+                    "Problem loading notification: " + request.notificationId + " in client: " + request.clientId);
         }
 
         ArrayNode data = (ArrayNode) response.path("data");
         if (data.size() != 1) {
-            throw new ToolException("Notification: " + request.notificationId + " in client: " + request.clientId + " not found");
+            throw new ToolException(
+                    "Notification: " + request.notificationId + " in client: " + request.clientId + " not found");
         }
 
         JsonNode notification = data.get(0);
@@ -239,6 +245,5 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
         return notificationNode;
 
     }
-
 
 }

@@ -10,6 +10,7 @@ import com.cyster.ai.weave.service.ToolException;
 import com.cyster.jira.client.ticket.TicketException;
 import com.extole.jira.support.SupportTicket;
 import com.extole.jira.support.SupportTicketService;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketGetTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,7 +40,12 @@ public class SupportTicketGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
 
         if (request.key != null && request.key.isEmpty()) {
             throw new FatalToolException("Attribute ticket key not specified");

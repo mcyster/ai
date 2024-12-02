@@ -55,8 +55,13 @@ class ExtolePersonRewardsTool implements Tool<ExtolePersonRewardsToolParameters,
     }
 
     @Override
+    public Class<Void> getContextClass() {
+        return Void.class;
+    }
+
+    @Override
     public Object execute(ExtolePersonRewardsToolParameters parameters, Void context, OperationLogger operation) {
-        return this.getExecutor().apply((ExtolePersonRewardsToolParameters)parameters);
+        return this.getExecutor().apply((ExtolePersonRewardsToolParameters) parameters);
     }
 
     public Function<ExtolePersonRewardsToolParameters, Object> getExecutor() {
@@ -65,7 +70,7 @@ class ExtolePersonRewardsTool implements Tool<ExtolePersonRewardsToolParameters,
 
     private JsonNode loadRewards(ExtolePersonRewardsToolParameters parameters) {
         var webClient = this.webClientBuilder.baseUrl("https://api.extole.io/v4/runtime-persons/{personId}/rewards")
-            .build();
+                .build();
 
         if (accessToken.isEmpty()) {
             return toJsonNode("{ \"error\": \"access_token_required\" }");
@@ -82,14 +87,9 @@ class ExtolePersonRewardsTool implements Tool<ExtolePersonRewardsToolParameters,
 
         JsonNode jsonNode;
         try {
-            jsonNode = webClient.get().uri(uriBuilder -> uriBuilder
-                .queryParams(queryParameters)
-                .build(pathParameters))
-                .header("Authorization", "Bearer " + this.accessToken.get())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+            jsonNode = webClient.get().uri(uriBuilder -> uriBuilder.queryParams(queryParameters).build(pathParameters))
+                    .header("Authorization", "Bearer " + this.accessToken.get()).accept(MediaType.APPLICATION_JSON)
+                    .retrieve().bodyToMono(JsonNode.class).block();
         } catch (WebClientResponseException exception) {
             if (exception.getStatusCode().value() == 403) {
                 return toJsonNode("{ \"error\": \"access_denied\" }");

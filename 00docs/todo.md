@@ -3,6 +3,8 @@
 # Next
 
 - provide ability to get a url reference to the current conversation
+  - context for scenaio == context for tool
+    - want adapter for extole super -> extole admin (scenario context != tool context)
 - update jira interface to be AI-Friendly: simple, consistent, semanting naming, structured, natural (e.g. markdown)
 - get details on ip for checking fuzz/fraud etc
 - Decorator to convert Scenario<Void, ExtoleSessionContext> to Scenario<Void, Void>

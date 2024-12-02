@@ -9,7 +9,12 @@ import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.impl.scenario.ScenarioSetBuilderImpl;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.CodeInterpreterTool;
+import com.cyster.ai.weave.service.DocumentStore.DirectoryDocumentStoreBuilder;
+import com.cyster.ai.weave.service.DocumentStore.SimpleDocumentStoreBuilder;
+import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.ToolContextFactory;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.scenario.ScenarioSetBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,24 +25,23 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
-import com.cyster.ai.weave.service.DocumentStore.DirectoryDocumentStoreBuilder;
-import com.cyster.ai.weave.service.DocumentStore.SimpleDocumentStoreBuilder;
-import com.cyster.ai.weave.service.SearchTool.Builder;
 
 public class AiWeaveServiceImpl implements AiWeaveService {
-    private OpenAiService openAiService;
-    private AdvisorService advisorService;
-    
-    public AiWeaveServiceImpl(String openAiKey) {
+    private final OpenAiService openAiService;
+    private final AdvisorService advisorService;
+    private final ToolContextFactory toolContextFactory;
+
+    public AiWeaveServiceImpl(String openAiKey, ToolContextFactory toolContextFactory) {
         this.openAiService = new OpenAiService(openAiKey);
-        this.advisorService = new AdvisorServiceImpl(openAiKey);
+        this.advisorService = new AdvisorServiceImpl(openAiKey, toolContextFactory);
+        this.toolContextFactory = toolContextFactory;
     }
-    
+
     @Override
     public <PARAMETERS, CONTEXT> AssistantScenarioBuilder<PARAMETERS, CONTEXT> getOrCreateAssistantScenario(
-        String name) {
+            String name) {
         // TODO get scenario if it already exists
-        return new AssistantScenarioBuilderImpl<PARAMETERS, CONTEXT>(this.openAiService, name);
+        return new AssistantScenarioBuilderImpl<PARAMETERS, CONTEXT>(this.openAiService, this.toolContextFactory, name);
     }
 
     @Override
@@ -46,12 +50,12 @@ public class AiWeaveServiceImpl implements AiWeaveService {
     }
 
     @Override
-    public <CONTEXT> Builder<CONTEXT> searchToolBuilder() {
+    public SearchTool.Builder searchToolBuilder() {
         return advisorService.searchToolBuilder();
     }
 
     @Override
-    public <CONTEXT> com.cyster.ai.weave.service.CodeInterpreterTool.Builder<CONTEXT> codeToolBuilder() {
+    public CodeInterpreterTool.Builder codeToolBuilder() {
         return advisorService.codeToolBuilder();
     }
 
@@ -74,17 +78,17 @@ public class AiWeaveServiceImpl implements AiWeaveService {
     public String getJsonSchema(Class<?> clazz) {
         ObjectMapper mapper = new ObjectMapper();
         JsonSchemaGenerator schemaGenerator = new JsonSchemaGenerator(mapper);
-        
+
         String schema;
         try {
             JsonSchema jsonSchema = schemaGenerator.generateSchema(clazz);
-            
+
             JsonNode schemaNode = mapper.valueToTree(jsonSchema);
             if (schemaNode instanceof ObjectNode) {
                 ObjectNode objectNode = (ObjectNode) schemaNode;
                 objectNode.remove("id");
             }
-            
+
             schema = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(schemaNode);
         } catch (JsonMappingException e) {
             throw new RuntimeException("Unable to generate schema for " + clazz.getName(), e);
@@ -95,12 +99,12 @@ public class AiWeaveServiceImpl implements AiWeaveService {
     }
 
     @Override
-    public <RESPONSE> RESPONSE extractResponse(Class<RESPONSE> responseClass, String input) throws ToolException {        
+    public <RESPONSE> RESPONSE extractResponse(Class<RESPONSE> responseClass, String input) throws ToolException {
         Optional<String> json = extractJson(input);
         if (json.isEmpty()) {
             throw new ToolException("Expected json payload, but input is empty");
         }
-        
+
         ObjectMapper objectMapper = new ObjectMapper();
 
         RESPONSE response;
@@ -114,7 +118,7 @@ public class AiWeaveServiceImpl implements AiWeaveService {
         } catch (JsonProcessingException exception) {
             throw new ToolException("Json passing problems", exception);
         }
-        
+
         return response;
     }
 

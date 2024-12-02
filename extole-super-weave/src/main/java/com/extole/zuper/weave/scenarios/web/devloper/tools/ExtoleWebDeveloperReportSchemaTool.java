@@ -35,6 +35,11 @@ public class ExtoleWebDeveloperReportSchemaTool implements WebsiteDeveloperTool<
     }
 
     @Override
+    public Class<ManagedWebsites> getContextClass() {
+        return ManagedWebsites.class;
+    }
+
+    @Override
     public Object execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
         return this.reportSchemaTool.execute(request, null, operation);
     }
@@ -42,4 +47,5 @@ public class ExtoleWebDeveloperReportSchemaTool implements WebsiteDeveloperTool<
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass(), reportSchemaTool.hash());
     }
+
 }

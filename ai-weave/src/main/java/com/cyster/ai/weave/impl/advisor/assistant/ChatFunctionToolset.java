@@ -14,11 +14,12 @@ import io.github.stefanbratanov.jvm.openai.ChatMessage.ToolMessage;
 import io.github.stefanbratanov.jvm.openai.ToolCall.FunctionToolCall;
 
 public class ChatFunctionToolset<C> {
-    private Toolset<C> toolset;
+    private Toolset toolset;
     C context = null;
-    private OperationLogger operation = new OperationImpl(Level.Normal, "ChatFunctionToolset", Optional.empty(), Collections.emptyList());
-    
-    public ChatFunctionToolset(Toolset<C> toolset) {
+    private OperationLogger operation = new OperationImpl(Level.Normal, "ChatFunctionToolset", Optional.empty(),
+            Collections.emptyList());
+
+    public ChatFunctionToolset(Toolset toolset) {
         this.toolset = toolset;
     }
 
@@ -30,7 +31,8 @@ public class ChatFunctionToolset<C> {
     public ToolMessage call(FunctionToolCall functionToolCall) {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        Object value = toolset.execute(functionToolCall.function().name(), functionToolCall.function().arguments(), this.context, operation);
+        Object value = toolset.execute(functionToolCall.function().name(), functionToolCall.function().arguments(),
+                this.context, operation);
 
         JsonNode result = objectMapper.valueToTree(value);
 
@@ -38,8 +40,9 @@ public class ChatFunctionToolset<C> {
         try {
             json = objectMapper.writeValueAsString(result);
         } catch (JsonProcessingException exception) {
-            return ChatMessage.toolMessage(error("Error converting tool response to json",
-                Type.FATAL_TOOL_ERROR, exception), functionToolCall.id());
+            return ChatMessage.toolMessage(
+                    error("Error converting tool response to json", Type.FATAL_TOOL_ERROR, exception),
+                    functionToolCall.id());
         }
 
         return ChatMessage.toolMessage(json, functionToolCall.id());

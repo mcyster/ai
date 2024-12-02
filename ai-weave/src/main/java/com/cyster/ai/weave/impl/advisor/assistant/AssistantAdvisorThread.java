@@ -24,13 +24,13 @@ import io.github.stefanbratanov.jvm.openai.PaginationQueryParameters;
 import io.github.stefanbratanov.jvm.openai.Role;
 import io.github.stefanbratanov.jvm.openai.RunsClient;
 import io.github.stefanbratanov.jvm.openai.SubmitToolOutputsRequest;
-import io.github.stefanbratanov.jvm.openai.ThreadRun;
-import io.github.stefanbratanov.jvm.openai.ThreadsClient;
-import io.github.stefanbratanov.jvm.openai.ToolCall;
+import io.github.stefanbratanov.jvm.openai.SubmitToolOutputsRequest.ToolOutput;
 import io.github.stefanbratanov.jvm.openai.Thread;
 import io.github.stefanbratanov.jvm.openai.ThreadMessage;
 import io.github.stefanbratanov.jvm.openai.ThreadMessage.Content.TextContent;
-import io.github.stefanbratanov.jvm.openai.SubmitToolOutputsRequest.ToolOutput;
+import io.github.stefanbratanov.jvm.openai.ThreadRun;
+import io.github.stefanbratanov.jvm.openai.ThreadsClient;
+import io.github.stefanbratanov.jvm.openai.ToolCall;
 import io.github.stefanbratanov.jvm.openai.ToolCall.FunctionToolCall;
 
 public class AssistantAdvisorThread<CONTEXT> {
@@ -44,28 +44,29 @@ public class AssistantAdvisorThread<CONTEXT> {
 
     private static final Logger logger = LoggerFactory.getLogger(AssistantAdvisorConversation.class);
 
-    private OpenAiService openAiService;
-    private String assistantId;
-    private Toolset<CONTEXT> toolset;
+    private final OpenAiService openAiService;
+    private final String assistantName;
+    private final String assistantId;
+    private final Toolset toolset;
+    private final Optional<String> overrideInstructions;
+    private final CONTEXT context;
     private Optional<Thread> thread = Optional.empty();
-    private Optional<String> overrideInstructions = Optional.empty();
-    private CONTEXT context;
 
-    AssistantAdvisorThread(OpenAiService openAiService, String assistantId, Toolset<CONTEXT> toolset,
-        Optional<String> overrideInstructions, CONTEXT context) {
+    AssistantAdvisorThread(OpenAiService openAiService, String assistantName, String assistantId, Toolset toolset,
+            Optional<String> overrideInstructions, CONTEXT context) {
         this.openAiService = openAiService;
+        this.assistantName = assistantName;
         this.assistantId = assistantId;
         this.toolset = toolset;
         this.overrideInstructions = overrideInstructions;
         this.context = context;
     }
 
-    public Message respond(List<Message> messages,  OperationLogger operation) throws ConversationException {
+    public Message respond(List<Message> messages, OperationLogger operation) throws ConversationException {
         if (thread.isEmpty()) {
             thread = Optional.of(createThread(messages, operation));
-        }
-        else {
-            for(var message: messages) {
+        } else {
+            for (var message : messages) {
                 addThreadedMessage(thread.get(), message, operation);
             }
         }
@@ -78,8 +79,9 @@ public class AssistantAdvisorThread<CONTEXT> {
             } catch (RetryableAdvisorConversationException exception) {
                 retries = retries + 1;
                 if (retries > CONVERSATION_RETIES_MAX) {
-                    throw new ConversationException("Advisor experienced problems responding to conversation, tried "
-                        + retries + " times", exception);
+                    throw new ConversationException(
+                            "Advisor experienced problems responding to conversation, tried " + retries + " times",
+                            exception);
                 }
                 logger.warn("Advisor thread run failed, retrying");
             } catch (AdvisorConversationException exception) {
@@ -91,16 +93,15 @@ public class AssistantAdvisorThread<CONTEXT> {
     }
 
     private String doRun(Thread thread, OperationLogger operations) throws AdvisorConversationException {
-        RunsClient runsClient = this.openAiService.createClient(RunsClient.class, operations, 
-                Map.of("assistantId", this.assistantId, "threadId" ,thread.id()));
+        RunsClient runsClient = this.openAiService.createClient(RunsClient.class, operations,
+                Map.of("assistantId", this.assistantId, "threadId", thread.id()));
 
         int retryCount = 0;
         long delay = RUN_BACKOFF_MIN;
         long attempts = 0;
 
-        var requestBuilder = CreateRunRequest.newBuilder()
-            .assistantId(this.assistantId);
-        
+        var requestBuilder = CreateRunRequest.newBuilder().assistantId(this.assistantId);
+
         Optional<List<String>> include = Optional.empty();
         ThreadRun run = runsClient.createRun(thread.id(), include, requestBuilder.build());
 
@@ -127,8 +128,7 @@ public class AssistantAdvisorThread<CONTEXT> {
 
             if (attempts > RUN_POLL_ATTEMPTS_MAX) {
                 throw new AdvisorConversationException("Exceeded maximum openai thread run retry attempts ("
-                    + RUN_POLL_ATTEMPTS_MAX
-                    + ") while waiting for a response for an openai run");
+                        + RUN_POLL_ATTEMPTS_MAX + ") while waiting for a response for an openai run");
             }
 
             if (run.status().equals("expired")) {
@@ -140,18 +140,15 @@ public class AssistantAdvisorThread<CONTEXT> {
             }
 
             if (run.status().equals("cancelled")) {
-                throw new AdvisorConversationException("Run.cancelled. Run: " +  run.toString());
+                throw new AdvisorConversationException("Run.cancelled. Run: " + run.toString());
             }
 
             if (run.requiredAction() != null) {
-                logger.info("Run.actions[" + run.id() + "]: " + run.requiredAction().submitToolOutputs()
-                    .toolCalls().stream()
-                        .map(toolCall -> getToolCallSummary(toolCall))
-                        .collect(Collectors.joining(", ")));
+                logger.info("Run.actions[" + run.id() + "]: " + run.requiredAction().submitToolOutputs().toolCalls()
+                        .stream().map(toolCall -> getToolCallSummary(toolCall)).collect(Collectors.joining(", ")));
 
-                if (run.requiredAction().submitToolOutputs() == null
-                    || run.requiredAction().submitToolOutputs() == null
-                    || run.requiredAction().submitToolOutputs().toolCalls() == null) {
+                if (run.requiredAction().submitToolOutputs() == null || run.requiredAction().submitToolOutputs() == null
+                        || run.requiredAction().submitToolOutputs().toolCalls() == null) {
                     throw new AdvisorConversationException("Action Required but no details");
                 }
 
@@ -161,13 +158,18 @@ public class AssistantAdvisorThread<CONTEXT> {
                     if (!toolCall.type().equals("function")) {
                         throw new AdvisorConversationException("Unexpected tool call - not a function");
                     }
-                    FunctionToolCall functionToolCall = (FunctionToolCall)toolCall;
+                    FunctionToolCall functionToolCall = (FunctionToolCall) toolCall;
 
                     var callId = functionToolCall.id();
 
+                    logger.info("Assistant " + this.assistantName + " assistantId " + this.assistantId + " running: "
+                            + functionToolCall.function().name() + " with parameters "
+                            + functionToolCall.function().arguments() + " and context " + this.context);
+
                     var output = this.toolset.execute(functionToolCall.function().name(),
-                        functionToolCall.function().arguments(), this.context, 
-                        operations.childLogger("Tool - " + functionToolCall.function().name(), functionToolCall.function().arguments()));
+                            functionToolCall.function().arguments(), this.context,
+                            operations.childLogger("Tool - " + functionToolCall.function().name(),
+                                    functionToolCall.function().arguments()));
 
                     ToolOutput toolOutput = ToolOutput.newBuilder().toolCallId(callId).output(output).build();
 
@@ -177,7 +179,7 @@ public class AssistantAdvisorThread<CONTEXT> {
 
                 try {
                     runsClient.submitToolOutputs(run.threadId(), run.id(), toolOutputsBuilder.build());
-                } catch(OpenAIException exception) {
+                } catch (OpenAIException exception) {
                     throw new AdvisorConversationException("Submitting tool run failed", exception);
                 }
             }
@@ -188,7 +190,7 @@ public class AssistantAdvisorThread<CONTEXT> {
                 if (exception instanceof SocketTimeoutException) {
                     if (retryCount++ > RUN_RETRIES_MAX) {
                         throw new AdvisorConversationException("Socket Timeout while checking OpenAi.run.status",
-                            exception);
+                                exception);
                     }
                 } else {
                     throw new AdvisorConversationException("Error while checking OpenAi.run.status", exception);
@@ -198,9 +200,11 @@ public class AssistantAdvisorThread<CONTEXT> {
             logger.info("Run.status[" + run.id() + "]: " + run.status() + " (delay " + delay + "ms)");
         } while (!run.status().equals("completed"));
 
-        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations, Map.of("threadId", thread.id()));
+        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations,
+                Map.of("threadId", thread.id()));
 
-        var responseMessages = messagesClient.listMessages(thread.id(), PaginationQueryParameters.none(), Optional.empty());
+        var responseMessages = messagesClient.listMessages(thread.id(), PaginationQueryParameters.none(),
+                Optional.empty());
 
         if (responseMessages.data().size() == 0) {
             operations.log(Operation.Level.Normal, "No Response from AI", null);
@@ -227,19 +231,20 @@ public class AssistantAdvisorThread<CONTEXT> {
             operations.log(Operation.Level.Normal, "Assistant responded with non text content, ignoring", null);
             throw new AdvisorConversationException("Content not of type text");
         }
-        var textContent = (TextContent)content.get(0);
+        var textContent = (TextContent) content.get(0);
 
         return textContent.text().value();
     }
 
     private ThreadMessage addThreadedMessage(Thread thread, Message message, OperationLogger operations) {
-        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations, Map.of("threadId", thread.id()));
+        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations,
+                Map.of("threadId", thread.id()));
 
         Role role;
-        switch(message.getType()) {
+        switch (message.getType()) {
         case AI:
-           role = Role.ASSISTANT;
-           break;
+            role = Role.ASSISTANT;
+            break;
         case SYSTEM:
             role = Role.ASSISTANT;
             break;
@@ -250,12 +255,9 @@ public class AssistantAdvisorThread<CONTEXT> {
             throw new RuntimeException("Unexpected message type");
         }
 
-        var createMessageRequest = CreateMessageRequest.newBuilder()
-            .role(role)
-            .content(message.getContent())
-            .build();
+        var createMessageRequest = CreateMessageRequest.newBuilder().role(role).content(message.getContent()).build();
 
-         return messagesClient.createMessage(thread.id(), createMessageRequest);
+        return messagesClient.createMessage(thread.id(), createMessageRequest);
     }
 
     private Thread createThread(List<Message> messages, OperationLogger operations) {
@@ -264,37 +266,27 @@ public class AssistantAdvisorThread<CONTEXT> {
         var threadRequestBuilder = CreateThreadRequest.newBuilder();
 
         if (overrideInstructions.isPresent()) {
-            var threadMessage = CreateThreadRequest.Message.newBuilder()
-                .role(Role.ASSISTANT)
-                .content(overrideInstructions.get())
-                .build();
+            var threadMessage = CreateThreadRequest.Message.newBuilder().role(Role.ASSISTANT)
+                    .content(overrideInstructions.get()).build();
             threadRequestBuilder.message(threadMessage);
         }
 
         for (var message : messages) {
             if (message.getType() == Type.AI) {
-                var threadMessage = CreateThreadRequest.Message.newBuilder()
-                    .role(Role.ASSISTANT)
-                    .content(message.getContent())
-                    .build();
+                var threadMessage = CreateThreadRequest.Message.newBuilder().role(Role.ASSISTANT)
+                        .content(message.getContent()).build();
 
                 threadRequestBuilder.message(threadMessage);
-            }
-            else if (message.getType() == Type.SYSTEM) {
-                var threadMessage = CreateThreadRequest.Message.newBuilder()
-                    .role(Role.ASSISTANT)
-                    .content(message.getContent())
-                    .build();
+            } else if (message.getType() == Type.SYSTEM) {
+                var threadMessage = CreateThreadRequest.Message.newBuilder().role(Role.ASSISTANT)
+                        .content(message.getContent()).build();
 
-                    threadRequestBuilder.message(threadMessage);
-            }
-            else if (message.getType() == Type.USER) {
-                var threadMessage = CreateThreadRequest.Message.newBuilder()
-                    .role(Role.USER)
-                    .content(message.getContent())
-                    .build();
+                threadRequestBuilder.message(threadMessage);
+            } else if (message.getType() == Type.USER) {
+                var threadMessage = CreateThreadRequest.Message.newBuilder().role(Role.USER)
+                        .content(message.getContent()).build();
 
-                    threadRequestBuilder.message(threadMessage);
+                threadRequestBuilder.message(threadMessage);
             }
         }
 
@@ -303,11 +295,9 @@ public class AssistantAdvisorThread<CONTEXT> {
         return thread;
     }
 
-
-
     private static String getToolCallSummary(ToolCall toolCall) {
         if (toolCall.type() == "function") {
-            FunctionToolCall functionToolCall = (FunctionToolCall)toolCall;
+            FunctionToolCall functionToolCall = (FunctionToolCall) toolCall;
             String name = functionToolCall.function().name();
 
             String arguments = escapeNonAlphanumericCharacters(functionToolCall.function().arguments());
@@ -340,14 +330,13 @@ public class AssistantAdvisorThread<CONTEXT> {
 
     public static String escapeCharacter(char character) {
         switch (character) {
-            case '\n':
-                return "\\n";
-            case '\t':
-                return "\\t";
-            default:
-                return "\\" + character;
+        case '\n':
+            return "\\n";
+        case '\t':
+            return "\\t";
+        default:
+            return "\\" + character;
         }
     }
 
 }
-

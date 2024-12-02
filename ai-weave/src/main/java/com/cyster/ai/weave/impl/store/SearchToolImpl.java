@@ -3,15 +3,15 @@ package com.cyster.ai.weave.impl.store;
 import java.util.Collections;
 import java.util.Objects;
 
-import io.github.stefanbratanov.jvm.openai.VectorStore;
-import io.github.stefanbratanov.jvm.openai.VectorStoresClient;
-
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.ToolException;
 
-public class SearchToolImpl<CONTEXT> implements SearchTool<CONTEXT> {
+import io.github.stefanbratanov.jvm.openai.VectorStore;
+import io.github.stefanbratanov.jvm.openai.VectorStoresClient;
+
+public class SearchToolImpl implements SearchTool {
     public static final String NAME = "file_search";
 
     private OpenAiService openAiService;
@@ -34,11 +34,16 @@ public class SearchToolImpl<CONTEXT> implements SearchTool<CONTEXT> {
 
     @Override
     public Class<Void> getParameterClass() {
-        return null;
+        return Void.class;
     }
 
     @Override
-    public Object execute(Void parameters, CONTEXT context, OperationLogger operation) throws ToolException {
+    public Class<Void> getContextClass() {
+        return Void.class;
+    }
+
+    @Override
+    public Object execute(Void parameters, Void context, OperationLogger operation) throws ToolException {
         // Implemented directly by OpenAI
         return Collections.emptyMap();
     }
@@ -46,15 +51,17 @@ public class SearchToolImpl<CONTEXT> implements SearchTool<CONTEXT> {
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass(), vectorStore.id());
     }
-    
+
     @Override
     public boolean isReady() {
-        var updatedVectorStore = this.openAiService.createClient(VectorStoresClient.class).retrieveVectorStore(vectorStore.id());
-                
+        var updatedVectorStore = this.openAiService.createClient(VectorStoresClient.class)
+                .retrieveVectorStore(vectorStore.id());
+
         return updatedVectorStore.status().equals("completed");
     }
-    
+
     public VectorStore getVectorStore() {
         return this.vectorStore;
     }
+
 }

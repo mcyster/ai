@@ -8,9 +8,10 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.client.web.ExtoleWebClientException;
-import com.extole.zuper.weave.scenarios.support.tools.ExtoleClientSearchTool.Request;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
+import com.extole.client.web.ExtoleWebClientException;
+import com.extole.zuper.weave.ExtoleSuperContext;
+import com.extole.zuper.weave.scenarios.support.tools.ExtoleClientSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -41,19 +42,18 @@ public class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
 
         JsonNode resultNode;
         try {
             resultNode = this.extoleWebClientFactory.getSuperUserWebClient().get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/v4/clients")
-                    .queryParam("type", request.clientType())
-                    .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                    .uri(uriBuilder -> uriBuilder.path("/v4/clients").queryParam("type", request.clientType()).build())
+                    .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class).block();
         } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientException exception) {
@@ -63,7 +63,6 @@ public class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
         if (resultNode == null || !resultNode.isArray()) {
             throw new ToolException("Query failed with unexpected result");
         }
-        
 
         ArrayNode results = JsonNodeFactory.instance.arrayNode();
         {
@@ -76,16 +75,9 @@ public class ExtoleClientSearchTool implements ExtoleSupportTool<Request> {
     }
 
     static record Request(
-        @JsonPropertyDescription("Filters client by type (CUSTOMER, EX_CUSTOMER, PROSPECT, UNCLASSIFIED, TEST), defaults to CUSTOMER")
-        @JsonProperty(required = false)
-        String clientType
-    ) {
-        public Request(
-                String clientType
-        ) {
+            @JsonPropertyDescription("Filters client by type (CUSTOMER, EX_CUSTOMER, PROSPECT, UNCLASSIFIED, TEST), defaults to CUSTOMER") @JsonProperty(required = false) String clientType) {
+        public Request(String clientType) {
             this.clientType = clientType == null ? "CUSTOMER" : clientType;
         }
     }
 }
-
-

@@ -21,7 +21,7 @@ class ExtolePersonFileToolParameters {
     private String keyValue;
 
     public ExtolePersonFileToolParameters(@JsonProperty("keyType") String keyType,
-        @JsonProperty("keyValue") String keyValue) {
+            @JsonProperty("keyValue") String keyValue) {
         this.keyType = keyType;
         this.keyValue = keyValue;
     }
@@ -54,7 +54,7 @@ class ExtolePersonFindTool implements Tool<ExtolePersonFileToolParameters, Void>
     @Override
     public String getDescription() {
         return "Get the profile of a person given an key like email, partner_user_id or order_id. "
-            + "If a person is found the id attribute is often refered to as the person_id.";
+                + "If a person is found the id attribute is often refered to as the person_id.";
     }
 
     @Override
@@ -63,11 +63,15 @@ class ExtolePersonFindTool implements Tool<ExtolePersonFileToolParameters, Void>
     }
 
     @Override
-    public Object execute(ExtolePersonFileToolParameters parameters, Void context, OperationLogger operation) {
-        return this.getExecutor().apply((ExtolePersonFileToolParameters)parameters);
+    public Class<Void> getContextClass() {
+        return Void.class;
     }
 
-    
+    @Override
+    public Object execute(ExtolePersonFileToolParameters parameters, Void context, OperationLogger operation) {
+        return this.getExecutor().apply((ExtolePersonFileToolParameters) parameters);
+    }
+
     public Function<ExtolePersonFileToolParameters, Object> getExecutor() {
         return parameter -> findPerson(parameter);
     }
@@ -98,11 +102,8 @@ class ExtolePersonFindTool implements Tool<ExtolePersonFileToolParameters, Void>
         JsonNode jsonNode;
         try {
             jsonNode = webClient.get().uri(uriBuilder -> uriBuilder.queryParams(parameters).build())
-                .header("Authorization", "Bearer " + this.accessToken.get())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                    .header("Authorization", "Bearer " + this.accessToken.get()).accept(MediaType.APPLICATION_JSON)
+                    .retrieve().bodyToMono(JsonNode.class).block();
         } catch (WebClientResponseException exception) {
             if (exception.getStatusCode().value() == 403) {
                 return toJsonNode("{ \"error\": \"access_denied\" }");
@@ -126,6 +127,7 @@ class ExtolePersonFindTool implements Tool<ExtolePersonFileToolParameters, Void>
         }
         return jsonNode;
     }
+
 }
 
 @Component

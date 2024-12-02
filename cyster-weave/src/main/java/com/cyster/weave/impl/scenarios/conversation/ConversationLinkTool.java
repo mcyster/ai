@@ -1,4 +1,7 @@
-package com.cyster.weave.impl.scenarios.tester;
+package com.cyster.weave.impl.scenarios.conversation;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
@@ -7,9 +10,9 @@ import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 
 @Component
-public class FailingTesterTool implements Tool<Void, Void> {
+public class ConversationLinkTool implements Tool<Void, Void> {
 
-    FailingTesterTool() {
+    ConversationLinkTool() {
     }
 
     @Override
@@ -19,7 +22,7 @@ public class FailingTesterTool implements Tool<Void, Void> {
 
     @Override
     public String getDescription() {
-        return "Fails - to allow testing";
+        return "Link to the current conversation";
     }
 
     @Override
@@ -34,7 +37,13 @@ public class FailingTesterTool implements Tool<Void, Void> {
 
     @Override
     public Object execute(Void parameters, Void context, OperationLogger operation) throws ToolException {
-        throw new ToolException("Failing test tool - intentionally fails with this exception");
+        Map<String, String> response = new HashMap<>() {
+            {
+                put("url", "http://cyster.com/123");
+            }
+        };
+
+        return response;
     }
 
 }

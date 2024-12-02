@@ -12,6 +12,7 @@ import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.template.StringTemplate;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario.Parameters;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleClientGetTool;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleClientSearchTool;
@@ -20,12 +21,12 @@ import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketGetTool;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
-public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, Void> {
+public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, ExtoleSuperContext> {
     private final String DESCRIPTION = "Find the Extole client associated for the specified ticket";
 
     private AiWeaveService aiWeaveService;
-    private Optional<Scenario<Parameters, Void>> scenario = Optional.empty();
-    private List<Tool<?, Void>> tools = new ArrayList<>();
+    private Optional<Scenario<Parameters, ExtoleSuperContext>> scenario = Optional.empty();
+    private List<Tool<?, ?>> tools = new ArrayList<>();
     private SupportTicketGetTool ticketGetTool;
     private SupportTicketClientSetTool extoleClientSetTool;
     private ExtoleClientGetTool extoleClientGetTool;
@@ -60,12 +61,12 @@ public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, V
     }
 
     @Override
-    public Class<Void> getContextClass() {
-        return Void.class;
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
+    public ConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSuperContext context) {
         if (parameters == null || parameters.ticketNumber() == null || parameters.ticketNumber().isBlank()) {
             throw new IllegalArgumentException("No ticketNumber specified");
         }
@@ -74,7 +75,7 @@ public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, V
                 .addMessage("Ticket: " + parameters.ticketNumber());
     }
 
-    private Scenario<Parameters, Void> getScenario() {
+    private Scenario<Parameters, ExtoleSuperContext> getScenario() {
         if (this.scenario.isEmpty()) {
             String instructionsTemplate = """
                     You are an Extole Support Team member handling an incoming ticket. Your task is to identify the Extole client associated with the ticket.
@@ -102,7 +103,7 @@ public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, V
 
             String instructions = new StringTemplate(instructionsTemplate).render(parameters);
 
-            AssistantScenarioBuilder<Parameters, Void> builder = this.aiWeaveService
+            AssistantScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiWeaveService
                     .getOrCreateAssistantScenario(getName());
             builder.setInstructions(instructions);
 

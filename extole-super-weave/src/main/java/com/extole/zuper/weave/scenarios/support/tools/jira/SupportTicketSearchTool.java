@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.jira.client.web.JiraWebClientFactory;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -42,7 +43,13 @@ class SupportTicketSearchTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request searchRequest, Void context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Request searchRequest, ExtoleSuperContext context, OperationLogger operation)
+            throws ToolException {
 
         String jql = "project = SUP";
         if (searchRequest.query != null && !searchRequest.query.isEmpty()) {
@@ -51,34 +58,30 @@ class SupportTicketSearchTool implements ExtoleSupportTool<Request> {
 
         ObjectNode payload = JsonNodeFactory.instance.objectNode();
         {
-          payload.putArray("expand");
+            payload.putArray("expand");
 
-          ArrayNode fields = payload.putArray("fields");
-          fields.add("summary");
-          fields.add("status");
-          fields.add("customfield_11312");
-          fields.add("created");
-          fields.add("updated");
-          fields.add("priority");
-          fields.add("parent");
-          fields.add("assignee");
-          fields.add("labels");
-          payload.put("fieldsByKeys", false);
-          payload.put("jql", jql);
-          payload.put("maxResults", 15);
-          payload.put("startAt", 0);
+            ArrayNode fields = payload.putArray("fields");
+            fields.add("summary");
+            fields.add("status");
+            fields.add("customfield_11312");
+            fields.add("created");
+            fields.add("updated");
+            fields.add("priority");
+            fields.add("parent");
+            fields.add("assignee");
+            fields.add("labels");
+            payload.put("fieldsByKeys", false);
+            payload.put("jql", jql);
+            payload.put("maxResults", 15);
+            payload.put("startAt", 0);
         }
 
         JsonNode resultNode;
         try {
             resultNode = this.jiraWebClientFactory.getWebClient().post()
-                .uri(uriBuilder -> uriBuilder.path("/rest/api/3/search").build())
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(payload)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                    .uri(uriBuilder -> uriBuilder.path("/rest/api/3/search").build()).accept(MediaType.APPLICATION_JSON)
+                    .contentType(MediaType.APPLICATION_JSON).bodyValue(payload).retrieve().bodyToMono(JsonNode.class)
+                    .block();
         } catch (WebClientResponseException exception) {
             throw new ToolException("Search failed with error. Payload: " + payload, exception);
         }
@@ -164,5 +167,3 @@ class SupportTicketSearchTool implements ExtoleSupportTool<Request> {
         public int rowLimit;
     }
 }
-
-

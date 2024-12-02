@@ -18,9 +18,10 @@ public class AssistantAdvisorConversation<CONTEXT> implements Conversation {
     private List<Message> newMessages = new ArrayList<>();
     private AssistantAdvisorThread<CONTEXT> assistantAdvisorThread;
 
-    AssistantAdvisorConversation(OpenAiService openAiService, String assistantId, Toolset<CONTEXT> toolset,
-        Optional<String> overrideInstructions, CONTEXT context) {
-        this.assistantAdvisorThread = new AssistantAdvisorThread<>(openAiService, assistantId, toolset, overrideInstructions, context);
+    AssistantAdvisorConversation(OpenAiService openAiService, String assistantName, String assistantId, Toolset toolset,
+            Optional<String> overrideInstructions, CONTEXT context) {
+        this.assistantAdvisorThread = new AssistantAdvisorThread<>(openAiService, assistantName, assistantId, toolset,
+                overrideInstructions, context);
     }
 
     @Override
@@ -35,13 +36,13 @@ public class AssistantAdvisorConversation<CONTEXT> implements Conversation {
     @Override
     public Message respond() throws ConversationException {
         var operation = new OperationImpl("Assistant", new ArrayList<>(newMessages));
-       
+
         messages.addAll(newMessages);
         var response = this.assistantAdvisorThread.respond(this.newMessages, operation);
         newMessages.clear();
-        
+
         messages.add(response);
-     
+
         return response;
     }
 
@@ -53,14 +54,13 @@ public class AssistantAdvisorConversation<CONTEXT> implements Conversation {
         var response = this.assistantAdvisorThread.respond(this.newMessages, childOperation);
         newMessages.clear();
         messages.add(response);
-     
+
         return response;
     }
-    
+
     @Override
     public List<Message> getMessages() {
-        return Stream.concat(this.messages.stream(), this.newMessages.stream())
-            .collect(Collectors.toList());
+        return Stream.concat(this.messages.stream(), this.newMessages.stream()).collect(Collectors.toList());
     }
 
 }

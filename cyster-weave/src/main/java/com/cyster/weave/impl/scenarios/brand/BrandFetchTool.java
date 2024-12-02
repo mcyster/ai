@@ -43,6 +43,11 @@ class BrandFetchTool implements Tool<BrandFetchRequest, Void> {
     }
 
     @Override
+    public Class<Void> getContextClass() {
+        return Void.class;
+    }
+
+    @Override
     public Object execute(BrandFetchRequest fetchRequest, Void context, OperationLogger operation) {
         var webClient = WebClient.builder().baseUrl("https://api.brandfetch.io/v2/brands/{domainName}").build();
 
@@ -70,6 +75,7 @@ class BrandFetchTool implements Tool<BrandFetchRequest, Void> {
         }
         return jsonNode;
     }
+
 }
 
 class BrandFetchRequest {

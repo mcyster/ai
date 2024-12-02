@@ -14,6 +14,7 @@ import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.client.web.ExtoleWebClientException;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionScenario;
 import com.extole.zuper.weave.scenarios.support.tools.ExtolePrehandlerHelpTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -49,7 +50,12 @@ class ExtolePrehandlerHelpTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
         ObjectNode payload = JsonNodeFactory.instance.objectNode();
         {
             payload.put("client_id", request.client_id);
@@ -72,7 +78,7 @@ class ExtolePrehandlerHelpTool implements ExtoleSupportTool<Request> {
         }
 
         try {
-            var conversation = scenario.createConversationBuilder(null, null).start();
+            var conversation = scenario.createConversationBuilder(null, context).start();
             conversation.addMessage(Type.USER, request.question);
             return conversation.respond(operation);
         } catch (ConversationException exception) {

@@ -39,23 +39,23 @@ public class ExtoleClientTimelineTool implements Tool<ExtoleClientTimelineReques
     }
 
     @Override
-    public Object execute(ExtoleClientTimelineRequest request, ExtoleSessionContext context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSessionContext> getContextClass() {
+        return ExtoleSessionContext.class;
+    }
+
+    @Override
+    public Object execute(ExtoleClientTimelineRequest request, ExtoleSessionContext context, OperationLogger operation)
+            throws ToolException {
         var webClient = this.extoleWebClientFactory.getWebClient(context.getAccessToken());
 
         JsonNode resultNode = null;
         try {
-            resultNode = webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/v2/timeline-entries")
-                    .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+            resultNode = webClient.get().uri(uriBuilder -> uriBuilder.path("/v2/timeline-entries").build())
+                    .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class).block();
 
-        } catch(WebClientResponseException.Forbidden exception) {
+        } catch (WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extole_token is invalid", exception);
-        } catch(WebClientException exception) {
+        } catch (WebClientException exception) {
             throw new ToolException("Internal tool error", exception);
         }
 
@@ -73,4 +73,3 @@ class ExtoleClientTimelineRequest {
     @JsonProperty(required = false)
     public String tags;
 }
-

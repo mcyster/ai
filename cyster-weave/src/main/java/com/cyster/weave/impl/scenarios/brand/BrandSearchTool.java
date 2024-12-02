@@ -44,6 +44,11 @@ class BrandSearchTool implements Tool<BrandSearchRequest, Void> {
     }
 
     @Override
+    public Class<Void> getContextClass() {
+        return Void.class;
+    }
+
+    @Override
     public Object execute(BrandSearchRequest searchRequest, Void context, OperationLogger operation) {
         var webClient = WebClient.builder().baseUrl("https://api.brandfetch.io/").build();
 
@@ -75,6 +80,7 @@ class BrandSearchTool implements Tool<BrandSearchRequest, Void> {
     static record BrandSearchRequest(
             @JsonPropertyDescription("Brand name or part of brand name to find") @JsonProperty(required = true) String query) {
     }
+
 }
 
 class BrandSearchResult {

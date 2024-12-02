@@ -20,8 +20,8 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
 
     private AiWeaveService aiWeaveService;
     private Optional<Scenario<Void, Void>> scenario = Optional.empty();
-    private SearchTool<Void> searchTool;
-    
+    private SearchTool searchTool;
+
     public ExtoleSupportActivityScenario(AiWeaveService aiWeaveService, ExtoleSupportActivityTool activityTool) {
         this.aiWeaveService = aiWeaveService;
         this.searchTool = activityTool.getActivityTool();
@@ -31,11 +31,12 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
     public String getName() {
         return this.getClass().getSimpleName().replace("Scenario", "");
     }
+
     @Override
     public String getDescription() {
         return DESCRIPTION;
     }
-    
+
     @Override
     public Class<Void> getParameterClass() {
         return Void.class;
@@ -47,69 +48,71 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Void parameters, Void context) {         
+    public ConversationBuilder createConversationBuilder(Void parameters, Void context) {
         return getScenario().createConversationBuilder(parameters, context);
     }
-    
+
     private Scenario<Void, Void> getScenario() {
         if (this.scenario.isEmpty()) {
             String instructionsTemplate = """
-{
-  "instructions": [
-    {
-      "step": "Construct a detailed query string based on the prompt",
-      "description": [
-        "Remove PII, company names, and URLs.",
-        "Remove duplicate words and common stop words.",
-        "Remove special characters and convert all text to lowercase.",
-        "Limit the query to 20 words or fewer."
-      ]
-    },
-    {
-      "step": "Search using the detailed query."
-      "description": [
-        "Look for an approximate match, choose the first result."
-      ]
-    },
-    {
-      "step": "Issue multiple detailed queries if no Activity is found.",
-      "description": [
-        "Focus on different keywords and combinations from the original prompt."
-      ]
-    },
-    {
-      "step": "Use synonyms or related industry terms if initial queries yield no results."
-    },
-    {
-      "step": "Shorten the original query to 10 words or fewer and try variations.",
-      "condition": "If still no Activity is found."
-    },
-    {
-      "step": "Evaluate multiple search results for closest context before defaulting to '{{defaultActivity}}'.",
-      "condition": "Only use as '{{defaultActivity}}' as a last resort."
-    }
-    {
-      "step": "Provide your answer in JSON format",
-      "schema": {{{schema}}},
-      "description": [
-        "Its important to always return a json response."
-      ]
-    }
-  ]
-}
-""";
-    
+                    {
+                      "instructions": [
+                        {
+                          "step": "Construct a detailed query string based on the prompt",
+                          "description": [
+                            "Remove PII, company names, and URLs.",
+                            "Remove duplicate words and common stop words.",
+                            "Remove special characters and convert all text to lowercase.",
+                            "Limit the query to 20 words or fewer."
+                          ]
+                        },
+                        {
+                          "step": "Search using the detailed query."
+                          "description": [
+                            "Look for an approximate match, choose the first result."
+                          ]
+                        },
+                        {
+                          "step": "Issue multiple detailed queries if no Activity is found.",
+                          "description": [
+                            "Focus on different keywords and combinations from the original prompt."
+                          ]
+                        },
+                        {
+                          "step": "Use synonyms or related industry terms if initial queries yield no results."
+                        },
+                        {
+                          "step": "Shorten the original query to 10 words or fewer and try variations.",
+                          "condition": "If still no Activity is found."
+                        },
+                        {
+                          "step": "Evaluate multiple search results for closest context before defaulting to '{{defaultActivity}}'.",
+                          "condition": "Only use as '{{defaultActivity}}' as a last resort."
+                        }
+                        {
+                          "step": "Provide your answer in JSON format",
+                          "schema": {{{schema}}},
+                          "description": [
+                            "Its important to always return a json response."
+                          ]
+                        }
+                      ]
+                    }
+                    """;
+
             var schema = aiWeaveService.getJsonSchema(Response.class);
 
-            Map<String, String> parameters = new HashMap<>() {{
-                put("schema", schema);
-                put("defaultActivity", DEFAULT_ACTIVITY);
-            }};
-            
+            Map<String, String> parameters = new HashMap<>() {
+                {
+                    put("schema", schema);
+                    put("defaultActivity", DEFAULT_ACTIVITY);
+                }
+            };
+
             String instructions = new StringTemplate(instructionsTemplate).render(parameters);
 
             System.out.println("!!!!!!!! extole suppport activity instructions: " + instructions);
-            
+
             AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
             builder.setInstructions(instructions);
             builder.withTool(searchTool);
@@ -118,10 +121,8 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
         }
         return this.scenario.get();
     }
-    
-    public record Response (
-        @JsonProperty(required = true) String activityName,
-        @JsonProperty(required = false) String query,
-        @JsonProperty(required = false) String[] searchResults 
-    ) {}
+
+    public record Response(@JsonProperty(required = true) String activityName,
+            @JsonProperty(required = false) String query, @JsonProperty(required = false) String[] searchResults) {
+    }
 }

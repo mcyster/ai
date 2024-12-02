@@ -3,6 +3,7 @@ package com.extole.zuper.weave.scenarios.runbooks;
 import org.springframework.stereotype.Component;
 
 import com.cyster.template.StringTemplate;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.ExtoleSupportHelpScenario;
 
 @Component
@@ -11,10 +12,10 @@ public class ExtoleRunbookDefault implements RunbookScenario {
     private static String KEYWORDS = "nothing";
 
     private static String INSTRUCTIONS_TEMPLATE = """
-Load the support ticket {{ticket_number}}
+            Load the support ticket {{ticket_number}}
 
-Note the ticket number, and note its classified as "other".
-""";
+            Note the ticket number, and note its classified as "other".
+            """;
 
     private ExtoleSupportHelpScenario helpScenario;
 
@@ -42,15 +43,15 @@ Note the ticket number, and note its classified as "other".
     }
 
     @Override
-    public Class<Void> getContextClass() {
-        return Void.class;
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters, Void context) {        
+    public ConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters,
+            ExtoleSuperContext context) {
         String instructions = new StringTemplate(INSTRUCTIONS_TEMPLATE).render(parameters);
 
-        return this.helpScenario.createConversationBuilder(null, null).setOverrideInstructions(instructions);
+        return this.helpScenario.createConversationBuilder(null, context).setOverrideInstructions(instructions);
     }
 }
-

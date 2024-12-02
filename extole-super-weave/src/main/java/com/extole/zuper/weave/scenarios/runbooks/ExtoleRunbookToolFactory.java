@@ -13,12 +13,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Component
 public class ExtoleRunbookToolFactory {
 
-    private SearchTool<Void> searchTool;
+    private SearchTool searchTool;
 
-    public ExtoleRunbookToolFactory(AiWeaveService aiWeaveService, 
-            List<RunbookScenario> runbookScenarios, 
-            ExtoleRunbookScenarioLoader runbookScenarioLoader,
-            ExtoleRunbookDefault defaultRunbook) {
+    public ExtoleRunbookToolFactory(AiWeaveService aiWeaveService, List<RunbookScenario> runbookScenarios,
+            ExtoleRunbookScenarioLoader runbookScenarioLoader, ExtoleRunbookDefault defaultRunbook) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         var documentStoreBuilder = aiWeaveService.simpleDocumentStoreBuilder();
@@ -27,7 +25,7 @@ public class ExtoleRunbookToolFactory {
         scenarios.addAll(runbookScenarios);
         scenarios.addAll(runbookScenarioLoader.getRunbookScenarios());
 
-        for(var runbook: scenarios) {
+        for (var runbook : scenarios) {
             var book = new Runbook(runbook.getName(), runbook.getDescription(), runbook.getKeywords());
             String json;
             try {
@@ -38,16 +36,14 @@ public class ExtoleRunbookToolFactory {
 
             documentStoreBuilder.addDocument(runbook.getName() + ".json", json);
         }
-        
-        SearchTool.Builder<Void> builder = aiWeaveService.searchToolBuilder();
-        builder
-            .withName("runbooks")
-            .withDocumentStore(documentStoreBuilder.create());
+
+        SearchTool.Builder builder = aiWeaveService.searchToolBuilder();
+        builder.withName("runbooks").withDocumentStore(documentStoreBuilder.create());
 
         this.searchTool = builder.create();
     }
 
-    public SearchTool<Void> getRunbookSearchTool() {
+    public SearchTool getRunbookSearchTool() {
         return this.searchTool;
     }
 
@@ -76,6 +72,3 @@ public class ExtoleRunbookToolFactory {
     }
 
 }
-
-
-

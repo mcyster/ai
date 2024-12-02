@@ -2,6 +2,8 @@ package com.extole.zuper.weave.scenarios.runbooks;
 
 import java.util.Objects;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
@@ -11,14 +13,18 @@ import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorScenario.Parameters;
 
 @Component
-public class ExtoleSupportTicketRunbookSelectorTool implements Tool<Parameters, Void> {
+public class ExtoleSupportTicketRunbookSelectorTool implements Tool<Parameters, ExtoleSuperContext> {
+    private static final Logger logger = LoggerFactory.getLogger(ExtoleSupportTicketRunbookSelectorTool.class);
+
     private AiWeaveService aiWeaveService;
     private ExtoleSupportTicketRunbookSelectorScenario runbookSelectorScenario;
 
-    ExtoleSupportTicketRunbookSelectorTool(AiWeaveService aiWeaveService, ExtoleSupportTicketRunbookSelectorScenario runbookSelectorScenario) {
+    ExtoleSupportTicketRunbookSelectorTool(AiWeaveService aiWeaveService,
+            ExtoleSupportTicketRunbookSelectorScenario runbookSelectorScenario) {
         this.aiWeaveService = aiWeaveService;
         this.runbookSelectorScenario = runbookSelectorScenario;
     }
@@ -39,23 +45,32 @@ public class ExtoleSupportTicketRunbookSelectorTool implements Tool<Parameters, 
     }
 
     @Override
-    public Object execute(Parameters request, Void context, OperationLogger operation) throws ToolException {
-        Conversation conversation = runbookSelectorScenario.createConversationBuilder(request, null)
-            .addMessage("Ticket Number: " + request.ticketNumber())
-            .start();
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Parameters request, ExtoleSuperContext context, OperationLogger operation)
+            throws ToolException {
+        Conversation conversation = runbookSelectorScenario.createConversationBuilder(request, context)
+                .addMessage("Ticket Number: " + request.ticketNumber()).start();
 
         Message message;
         try {
             message = conversation.respond(operation);
         } catch (ConversationException exception) {
-           throw new ToolException("Find Runbook failed to start conversation", exception);
+            throw new ToolException("Find Runbook failed to start conversation", exception);
         }
 
-        return aiWeaveService.extractResponse(com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorScenario.Response.class, message.getContent());
+        logger.info("Runbook Selection for context: " + request + " in context " + context + " got: "
+                + message.getContent());
+
+        return aiWeaveService.extractResponse(
+                com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorScenario.Response.class,
+                message.getContent());
     }
 
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass(), runbookSelectorScenario.hash());
     }
 }
-

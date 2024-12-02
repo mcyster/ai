@@ -16,7 +16,7 @@ import com.cyster.ai.weave.service.CodeInterpreterTool.Asset;
 import io.github.stefanbratanov.jvm.openai.FilesClient;
 import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
 
-public class CodeInterpreterToolBuilderImpl<CONTEXT> implements CodeInterpreterTool.Builder<CONTEXT> {
+public class CodeInterpreterToolBuilderImpl implements CodeInterpreterTool.Builder {
     private OpenAiService openAiService;
     private List<Asset> assets = new ArrayList<>();
     private String name;
@@ -26,25 +26,25 @@ public class CodeInterpreterToolBuilderImpl<CONTEXT> implements CodeInterpreterT
     }
 
     @Override
-    public CodeInterpreterToolBuilderImpl<CONTEXT> addAsset(String name, String contents) {
+    public CodeInterpreterToolBuilderImpl addAsset(String name, String contents) {
         this.assets.add(new StringAsset(name, contents));
         return this;
     }
 
     @Override
-    public CodeInterpreterToolBuilderImpl<CONTEXT> addAsset(Asset asset) {
+    public CodeInterpreterToolBuilderImpl addAsset(Asset asset) {
         this.assets.add(asset);
         return this;
     }
 
     @Override
-    public CodeInterpreterTool<CONTEXT> create() {
+    public CodeInterpreterTool create() {
         List<String> files = new ArrayList<String>();
 
         try {
             var directory = Files.createTempDirectory("store-" + safeName(this.name));
 
-            for(var document: this.assets) {
+            for (var document : this.assets) {
                 var name = document.getName();
                 var extension = ".txt";
 
@@ -78,7 +78,7 @@ public class CodeInterpreterToolBuilderImpl<CONTEXT> implements CodeInterpreterT
             throw new RuntimeException(e);
         }
 
-        return new CodeInterpreterToolImpl<CONTEXT>(files);
+        return new CodeInterpreterToolImpl(files);
     }
 
     private static String safeName(String name) {

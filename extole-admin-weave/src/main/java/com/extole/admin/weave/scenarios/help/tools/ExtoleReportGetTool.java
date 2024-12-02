@@ -45,6 +45,11 @@ public class ExtoleReportGetTool implements Tool<Request, ExtoleSessionContext> 
     }
 
     @Override
+    public Class<ExtoleSessionContext> getContextClass() {
+        return ExtoleSessionContext.class;
+    }
+
+    @Override
     public Object execute(Request request, ExtoleSessionContext context, OperationLogger operation)
             throws ToolException {
         JsonNode result;

@@ -1,6 +1,7 @@
 package com.extole.zuper.weave.scenarios.runbooks.configurable;
 
 import com.cyster.template.StringTemplate;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.runbooks.RunbookScenario;
 import com.extole.zuper.weave.scenarios.runbooks.RunbookScenarioParameters;
 import com.extole.zuper.weave.scenarios.support.ExtoleSupportHelpScenario;
@@ -12,10 +13,11 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
     private String description;
     private String keywords;
     private String instructionsTemplate;
-    
+
     private ExtoleSupportHelpScenario helpScenario;
 
-    ExtoleConfigurableRunbookScenario(String name, Configuration configuration, ExtoleSupportHelpScenario helpScenario) {
+    ExtoleConfigurableRunbookScenario(String name, Configuration configuration,
+            ExtoleSupportHelpScenario helpScenario) {
         this.name = name;
         this.description = configuration.getDescription();
         this.keywords = configuration.getKeywords();
@@ -43,28 +45,27 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
     }
 
     @Override
-    public Class<Void> getContextClass() {
-        return Void.class;
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters, Void context) {
+    public ConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters,
+            ExtoleSuperContext context) {
         String instructions = new StringTemplate(instructionsTemplate).render(parameters);
 
         System.out.println("!!!! Runbook: " + this.name + " instructions" + instructions);
 
-        return this.helpScenario.createConversationBuilder(null, null).setOverrideInstructions(instructions);
+        return this.helpScenario.createConversationBuilder(null, context).setOverrideInstructions(instructions);
     }
-    
+
     public static class Configuration {
         private String description;
         private String keywords;
         private String instructions;
 
         @JsonCreator
-        public Configuration(
-                @JsonProperty("description") String description,
-                @JsonProperty("keywords") String keywords,
+        public Configuration(@JsonProperty("description") String description, @JsonProperty("keywords") String keywords,
                 @JsonProperty("instructions") String instructions) {
             setDescription(description);
             setKeywords(keywords);
@@ -105,6 +106,4 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
         }
     }
 
-
 }
-

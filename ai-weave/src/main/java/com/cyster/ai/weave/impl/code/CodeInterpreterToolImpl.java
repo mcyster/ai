@@ -8,7 +8,7 @@ import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.CodeInterpreterTool;
 import com.cyster.ai.weave.service.ToolException;
 
-public class CodeInterpreterToolImpl<CONTEXT> implements CodeInterpreterTool<CONTEXT> {
+public class CodeInterpreterToolImpl implements CodeInterpreterTool {
     public static final String NAME = "code_interpreter";
 
     private List<String> fileIds;
@@ -29,11 +29,16 @@ public class CodeInterpreterToolImpl<CONTEXT> implements CodeInterpreterTool<CON
 
     @Override
     public Class<Void> getParameterClass() {
-        return null;
+        return Void.class;
     }
 
     @Override
-    public Object execute(Void parameters, CONTEXT context, OperationLogger operation) throws ToolException {
+    public Class<Void> getContextClass() {
+        return Void.class;
+    }
+
+    @Override
+    public Object execute(Void parameters, Void context, OperationLogger operation) throws ToolException {
         // Implemented directly by OpenAI
         return Collections.emptyMap();
     }
@@ -41,9 +46,9 @@ public class CodeInterpreterToolImpl<CONTEXT> implements CodeInterpreterTool<CON
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass(), fileIds);
     }
-    
+
     public List<String> getFileIds() {
         return this.fileIds;
     }
-}
 
+}

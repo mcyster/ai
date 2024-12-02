@@ -17,8 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 class ExtoleStepsToolParameters {
     private String actionName;
 
-    public ExtoleStepsToolParameters(
-        @JsonProperty("actionName") String actionName) {
+    public ExtoleStepsToolParameters(@JsonProperty("actionName") String actionName) {
         this.actionName = actionName;
     }
 
@@ -49,8 +48,13 @@ class ExtoleStepsTool implements Tool<ExtoleStepsToolParameters, Void> {
     }
 
     @Override
+    public Class<Void> getContextClass() {
+        return Void.class;
+    }
+
+    @Override
     public Object execute(ExtoleStepsToolParameters parameters, Void context, OperationLogger operation) {
-        return this.getExecutor().apply((ExtoleStepsToolParameters)parameters);
+        return this.getExecutor().apply((ExtoleStepsToolParameters) parameters);
     }
 
     public Function<ExtoleStepsToolParameters, Object> getExecutor() {

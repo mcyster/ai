@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Component
 class WebsiteFilePutTool implements WebsiteDeveloperTool<Request> {
     private static final String CHAT_INCLUDE = "<script src=\"/sites/managed/chat/chat.js\" data-scenario=\"WebDeveloper\" data-href-site-name=\"/([^/]+)/[^/]+$\"></script>";
-    
+
     WebsiteFilePutTool() {
     }
 
@@ -33,6 +33,11 @@ class WebsiteFilePutTool implements WebsiteDeveloperTool<Request> {
     }
 
     @Override
+    public Class<ManagedWebsites> getContextClass() {
+        return ManagedWebsites.class;
+    }
+
+    @Override
     public Object execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
 
         ManagedWebsite website;
@@ -41,26 +46,22 @@ class WebsiteFilePutTool implements WebsiteDeveloperTool<Request> {
         } catch (WebsiteException exception) {
             throw new ToolException("Unable to load website: " + request.websiteId, exception);
         }
-        
+
         if (request.filename() == "index.html" && !request.content().contains(CHAT_INCLUDE)) {
             throw new FatalToolException("Do not remove the script tag: " + CHAT_INCLUDE);
         }
-        
+
         Asset asset = website.site().putAsset(request.filename(), request.content());
 
         return new Response(website.site().getId(), asset.filename(), asset.content());
     }
 
-    static record Request(
-        @JsonProperty(required = true) String websiteId,
-        @JsonProperty(required = true) String filename,
-        @JsonProperty(required = true) String content
-    ) {}
+    static record Request(@JsonProperty(required = true) String websiteId,
+            @JsonProperty(required = true) String filename, @JsonProperty(required = true) String content) {
+    }
 
-    static record Response(
-        @JsonProperty(required = true) String websiteId,
-        @JsonProperty(required = true) String filename,
-        @JsonProperty(required = true) String content
-    ) {}
+    static record Response(@JsonProperty(required = true) String websiteId,
+            @JsonProperty(required = true) String filename, @JsonProperty(required = true) String content) {
+    }
 
 }

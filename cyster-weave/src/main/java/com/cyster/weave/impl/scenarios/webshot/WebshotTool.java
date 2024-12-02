@@ -36,6 +36,11 @@ class WebshotTool implements Tool<Request, Void> {
     }
 
     @Override
+    public Class<Void> getContextClass() {
+        return Void.class;
+    }
+
+    @Override
     public Object execute(Request request, Void context, OperationLogger operation) {
         AssetId assetId = this.webshot.getImage(request.url);
         return new Response(assetId.getId());
@@ -47,4 +52,5 @@ class WebshotTool implements Tool<Request, Void> {
     static record Request(
             @JsonPropertyDescription("Url to web page convert to an image") @JsonProperty(required = true) String url) {
     }
+
 }

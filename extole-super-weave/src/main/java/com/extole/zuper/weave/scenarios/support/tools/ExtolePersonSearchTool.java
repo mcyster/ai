@@ -1,7 +1,7 @@
 package com.extole.zuper.weave.scenarios.support.tools;
 
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -12,9 +12,10 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.client.web.ExtoleWebClientException;
-import com.extole.zuper.weave.scenarios.support.tools.ExtolePersonSearchTool.Request;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
+import com.extole.client.web.ExtoleWebClientException;
+import com.extole.zuper.weave.ExtoleSuperContext;
+import com.extole.zuper.weave.scenarios.support.tools.ExtolePersonSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -46,7 +47,12 @@ class ExtolePersonSearchTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
         if (request.person_id != null) {
             return executeGet(request.client_id, request.person_id);
         } else {
@@ -59,14 +65,9 @@ class ExtolePersonSearchTool implements ExtoleSupportTool<Request> {
 
         try {
             result = this.extoleWebClientFactory.getWebClientById(clientId).get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/v4/runtime-persons/" + personId)
-                    .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
-        } catch(ExtoleWebClientException exception) { 
+                    .uri(uriBuilder -> uriBuilder.path("/v4/runtime-persons/" + personId).build())
+                    .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class).block();
+        } catch (ExtoleWebClientException exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientResponseException.Forbidden exception) {
             // Should be a 404/400 not a 403
@@ -105,8 +106,7 @@ class ExtolePersonSearchTool implements ExtoleSupportTool<Request> {
                 queryParameters.add("partner_user_id", request.partner_user_id);
             }
             if (request.partner_id != null) {
-                queryParameters.add("partner_id", request.partner_id.name + ":" +
-                    request.partner_id.id);
+                queryParameters.add("partner_id", request.partner_id.name + ":" + request.partner_id.id);
             }
         }
         if (queryParameters.isEmpty()) {
@@ -115,14 +115,8 @@ class ExtolePersonSearchTool implements ExtoleSupportTool<Request> {
 
         try {
             result = this.extoleWebClientFactory.getWebClientById(request.client_id).get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/v4/runtime-persons/")
-                    .queryParams(queryParameters)
-                    .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                    .uri(uriBuilder -> uriBuilder.path("/v4/runtime-persons/").queryParams(queryParameters).build())
+                    .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class).block();
         } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientException exception) {
@@ -146,7 +140,7 @@ class ExtolePersonSearchTool implements ExtoleSupportTool<Request> {
         @JsonProperty(required = true)
         String id;
     }
-    
+
     static class Request {
         @JsonPropertyDescription("The 1 to 12 digit id for a client.")
         @JsonProperty(required = true)

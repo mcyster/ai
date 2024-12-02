@@ -28,7 +28,7 @@ import io.github.stefanbratanov.jvm.openai.VectorStoreFileBatchesClient;
 import io.github.stefanbratanov.jvm.openai.VectorStoresClient;
 import io.github.stefanbratanov.jvm.openai.VectorStoresClient.PaginatedVectorStores;
 
-public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEXT> {
+public class SearchToolBuilderImpl implements SearchTool.Builder {
     private final static String METADATA_HASH = "data_hash";
 
     private OpenAiService openAiService;
@@ -40,19 +40,19 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
     }
 
     @Override
-    public SearchToolBuilderImpl<CONTEXT> withName(String name) {
+    public SearchToolBuilderImpl withName(String name) {
         this.name = name;
         return this;
     }
 
     @Override
-    public SearchToolBuilderImpl<CONTEXT> withDocumentStore(DocumentStore documentStore) {
+    public SearchToolBuilderImpl withDocumentStore(DocumentStore documentStore) {
         this.documentStore = documentStore;
         return this;
     }
 
     @Override
-    public SearchTool<CONTEXT> create() {
+    public SearchTool create() {
         Optional<VectorStore> store = findVectorStore();
         if (store.isEmpty()) {
             return createStore();
@@ -61,7 +61,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
         return useStore(store.get());
     }
 
-    public SearchTool<CONTEXT> createStore() {
+    public SearchTool createStore() {
         List<String> files = new ArrayList<String>();
 
         try {
@@ -138,11 +138,11 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
             }
         }
 
-        return new SearchToolImpl<CONTEXT>(this.openAiService, vectorStore);
+        return new SearchToolImpl(this.openAiService, vectorStore);
     }
 
-    public SearchTool<CONTEXT> useStore(VectorStore vectorStore) {
-        return new SearchToolImpl<CONTEXT>(this.openAiService, vectorStore);
+    public SearchTool useStore(VectorStore vectorStore) {
+        return new SearchToolImpl(this.openAiService, vectorStore);
     }
 
     private Optional<VectorStore> findVectorStore() {

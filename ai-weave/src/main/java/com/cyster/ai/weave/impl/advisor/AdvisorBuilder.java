@@ -4,13 +4,13 @@ import java.nio.file.Path;
 
 import com.cyster.ai.weave.service.Tool;
 
-public interface AdvisorBuilder<C> {
+public interface AdvisorBuilder<SCENARIO_CONTEXT> {
 
-    AdvisorBuilder<C> setInstructions(String instruction);
+    AdvisorBuilder<SCENARIO_CONTEXT> setInstructions(String instruction);
 
-    <T> AdvisorBuilder<C> withTool(Tool<T, C> tool);
+    <TOOL_PARAMETERS, TOOL_CONTEXT> AdvisorBuilder<SCENARIO_CONTEXT> withTool(Tool<TOOL_PARAMETERS, TOOL_CONTEXT> tool);
 
-    AdvisorBuilder<C> withFile(Path path);
+    AdvisorBuilder<SCENARIO_CONTEXT> withFile(Path path);
 
-    Advisor<C> getOrCreate();
+    Advisor<SCENARIO_CONTEXT> getOrCreate();
 }

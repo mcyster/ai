@@ -7,6 +7,7 @@ import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.zuper.weave.scenarios.support.tools.reports.ExtoleClientEventGetByNotificationIdTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,9 +20,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 //@Component
 class ExtoleClientEventGetByNotificationIdTool implements ExtoleSupportTool<Request> {
-    Tool<Request, Void> tool;
+    Tool<Request, ExtoleSuperContext> tool;
 
-    ExtoleClientEventGetByNotificationIdTool(ExtoleTrustedWebClientFactory extoleWebClientFactory, AiWeaveService aiWeaveService) {
+    ExtoleClientEventGetByNotificationIdTool(ExtoleTrustedWebClientFactory extoleWebClientFactory,
+            AiWeaveService aiWeaveService) {
         this.tool = aiWeaveService.cachingTool(new UncachedClientEventGetTool(extoleWebClientFactory));
     }
 
@@ -41,14 +43,20 @@ class ExtoleClientEventGetByNotificationIdTool implements ExtoleSupportTool<Requ
     }
 
     @Override
-    public Object execute(Request parameters, Void context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Request parameters, ExtoleSuperContext context, OperationLogger operation)
+            throws ToolException {
         return this.tool.execute(parameters, context, operation);
     }
 
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass(), tool.hash());
     }
-    
+
     static class Request {
         @JsonProperty(required = true)
         public String clientId;
@@ -66,8 +74,7 @@ class ExtoleClientEventGetByNotificationIdTool implements ExtoleSupportTool<Requ
             }
 
             Request value = (Request) object;
-            return Objects.equals(clientId, value.clientId)
-                && Objects.equals(notificationId, value.notificationId);
+            return Objects.equals(clientId, value.clientId) && Objects.equals(notificationId, value.notificationId);
         }
 
         @Override
@@ -82,7 +89,7 @@ class ExtoleClientEventGetByNotificationIdTool implements ExtoleSupportTool<Requ
                 return mapper.writeValueAsString(this);
             } catch (JsonProcessingException exception) {
                 throw new RuntimeException("Error converting object of class " + this.getClass().getName() + " JSON",
-                    exception);
+                        exception);
             }
         }
     }
@@ -113,14 +120,19 @@ class UncachedClientEventGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
         if (request.notificationId == null || request.notificationId.isBlank()) {
             throw new ToolException("notificationId is required");
         }
 
         if (!request.notificationId.matches(NOTIFICATION_ID_PATTERN)) {
-            throw new ToolException("notificationId " + request.notificationId +
-                    " must be 18 to 20 characters and alphanumeric (lowercase alpha only)");
+            throw new ToolException("notificationId " + request.notificationId
+                    + " must be 18 to 20 characters and alphanumeric (lowercase alpha only)");
         }
 
         return getClientEventByNotificationIdViaReport(request);
@@ -132,11 +144,9 @@ class UncachedClientEventGetTool implements ExtoleSupportTool<Request> {
             parameters.put("event_id", request.notificationId);
         }
 
-        var report = new ExtoleReportBuilder(this.extoleWebClientFactory)
-            .withClientId(request.clientId)
-            .withName("notification_by_event_id")
-            .withDisplayName("Notification By Event ID - " + request.notificationId)
-            .withParameters(parameters);
+        var report = new ExtoleReportBuilder(this.extoleWebClientFactory).withClientId(request.clientId)
+                .withName("notification_by_event_id")
+                .withDisplayName("Notification By Event ID - " + request.notificationId).withParameters(parameters);
 
         ObjectNode response = report.build();
         if (response == null || response.path("data").isEmpty()) {
@@ -164,6 +174,5 @@ class UncachedClientEventGetTool implements ExtoleSupportTool<Request> {
 
         return notificationNode.path("client_event");
     }
-
 
 }

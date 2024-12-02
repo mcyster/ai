@@ -39,22 +39,22 @@ public class ExtoleMyAuthorizationsTool implements Tool<MyAuthorizationsRequest,
     }
 
     @Override
-    public Object execute(MyAuthorizationsRequest request, ExtoleSessionContext context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSessionContext> getContextClass() {
+        return ExtoleSessionContext.class;
+    }
+
+    @Override
+    public Object execute(MyAuthorizationsRequest request, ExtoleSessionContext context, OperationLogger operation)
+            throws ToolException {
         var webClient = this.extoleWebClientFactory.getWebClient(context.getAccessToken());
 
         JsonNode resultNode;
         try {
-            resultNode = webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/v4/tokens")
-                    .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
-        } catch(WebClientResponseException.Forbidden exception) {
+            resultNode = webClient.get().uri(uriBuilder -> uriBuilder.path("/v4/tokens").build())
+                    .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class).block();
+        } catch (WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extole_token is invalid", exception);
-        } catch(WebClientException exception) {
+        } catch (WebClientException exception) {
             throw new ToolException("Internal tool error", exception);
         }
 

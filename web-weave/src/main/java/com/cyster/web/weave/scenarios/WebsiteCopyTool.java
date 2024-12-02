@@ -4,13 +4,13 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
 import com.cyster.web.weave.scenarios.WebsiteCopyTool.Request;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
 public class WebsiteCopyTool implements WebsiteDeveloperTool<Request> {
-    
+
     WebsiteCopyTool() {
     }
 
@@ -30,6 +30,11 @@ public class WebsiteCopyTool implements WebsiteDeveloperTool<Request> {
     }
 
     @Override
+    public Class<ManagedWebsites> getContextClass() {
+        return ManagedWebsites.class;
+    }
+
+    @Override
     public Object execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
 
         ManagedWebsite newWebsite;
@@ -39,18 +44,14 @@ public class WebsiteCopyTool implements WebsiteDeveloperTool<Request> {
         } catch (WebsiteException exception) {
             throw new ToolException("Unable to copy website: " + request.websiteId, exception);
         }
-        
+
         return newWebsite;
     }
 
-    static record Request(
-        @JsonProperty(required = true) String websiteId
-    ) {}
+    static record Request(@JsonProperty(required = true) String websiteId) {
+    }
 
-    static record Response(
-        @JsonProperty(required = true) String newWebsiteId
-    ) {}
-
+    static record Response(@JsonProperty(required = true) String newWebsiteId) {
+    }
 
 }
-

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.zuper.weave.scenarios.support.tools.reports.ExtoleTopPromptionSourcesReportTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -40,7 +41,12 @@ class ExtoleTopPromptionSourcesReportTool implements ExtoleSupportTool<Request> 
     }
 
     @Override
-    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
 
         ObjectNode parameters = JsonNodeFactory.instance.objectNode();
         {
@@ -66,13 +72,9 @@ class ExtoleTopPromptionSourcesReportTool implements ExtoleSupportTool<Request> 
 
         }
 
-        var reportBuilder = new ExtoleReportBuilder(this.extoleWebClientFactory)
-                .withClientId(request.clientId)
-                .withLimit(12)
-                .withName("TOP_PROMOTION_SOURCES_V2")
-                .withDisplayName("Top Promotion Sources - AI")
-                .withParameters(parameters)
-                .withWaitForResult(false);
+        var reportBuilder = new ExtoleReportBuilder(this.extoleWebClientFactory).withClientId(request.clientId)
+                .withLimit(12).withName("TOP_PROMOTION_SOURCES_V2").withDisplayName("Top Promotion Sources - AI")
+                .withParameters(parameters).withWaitForResult(false);
 
         return reportBuilder.build();
     }
@@ -99,9 +101,8 @@ class ExtoleTopPromptionSourcesReportTool implements ExtoleSupportTool<Request> 
             }
 
             Request value = (Request) object;
-            return Objects.equals(clientId, value.clientId) &&
-                   Objects.equals(timeRange, value.timeRange) &&
-                   Objects.equals(period, value.period);
+            return Objects.equals(clientId, value.clientId) && Objects.equals(timeRange, value.timeRange)
+                    && Objects.equals(period, value.period);
 
         }
 
@@ -116,9 +117,9 @@ class ExtoleTopPromptionSourcesReportTool implements ExtoleSupportTool<Request> 
             try {
                 return mapper.writeValueAsString(this);
             } catch (JsonProcessingException exception) {
-                throw new RuntimeException("Error converting object of class " + this.getClass().getName() + " JSON", exception);
+                throw new RuntimeException("Error converting object of class " + this.getClass().getName() + " JSON",
+                        exception);
             }
         }
     }
 }
-

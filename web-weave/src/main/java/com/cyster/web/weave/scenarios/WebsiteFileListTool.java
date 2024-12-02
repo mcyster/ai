@@ -33,6 +33,11 @@ class WebsiteFileListTool implements WebsiteDeveloperTool<Request> {
     }
 
     @Override
+    public Class<ManagedWebsites> getContextClass() {
+        return ManagedWebsites.class;
+    }
+
+    @Override
     public Object execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
         ManagedWebsite website;
         try {
@@ -43,18 +48,12 @@ class WebsiteFileListTool implements WebsiteDeveloperTool<Request> {
         return new Response(website.site().getId(), website.site().getAssets());
     }
 
-    static record Request(
-        @JsonProperty(required = false)
-        String websiteId,
-        
-        @JsonProperty(required = false)
-        @JsonPropertyDescription("Filename glob pattern, defaults to *")
-        String filenamePattern
-    ) {}
+    static record Request(@JsonProperty(required = false) String websiteId,
 
-    static record Response(
-        String websiteId,
-        List<String> filenames
-    ) {}
+            @JsonProperty(required = false) @JsonPropertyDescription("Filename glob pattern, defaults to *") String filenamePattern) {
+    }
+
+    static record Response(String websiteId, List<String> filenames) {
+    }
 
 }

@@ -24,9 +24,8 @@ class ExtolePersonStepsToolParameters {
     private String personId;
     private String stepName;
 
-    public ExtolePersonStepsToolParameters(
-        @JsonProperty("personId") String personId,
-        @JsonProperty("stepName") String stepName) {
+    public ExtolePersonStepsToolParameters(@JsonProperty("personId") String personId,
+            @JsonProperty("stepName") String stepName) {
         this.personId = personId;
         this.stepName = stepName;
 
@@ -68,8 +67,13 @@ class ExtolePersonStepsTool implements Tool<ExtolePersonStepsToolParameters, Voi
     }
 
     @Override
+    public Class<Void> getContextClass() {
+        return Void.class;
+    }
+
+    @Override
     public Object execute(ExtolePersonStepsToolParameters parameters, Void context, OperationLogger operation) {
-        return this.getExecutor().apply((ExtolePersonStepsToolParameters)parameters);
+        return this.getExecutor().apply((ExtolePersonStepsToolParameters) parameters);
     }
 
     public Function<ExtolePersonStepsToolParameters, Object> getExecutor() {
@@ -78,7 +82,7 @@ class ExtolePersonStepsTool implements Tool<ExtolePersonStepsToolParameters, Voi
 
     private JsonNode loadSteps(ExtolePersonStepsToolParameters parameters) {
         var webClient = this.webClientBuilder.baseUrl("https://api.extole.io/v4/runtime-persons/{personId}/steps")
-            .build();
+                .build();
 
         if (accessToken.isEmpty()) {
             return toJsonNode("{ \"error\": \"access_token_required\" }");
@@ -96,14 +100,9 @@ class ExtolePersonStepsTool implements Tool<ExtolePersonStepsToolParameters, Voi
 
         JsonNode jsonNode;
         try {
-            jsonNode = webClient.get().uri(uriBuilder -> uriBuilder
-                .queryParams(queryParameters)
-                .build(pathParameters))
-                .header("Authorization", "Bearer " + this.accessToken.get())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+            jsonNode = webClient.get().uri(uriBuilder -> uriBuilder.queryParams(queryParameters).build(pathParameters))
+                    .header("Authorization", "Bearer " + this.accessToken.get()).accept(MediaType.APPLICATION_JSON)
+                    .retrieve().bodyToMono(JsonNode.class).block();
         } catch (WebClientResponseException exception) {
             if (exception.getStatusCode().value() == 403) {
                 return toJsonNode("{ \"error\": \"access_denied\" }");

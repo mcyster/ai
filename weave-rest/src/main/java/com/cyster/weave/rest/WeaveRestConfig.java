@@ -10,6 +10,7 @@ import org.springframework.util.StringUtils;
 
 import com.cyster.ai.weave.impl.AiWeaveServiceImpl;
 import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.ToolContextFactory;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
@@ -21,20 +22,19 @@ public class WeaveRestConfig {
     }
 
     @Bean
-    public AiWeaveService getAiWeaveService(@Value("${OPENAI_API_KEY}") String openAiApiKey) {
+    public AiWeaveService getAiWeaveService(@Value("${OPENAI_API_KEY}") String openAiApiKey,
+            ToolContextFactory toolContextFactory) {
         if (!StringUtils.hasText(openAiApiKey)) {
             throw new IllegalArgumentException("OPENAI_API_KEY not defined");
         }
 
-        return new AiWeaveServiceImpl(openAiApiKey);
+        return new AiWeaveServiceImpl(openAiApiKey, toolContextFactory);
     }
 
     @Bean
-    public ScenarioSet getScenarioService(AiWeaveService aiWeaveService, List<ScenarioLoader> scenarioLoaders, List<Scenario<?,?>> scenarios) {
-        return aiWeaveService.senarioSetBuilder()
-            .addScenarioLoaders(scenarioLoaders)
-            .addScenarios(scenarios)
-            .create();
+    public ScenarioSet getScenarioService(AiWeaveService aiWeaveService, List<ScenarioLoader> scenarioLoaders,
+            List<Scenario<?, ?>> scenarios) {
+        return aiWeaveService.senarioSetBuilder().addScenarioLoaders(scenarioLoaders).addScenarios(scenarios).create();
     }
 
 }

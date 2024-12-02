@@ -13,13 +13,14 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
+import com.extole.zuper.weave.ExtoleSuperContext;
 
 @Component
-public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, Void> {
+public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, ExtoleSuperContext> {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleJavascriptPrehandlerActionScenario.class);
 
     private AiWeaveService aiWeaveService;
-    private Optional<Scenario<Void, Void>> scenario = Optional.empty();
+    private Optional<Scenario<Void, ExtoleSuperContext>> scenario = Optional.empty();
     private ExtoleApiStore extoleStore;
 
     ExtoleJavascriptPrehandlerActionScenario(AiWeaveService aiWeaveService, ExtoleApiStore extoleStore) {
@@ -43,17 +44,17 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
     }
 
     @Override
-    public Class<Void> getContextClass() {
-        return Void.class;
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
     }
 
     @Override
     public com.cyster.ai.weave.service.scenario.Scenario.ConversationBuilder createConversationBuilder(Void parameters,
-            Void context) {
+            ExtoleSuperContext context) {
         return this.getScenario().createConversationBuilder(parameters, context);
     }
 
-    private Scenario<Void, Void> getScenario() {
+    private Scenario<Void, ExtoleSuperContext> getScenario() {
         if (this.scenario.isEmpty()) {
 
             String resourcePath = "/extole/scenario/prehandler_action_context.js";
@@ -108,7 +109,8 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
                     Where possible, link to interfaces and classes mentioned in your response.
                     """;
 
-            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
+            AssistantScenarioBuilder<Void, ExtoleSuperContext> builder = this.aiWeaveService
+                    .getOrCreateAssistantScenario(getName());
 
             builder.setInstructions(instructions);
 

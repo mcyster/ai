@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.zuper.weave.scenarios.support.tools.reports.ExtoleClientEventSearchTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -24,7 +25,8 @@ class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
     private ExtoleTrustedWebClientFactory extoleWebClientFactory;
     private ExtoleNotificationGetTool extoleNotificationGetTool;
 
-    ExtoleClientEventSearchTool(ExtoleTrustedWebClientFactory extoleWebClientFactory, ExtoleNotificationGetTool extoleNotificationGetTool) {
+    ExtoleClientEventSearchTool(ExtoleTrustedWebClientFactory extoleWebClientFactory,
+            ExtoleNotificationGetTool extoleNotificationGetTool) {
         this.extoleWebClientFactory = extoleWebClientFactory;
         this.extoleNotificationGetTool = extoleNotificationGetTool;
     }
@@ -45,7 +47,12 @@ class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
         var tags = "";
         if (request.tags != null) {
             tags = request.tags;
@@ -53,8 +60,8 @@ class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
 
         if (request.likeNotificationId != null) {
             if (!request.likeNotificationId.matches(NOTIFICATION_ID_PATTERN)) {
-                throw new ToolException("likeNotificationId " + request.likeNotificationId +
-                        " must be 18 to 20 characters and alphanumeric (lowercase alpha only)");
+                throw new ToolException("likeNotificationId " + request.likeNotificationId
+                        + " must be 18 to 20 characters and alphanumeric (lowercase alpha only)");
             }
 
             var notificationRequest = new com.extole.zuper.weave.scenarios.support.tools.reports.ExtoleNotificationGetTool.Request();
@@ -62,13 +69,13 @@ class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
             notificationRequest.userId = request.userId;
             notificationRequest.notificationId = request.likeNotificationId;
 
-            JsonNode notification = (JsonNode)this.extoleNotificationGetTool.execute(notificationRequest, null, operation);
+            JsonNode notification = (JsonNode) this.extoleNotificationGetTool.execute(notificationRequest, null,
+                    operation);
 
             JsonNode tagsNode = new ObjectMapper().createArrayNode();
             if (notification.has("tags")) {
                 tagsNode = notification.path("tags");
-            }
-            else if (notification.has("client_event") && notification.path("client_event").has("tags")) {
+            } else if (notification.has("client_event") && notification.path("client_event").has("tags")) {
                 tagsNode = notification.path("client_event").path("tags");
             }
 
@@ -96,13 +103,9 @@ class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
             }
         }
 
-        var reportBuilder = new ExtoleReportBuilder(this.extoleWebClientFactory)
-            .withClientId(request.clientId)
-            .withLimit(2)
-            .withName("client_events")
-            .withDisplayName("Client Events - tags:" +  tags)
-            .withParameters(parameters)
-            .withWaitForResult(false);
+        var reportBuilder = new ExtoleReportBuilder(this.extoleWebClientFactory).withClientId(request.clientId)
+                .withLimit(2).withName("client_events").withDisplayName("Client Events - tags:" + tags)
+                .withParameters(parameters).withWaitForResult(false);
 
         return reportBuilder.build();
     }
@@ -110,7 +113,7 @@ class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass(), extoleNotificationGetTool.hash());
     }
-    
+
     static class Request {
         @JsonProperty(required = true)
         public String clientId;
@@ -119,11 +122,9 @@ class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
         @JsonProperty(required = false)
         public String likeNotificationId;
 
-
         @JsonPropertyDescription("Query for client events caused by user_id")
         @JsonProperty(required = false)
         public String userId;
-
 
         @JsonPropertyDescription("Query client events by tags, a comma seperated list of tags.")
         @JsonProperty(required = false)
@@ -143,10 +144,8 @@ class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
             }
 
             Request value = (Request) object;
-            return Objects.equals(clientId, value.clientId)
-                && Objects.equals(userId, value.userId)
-                && Objects.equals(eventName, value.eventName)
-                && Objects.equals(tags, value.tags);
+            return Objects.equals(clientId, value.clientId) && Objects.equals(userId, value.userId)
+                    && Objects.equals(eventName, value.eventName) && Objects.equals(tags, value.tags);
         }
 
         @Override
@@ -163,10 +162,8 @@ class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
                 return mapper.writeValueAsString(this);
             } catch (JsonProcessingException exception) {
                 throw new RuntimeException("Error converting object of class " + this.getClass().getName() + " JSON",
-                    exception);
+                        exception);
             }
         }
     }
 }
-
-

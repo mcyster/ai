@@ -8,9 +8,10 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
-import com.extole.client.web.ExtoleWebClientException;
-import com.extole.zuper.weave.scenarios.support.tools.ExtoleClientGetTool.Parameters;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
+import com.extole.client.web.ExtoleWebClientException;
+import com.extole.zuper.weave.ExtoleSuperContext;
+import com.extole.zuper.weave.scenarios.support.tools.ExtoleClientGetTool.Parameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -39,18 +40,19 @@ public class ExtoleClientGetTool implements ExtoleSupportTool<Parameters> {
     }
 
     @Override
-    public Object execute(Parameters parameters, Void context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Parameters parameters, ExtoleSuperContext context, OperationLogger operation)
+            throws ToolException {
         JsonNode result;
 
         try {
             result = this.extoleWebClientFactory.getSuperUserWebClient().get()
-                .uri(uriBuilder -> uriBuilder
-                    .path("/v4/clients/" + parameters.clientId())
-                    .build())
-                .accept(MediaType.APPLICATION_JSON)
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
+                    .uri(uriBuilder -> uriBuilder.path("/v4/clients/" + parameters.clientId()).build())
+                    .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class).block();
         } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientException exception) {
@@ -65,6 +67,6 @@ public class ExtoleClientGetTool implements ExtoleSupportTool<Parameters> {
     }
 
     static record Parameters(
-        @JsonPropertyDescription("The 1 to 12 digit id for a client.") @JsonProperty(required = true) String clientId) {}
+            @JsonPropertyDescription("The 1 to 12 digit id for a client.") @JsonProperty(required = true) String clientId) {
+    }
 }
-

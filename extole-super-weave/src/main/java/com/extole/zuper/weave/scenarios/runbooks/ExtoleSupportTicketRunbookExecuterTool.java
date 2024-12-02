@@ -14,12 +14,13 @@ import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
-public class ExtoleSupportTicketRunbookExecuterTool implements Tool<RunbookScenarioParameters, Void> {
+public class ExtoleSupportTicketRunbookExecuterTool implements Tool<RunbookScenarioParameters, ExtoleSuperContext> {
     Map<String, RunbookScenario> runbookScenarios;
 
     ExtoleSupportTicketRunbookExecuterTool(AiWeaveService aiWeaveService,
@@ -48,7 +49,12 @@ public class ExtoleSupportTicketRunbookExecuterTool implements Tool<RunbookScena
     }
 
     @Override
-    public Object execute(RunbookScenarioParameters request, Void context, OperationLogger operation)
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(RunbookScenarioParameters request, ExtoleSuperContext context, OperationLogger operation)
             throws ToolException {
         var scenario = this.runbookScenarios.get(request.runbookName());
         if (scenario == null) {
@@ -63,7 +69,8 @@ public class ExtoleSupportTicketRunbookExecuterTool implements Tool<RunbookScena
             throw new RuntimeException("Unable to convert to json: " + request.toString());
         }
 
-        Conversation conversation = scenario.createConversationBuilder(request, null).addMessage(requestJson).start();
+        Conversation conversation = scenario.createConversationBuilder(request, context).addMessage(requestJson)
+                .start();
 
         Message message;
         try {
@@ -85,4 +92,5 @@ public class ExtoleSupportTicketRunbookExecuterTool implements Tool<RunbookScena
             @JsonProperty(required = true) String runbookName, @JsonProperty(required = true) String clientId,
             @JsonProperty(required = true) String clientShortName, @JsonProperty(required = true) String message) {
     }
+
 }

@@ -12,29 +12,28 @@ import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.scheduler.impl.SchedulerTool;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportAdvisorToolLoader;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 
 @Component
-public class ExtoleSupportHelpScenario implements Scenario<Void, Void> {
+public class ExtoleSupportHelpScenario implements Scenario<Void, ExtoleSuperContext> {
     private static String DESCRIPTION = "Help with the Extole platform for members of the Extole Support Team";
-    
-    private AiWeaveService aiWeaveService;
-    private Optional<Scenario<Void, Void>> scenario = Optional.empty();
-    private Map<String, Tool<?, Void>> tools = new HashMap<>();
 
-    ExtoleSupportHelpScenario(AiWeaveService aiWeaveService, 
-            List<ExtoleSupportAdvisorToolLoader> toolLoaders, 
-            List<ExtoleSupportTool<?>> tools,
-            SchedulerTool schedulerTool) {
+    private AiWeaveService aiWeaveService;
+    private Optional<Scenario<Void, ExtoleSuperContext>> scenario = Optional.empty();
+    private Map<String, Tool<?, ?>> tools = new HashMap<>();
+
+    ExtoleSupportHelpScenario(AiWeaveService aiWeaveService, List<ExtoleSupportAdvisorToolLoader> toolLoaders,
+            List<ExtoleSupportTool<?>> tools, SchedulerTool schedulerTool) {
         this.aiWeaveService = aiWeaveService;
-        
-        for(var tool: tools) {
+
+        for (var tool : tools) {
             this.tools.put(tool.getName(), tool);
         }
 
-        for(var loader: toolLoaders) {
-            for(var tool: loader.getTools()) {
+        for (var loader : toolLoaders) {
+            for (var tool : loader.getTools()) {
                 this.tools.put(tool.getName(), tool);
             }
         }
@@ -57,34 +56,35 @@ public class ExtoleSupportHelpScenario implements Scenario<Void, Void> {
     }
 
     @Override
-    public Class<Void> getContextClass() {
-        return Void.class;
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Void parameters, Void context) {
+    public ConversationBuilder createConversationBuilder(Void parameters, ExtoleSuperContext context) {
         return this.getScenario().createConversationBuilder(parameters, context);
     }
 
-    private Scenario<Void, Void> getScenario() {
+    private Scenario<Void, ExtoleSuperContext> getScenario() {
         if (this.scenario.isEmpty()) {
             String instructions = """
-You are an senior member of the support team at Extole a SaaS marketing platform.
+                    You are an senior member of the support team at Extole a SaaS marketing platform.
 
-Keep answers brief, and where possible in point form.
-When referring to a client, use the client short_name.
-""";
+                    Keep answers brief, and where possible in point form.
+                    When referring to a client, use the client short_name.
+                    """;
 
-            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
-            
+            AssistantScenarioBuilder<Void, ExtoleSuperContext> builder = this.aiWeaveService
+                    .getOrCreateAssistantScenario(getName());
+
             builder.setInstructions(instructions);
-            for(var tool: tools.values()) {
+            for (var tool : tools.values()) {
                 builder.withTool(tool);
-           }
-            
+            }
+
             this.scenario = Optional.of(builder.getOrCreate());
         }
-        
+
         return this.scenario.get();
     }
 }

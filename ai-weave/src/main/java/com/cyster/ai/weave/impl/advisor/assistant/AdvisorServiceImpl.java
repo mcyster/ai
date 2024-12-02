@@ -2,17 +2,17 @@ package com.cyster.ai.weave.impl.advisor.assistant;
 
 import com.cyster.ai.weave.impl.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.impl.advisor.AdvisorService;
-import com.cyster.ai.weave.impl.advisor.AdvisorServiceFactory;
 import com.cyster.ai.weave.impl.code.CodeInterpreterToolBuilderImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.impl.store.DirectoryDocumentStore;
 import com.cyster.ai.weave.impl.store.SearchToolBuilderImpl;
 import com.cyster.ai.weave.impl.store.SimpleDocumentStore;
 import com.cyster.ai.weave.service.CodeInterpreterTool;
-import com.cyster.ai.weave.service.SearchTool;
-import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.DocumentStore.DirectoryDocumentStoreBuilder;
 import com.cyster.ai.weave.service.DocumentStore.SimpleDocumentStoreBuilder;
+import com.cyster.ai.weave.service.SearchTool;
+import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.ToolContextFactory;
 
 // https://platform.openai.com/docs/assistants/overview
 // https://platform.openai.com/docs/assistants/tools/code-interpreter
@@ -24,14 +24,17 @@ import com.cyster.ai.weave.service.DocumentStore.SimpleDocumentStoreBuilder;
 public class AdvisorServiceImpl implements AdvisorService {
 
     private final OpenAiService openAiService;
+    private final ToolContextFactory toolContextFactory;
 
-    public AdvisorServiceImpl(String openAiKey) {
+    public AdvisorServiceImpl(String openAiKey, ToolContextFactory toolContextFactory) {
         this.openAiService = new OpenAiService(openAiKey);
+        this.toolContextFactory = toolContextFactory;
     }
 
     public <C> AdvisorBuilder<C> getOrCreateAdvisor(String name) {
-        // TODO support returning other advisor implementations: ChatAdvisor, TooledChatAdvisor
-        return new AssistantAdvisorImpl.Builder<C>(this.openAiService, name);
+        // TODO support returning other advisor implementations: ChatAdvisor,
+        // TooledChatAdvisor
+        return new AssistantAdvisorImpl.Builder<C>(this.openAiService, toolContextFactory, name);
     }
 
     public <PARAMETERS, CONTEXT> Tool<PARAMETERS, CONTEXT> cachingTool(Tool<PARAMETERS, CONTEXT> tool) {
@@ -39,23 +42,13 @@ public class AdvisorServiceImpl implements AdvisorService {
     }
 
     @Override
-    public <CONTEXT> SearchTool.Builder<CONTEXT> searchToolBuilder() {
-        return new SearchToolBuilderImpl<CONTEXT>(this.openAiService);
+    public SearchTool.Builder searchToolBuilder() {
+        return new SearchToolBuilderImpl(this.openAiService);
     }
 
     @Override
-    public <CONTEXT> CodeInterpreterTool.Builder<CONTEXT> codeToolBuilder() {
-        return new CodeInterpreterToolBuilderImpl<CONTEXT>(this.openAiService);
-    }
-
-    public static class Factory implements AdvisorServiceFactory {
-        public Factory() {
-        }
-
-        @Override
-        public AdvisorService createAdvisorService(String openAiApiKey) {
-            return new AdvisorServiceImpl(openAiApiKey);
-        }
+    public CodeInterpreterTool.Builder codeToolBuilder() {
+        return new CodeInterpreterToolBuilderImpl(this.openAiService);
     }
 
     @Override
@@ -67,6 +60,5 @@ public class AdvisorServiceImpl implements AdvisorService {
     public DirectoryDocumentStoreBuilder directoryDocumentStoreBuilder() {
         return new DirectoryDocumentStore.Builder();
     }
-
 
 }

@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import com.cyster.ai.weave.impl.advisor.assistant.ToolError.Type;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.ToolContextException;
+import com.cyster.ai.weave.service.ToolContextFactory;
 import com.cyster.ai.weave.service.ToolException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,35 +21,41 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-public class Toolset<C> {
+public class Toolset {
     private static final Logger logger = LoggerFactory.getLogger(Toolset.class);
 
-    private Map<String, Tool<?, C>> tools = new HashMap<String, Tool<?, C>>();
+    private final ToolContextFactory toolContextFactory;
+    private final Map<String, Tool<?, ?>> tools = new HashMap<String, Tool<?, ?>>();
 
-    private Toolset(List<Tool<?, C>> tools) {
+    private Toolset(ToolContextFactory toolContextFactory, List<Tool<?, ?>> tools) {
+        this.toolContextFactory = toolContextFactory;
         for (var tool : tools) {
             this.tools.put(tool.getName(), tool);
         }
     }
 
-    public String execute(String name, String jsonParameters, C context, OperationLogger operation) {
+    public <SCENARIO_CONTEXT> String execute(String name, String jsonParameters, SCENARIO_CONTEXT scenarioContext,
+            OperationLogger operation) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new Jdk8Module());
         mapper.registerModules(new JavaTimeModule());
-        
+
         if (!tools.containsKey(name)) {
             return error("No tool called: " + name, Type.BAD_TOOL_NAME);
         }
-        Tool<?, C> tool = tools.get(name);
+        Tool<?, ?> tool = tools.get(name);
 
         try {
-            var result = executeTool(tool, jsonParameters, context, operation);
+            var result = executeTool(tool, jsonParameters, scenarioContext, operation);
 
             return mapper.writeValueAsString(result);
         } catch (FatalToolException exception) {
             return error(exception.getMessage(), Type.FATAL_TOOL_ERROR, exception);
         } catch (BadParametersToolException exception) {
             return error(exception.getMessage(), Type.BAD_TOOL_PARAMETERS, exception);
+        } catch (ToolContextException exception) {
+            return error(exception.getMessage(), "ToolContextFactory dosn't support context", Type.FATAL_TOOL_ERROR,
+                    exception);
         } catch (ToolException exception) {
             return error(exception.getMessage(), exception.getLocalMessage(), Type.RETRYABLE, exception);
         } catch (JsonProcessingException exception) {
@@ -57,35 +65,46 @@ public class Toolset<C> {
         }
     }
 
-    public <T> Object executeTool(Tool<T, C> tool, String jsonArguments, C context, OperationLogger operation) throws ToolException {
+    public <TOOL_PARAMETERS, TOOL_CONTEXT, SCENARIO_CONTEXT> Object executeTool(
+            Tool<TOOL_PARAMETERS, TOOL_CONTEXT> tool, String jsonArguments, SCENARIO_CONTEXT scenarioContext,
+            OperationLogger operation) throws ToolException {
         ObjectMapper mapper = new ObjectMapper();
 
+        TOOL_CONTEXT toolContext = toolContextFactory.createContext(tool.getContextClass(), scenarioContext);
+
         try {
-            T parameters = mapper.readValue(jsonArguments, tool.getParameterClass());
-            return tool.execute(parameters, context, operation);
+            TOOL_PARAMETERS parameters = mapper.readValue(jsonArguments, tool.getParameterClass());
+            return tool.execute(parameters, toolContext, operation);
         } catch (MismatchedInputException exception) {
-            // Original Message can help describe the problem in enought detail to resolve, often references the exact field.
-            return error("Tool parameters did not match json schema. " + exception.getOriginalMessage(), Type.BAD_TOOL_PARAMETERS, exception);
+            // Original Message can help describe the problem in enough detail to resolve,
+            // often references the exact field.
+            return error("Tool parameters did not match json schema. " + exception.getOriginalMessage(),
+                    Type.BAD_TOOL_PARAMETERS, exception);
         } catch (JsonProcessingException exception) {
             return error("Tool parameters did not match json schema", Type.BAD_TOOL_PARAMETERS, exception);
         }
     }
 
-    public Collection<Tool<?, C>> getTools() {
+    public Collection<Tool<?, ?>> getTools() {
         return this.tools.values();
     }
 
-    public static class Builder<C> {
-        private List<Tool<?, C>> tools = new ArrayList<Tool<?, C>>();
+    public static class Builder {
+        private final ToolContextFactory toolContextFactory;
+        private final List<Tool<?, ?>> tools = new ArrayList<Tool<?, ?>>();
 
-        public <T> Builder<C> addTool(Tool<T, C> tool) {
+        public Builder(ToolContextFactory toolContextFactory) {
+            this.toolContextFactory = toolContextFactory;
+        }
+
+        public <TOOL_PARAMETERS, TOOL_CONTEXT> Builder addTool(Tool<TOOL_PARAMETERS, TOOL_CONTEXT> tool) {
             this.tools.add(tool);
 
             return this;
         }
 
-        public Toolset<C> create() {
-            return new Toolset<C>(tools);
+        public Toolset create() {
+            return new Toolset(toolContextFactory, tools);
         }
     }
 

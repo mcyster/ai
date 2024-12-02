@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
+import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.zuper.weave.scenarios.support.tools.reports.ExtoleSummaryReportTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,7 +42,12 @@ class ExtoleSummaryReportTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, Void context, OperationLogger operation) throws ToolException {
+    public Class<ExtoleSuperContext> getContextClass() {
+        return ExtoleSuperContext.class;
+    }
+
+    @Override
+    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
 
         ObjectNode parameters = JsonNodeFactory.instance.objectNode();
         {
@@ -78,12 +84,8 @@ class ExtoleSummaryReportTool implements ExtoleSupportTool<Request> {
             parameters.put("dimensions", dimensions);
         }
 
-        var reportBuilder = new ExtoleReportBuilder(this.extoleWebClientFactory)
-                .withClientId(request.clientId)
-                .withLimit(12)
-                .withName("summary")
-                .withDisplayName("Summary Simple - AI")
-                .withParameters(parameters);
+        var reportBuilder = new ExtoleReportBuilder(this.extoleWebClientFactory).withClientId(request.clientId)
+                .withLimit(12).withName("summary").withDisplayName("Summary Simple - AI").withParameters(parameters);
 
         return reportBuilder.build();
     }
@@ -114,10 +116,8 @@ class ExtoleSummaryReportTool implements ExtoleSupportTool<Request> {
             }
 
             Request value = (Request) object;
-            return Objects.equals(clientId, value.clientId) &&
-                   Objects.equals(dimensions, value.dimensions) &&
-                   Objects.equals(timeRange, value.timeRange) &&
-                   Objects.equals(period, value.period);
+            return Objects.equals(clientId, value.clientId) && Objects.equals(dimensions, value.dimensions)
+                    && Objects.equals(timeRange, value.timeRange) && Objects.equals(period, value.period);
 
         }
 
@@ -132,9 +132,9 @@ class ExtoleSummaryReportTool implements ExtoleSupportTool<Request> {
             try {
                 return mapper.writeValueAsString(this);
             } catch (JsonProcessingException exception) {
-                throw new RuntimeException("Error converting object of class " + this.getClass().getName() + " JSON", exception);
+                throw new RuntimeException("Error converting object of class " + this.getClass().getName() + " JSON",
+                        exception);
             }
         }
     }
 }
-

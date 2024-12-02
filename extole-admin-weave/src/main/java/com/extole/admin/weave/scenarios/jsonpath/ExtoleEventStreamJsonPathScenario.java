@@ -91,7 +91,7 @@ public class ExtoleEventStreamJsonPathScenario implements Scenario<Parameters, E
                     Its important to load some sample events using the {{eventTool}} tool.
                     """;
 
-            SearchTool<ExtoleSessionContext> searchTool = extoleStore.createStoreTool();
+            SearchTool searchTool = extoleStore.createStoreTool();
 
             Map<String, String> context = new HashMap<>() {
                 {

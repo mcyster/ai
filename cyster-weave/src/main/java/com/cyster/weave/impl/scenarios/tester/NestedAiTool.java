@@ -39,16 +39,20 @@ public class NestedAiTool implements Tool<Parameters, Void> {
     }
 
     @Override
+    public Class<Void> getContextClass() {
+        return Void.class;
+    };
+
+    @Override
     public Object execute(Parameters request, Void context, OperationLogger operation) throws ToolException {
         Conversation conversation = this.nestedTesterScenario.createConversationBuilder(null, null)
-            .addMessage(request.prompt)
-            .start();
+                .addMessage(request.prompt).start();
 
         Message message;
         try {
             message = conversation.respond(operation);
         } catch (ConversationException exception) {
-           throw new ToolException("Find Runbook failed to start conversation", exception);
+            throw new ToolException("Find Runbook failed to start conversation", exception);
         }
 
         return message.getContent();
@@ -57,12 +61,9 @@ public class NestedAiTool implements Tool<Parameters, Void> {
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass(), nestedTesterScenario.hash());
     }
-    
+
     public static record Parameters(
-            @JsonPropertyDescription("Conversatoinal prompt for an AI")
-            @JsonProperty(required = true)
-            String prompt
-        ) {};
+            @JsonPropertyDescription("Conversatoinal prompt for an AI") @JsonProperty(required = true) String prompt) {
+    }
+
 }
-
-

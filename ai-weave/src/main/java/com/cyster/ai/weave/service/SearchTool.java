@@ -1,13 +1,14 @@
 package com.cyster.ai.weave.service;
 
-public interface SearchTool<CONTEXT> extends Tool<Void, CONTEXT> {
+public interface SearchTool extends Tool<Void, Void> {
 
     boolean isReady();
-    
-    static interface Builder<CONTEXT> {
-        Builder<CONTEXT> withName(String name);
-        Builder<CONTEXT> withDocumentStore(DocumentStore store);
 
-        SearchTool<CONTEXT> create();
+    static interface Builder {
+        Builder withName(String name);
+
+        Builder withDocumentStore(DocumentStore store);
+
+        SearchTool create();
     }
 }

@@ -10,7 +10,7 @@ import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Asset;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
-class WebsiteFileGetTool implements WebsiteDeveloperTool<Request>  {
+class WebsiteFileGetTool implements WebsiteDeveloperTool<Request> {
 
     WebsiteFileGetTool() {
     }
@@ -31,6 +31,11 @@ class WebsiteFileGetTool implements WebsiteDeveloperTool<Request>  {
     }
 
     @Override
+    public Class<ManagedWebsites> getContextClass() {
+        return ManagedWebsites.class;
+    }
+
+    @Override
     public Object execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
 
         Asset asset;
@@ -44,15 +49,11 @@ class WebsiteFileGetTool implements WebsiteDeveloperTool<Request>  {
         return new Response(request.websiteId, asset.filename(), asset.content());
     }
 
-    static record Request(
-        @JsonProperty(required = true) String websiteId,
-        @JsonProperty(required = true) String filename
-    ) {}
+    static record Request(@JsonProperty(required = true) String websiteId,
+            @JsonProperty(required = true) String filename) {
+    }
 
-    static record Response(
-        String websiteId,
-        String filename,
-        String content
-    ) {}
+    static record Response(String websiteId, String filename, String content) {
+    }
 
 }

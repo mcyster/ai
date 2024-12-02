@@ -12,11 +12,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-public class CachingTool<Request, Context> implements Tool<Request, Context> {
-    private final Tool<Request, Context> tool;
-    private final Cache<Key<Request, Context>, Object> cache;
+public class CachingTool<TOOL_REQUEST, TOOL_CONTEXT> implements Tool<TOOL_REQUEST, TOOL_CONTEXT> {
+    private final Tool<TOOL_REQUEST, TOOL_CONTEXT> tool;
+    private final Cache<Key<TOOL_REQUEST, TOOL_CONTEXT>, Object> cache;
 
-    private CachingTool(Tool<Request, Context> tool, Cache<Key<Request, Context>, Object> cache) {
+    private CachingTool(Tool<TOOL_REQUEST, TOOL_CONTEXT> tool, Cache<Key<TOOL_REQUEST, TOOL_CONTEXT>, Object> cache) {
         this.tool = tool;
         this.cache = cache;
     }
@@ -36,23 +36,28 @@ public class CachingTool<Request, Context> implements Tool<Request, Context> {
     }
 
     @Override
-    public Class<Request> getParameterClass() {
+    public Class<TOOL_REQUEST> getParameterClass() {
         return this.tool.getParameterClass();
     }
 
     @Override
-    public Object execute(Request request, Context context, OperationLogger operation) throws ToolException {
-        Key<Request, Context> key = new Key<Request, Context>(this.tool, request, context);
+    public Class<TOOL_CONTEXT> getContextClass() {
+        return this.tool.getContextClass();
+    }
+
+    @Override
+    public Object execute(TOOL_REQUEST request, TOOL_CONTEXT context, OperationLogger operation) throws ToolException {
+        Key<TOOL_REQUEST, TOOL_CONTEXT> key = new Key<TOOL_REQUEST, TOOL_CONTEXT>(this.tool, request, context);
 
         try {
             return cache.get(key, () -> execute(key, operation));
-        } catch(ExecutionException exception) {
+        } catch (ExecutionException exception) {
             Throwable cause = exception.getCause();
             if (cause instanceof ToolException) {
-                throw (ToolException)cause;
-            }
-            else {
-               throw new RuntimeException("Unexpected exception while executing tool: " + this.tool.getName(), exception);
+                throw (ToolException) cause;
+            } else {
+                throw new RuntimeException("Unexpected exception while executing tool: " + this.tool.getName(),
+                        exception);
             }
         }
     }
@@ -60,8 +65,9 @@ public class CachingTool<Request, Context> implements Tool<Request, Context> {
     public int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass(), tool.hash());
     }
-    
-    private static <Request, Context> Object execute(Key<Request, Context> key, OperationLogger operation) throws ToolException {
+
+    private static <Request, Context> Object execute(Key<Request, Context> key, OperationLogger operation)
+            throws ToolException {
         return key.getTool().execute(key.getRequest(), key.getContext(), operation);
     }
 
@@ -101,8 +107,7 @@ public class CachingTool<Request, Context> implements Tool<Request, Context> {
             }
 
             Key<?, ?> key = (Key<?, ?>) object;
-            return Objects.equals(request, key.request) &&
-                   Objects.equals(context, key.context);
+            return Objects.equals(request, key.request) && Objects.equals(context, key.context);
         }
 
         @Override
@@ -116,7 +121,8 @@ public class CachingTool<Request, Context> implements Tool<Request, Context> {
             try {
                 return mapper.writeValueAsString(this);
             } catch (JsonProcessingException exception) {
-                throw new RuntimeException("Error converting object of class " + this.getClass().getName() + " JSON", exception);
+                throw new RuntimeException("Error converting object of class " + this.getClass().getName() + " JSON",
+                        exception);
             }
         }
     }
@@ -132,13 +138,12 @@ public class CachingTool<Request, Context> implements Tool<Request, Context> {
         }
 
         public CachingTool<Request, Context> build() {
-            Cache<Key<Request, Context>, Object> cache = CacheBuilder.newBuilder()
-                .maximumSize(size)
-                .expireAfterWrite(this.duration, this.durationUnit)
-                .build();
+            Cache<Key<Request, Context>, Object> cache = CacheBuilder.newBuilder().maximumSize(size)
+                    .expireAfterWrite(this.duration, this.durationUnit).build();
 
             return new CachingTool<Request, Context>(this.tool, cache);
         }
 
     }
+
 }

@@ -25,15 +25,14 @@ public class ExtoleApiStore {
         this.aiWeaveService = aiWeaveService;
     }
 
-    public <CONTEXT> SearchTool<CONTEXT> createStoreTool() {
+    public SearchTool createStoreTool() {
         String hash = loadOrUpdateLocalRepository();
 
         var documentStore = aiWeaveService.directoryDocumentStoreBuilder()
                 .withDirectory(localJavaApiRepository.toPath()).withHash(hash).create();
 
-        @SuppressWarnings("unchecked") // TBD
-        SearchTool.Builder<CONTEXT> builder = (SearchTool.Builder<CONTEXT>) aiWeaveService.searchToolBuilder()
-                .withName("extole-store").withDocumentStore(documentStore);
+        SearchTool.Builder builder = (SearchTool.Builder) aiWeaveService.searchToolBuilder().withName("extole-store")
+                .withDocumentStore(documentStore);
 
         return builder.create();
     }
