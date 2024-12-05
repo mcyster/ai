@@ -30,6 +30,7 @@ dependencies {
     implementation project(':jira-client')
     implementation project(':extole-jira')
     implementation project(':scheduler-weave')
+    implementation project(':cyster-weave')  // for converstation link tool - TBD
     implementation project(':web-weave')
     implementation project(':extole-client')
         

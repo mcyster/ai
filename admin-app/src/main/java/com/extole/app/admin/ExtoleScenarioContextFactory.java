@@ -16,8 +16,9 @@ public class ExtoleScenarioContextFactory implements ScenarioContextFactory<Exto
     }
 
     @Override
-    public ExtoleSessionContext createContext(MultiValueMap<String, String> headers) throws ScenarioContextException {
-       if (headers == null || !headers.containsKey("authorization")) {
+    public ExtoleSessionContext createContext(String conversationId, MultiValueMap<String, String> headers)
+            throws ScenarioContextException {
+        if (headers == null || !headers.containsKey("authorization")) {
             throw new ScenarioContextException("Unable to create ExtoleSessionContext expected Authorization header");
         }
         String authorizationHeader = headers.getFirst("authorization");

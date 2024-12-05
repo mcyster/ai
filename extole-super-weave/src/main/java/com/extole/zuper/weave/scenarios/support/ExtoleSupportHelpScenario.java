@@ -12,6 +12,7 @@ import com.cyster.ai.weave.service.AssistantScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.scheduler.impl.SchedulerTool;
+import com.cyster.weave.impl.scenarios.conversation.ConversationLinkTool;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportAdvisorToolLoader;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
@@ -25,7 +26,7 @@ public class ExtoleSupportHelpScenario implements Scenario<Void, ExtoleSuperCont
     private Map<String, Tool<?, ?>> tools = new HashMap<>();
 
     ExtoleSupportHelpScenario(AiWeaveService aiWeaveService, List<ExtoleSupportAdvisorToolLoader> toolLoaders,
-            List<ExtoleSupportTool<?>> tools, SchedulerTool schedulerTool) {
+            List<ExtoleSupportTool<?>> tools, ConversationLinkTool conversationLinkTool, SchedulerTool schedulerTool) {
         this.aiWeaveService = aiWeaveService;
 
         for (var tool : tools) {
@@ -38,6 +39,7 @@ public class ExtoleSupportHelpScenario implements Scenario<Void, ExtoleSuperCont
             }
         }
         this.tools.put(schedulerTool.getName(), schedulerTool);
+        this.tools.put(conversationLinkTool.getName(), conversationLinkTool);
     }
 
     @Override

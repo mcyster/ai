@@ -14,7 +14,7 @@ public class VoidScenarioContextFactory implements ScenarioContextFactory<Void> 
     }
 
     @Override
-    public Void createContext(MultiValueMap<String, String> headers) {
+    public Void createContext(String conversationId, MultiValueMap<String, String> headers) {
         return null;
     }
 

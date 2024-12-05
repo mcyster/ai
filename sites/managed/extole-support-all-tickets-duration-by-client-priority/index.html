@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Support Ticket Duration by Ticket Priority</title>
+    <title>Support Ticket Duration by Client Priority</title>
     <meta name="tags" content="extole,support,all,tickets,client_priority,duration">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Support Ticket Duration by Client Priority</h2>
+            <h2 id="graphTitle">Support Ticket Duration by Client Priority (excludes HELP)</h2>
             <canvas id="durationChart"></canvas>
         </div>
     </div>
@@ -41,7 +41,12 @@ function calculateTicketDurationsByPriority(tickets) {
     tickets.forEach(ticket => {
         const resolved = ticket.resolvedDate || now;
         const duration = (resolved.getTime() - ticket.startDate.getTime()) / (1000 * 60 * 60 * 24); // Duration in days
-        const clientPriority = ticket.clientPriority || 'Unspecified';
+
+        var clientPriority = ticket.clientPriority || 'Unspecified';
+        if (clientPriority == "high") {
+            clientPriority = "High"
+        }
+
         const weekEndDate = getWeekEndDate(ticket.startDate);
 
         if (!durationMap[clientPriority]) {
@@ -150,9 +155,14 @@ const app = {
         startDate.setMonth(startDate.getMonth() - 6);
 
         getSupportTickets().then(tickets => {
+ 
             const filteredTickets = tickets
+                .filter(ticket => ticket.project != "Extole Help")
+                //.filter(ticket => ticket.clientPriority != "Unspecified")
                 .filter(ticket => ticket.clientShortName && ticket.clientShortName.toLowerCase() !== "Extole".toLowerCase())
                 .filter(ticket => ticket.createdDate >= startDate);
+
+            //console.log("unspecified", tickets.filter(ticket =>  ticket.clientPriority != "Unspecified"));
 
             console.log("filteredTickets", filteredTickets);
 

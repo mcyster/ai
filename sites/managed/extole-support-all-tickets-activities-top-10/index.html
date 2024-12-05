@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Support Tickets Created Each Week by Top 10 Runbooks</h2>
+            <h2 id="graphTitle">Support Tickets  Top 10 Runbooks (excludes HELP)</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -163,15 +163,18 @@ const app = {
         };
     },
     async created() {
-        getSupportTickets()
-            .then(tickets => {
-                const categoryCounts = countTicketsPerCategoryPerWeek(tickets);
-                const topCategories = getTopCategories(categoryCounts);
-                renderChart(categoryCounts, topCategories);
-            })
-            .catch(error => {
-                console.error('Error loading data:', error);
-            });
+        const tickets = await getSupportTickets();
+
+        const filteredTickets = tickets.filter(ticket =>
+            ticket.project != "Extole Help" && ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole'
+
+        );
+    
+        console.log("filteredTickets", filteredTickets);
+    
+        const categoryCounts = countTicketsPerCategoryPerWeek(filteredTickets);
+        const topCategories = getTopCategories(categoryCounts);
+        renderChart(categoryCounts, topCategories);
     }
 };
 

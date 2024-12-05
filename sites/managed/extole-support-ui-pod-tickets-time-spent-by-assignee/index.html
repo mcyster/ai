@@ -30,185 +30,134 @@
         </div>
     </div>
 
-    <script id="typescript-code" type="text/typescript">
-        interface SupportTicket {
-            key: string;
-            project: string;
-            created: Date;
-            type: string;
-            status: string;
-            statusChanged: Date;
-            category: string | null;
-            resolved: Date | null;
-            due: Date | null;
-            start: Date;
-            priority: string;
-            reporter: string | null;
-            assignee: string | null;
-            client: string | null;
-            clientId: string | null;
-            pod: string | null;
-            pairCsm: string | null;
-            pairSupport: string | null;
-            clientPriority: string | null;
-            timeSeconds: number;
-        }
+ <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
+    <script>
 
-        async function getData(): Promise<SupportTicket[]> {
-            const url = '/support/tickets';
+function calculateTimeByAssigneePerWeek(tickets) {
+    const timeCounts = {};
 
-            try {
-                const response = await fetch(url, { method: 'GET' });
-                if (!response.ok) {
-                    alert(`Error: unable to fetch ${url}`);
-                    throw new Error(`Error fetching "${url}": ${response.statusText}`);
-                }
-                const rawData: any[] = await response.json();
-                const filteredData = rawData.filter(ticket => ticket.pod === 'Support UI Pod');
-                const data: SupportTicket[] = filteredData.map(ticket => ({
-                    ...ticket,
-                    created: new Date(Date.parse(ticket.created)),
-                    statusChanged: new Date(Date.parse(ticket.statusChanged)),
-                    resolved: ticket.resolved ? new Date(Date.parse(ticket.resolved)) : null,
-                    due: ticket.due ? new Date(Date.parse(ticket.due)) : null
-                }));
-                return data;
-            } catch (error) {
-                alert(`Error: problem fetching ${url}`);
-                console.error('Fetch error:', error);
-                throw error;
+    tickets.forEach(ticket => {
+        if (ticket.resolvedDate && ticket.assignee) {
+            const resolutionDate = new Date(ticket.resolvedDate);
+            const resolvedWeekEnd = getWeekEndDate(resolutionDate);
+
+            if (!timeCounts[ticket.assignee]) {
+                timeCounts[ticket.assignee] = {};
             }
-        }
-
-        function calculateTimeByAssigneePerWeek(tickets: SupportTicket[]) {
-            const timeCounts: { [assignee: string]: { [endOfWeekDate: string]: number } } = {};
-
-            tickets.forEach(ticket => {
-                if (ticket.resolved && ticket.assignee) {
-                    const resolutionDate = ticket.resolved;
-                    const resolvedWeekEnd = getWeekEndDate(resolutionDate);
-
-                    if (!timeCounts[ticket.assignee]) {
-                        timeCounts[ticket.assignee] = {};
-                    }
-                    if (!timeCounts[ticket.assignee][resolvedWeekEnd]) {
-                        timeCounts[ticket.assignee][resolvedWeekEnd] = 0;
-                    }
-                    timeCounts[ticket.assignee][resolvedWeekEnd] += ticket.timeSeconds / 3600; // Convert to hours
-                }
-            });
-
-            return timeCounts;
-        }
-
-        function getWeekEndDate(date: Date) {
-            const dayOfWeek = date.getUTCDay();
-            const weekEndDate = new Date(date);
-            weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
-            weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
-            return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
-        }
-
-        function renderChart(timeCounts: { [assignee: string]: { [endOfWeekDate: string]: number } }) {
-            const ctx = document.getElementById('chart') as HTMLCanvasElement;
-            if (!ctx) return;
-
-            const assignees = Object.keys(timeCounts);
-            const weeksSet = new Set<string>();
-
-            assignees.forEach(assignee => {
-                Object.keys(timeCounts[assignee]).forEach(week => weeksSet.add(week));
-            });
-            let weeks = Array.from(weeksSet).sort();
-
-            // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
-            if (weeks.length > 24) {
-                weeks = weeks.slice(-24);
+            if (!timeCounts[ticket.assignee][resolvedWeekEnd]) {
+                timeCounts[ticket.assignee][resolvedWeekEnd] = 0;
             }
+            timeCounts[ticket.assignee][resolvedWeekEnd] += ticket.duration / 3600; // Convert to hours
+        }
+    });
 
-            const datasets = assignees.map(assignee => ({
-                label: assignee,
-                data: weeks.map(week => ({ x: new Date(week), y: timeCounts[assignee][week] || 0 })),
-                borderWidth: 4,
-                fill: false,
-            }));
+    return timeCounts;
+}
 
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    datasets
+function getWeekEndDate(date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
+
+function renderChart(timeCounts) {
+    const ctx = document.getElementById('chart');
+    if (!ctx) return;
+
+    const assignees = Object.keys(timeCounts);
+    const weeksSet = new Set();
+
+    assignees.forEach(assignee => {
+        Object.keys(timeCounts[assignee]).forEach(week => weeksSet.add(week));
+    });
+    let weeks = Array.from(weeksSet).sort();
+
+    // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
+    if (weeks.length > 24) {
+        weeks = weeks.slice(-24);
+    }
+
+    const datasets = assignees.map(assignee => ({
+        label: assignee,
+        data: weeks.map(week => ({ x: new Date(week), y: timeCounts[assignee][week] || 0 })),
+        borderWidth: 4,
+        fill: false,
+    }));
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
                 },
-                options: {
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'week',
-                                tooltipFormat: 'PP',
-                                displayFormats: {
-                                    week: 'PP'
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Week Ending',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    weight: 'bold'
-                                }
-                            }
-                        },
-                        y: {
-                            beginAtZero: true, // Ensure y-axis starts at 0
-                            title: {
-                                display: true,
-                                text: 'Total Time Spent (hours)',
-                                font: {
-                                    size: 16,
-                                    weight: 'bold'
-                                }
-                            },
-                            ticks: {
-                                font: {
-                                    weight: 'bold'
-                                }
-                            }
+                y: {
+                    beginAtZero: true, // Ensure y-axis starts at 0
+                    title: {
+                        display: true,
+                        text: 'Total Time Spent (hours)',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
                         }
                     }
                 }
-            });
-        }
-
-        const app = {
-            data() {
-                return {
-                    jsonData: []
-                };
-            },
-            async created() {
-                getData().then(tickets => {
-                    const timeCounts = calculateTimeByAssigneePerWeek(tickets);
-                    renderChart(timeCounts);
-                }).catch(error => {
-                    console.error('Error loading data:', error);
-                });
             }
+        }
+    });
+}
+
+const app = {
+    data() {
+        return {
+            jsonData: []
         };
+    },
+    async created() {
+        try {
+            const tickets = await getSupportTickets();
+            const filteredTickets = tickets.filter(ticket => ticket.pod === 'UI');
+            const timeCounts = calculateTimeByAssigneePerWeek(filteredTickets);
+            renderChart(timeCounts);
+        } catch (error) {
+            console.error('Error loading data:', error);
+        }
+    }
+};
 
-        Vue.createApp(app).mount('#app');
-    </script>
+Vue.createApp(app).mount('#app');
 
-    <script>
-        (async function compileAndExecute() {
-            const tsCode = document.getElementById('typescript-code').textContent;
-            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
-            eval(jsCode);
-        })();
     </script>
 </body>
 </html>

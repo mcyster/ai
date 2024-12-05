@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -226,11 +227,13 @@ public class ConversationController {
                     exception);
         }
 
+        var id = UUID.randomUUID().toString();
+
         boolean match = false;
         CONTEXT context = null;
         for (ScenarioContextFactory<?> factory : contextFactories) {
             if (factory.getContextClass().equals(scenario.getContextClass())) {
-                context = (CONTEXT) factory.createContext(headers);
+                context = (CONTEXT) factory.createContext(id, headers);
                 match = true;
             }
         }
@@ -239,7 +242,7 @@ public class ConversationController {
                     + " with context type: " + scenario.getContextClass().getName());
         }
 
-        return scenarioSessionStore.addSession(scenario, parameters,
+        return scenarioSessionStore.addSession(id, scenario, parameters,
                 scenario.createConversationBuilder(parameters, context).start());
     }
 

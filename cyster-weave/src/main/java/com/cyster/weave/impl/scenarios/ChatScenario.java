@@ -17,7 +17,7 @@ public class ChatScenario implements Scenario<Void, Void> {
     private final String DESCRIPTION = "A helpful assistant";
 
     private final AiWeaveService aiWeaveService;
-    private final List<Tool<?, Void>> tools = new ArrayList<>();
+    private final List<Tool<?, ?>> tools = new ArrayList<>();
     private final AtomicReference<Scenario<Void, Void>> scenario = new AtomicReference<>();
 
     public ChatScenario(AiWeaveService aiWeaveService, ConversationLinkTool conversationLinkTool) {

@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 public class SchedulerTool implements Tool<Parameters, Void> {
     static final String JOB_DATA_SCENARIO = "scenario";
     static final String JOB_DATA_PROMPT = "prompt";
-    static final String JOB_DATA_PARAMETERS = "paramters";
+    static final String JOB_DATA_PARAMETERS = "parameters";
 
     private Scheduler scheduler;
     private ObjectMapper objectMapper;

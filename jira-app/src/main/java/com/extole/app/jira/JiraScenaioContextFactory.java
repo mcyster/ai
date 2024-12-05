@@ -17,15 +17,19 @@ public class JiraScenaioContextFactory implements ScenarioContextFactory<ExtoleS
     private static final Logger logger = LoggerFactory.getLogger(JiraScenaioContextFactory.class);
 
     private final Optional<String> extoleSuperUserApiKey;
+    private final String conversationPageTemplate;
 
     public JiraScenaioContextFactory(
-            @Value("${extoleSuperUserApiKey:#{environment.EXTOLE_SUPER_USER_API_KEY}}") String extoleSuperUserApiKey) {
+            @Value("${extoleSuperUserApiKey:#{environment.EXTOLE_SUPER_USER_API_KEY}}") String extoleSuperUserApiKey,
+            @Value("${extoleConversationPageTemplate:https://beep-boop.extole.com/sites/managed/conversations/index.html?id=\\{\\{conversationId\\}\\}}") String conversationPageTemplate) {
         if (extoleSuperUserApiKey != null) {
             this.extoleSuperUserApiKey = Optional.of(extoleSuperUserApiKey);
         } else {
             this.extoleSuperUserApiKey = Optional.empty();
             logger.error("extoleSuperUserApiKey not defined or found in environment.EXTOLE_SUPER_USER_API_KEY");
         }
+
+        this.conversationPageTemplate = conversationPageTemplate;
     }
 
     @Override
@@ -34,13 +38,14 @@ public class JiraScenaioContextFactory implements ScenarioContextFactory<ExtoleS
     }
 
     @Override
-    public ExtoleSuperContext createContext(MultiValueMap<String, String> headers) throws ScenarioContextException {
-        return createContext();
+    public ExtoleSuperContext createContext(String conversationId, MultiValueMap<String, String> headers)
+            throws ScenarioContextException {
+        return createContext(conversationId);
     }
 
-    public ExtoleSuperContext createContext() throws ScenarioContextException {
+    public ExtoleSuperContext createContext(String conversationId) throws ScenarioContextException {
         if (extoleSuperUserApiKey.isPresent()) {
-            return new ExtoleSuperContext(extoleSuperUserApiKey.get());
+            return new ExtoleSuperContext(conversationId, extoleSuperUserApiKey.get());
         }
 
         throw new ScenarioContextException("Extole super user key not defined");

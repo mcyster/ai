@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Support Ticket Duration</h2>
+            <h2 id="graphTitle">Support Ticket Duration (excludes HELP)</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -170,13 +170,15 @@ const app = {
             jsonData: []
         };
     },
-    created() {
-        getSupportTickets().then(tickets => {
-            const { avgElapsedTimes, medianElapsedTimes } = countTicketsPerWeek(tickets);
-            renderChart(avgElapsedTimes, medianElapsedTimes);
-        }).catch(error => {
-            console.error('Error loading data:', error);
-        });
+    async created() {
+        const tickets = await getSupportTickets();
+
+        const filteredTickets = tickets.filter(ticket =>
+            ticket.project != "Extole Help" && ticket.clientShortName !== "extole" && ticket.status !== "Closed - Won't Do"
+        );
+
+        const { avgElapsedTimes, medianElapsedTimes } = countTicketsPerWeek(filteredTickets);
+        renderChart(avgElapsedTimes, medianElapsedTimes);
     }
 };
 

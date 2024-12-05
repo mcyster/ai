@@ -9,7 +9,8 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 public interface ScenarioSessionStore {
     Optional<ScenarioSession<?, ?>> getSession(String id);
 
-    <PARAMETERS, CONTEXT> ScenarioSession<PARAMETERS, CONTEXT> addSession(Scenario<PARAMETERS, CONTEXT> scenario, PARAMETERS parameters, Conversation conversation);
+    <PARAMETERS, CONTEXT> ScenarioSession<PARAMETERS, CONTEXT> addSession(String id,
+            Scenario<PARAMETERS, CONTEXT> scenario, PARAMETERS parameters, Conversation conversation);
 
     QueryBuilder createQueryBuilder();
 
@@ -21,6 +22,6 @@ public interface ScenarioSessionStore {
 
         QueryBuilder setLimit(int limit);
 
-        List<ScenarioSession<?,?>> list();
+        List<ScenarioSession<?, ?>> list();
     }
 }

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
@@ -18,13 +17,13 @@ import com.cyster.weave.session.service.scenariosession.ScenarioSessionStore;
 @Component
 public class SenarioSessioStoreImpl implements ScenarioSessionStore {
 
-    Map<String, ScenarioSession<?,?>> store;
+    Map<String, ScenarioSession<?, ?>> store;
 
     SenarioSessioStoreImpl() {
-        this.store = new HashMap<String, ScenarioSession<?,?>>();
+        this.store = new HashMap<String, ScenarioSession<?, ?>>();
     }
 
-    public Optional<ScenarioSession<?,?>> getSession(String id) {
+    public Optional<ScenarioSession<?, ?>> getSession(String id) {
         if (this.store.containsKey(id)) {
             return Optional.of(this.store.get(id));
         } else {
@@ -32,11 +31,12 @@ public class SenarioSessioStoreImpl implements ScenarioSessionStore {
         }
     }
 
-
     @Override
-    public <PARAMETERS, CONTEXT> ScenarioSession<PARAMETERS, CONTEXT> addSession(Scenario<PARAMETERS, CONTEXT> scenario,
-        PARAMETERS parameters, Conversation conversation) {
-        var id = UUID.randomUUID().toString();
+    public <PARAMETERS, CONTEXT> ScenarioSession<PARAMETERS, CONTEXT> addSession(String id,
+            Scenario<PARAMETERS, CONTEXT> scenario, PARAMETERS parameters, Conversation conversation) {
+        if (this.store.containsKey(id)) {
+            throw new RuntimeException("Id taken " + id);
+        }
         var session = new ScenarioSessionImpl<PARAMETERS, CONTEXT>(id, scenario, parameters, conversation);
 
         this.store.put(id, session);
@@ -49,19 +49,18 @@ public class SenarioSessioStoreImpl implements ScenarioSessionStore {
     }
 
     public static class QueryBuilderImpl implements ScenarioSessionStore.QueryBuilder {
-        Map<String, ScenarioSession<?,?>> store;
+        Map<String, ScenarioSession<?, ?>> store;
         int offset = 0;
         int limit = 100;
         Map<String, String> filterParameters = new HashMap<>();
 
-        QueryBuilderImpl(Map<String, ScenarioSession<?,?>> store) {
+        QueryBuilderImpl(Map<String, ScenarioSession<?, ?>> store) {
             this.store = store;
         }
 
-
         @Override
         public QueryBuilder withFilterParameter(String name, String value) {
-            filterParameters.put(name,  value);
+            filterParameters.put(name, value);
 
             return this;
         }
@@ -76,12 +75,12 @@ public class SenarioSessioStoreImpl implements ScenarioSessionStore {
             return this;
         }
 
-        public List<ScenarioSession<?,?>> list() {
-            return this.store.entrySet().stream().filter(this::filterByParameters).skip(this.offset).limit(this.limit).map(Map.Entry::getValue)
-                .collect(Collectors.toList());
+        public List<ScenarioSession<?, ?>> list() {
+            return this.store.entrySet().stream().filter(this::filterByParameters).skip(this.offset).limit(this.limit)
+                    .map(Map.Entry::getValue).collect(Collectors.toList());
         }
 
-        private Boolean filterByParameters(Map.Entry<String,ScenarioSession<?,?>> sessionEntry) {
+        private Boolean filterByParameters(Map.Entry<String, ScenarioSession<?, ?>> sessionEntry) {
             Boolean match = true;
 
             Object parameters = sessionEntry.getValue().getParameters();

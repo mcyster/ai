@@ -164,7 +164,10 @@ const app = {
         const filteredTickets = tickets.filter(ticket =>
             ticket.project == "Extole Help"
         );
-        const { startCounts, resolveCounts } = countTicketsPerWeek(tickets);
+
+        console.log("filteredTickets", filteredTickets);
+
+        const { startCounts, resolveCounts } = countTicketsPerWeek(filteredTickets);
         renderChart(startCounts, resolveCounts);
     }
 };

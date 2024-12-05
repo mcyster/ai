@@ -8,9 +8,10 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.weave.impl.scenarios.conversation.ConversationLinkTool.Context;
 
 @Component
-public class ConversationLinkTool implements Tool<Void, Void> {
+public class ConversationLinkTool implements Tool<Void, Context> {
 
     ConversationLinkTool() {
     }
@@ -31,19 +32,23 @@ public class ConversationLinkTool implements Tool<Void, Void> {
     }
 
     @Override
-    public Class<Void> getContextClass() {
-        return Void.class;
+    public Class<Context> getContextClass() {
+        return Context.class;
     }
 
     @Override
-    public Object execute(Void parameters, Void context, OperationLogger operation) throws ToolException {
+    public Object execute(Void parameters, Context context, OperationLogger operation) throws ToolException {
         Map<String, String> response = new HashMap<>() {
             {
-                put("url", "http://cyster.com/123");
+                put("id", context.conversationId);
+                put("link", context.conversationLink);
             }
         };
 
         return response;
     }
+
+    public static record Context(String conversationId, String conversationLink) {
+    };
 
 }
