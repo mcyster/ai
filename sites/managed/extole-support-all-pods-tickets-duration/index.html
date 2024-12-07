@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>HELP Ticket Velocity</title>
-    <meta name="tags" content="extole,support,help,tickets,velocity">
+    <title>Support Ticket Duration</title>
+    <meta name="tags" content="extole,support,all-pods,tickets,duration">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,84 +25,96 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">HELP - Ticket Velocity</h2>
+            <h2 id="graphTitle">Support Ticket Duration (excludes HELP)</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
 
-
-    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+   <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
     <script src="../extole/support-tickets.js"></script>
     <script>
+
 function countTicketsPerWeek(tickets) {
-    const startCounts = {};
-    const resolveCounts = {};
-    
+    const elapsedTimes = {};
+    const avgElapsedTimes = {};
+    const medianElapsedTimes = {};
+
     tickets.forEach(ticket => {
-        const startDate = ticket.startDate;
-        const resolutionDate = ticket.resolvedDate || new Date(); // Use current date if not resolved
+        const creationDate = new Date(ticket.createdDate);
+        const resolutionDate = ticket.resolvedDate ? new Date(ticket.resolvedDate) : new Date();
 
-        const startWeekEnd = getWeekEndDate(startDate);
-        const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
+        const createdWeekEnd = getWeekEndDate(creationDate);
 
-        if (resolveCounts[resolvedWeekEnd] === undefined) {
-            resolveCounts[resolvedWeekEnd] = 0;
+        const elapsedTime = (resolutionDate.getTime() - creationDate.getTime()) / (1000 * 60 * 60 * 24); // in days
+
+        if (!elapsedTimes[createdWeekEnd]) {
+            elapsedTimes[createdWeekEnd] = [];
         }
-        resolveCounts[resolvedWeekEnd]++;
-
-        if (startCounts[startWeekEnd] === undefined) {
-            startCounts[startWeekEnd] = 0;
-        }
-        startCounts[startWeekEnd]++;
+        elapsedTimes[createdWeekEnd].push(elapsedTime);
     });
 
-    return { startCounts, resolveCounts };
+    Object.keys(elapsedTimes).forEach(week => {
+        const times = elapsedTimes[week];
+        const avgTime = times.reduce((sum, time) => sum + time, 0) / times.length;
+        avgElapsedTimes[week] = avgTime;
+
+        const sortedTimes = times.slice().sort((a, b) => a - b);
+        const middle = Math.floor(sortedTimes.length / 2);
+        const medianTime = sortedTimes.length % 2 === 0
+            ? (sortedTimes[middle - 1] + sortedTimes[middle]) / 2
+            : sortedTimes[middle];
+        medianElapsedTimes[week] = medianTime;
+    });
+
+    return { avgElapsedTimes, medianElapsedTimes };
 }
 
 function getWeekEndDate(date) {
     const dayOfWeek = date.getUTCDay();
     const weekEndDate = new Date(date);
-    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
-    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
-    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7);
+    weekEndDate.setUTCHours(0, 0, 0, 0);
+    return weekEndDate.toISOString().split('T')[0];
 }
 
-function renderChart(startCounts, resolveCounts) {
+function renderChart(avgElapsedTimes, medianElapsedTimes) {
     const ctx = document.getElementById('chart');
     if (!ctx) return;
-    let weeks = Object.keys(startCounts).sort();
-    
+
+    let weeks = Object.keys(avgElapsedTimes).sort();
+
     // Remove the first week unconditionally
     if (weeks.length > 1) {
         weeks.shift();
     }
+
     // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
     if (weeks.length > 24) {
         weeks = weeks.slice(-24);
     }
 
-    const createData = weeks.map(week => ({ x: new Date(week), y: startCounts[week] || 0 }));
-    const resolveData = weeks.map(week => ({ x: new Date(week), y: resolveCounts[week] || 0 }));
+    const avgElapsedTimeData = weeks.map(week => ({ x: new Date(week), y: avgElapsedTimes[week] || 0 }));
+    const medianElapsedTimeData = weeks.map(week => ({ x: new Date(week), y: medianElapsedTimes[week] || 0 }));
 
     new Chart(ctx, {
         type: 'line',
         data: {
             datasets: [
                 {
-                    label: 'Tickets Started',
-                    backgroundColor: 'rgba(139, 34, 34, 0.2)',
-                    borderColor: 'rgba(200, 30, 30, 1)',
+                    label: 'Average Elapsed Time (days)',
+                    backgroundColor: 'rgba(0, 0, 139, 0.2)',
+                    borderColor: 'rgba(0, 0, 200, 1)',
                     fill: false,
-                    data: createData,
-                    borderWidth: 4 
+                    data: avgElapsedTimeData,
+                    borderWidth: 4,
                 },
                 {
-                    label: 'Tickets Closed',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(34, 139, 34, 1)',
+                    label: 'Median Elapsed Time (days)',
+                    backgroundColor: 'rgba(139, 0, 139, 0.2)',
+                    borderColor: 'rgba(200, 0, 200, 1)',
                     fill: false,
-                    data: resolveData,
-                    borderWidth: 4 
+                    data: medianElapsedTimeData,
+                    borderWidth: 4,
                 }
             ]
         },
@@ -135,7 +147,7 @@ function renderChart(startCounts, resolveCounts) {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Number of Tickets',
+                        text: 'Elapsed Time (days)',
                         font: {
                             size: 16,
                             weight: 'bold'
@@ -162,18 +174,17 @@ const app = {
         const tickets = await getSupportTickets();
 
         const filteredTickets = tickets.filter(ticket =>
-            ticket.project == "Extole Help"
+            ticket.project != "Extole Help" && ticket.clientShortName !== "extole" && ticket.status !== "Closed - Won't Do"
         );
 
-        console.log("filteredTickets", filteredTickets);
-
-        const { startCounts, resolveCounts } = countTicketsPerWeek(filteredTickets);
-        renderChart(startCounts, resolveCounts);
+        const { avgElapsedTimes, medianElapsedTimes } = countTicketsPerWeek(filteredTickets);
+        renderChart(avgElapsedTimes, medianElapsedTimes);
     }
 };
 
 Vue.createApp(app).mount('#app');
 
     </script>
+
 </body>
 </html>

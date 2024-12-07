@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>HELP Ticket Velocity</title>
-    <meta name="tags" content="extole,support,help,tickets,velocity">
+    <title>Support Tickets with/without Requested Due Date</title>
+    <meta name="tags" content="extole,support,all-pods,tickets,due">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,38 +25,30 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">HELP - Ticket Velocity</h2>
+            <h2 id="graphTitle">Support Tickets Created with/without Requested Due Date</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
 
-
-    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+  <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
     <script src="../extole/support-tickets.js"></script>
     <script>
 function countTicketsPerWeek(tickets) {
-    const startCounts = {};
-    const resolveCounts = {};
-    
+    const weekCountsWithDue = {};
+    const weekCountsWithoutDue = {};
+
     tickets.forEach(ticket => {
-        const startDate = ticket.startDate;
-        const resolutionDate = ticket.resolvedDate || new Date(); // Use current date if not resolved
+        const creationDate = ticket.createdDate;
+        const weekEndDate = getWeekEndDate(creationDate);
 
-        const startWeekEnd = getWeekEndDate(startDate);
-        const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
-
-        if (resolveCounts[resolvedWeekEnd] === undefined) {
-            resolveCounts[resolvedWeekEnd] = 0;
+        if (ticket.requestedDueDate) {
+            weekCountsWithDue[weekEndDate] = (weekCountsWithDue[weekEndDate] || 0) + 1;
+        } else {
+            weekCountsWithoutDue[weekEndDate] = (weekCountsWithoutDue[weekEndDate] || 0) + 1;
         }
-        resolveCounts[resolvedWeekEnd]++;
-
-        if (startCounts[startWeekEnd] === undefined) {
-            startCounts[startWeekEnd] = 0;
-        }
-        startCounts[startWeekEnd]++;
     });
 
-    return { startCounts, resolveCounts };
+    return { weekCountsWithDue, weekCountsWithoutDue };
 }
 
 function getWeekEndDate(date) {
@@ -67,42 +59,35 @@ function getWeekEndDate(date) {
     return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
 }
 
-function renderChart(startCounts, resolveCounts) {
+function renderChart(weekCountsWithDue, weekCountsWithoutDue) {
     const ctx = document.getElementById('chart');
     if (!ctx) return;
-    let weeks = Object.keys(startCounts).sort();
-    
-    // Remove the first week unconditionally
-    if (weeks.length > 1) {
-        weeks.shift();
-    }
-    // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
-    if (weeks.length > 24) {
-        weeks = weeks.slice(-24);
-    }
 
-    const createData = weeks.map(week => ({ x: new Date(week), y: startCounts[week] || 0 }));
-    const resolveData = weeks.map(week => ({ x: new Date(week), y: resolveCounts[week] || 0 }));
+    const weeks = Array.from(new Set([...Object.keys(weekCountsWithDue), ...Object.keys(weekCountsWithoutDue)])).sort();
+    const recentWeeks = weeks.slice(-24); // Show only the last 24 weeks
+
+    const dataPointsWithDue = recentWeeks.map(week => ({ x: new Date(week), y: weekCountsWithDue[week] || 0 }));
+    const dataPointsWithoutDue = recentWeeks.map(week => ({ x: new Date(week), y: weekCountsWithoutDue[week] || 0 }));
 
     new Chart(ctx, {
         type: 'line',
         data: {
             datasets: [
                 {
-                    label: 'Tickets Started',
-                    backgroundColor: 'rgba(139, 34, 34, 0.2)',
-                    borderColor: 'rgba(200, 30, 30, 1)',
+                    label: 'Tickets With Requested Due Date',
+                    backgroundColor: 'hsl(200, 50%, 45%)',
+                    borderColor: 'hsl(200, 50%, 45%)',
                     fill: false,
-                    data: createData,
-                    borderWidth: 4 
+                    data: dataPointsWithDue,
+                    borderWidth: 4
                 },
                 {
-                    label: 'Tickets Closed',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(34, 139, 34, 1)',
+                    label: 'Tickets Without Requested Due Date',
+                    backgroundColor: 'hsl(100, 50%, 45%)',
+                    borderColor: 'hsl(100, 50%, 45%)',
                     fill: false,
-                    data: resolveData,
-                    borderWidth: 4 
+                    data: dataPointsWithoutDue,
+                    borderWidth: 4
                 }
             ]
         },
@@ -159,21 +144,24 @@ const app = {
         };
     },
     async created() {
-        const tickets = await getSupportTickets();
+        try {
+            const tickets = await getSupportTickets();
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-        const filteredTickets = tickets.filter(ticket =>
-            ticket.project == "Extole Help"
-        );
+            const filteredTickets = tickets.filter(ticket => new Date(ticket.createdDate) >= sixMonthsAgo);
+            const { weekCountsWithDue, weekCountsWithoutDue } = countTicketsPerWeek(filteredTickets);
 
-        console.log("filteredTickets", filteredTickets);
-
-        const { startCounts, resolveCounts } = countTicketsPerWeek(filteredTickets);
-        renderChart(startCounts, resolveCounts);
+            renderChart(weekCountsWithDue, weekCountsWithoutDue);
+        } catch (error) {
+            console.error('Error loading data:', error);
+        }
     }
 };
 
 Vue.createApp(app).mount('#app');
 
     </script>
+
 </body>
 </html>

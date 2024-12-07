@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>HELP Ticket Velocity</title>
-    <meta name="tags" content="extole,support,help,tickets,velocity">
+    <title>Support Ticket Velocity by Pod</title>
+    <meta name="tags" content="extole,support,all-pods,tickets,velocity,pod">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,38 +25,51 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">HELP - Ticket Velocity</h2>
+            <h2 id="graphTitle">Support Ticket Velocity per Pod</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
 
-
     <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
     <script src="../extole/support-tickets.js"></script>
+
     <script>
-function countTicketsPerWeek(tickets) {
-    const startCounts = {};
-    const resolveCounts = {};
-    
+
+function countTicketsPerWeekPerPod(tickets) {
+    const podResolveCounts = {};
+    const lastSixMonths = new Date();
+    lastSixMonths.setMonth(lastSixMonths.getMonth() - 6);
+
     tickets.forEach(ticket => {
-        const startDate = ticket.startDate;
+        var pod = ticket.pod;
+        if (ticket.key && ticket.key.startsWith("HELP")) {
+            pod = "T1";
+        }
+
+        if (!pod) {
+            pod = "Other";
+        }
+
         const resolutionDate = ticket.resolvedDate || new Date(); // Use current date if not resolved
+        if (resolutionDate < lastSixMonths) return; // Skip data older than 6 months
 
-        const startWeekEnd = getWeekEndDate(startDate);
         const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
-
-        if (resolveCounts[resolvedWeekEnd] === undefined) {
-            resolveCounts[resolvedWeekEnd] = 0;
+        let podKey = "Other";
+        const podLower = pod.toLowerCase();
+        if (podLower.includes("ui") || podLower.includes("flow") || podLower.includes("guru") || podLower.includes("t1")) {
+            podKey = pod;
         }
-        resolveCounts[resolvedWeekEnd]++;
 
-        if (startCounts[startWeekEnd] === undefined) {
-            startCounts[startWeekEnd] = 0;
+        if (!podResolveCounts[podKey]) {
+            podResolveCounts[podKey] = {};
         }
-        startCounts[startWeekEnd]++;
+        if (!podResolveCounts[podKey][resolvedWeekEnd]) {
+            podResolveCounts[podKey][resolvedWeekEnd] = 0;
+        }
+        podResolveCounts[podKey][resolvedWeekEnd]++;
     });
 
-    return { startCounts, resolveCounts };
+    return podResolveCounts;
 }
 
 function getWeekEndDate(date) {
@@ -67,44 +80,54 @@ function getWeekEndDate(date) {
     return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
 }
 
-function renderChart(startCounts, resolveCounts) {
+function generateColors(numColors) {
+    const colors = [];
+    const hueStep = 360 / numColors;
+    for (let i = 0; i < numColors; i++) {
+        const hue = i * hueStep;
+        const color = `hsl(${hue}, 50%, 45%)`;
+        colors.push(color);
+    }
+    return colors;
+}
+
+let chartInstance = null;
+
+function renderChart(podResolveCounts) {
     const ctx = document.getElementById('chart');
     if (!ctx) return;
-    let weeks = Object.keys(startCounts).sort();
-    
-    // Remove the first week unconditionally
-    if (weeks.length > 1) {
-        weeks.shift();
-    }
-    // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
-    if (weeks.length > 24) {
-        weeks = weeks.slice(-24);
+
+    if (chartInstance) {
+        chartInstance.destroy();
     }
 
-    const createData = weeks.map(week => ({ x: new Date(week), y: startCounts[week] || 0 }));
-    const resolveData = weeks.map(week => ({ x: new Date(week), y: resolveCounts[week] || 0 }));
+    const podKeys = Object.keys(podResolveCounts);
+    const colors = generateColors(podKeys.length);
 
-    new Chart(ctx, {
+    const datasets = podKeys.map((pod, index) => {
+        let weeks = Object.keys(podResolveCounts[pod]).sort();
+
+        // Remove the first week unconditionally
+        if (weeks.length > 1) {
+            weeks.shift();
+        }
+
+        const resolveData = weeks.map(week => ({ x: new Date(week), y: podResolveCounts[pod][week] || 0 }));
+
+        return {
+            label: `${pod}`,
+            backgroundColor: colors[index],
+            borderColor: colors[index],
+            fill: false,
+            data: resolveData,
+            borderWidth: 4
+        };
+    });
+
+    chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            datasets: [
-                {
-                    label: 'Tickets Started',
-                    backgroundColor: 'rgba(139, 34, 34, 0.2)',
-                    borderColor: 'rgba(200, 30, 30, 1)',
-                    fill: false,
-                    data: createData,
-                    borderWidth: 4 
-                },
-                {
-                    label: 'Tickets Closed',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(34, 139, 34, 1)',
-                    fill: false,
-                    data: resolveData,
-                    borderWidth: 4 
-                }
-            ]
+            datasets: datasets
         },
         options: {
             scales: {
@@ -132,7 +155,7 @@ function renderChart(startCounts, resolveCounts) {
                     }
                 },
                 y: {
-                    beginAtZero: true,
+                    beginAtZero: true, // Ensure y-axis starts at 0
                     title: {
                         display: true,
                         text: 'Number of Tickets',
@@ -159,21 +182,29 @@ const app = {
         };
     },
     async created() {
-        const tickets = await getSupportTickets();
+        console.log("HERE");
+        getSupportTickets().then(tickets => {
+            console.log('tickets:', tickets); 
 
-        const filteredTickets = tickets.filter(ticket =>
-            ticket.project == "Extole Help"
-        );
+            const filteredTickets = tickets.filter(ticket => 
+                ticket.clientShortName && ticket.clientShortName.toLowerCase() != 'extole' && 
+                ticket.resolvedDate !== null
+            );
+            console.log('filteredTickets:', filteredTickets); 
 
-        console.log("filteredTickets", filteredTickets);
+            const podResolveCounts = countTicketsPerWeekPerPod(filteredTickets);
+            console.log("podResolveCounts", podResolveCounts);
 
-        const { startCounts, resolveCounts } = countTicketsPerWeek(filteredTickets);
-        renderChart(startCounts, resolveCounts);
+            renderChart(podResolveCounts);
+        }).catch(error => {
+            console.error('Error loading data:', error);
+        });
     }
 };
 
 Vue.createApp(app).mount('#app');
 
     </script>
+
 </body>
 </html>

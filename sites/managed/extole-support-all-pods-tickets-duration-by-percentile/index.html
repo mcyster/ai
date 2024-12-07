@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Support Ticket Duration by Percentile</title>
+    <meta name="tags" content="extole,support,all-pods,tickets,client_priority,duration,percentile">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Support Ticket Duration by Percentile</h2>
+            <canvas id="durationChart"></canvas>
+        </div>
+    </div>
+
+
+   <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
+    <script>
+
+function calculatePercentiles(durations, percentiles) {
+    durations.sort((a, b) => a - b);
+    return percentiles.map(p => {
+        const rank = (p / 100) * (durations.length - 1);
+        const lower = Math.floor(rank);
+        const upper = lower + 1;
+        const weight = rank % 1;
+        return durations[lower] * (1 - weight) + (durations[upper] || durations[lower]) * weight;
+    });
+}
+
+function calculateWorstCaseDurations(tickets, percentiles) {
+    const durationMap = {};
+
+    percentiles.forEach(p => {
+        durationMap[p] = {};
+    });
+
+    const weekDurations = {};
+
+    tickets.forEach(ticket => {
+        const duration = (ticket.resolvedDate.getTime() - ticket.createdDate.getTime()) / (1000 * 60 * 60 * 24); // Duration in days
+        const weekEndDate = getWeekEndDate(ticket.resolvedDate);
+
+        if (!weekDurations[weekEndDate]) {
+            weekDurations[weekEndDate] = [];
+        }
+
+        weekDurations[weekEndDate].push(duration);
+    });
+
+    Object.keys(weekDurations).forEach(weekEndDate => {
+        const durations = weekDurations[weekEndDate];
+        const percentileValues = calculatePercentiles(durations, percentiles);
+
+        percentiles.forEach((p, index) => {
+            durationMap[p][weekEndDate] = percentileValues[index];
+        });
+    });
+
+    return durationMap;
+}
+
+function getWeekEndDate(date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
+
+function renderWorstCaseDurationChart(durationMap) {
+    const ctx = document.getElementById('durationChart');
+    if (!ctx) return;
+
+    const percentiles = Object.keys(durationMap).map(Number).sort((a, b) => a - b);
+    let weeks = new Set();
+
+    percentiles.forEach(percentile => {
+        weeks = new Set([...weeks, ...Object.keys(durationMap[percentile])]);
+    });
+
+    let weekArray = Array.from(weeks).sort();
+    if (weekArray.length > 24) {
+        weekArray = weekArray.slice(-24);
+    }
+
+    const datasets = percentiles.map(percentile => {
+        const data = weekArray.map(week => ({
+            x: new Date(week),
+            y: durationMap[percentile][week] || 0
+        }));
+        return {
+            label: `${percentile}th Percentile`,
+            data,
+            fill: false,
+            borderWidth: 4
+        };
+    });
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Ticket Duration (days)',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+const app = {
+    data() {
+        return {
+            jsonData: []
+        };
+    },
+    async created() {
+        const startDate = new Date();
+        startDate.setMonth(startDate.getMonth() - 6);
+        const percentiles = [50, 75, 85, 90, 95];
+
+        getSupportTickets().then(tickets => {
+            const filteredTickets = tickets.filter(ticket => ticket.resolvedDate && ticket.resolvedDate >= startDate);
+            const durationMap = calculateWorstCaseDurations(filteredTickets, percentiles);
+            renderWorstCaseDurationChart(durationMap);
+        }).catch(error => {
+            console.error('Error loading data:', error);
+        });
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
+    </script>
+
+</body>
+</html>

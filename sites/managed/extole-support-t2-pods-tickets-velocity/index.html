@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>HELP Ticket Velocity</title>
-    <meta name="tags" content="extole,support,help,tickets,velocity">
+    <title>T2 Pods Ticket Velocity</title>
+    <meta name="tags" content="extole,support,t2-pods,tickets,velocity">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,15 +25,16 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">HELP - Ticket Velocity</h2>
+            <h2 id="graphTitle">T2 Pods - Ticket Velocity</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
 
 
-    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+ <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
     <script src="../extole/support-tickets.js"></script>
     <script>
+
 function countTicketsPerWeek(tickets) {
     const startCounts = {};
     const resolveCounts = {};
@@ -132,7 +133,7 @@ function renderChart(startCounts, resolveCounts) {
                     }
                 },
                 y: {
-                    beginAtZero: true,
+                    beginAtZero: true, // Ensure y-axis starts at 0
                     title: {
                         display: true,
                         text: 'Number of Tickets',
@@ -154,21 +155,19 @@ function renderChart(startCounts, resolveCounts) {
 
 const app = {
     data() {
-        return {
-            jsonData: []
-        };
+        return { jsonData: [] };
     },
     async created() {
-        const tickets = await getSupportTickets();
-
-        const filteredTickets = tickets.filter(ticket =>
-            ticket.project == "Extole Help"
-        );
-
-        console.log("filteredTickets", filteredTickets);
-
-        const { startCounts, resolveCounts } = countTicketsPerWeek(filteredTickets);
-        renderChart(startCounts, resolveCounts);
+        try {
+            const tickets = await getSupportTickets();
+            const filteredTickets = tickets.filter(ticket =>
+                ['UI', 'Flow', 'Guru'].includes(ticket.pod)
+            );
+            const { startCounts, resolveCounts } = countTicketsPerWeek(filteredTickets);
+            renderChart(startCounts, resolveCounts);
+        } catch (error) {
+            console.error('Error loading data:', error);
+        }
     }
 };
 

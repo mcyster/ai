@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>HELP Top 10 Runbooks</title>
-    <meta name="tags" content="extole,support,tickets,runbooks,help">
+    <title>Support Tickets Top 10 Runbooks by Elapsed Time</title>
+    <meta name="tags" content="extole,support,all-pods,tickets,runbooks">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,30 +25,30 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">HELP - Top 10 Runbooks</h2>
+            <h2 id="graphTitle">Total Ticket by Elapsed Time per Runbooks per Week</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
 
-
-    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+   <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
     <script src="../extole/support-tickets.js"></script>
     <script>
-
-function countTicketsPerCategoryPerWeek(tickets) {
-    const categoryCounts = {};
+function calculateTimeSpentPerCategoryPerWeek(tickets) {
+    const categoryTimeSpent = {};
 
     tickets.forEach(ticket => {
-        const creationDate = ticket.createdDate;
+        if (!ticket.resolvedDate) return; // Ignore tickets that are not resolved
+        const timeSpent = (new Date(ticket.resolvedDate).getTime() - new Date(ticket.createdDate).getTime()) / 1000 / 60 / 60; // Convert to hours
+        const creationDate = new Date(ticket.createdDate);
         const category = ticket.runbook || 'Uncategorized';
         const weekEndDate = getWeekEndDate(creationDate);
 
-        if (!categoryCounts[category]) {
-            categoryCounts[category] = {};
+        if (!categoryTimeSpent[category]) {
+            categoryTimeSpent[category] = {};
         }
-        categoryCounts[category][weekEndDate] = (categoryCounts[category][weekEndDate] || 0) + 1;
+        categoryTimeSpent[category][weekEndDate] = (categoryTimeSpent[category][weekEndDate] || 0) + timeSpent;
     });
-    return categoryCounts;
+    return categoryTimeSpent;
 }
 
 function getWeekEndDate(date) {
@@ -71,28 +71,25 @@ function getTopCategories(categoryCounts, limit = 10) {
         .map(([category]) => category);
 }
 
-function renderChart(categoryCounts, topCategories) {
+function renderChart(categoryTimeSpent, topCategories) {
     const ctx = document.getElementById('chart');
     if (!ctx) return;
 
     let weeks = new Set();
     topCategories.forEach(category => {
-        Object.keys(categoryCounts[category]).forEach(week => weeks.add(week));
+        Object.keys(categoryTimeSpent[category]).forEach(week => weeks.add(week));
     });
     weeks = new Set(Array.from(weeks).sort());
+    weeks = new Set(Array.from(weeks).slice(-24)); // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
 
-    // Filter weeks to include only the last 6 months
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    weeks = new Set(Array.from(weeks).filter(week => new Date(week) >= sixMonthsAgo));
-
-    const colors = generateColors(topCategories.length);
     const datasets = topCategories.map((category, index) => {
-        const data = Array.from(weeks).map(week => ({ x: new Date(week), y: categoryCounts[category][week] || 0 }));
+        const colors = generateColors(topCategories.length); // Generate colors array
+        const color = colors[index]; // Get the color for the current dataset
+        const data = Array.from(weeks).map(week => ({ x: new Date(week), y: categoryTimeSpent[category][week] || 0 }));
         return {
             label: category,
-            backgroundColor: colors[index], // Set the backgroundColor to match the borderColor
-            borderColor: colors[index], // Use the same color for the border
+            backgroundColor: color,
+            borderColor: color,
             fill: false,
             data,
             borderWidth: 4
@@ -133,7 +130,7 @@ function renderChart(categoryCounts, topCategories) {
                     beginAtZero: true, // Ensure y-axis starts at 0
                     title: {
                         display: true,
-                        text: 'Number of Tickets',
+                        text: 'Total Elapsed TIme (hours)',
                         font: {
                             size: 16,
                             weight: 'bold'
@@ -168,20 +165,20 @@ const app = {
         };
     },
     async created() {
-        getSupportTickets().then(tickets => {
-            filteredTickets = tickets.filter(ticket => ticket.project == "Extole Help");
-            console.log("filteredTickets", filteredTickets);
-            const categoryCounts = countTicketsPerCategoryPerWeek(filteredTickets);
-            const topCategories = getTopCategories(categoryCounts);
-            renderChart(categoryCounts, topCategories);
-        }).catch(error => {
+        try {
+            const tickets = await getSupportTickets();
+            const categoryTimeSpent = calculateTimeSpentPerCategoryPerWeek(tickets);
+            const topCategories = getTopCategories(categoryTimeSpent);
+            renderChart(categoryTimeSpent, topCategories);
+        } catch (error) {
             console.error('Error loading data:', error);
-        });
+        }
     }
 };
 
 Vue.createApp(app).mount('#app');
 
     </script>
+
 </body>
 </html>

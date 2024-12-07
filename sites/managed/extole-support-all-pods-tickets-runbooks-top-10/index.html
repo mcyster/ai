@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>HELP Ticket Velocity</title>
-    <meta name="tags" content="extole,support,help,tickets,velocity">
+    <title>Support Tickets Top 10 Runbooks</title>
+    <meta name="tags" content="extole,support-pods,all,tickets,runbooks">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,38 +25,29 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">HELP - Ticket Velocity</h2>
+            <h2 id="graphTitle">Support Tickets  Top 10 Runbooks (excludes HELP)</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
 
-
-    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+   <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
     <script src="../extole/support-tickets.js"></script>
     <script>
-function countTicketsPerWeek(tickets) {
-    const startCounts = {};
-    const resolveCounts = {};
-    
+function countTicketsPerCategoryPerWeek(tickets) {
+    const categoryCounts = {};
+
     tickets.forEach(ticket => {
-        const startDate = ticket.startDate;
-        const resolutionDate = ticket.resolvedDate || new Date(); // Use current date if not resolved
+        const creationDate = ticket.createdDate;
+        const category = ticket.runbook || 'Uncategorized';
+        const weekEndDate = getWeekEndDate(creationDate);
 
-        const startWeekEnd = getWeekEndDate(startDate);
-        const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
-
-        if (resolveCounts[resolvedWeekEnd] === undefined) {
-            resolveCounts[resolvedWeekEnd] = 0;
+        if (!categoryCounts[category]) {
+            categoryCounts[category] = {};
         }
-        resolveCounts[resolvedWeekEnd]++;
-
-        if (startCounts[startWeekEnd] === undefined) {
-            startCounts[startWeekEnd] = 0;
-        }
-        startCounts[startWeekEnd]++;
+        categoryCounts[category][weekEndDate] = (categoryCounts[category][weekEndDate] || 0) + 1;
     });
 
-    return { startCounts, resolveCounts };
+    return categoryCounts;
 }
 
 function getWeekEndDate(date) {
@@ -67,44 +58,46 @@ function getWeekEndDate(date) {
     return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
 }
 
-function renderChart(startCounts, resolveCounts) {
-    const ctx = document.getElementById('chart');
-    if (!ctx) return;
-    let weeks = Object.keys(startCounts).sort();
-    
-    // Remove the first week unconditionally
-    if (weeks.length > 1) {
-        weeks.shift();
-    }
-    // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
-    if (weeks.length > 24) {
-        weeks = weeks.slice(-24);
+function getTopCategories(categoryCounts, limit = 10) {
+    const categoryTotals = {};
+    for (const category in categoryCounts) {
+        categoryTotals[category] = Object.values(categoryCounts[category]).reduce((sum, count) => sum + count, 0);
     }
 
-    const createData = weeks.map(week => ({ x: new Date(week), y: startCounts[week] || 0 }));
-    const resolveData = weeks.map(week => ({ x: new Date(week), y: resolveCounts[week] || 0 }));
+    return Object.entries(categoryTotals)
+        .sort(([, totalA], [, totalB]) => totalB - totalA)
+        .slice(0, limit)
+        .map(([category]) => category);
+}
+
+function renderChart(categoryCounts, topCategories) {
+    const ctx = document.getElementById('chart');
+    if (!ctx) return;
+
+    let weeks = new Set();
+    topCategories.forEach(category => {
+        Object.keys(categoryCounts[category]).forEach(week => weeks.add(week));
+    });
+    weeks = new Set(Array.from(weeks).sort());
+    weeks = new Set(Array.from(weeks).slice(-24)); // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
+
+    const colors = generateColors(topCategories.length);
+    const datasets = topCategories.map((category, index) => {
+        const data = Array.from(weeks).map(week => ({ x: new Date(week), y: categoryCounts[category][week] || 0 }));
+        return {
+            label: category,
+            backgroundColor: colors[index],
+            borderColor: colors[index],
+            fill: false,
+            data,
+            borderWidth: 4
+        };
+    });
 
     new Chart(ctx, {
         type: 'line',
         data: {
-            datasets: [
-                {
-                    label: 'Tickets Started',
-                    backgroundColor: 'rgba(139, 34, 34, 0.2)',
-                    borderColor: 'rgba(200, 30, 30, 1)',
-                    fill: false,
-                    data: createData,
-                    borderWidth: 4 
-                },
-                {
-                    label: 'Tickets Closed',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(34, 139, 34, 1)',
-                    fill: false,
-                    data: resolveData,
-                    borderWidth: 4 
-                }
-            ]
+            datasets
         },
         options: {
             scales: {
@@ -152,6 +145,17 @@ function renderChart(startCounts, resolveCounts) {
     });
 }
 
+function generateColors(numColors) {
+    const colors = [];
+    const hueStep = 360 / numColors;
+    for (let i = 0; i < numColors; i++) {
+        const hue = i * hueStep;
+        const color = `hsl(${hue}, 50%, 45%)`;
+        colors.push(color);
+    }
+    return colors;
+}
+
 const app = {
     data() {
         return {
@@ -162,13 +166,15 @@ const app = {
         const tickets = await getSupportTickets();
 
         const filteredTickets = tickets.filter(ticket =>
-            ticket.project == "Extole Help"
+            ticket.project != "Extole Help" && ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole'
+
         );
-
+    
         console.log("filteredTickets", filteredTickets);
-
-        const { startCounts, resolveCounts } = countTicketsPerWeek(filteredTickets);
-        renderChart(startCounts, resolveCounts);
+    
+        const categoryCounts = countTicketsPerCategoryPerWeek(filteredTickets);
+        const topCategories = getTopCategories(categoryCounts);
+        renderChart(categoryCounts, topCategories);
     }
 };
 

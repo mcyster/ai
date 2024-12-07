@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>HELP Ticket Velocity</title>
-    <meta name="tags" content="extole,support,help,tickets,velocity">
+    <title>Support Ticket Velocity</title>
+    <meta name="tags" content="extole,support,all-pods,tickets,velocity">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,32 +25,35 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">HELP - Ticket Velocity</h2>
+            <h2 id="graphTitle">Support Ticket Velocity (excludes HELP)</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
 
-
     <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
     <script src="../extole/support-tickets.js"></script>
     <script>
+
 function countTicketsPerWeek(tickets) {
     const startCounts = {};
     const resolveCounts = {};
     
     tickets.forEach(ticket => {
         const startDate = ticket.startDate;
+        if (startDate == null) {
+            console.log("sadness");
+        }
         const resolutionDate = ticket.resolvedDate || new Date(); // Use current date if not resolved
 
         const startWeekEnd = getWeekEndDate(startDate);
         const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
 
-        if (resolveCounts[resolvedWeekEnd] === undefined) {
+        if (!resolveCounts[resolvedWeekEnd]) {
             resolveCounts[resolvedWeekEnd] = 0;
         }
         resolveCounts[resolvedWeekEnd]++;
 
-        if (startCounts[startWeekEnd] === undefined) {
+        if (!startCounts[startWeekEnd]) {
             startCounts[startWeekEnd] = 0;
         }
         startCounts[startWeekEnd]++;
@@ -132,7 +135,7 @@ function renderChart(startCounts, resolveCounts) {
                     }
                 },
                 y: {
-                    beginAtZero: true,
+                    beginAtZero: true, // Ensure y-axis starts at 0
                     title: {
                         display: true,
                         text: 'Number of Tickets',
@@ -162,18 +165,21 @@ const app = {
         const tickets = await getSupportTickets();
 
         const filteredTickets = tickets.filter(ticket =>
-            ticket.project == "Extole Help"
+            ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' && ticket.resolvedDate !== null
         );
+        console.log('filteredTickets:', filteredTickets);
 
-        console.log("filteredTickets", filteredTickets);
+        const ticketCountsPerWeek = countTicketsPerWeek(filteredTickets);
+        console.log("ticketCountsPerWeek", ticketCountsPerWeek);
 
-        const { startCounts, resolveCounts } = countTicketsPerWeek(filteredTickets);
-        renderChart(startCounts, resolveCounts);
+        renderChart(ticketCountsPerWeek.startCounts, ticketCountsPerWeek.resolveCounts);
     }
 };
 
 Vue.createApp(app).mount('#app');
 
     </script>
+
 </body>
 </html>
+

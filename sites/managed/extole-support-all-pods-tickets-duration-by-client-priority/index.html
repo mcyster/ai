@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>HELP Top 10 Runbooks</title>
-    <meta name="tags" content="extole,support,tickets,runbooks,help">
+    <title>Support Ticket Duration by Client Priority</title>
+    <meta name="tags" content="extole,support,all-pods,tickets,client_priority,duration">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,30 +25,41 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">HELP - Top 10 Runbooks</h2>
-            <canvas id="chart"></canvas>
+            <h2 id="graphTitle">Support Ticket Duration by Client Priority (excludes HELP)</h2>
+            <canvas id="durationChart"></canvas>
         </div>
     </div>
-
 
     <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
     <script src="../extole/support-tickets.js"></script>
     <script>
 
-function countTicketsPerCategoryPerWeek(tickets) {
-    const categoryCounts = {};
+function calculateTicketDurationsByPriority(tickets) {
+    const now = new Date();
+    const durationMap = {};
 
     tickets.forEach(ticket => {
-        const creationDate = ticket.createdDate;
-        const category = ticket.runbook || 'Uncategorized';
-        const weekEndDate = getWeekEndDate(creationDate);
+        const resolved = ticket.resolvedDate || now;
+        const duration = (resolved.getTime() - ticket.startDate.getTime()) / (1000 * 60 * 60 * 24); // Duration in days
 
-        if (!categoryCounts[category]) {
-            categoryCounts[category] = {};
+        var clientPriority = ticket.clientPriority || 'Unspecified';
+        if (clientPriority == "high") {
+            clientPriority = "High"
         }
-        categoryCounts[category][weekEndDate] = (categoryCounts[category][weekEndDate] || 0) + 1;
+
+        const weekEndDate = getWeekEndDate(ticket.startDate);
+
+        if (!durationMap[clientPriority]) {
+            durationMap[clientPriority] = {};
+        }
+        if (!durationMap[clientPriority][weekEndDate]) {
+            durationMap[clientPriority][weekEndDate] = [];
+        }
+
+        durationMap[clientPriority][weekEndDate].push(duration);
     });
-    return categoryCounts;
+
+    return durationMap;
 }
 
 function getWeekEndDate(date) {
@@ -59,42 +70,35 @@ function getWeekEndDate(date) {
     return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
 }
 
-function getTopCategories(categoryCounts, limit = 10) {
-    const categoryTotals = {};
-    for (const category in categoryCounts) {
-        categoryTotals[category] = Object.values(categoryCounts[category]).reduce((sum, count) => sum + count, 0);
-    }
-
-    return Object.entries(categoryTotals)
-        .sort(([, totalA], [, totalB]) => totalB - totalA)
-        .slice(0, limit)
-        .map(([category]) => category);
-}
-
-function renderChart(categoryCounts, topCategories) {
-    const ctx = document.getElementById('chart');
+function renderDurationChart(durationMap) {
+    const ctx = document.getElementById('durationChart');
     if (!ctx) return;
 
+    const priorities = Object.keys(durationMap);
     let weeks = new Set();
-    topCategories.forEach(category => {
-        Object.keys(categoryCounts[category]).forEach(week => weeks.add(week));
+
+    priorities.forEach(priority => {
+        weeks = new Set([...weeks, ...Object.keys(durationMap[priority])]);
     });
-    weeks = new Set(Array.from(weeks).sort());
 
-    // Filter weeks to include only the last 6 months
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    weeks = new Set(Array.from(weeks).filter(week => new Date(week) >= sixMonthsAgo));
+    let weekArray = Array.from(weeks).sort();
+    // Ensure we only show the last 24 weeks (6 months)
+    if (weekArray.length > 24) {
+        weekArray = weekArray.slice(-24);
+    }
 
-    const colors = generateColors(topCategories.length);
-    const datasets = topCategories.map((category, index) => {
-        const data = Array.from(weeks).map(week => ({ x: new Date(week), y: categoryCounts[category][week] || 0 }));
+    const datasets = priorities.map(priority => {
+        const data = weekArray.map(week => {
+            const weeklyDurations = durationMap[priority][week] || [];
+            const avgDuration = weeklyDurations.length
+                ? weeklyDurations.reduce((sum, duration) => sum + duration, 0) / weeklyDurations.length
+                : 0;
+            return { x: new Date(week), y: avgDuration };
+        });
         return {
-            label: category,
-            backgroundColor: colors[index], // Set the backgroundColor to match the borderColor
-            borderColor: colors[index], // Use the same color for the border
-            fill: false,
+            label: `${priority}`,
             data,
+            fill: false,
             borderWidth: 4
         };
     });
@@ -122,25 +126,15 @@ function renderChart(categoryCounts, topCategories) {
                             size: 16,
                             weight: 'bold'
                         }
-                    },
-                    ticks: {
-                        font: {
-                            weight: 'bold'
-                        }
                     }
                 },
                 y: {
                     beginAtZero: true, // Ensure y-axis starts at 0
                     title: {
                         display: true,
-                        text: 'Number of Tickets',
+                        text: 'Average Ticket Duration (days)',
                         font: {
                             size: 16,
-                            weight: 'bold'
-                        }
-                    },
-                    ticks: {
-                        font: {
                             weight: 'bold'
                         }
                     }
@@ -150,17 +144,6 @@ function renderChart(categoryCounts, topCategories) {
     });
 }
 
-function generateColors(numColors) {
-    const colors = [];
-    const hueStep = 360 / numColors;
-    for (let i = 0; i < numColors; i++) {
-        const hue = i * hueStep;
-        const color = `hsl(${hue}, 50%, 45%)`;
-        colors.push(color);
-    }
-    return colors;
-}
-
 const app = {
     data() {
         return {
@@ -168,12 +151,23 @@ const app = {
         };
     },
     async created() {
+        const startDate = new Date();
+        startDate.setMonth(startDate.getMonth() - 6);
+
         getSupportTickets().then(tickets => {
-            filteredTickets = tickets.filter(ticket => ticket.project == "Extole Help");
+ 
+            const filteredTickets = tickets
+                .filter(ticket => ticket.project != "Extole Help")
+                //.filter(ticket => ticket.clientPriority != "Unspecified")
+                .filter(ticket => ticket.clientShortName && ticket.clientShortName.toLowerCase() !== "Extole".toLowerCase())
+                .filter(ticket => ticket.createdDate >= startDate);
+
+            //console.log("unspecified", tickets.filter(ticket =>  ticket.clientPriority != "Unspecified"));
+
             console.log("filteredTickets", filteredTickets);
-            const categoryCounts = countTicketsPerCategoryPerWeek(filteredTickets);
-            const topCategories = getTopCategories(categoryCounts);
-            renderChart(categoryCounts, topCategories);
+
+            const durationMap = calculateTicketDurationsByPriority(filteredTickets);
+            renderDurationChart(durationMap);
         }).catch(error => {
             console.error('Error loading data:', error);
         });
@@ -181,7 +175,7 @@ const app = {
 };
 
 Vue.createApp(app).mount('#app');
-
     </script>
+
 </body>
 </html>
