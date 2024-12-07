@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Guru Pod Reward Monitoring Tickets</title>
+    <meta name="tags" content="extole,support,guru-pod,tickets,monitoring,reward">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Guru Pod - Reward Monitoring Tickets</h2>
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+  <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
+    <script>
+
+function countTicketsPerWeek(tickets) {
+    const startCounts = {};
+    const resolveCounts = {};
+    const validCounts = {};
+    const invalidCounts = {};
+
+    tickets.forEach(ticket => {
+        const startDate = ticket.startDate;
+        const resolutionDate = ticket.resolvedDate || new Date(); // Use current date if not resolved
+
+        const startWeekEnd = getWeekEndDate(startDate);
+        const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
+
+        if (resolveCounts[resolvedWeekEnd] === undefined) {
+            resolveCounts[resolvedWeekEnd] = 0;
+        }
+        resolveCounts[resolvedWeekEnd]++;
+
+        if (validCounts[resolvedWeekEnd] === undefined) {
+            validCounts[resolvedWeekEnd] = 0;
+        }
+        if (ticket.labels.includes("valid")) {
+            validCounts[resolvedWeekEnd]++
+        }
+        if (invalidCounts[resolvedWeekEnd] === undefined) {
+            invalidCounts[resolvedWeekEnd] = 0;
+        }
+        if (ticket.labels.includes("invalid")) {
+            invalidCounts[resolvedWeekEnd]++
+        }
+          
+        if (startCounts[startWeekEnd] === undefined) {
+            startCounts[startWeekEnd] = 0;
+        }
+         
+        startCounts[startWeekEnd]++;
+
+    });
+
+    return { startCounts, resolveCounts, validCounts, invalidCounts };
+}
+
+function getWeekEndDate(date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
+
+function renderChart(startCounts, resolveCounts, validCounts, invalidCounts) {
+    const ctx = document.getElementById('chart');
+    if (!ctx) return;
+    let weeks = Object.keys(startCounts).sort();
+
+    // Remove the first week unconditionally
+    if (weeks.length > 1) {
+        weeks.shift();
+    }
+    // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
+    if (weeks.length > 24) {
+        weeks = weeks.slice(-24);
+    }
+
+    const createData = weeks.map(week => ({ x: new Date(week), y: startCounts[week] || 0 }));
+    const resolveData = weeks.map(week => ({ x: new Date(week), y: resolveCounts[week] || 0 }));
+    const validData = weeks.map(week => ({ x: new Date(week), y: validCounts[week] || 0 }));
+    const invalidData = weeks.map(week => ({ x: new Date(week), y: invalidCounts[week] || 0 }));
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: [
+                {
+                    label: 'Tickets Started',
+                    backgroundColor: 'rgba(139, 34, 34, 0.2)',
+                    borderColor: 'rgba(200, 30, 30, 1)',
+                    fill: false,
+                    data: createData,
+                    borderWidth: 4
+                },
+                {
+                    label: 'Tickets Closed',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(34, 139, 34, 1)',
+                    fill: false,
+                    data: resolveData,
+                    borderWidth: 4
+                },
+                {
+                    label: 'Valid Tickets',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(144, 238, 144, 1)',
+                    fill: false,
+                    data: validData,
+                    borderWidth: 2
+                },
+                {
+                    label: 'Invalid Tickets',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(255, 182, 193, 1)',
+                    fill: false,
+                    data: invalidData,
+                    borderWidth: 2
+                }
+            ]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Tickets',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+const app = {
+    data() {
+        return {
+            jsonData: []
+        };
+    },
+    async created() {
+        try {
+            const tickets = await getSupportTickets();
+            const filteredTickets = tickets.filter(ticket => ticket.runbook && ticket.runbook.includes("Triage - Rewards Monitoring"));
+            console.log("filteredTickets", filteredTickets);
+            const { startCounts, resolveCounts, validCounts, invalidCounts } = countTicketsPerWeek(filteredTickets);
+            renderChart(startCounts, resolveCounts, validCounts, invalidCounts);
+        } catch (error) {
+            console.error('Error loading data:', error);
+        }
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
+
+    </script>
+</body>
+</html>

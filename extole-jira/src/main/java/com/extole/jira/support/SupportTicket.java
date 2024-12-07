@@ -7,7 +7,7 @@ import java.util.List;
 
 public record SupportTicket(String key, String project, String summary, String description, Instant createdDate,
         Instant resolvedDate, String priority, String issueType, String status, List<String> labels, String reporter,
-        String assignee, String runbook, String runbookUsage, String activity, String detailedActivity,
+        String assignee, String runbook, String runbookUsage, String activity, String activityCategory,
         String clientShortName, String clientId, Instant statusChangeDate, String csm, String pod,
         String clientPriority, Duration duration, Instant startDate, Instant requestedStartDate,
         Instant requestedDueDate, List<Comment> comments) {
@@ -32,7 +32,7 @@ public record SupportTicket(String key, String project, String summary, String d
         private String runbook;
         private String runbookUsage;
         private String activity;
-        private String detailedActivity;
+        private String activityCategory;
         private String clientShortName;
         private String clientId;
         private Instant statusChangeDate;
@@ -120,8 +120,8 @@ public record SupportTicket(String key, String project, String summary, String d
             return this;
         }
 
-        public Builder detailedActivity(String detailedActivity) {
-            this.detailedActivity = detailedActivity;
+        public Builder activityCategory(String activityCategory) {
+            this.activityCategory = activityCategory;
             return this;
         }
 
@@ -187,7 +187,7 @@ public record SupportTicket(String key, String project, String summary, String d
 
         public SupportTicket build() {
             return new SupportTicket(key, project, summary, description, createdDate, resolvedDate, priority, issueType,
-                    status, labels, reporter, assignee, runbook, runbookUsage, activity, detailedActivity,
+                    status, labels, reporter, assignee, runbook, runbookUsage, activity, activityCategory,
                     clientShortName, clientId, statusChangeDate, csm, pod, clientPriority, duration, startDate,
                     requestedStartDate, requestedDueDate, comments);
         }

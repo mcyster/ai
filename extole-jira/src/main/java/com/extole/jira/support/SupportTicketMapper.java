@@ -48,7 +48,7 @@ class SupportTicketMapper implements TicketMapper<SupportTicket> {
             add("customfield_11390"); // requestedDueDate
             add("customfield_11391"); // estimatedDeliveryDate, format sad ...
             add("customfield_11379"); // RunbookUsage
-
+            add("customfield_11392"); // Activity
             add("aggregatetimespent");
 
         }
@@ -114,8 +114,14 @@ class SupportTicketMapper implements TicketMapper<SupportTicket> {
         ticketBuilder.runbook(fields.path("parent").path("fields").path("summary").asText(null));
         ticketBuilder.runbookUsage(fields.path("customfield_11379").asText(null));
 
-        ticketBuilder.activity("tbd");
-        ticketBuilder.detailedActivity("tbd");
+        JsonNode activity = fields.path("customfield_11392");
+        if (activity != null) {
+            ticketBuilder.activityCategory(activity.path("value").asText("Uncategorized"));
+            ticketBuilder.activity(activity.path("child").path("value").asText("Uncategorized"));
+        } else {
+            ticketBuilder.activityCategory("Uncategorized");
+            ticketBuilder.activity("Uncategorized");
+        }
 
         ticketBuilder.resolvedDate(toInstant(fields.path("resolutiondate").asText(null)));
 

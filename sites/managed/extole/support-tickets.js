@@ -23,7 +23,7 @@
  * @property {string} runbook
  * @property {string|null} runbookUsage
  * @property {string} activity
- * @property {string} detailedActivity
+ * @property {string} activityCategory
  * @property {string} clientShortName
  * @property {string} clientId
  * @property {string} statusChangeDate
