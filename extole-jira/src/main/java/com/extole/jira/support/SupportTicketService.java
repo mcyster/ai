@@ -61,7 +61,8 @@ public class SupportTicketService implements TicketService<SupportTicket> {
 
         try {
             this.jiraWebClientFactory.getWebClient().put()
-                    .uri(uriBuilder -> uriBuilder.path("/rest/api/3/issue/" + ticketNumber).build())
+                    .uri(uriBuilder -> uriBuilder.path("/rest/api/3/issue/" + ticketNumber)
+                            .queryParam("notifyUsers", "false").build())
                     .accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON).bodyValue(payload)
                     .retrieve()
                     .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response -> response
