@@ -11,7 +11,7 @@ cd $AI_HOME
 ./gradlew :jira-app:build
 
 scp $AI_HOME/scripts/* ubuntu@prod-ai:ai/scripts
-scp $AI_HOME/jira-app/build/libs/jira-app-0.0.1-SNAPSHOT.jar ubuntu@prod-ai:ai/jira-app/libs
+scp $AI_HOME/jira-app/build/libs/jira-app-0.0.1-SNAPSHOT.jar ubuntu@prod-ai:ai/jira-app/build/libs
 
 #ssh ubuntu@prod-ai 'jira-app -r'
 echo "You will need to:"

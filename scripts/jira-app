@@ -45,7 +45,7 @@ app_home=$AI_HOME/jira-app
 
 mkdir -p $app_home/logs
 
-jar="$(find $app_home/libs -name "jira-app*.jar" | sort | tail -1)"
+jar="$(find $app_home/build/libs -name "jira-app*SNAPSHOT.jar" | sort | tail -1)"
 
 if [ $restart -eq 1 ]; then
     if pgrep -n -f $jar >/dev/null; then

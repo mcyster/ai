@@ -2,7 +2,6 @@
 plugins {
     id 'org.springframework.boot' version "${springBootVersion}"
     id 'io.spring.dependency-management' version "${dependencyManagementVersion}"
-    id 'application'
     id 'java'
 }
 
@@ -15,7 +14,7 @@ repositories {
 dependencies {
     implementation 'jakarta.servlet:jakarta.servlet-api:6.1.0'
 
-    implementation 'org.springframework:spring-webmvc' 
+    implementation 'org.springframework:spring-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
@@ -37,7 +36,12 @@ dependencies {
     implementation project(':weave-rest')
     implementation project(':web-rest')
     implementation project(':extole-rest')
-    
+
     testImplementation('org.springframework.boot:spring-boot-starter-test')
+}
+
+
+bootJar {
+    enabled = true
 }
 
