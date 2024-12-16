@@ -3,25 +3,32 @@ package com.cyster.ai.weave.impl.advisor.assistant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.cyster.ai.weave.impl.openai.OpenAiService;
-import com.cyster.ai.weave.service.conversation.Conversation;
+import com.cyster.ai.weave.service.conversation.AdvisorConversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 
-public class AssistantAdvisorConversation<CONTEXT> implements Conversation {
-
-    private List<Message> messages = new ArrayList<>();
-    private List<Message> newMessages = new ArrayList<>();
-    private AssistantAdvisorThread<CONTEXT> assistantAdvisorThread;
+public class AssistantAdvisorConversation<CONTEXT> implements AdvisorConversation {
+    private final String id;
+    private final List<Message> messages = new ArrayList<>();
+    private final List<Message> newMessages = new ArrayList<>();
+    private final AssistantAdvisorThread<CONTEXT> assistantAdvisorThread;
 
     AssistantAdvisorConversation(OpenAiService openAiService, String assistantName, String assistantId, Toolset toolset,
             Optional<String> overrideInstructions, CONTEXT context) {
+        this.id = UUID.randomUUID().toString();
         this.assistantAdvisorThread = new AssistantAdvisorThread<>(openAiService, assistantName, assistantId, toolset,
                 overrideInstructions, context);
+    }
+
+    @Override
+    public String id() {
+        return this.id;
     }
 
     @Override
@@ -59,7 +66,7 @@ public class AssistantAdvisorConversation<CONTEXT> implements Conversation {
     }
 
     @Override
-    public List<Message> getMessages() {
+    public List<Message> messages() {
         return Stream.concat(this.messages.stream(), this.newMessages.stream()).collect(Collectors.toList());
     }
 

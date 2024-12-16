@@ -2,9 +2,10 @@ package com.cyster.ai.weave.impl.advisor.assistant;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.cyster.ai.weave.service.conversation.Conversation;
+import com.cyster.ai.weave.service.conversation.AdvisorConversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
@@ -14,15 +15,20 @@ import io.github.stefanbratanov.jvm.openai.ChatMessage;
 import io.github.stefanbratanov.jvm.openai.CreateChatCompletionRequest;
 import io.github.stefanbratanov.jvm.openai.OpenAI;
 
-public class ChatAdvisorConversation implements Conversation {
-    private final String MODEL = "gpt-4o";
-
+public class ChatAdvisorConversation implements AdvisorConversation {
+    private static final String MODEL = "gpt-4o";
+    private final String id;
     private OpenAI openAi;
     private List<Message> messages;
 
     ChatAdvisorConversation(OpenAI openAi, List<Message> messages) {
+        this.id = UUID.randomUUID().toString();
         this.openAi = openAi;
         this.messages = messages;
+    }
+
+    public String id() {
+        return this.id;
     }
 
     @Override
@@ -48,9 +54,7 @@ public class ChatAdvisorConversation implements Conversation {
             }
         }
 
-        var requestBuilder = CreateChatCompletionRequest.newBuilder()
-            .model(MODEL)
-            .messages(chatMessages);
+        var requestBuilder = CreateChatCompletionRequest.newBuilder().model(MODEL).messages(chatMessages);
 
         var result = chatClient.createChatCompletion(requestBuilder.build());
 
@@ -74,14 +78,12 @@ public class ChatAdvisorConversation implements Conversation {
         // TODO Auto-generated method stub
         return null;
     }
-    
+
     @Override
-    public List<Message> getMessages() {
+    public List<Message> messages() {
         return messages.stream()
-            .filter(message -> message.getType() == Message.Type.AI || message.getType() == Message.Type.USER)
-            .collect(Collectors.toList());
+                .filter(message -> message.getType() == Message.Type.AI || message.getType() == Message.Type.USER)
+                .collect(Collectors.toList());
     }
-
-
 
 }

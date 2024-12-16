@@ -2,16 +2,10 @@ package com.cyster.ai.weave.service.conversation;
 
 import java.util.List;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
-import com.cyster.ai.weave.service.conversation.Message.Type;
-
 public interface Conversation {
 
-    Message addMessage(Type type, String message);
+    String id();
 
-    Message respond() throws ConversationException;
+    List<Message> messages();
 
-    Message respond(OperationLogger operation) throws ConversationException;
-
-    List<Message> getMessages();
 }

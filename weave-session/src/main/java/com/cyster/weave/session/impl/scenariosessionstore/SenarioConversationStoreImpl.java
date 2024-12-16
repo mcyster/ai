@@ -9,21 +9,19 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.conversation.Conversation;
-import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.weave.session.service.scenariosession.ScenarioSession;
-import com.cyster.weave.session.service.scenariosession.ScenarioSessionStore;
+import com.cyster.ai.weave.service.conversation.ScenarioConversation;
+import com.cyster.weave.session.service.scenariosession.ScenarioConversationStore;
 
 @Component
-public class SenarioSessioStoreImpl implements ScenarioSessionStore {
+public class SenarioConversationStoreImpl implements ScenarioConversationStore {
 
-    Map<String, ScenarioSession<?, ?>> store;
+    Map<String, ScenarioConversation> store;
 
-    SenarioSessioStoreImpl() {
-        this.store = new HashMap<String, ScenarioSession<?, ?>>();
+    SenarioConversationStoreImpl() {
+        this.store = new HashMap<String, ScenarioConversation>();
     }
 
-    public Optional<ScenarioSession<?, ?>> getSession(String id) {
+    public Optional<ScenarioConversation> getSession(String id) {
         if (this.store.containsKey(id)) {
             return Optional.of(this.store.get(id));
         } else {
@@ -32,29 +30,27 @@ public class SenarioSessioStoreImpl implements ScenarioSessionStore {
     }
 
     @Override
-    public <PARAMETERS, CONTEXT> ScenarioSession<PARAMETERS, CONTEXT> addSession(String id,
-            Scenario<PARAMETERS, CONTEXT> scenario, PARAMETERS parameters, Conversation conversation) {
-        if (this.store.containsKey(id)) {
-            throw new RuntimeException("Id taken " + id);
+    public <PARAMETERS, CONTEXT> ScenarioConversation addConversation(ScenarioConversation scenarioConversation) {
+        if (this.store.containsKey(scenarioConversation.id())) {
+            throw new RuntimeException("Id taken " + scenarioConversation.id());
         }
-        var session = new ScenarioSessionImpl<PARAMETERS, CONTEXT>(id, scenario, parameters, conversation);
 
-        this.store.put(id, session);
+        this.store.put(scenarioConversation.id(), scenarioConversation);
 
-        return session;
+        return scenarioConversation;
     }
 
     public QueryBuilder createQueryBuilder() {
         return new QueryBuilderImpl(this.store);
     }
 
-    public static class QueryBuilderImpl implements ScenarioSessionStore.QueryBuilder {
-        Map<String, ScenarioSession<?, ?>> store;
+    public static class QueryBuilderImpl implements ScenarioConversationStore.QueryBuilder {
+        Map<String, ScenarioConversation> store;
         int offset = 0;
         int limit = 100;
         Map<String, String> filterParameters = new HashMap<>();
 
-        QueryBuilderImpl(Map<String, ScenarioSession<?, ?>> store) {
+        QueryBuilderImpl(Map<String, ScenarioConversation> store) {
             this.store = store;
         }
 
@@ -75,15 +71,15 @@ public class SenarioSessioStoreImpl implements ScenarioSessionStore {
             return this;
         }
 
-        public List<ScenarioSession<?, ?>> list() {
+        public List<ScenarioConversation> list() {
             return this.store.entrySet().stream().filter(this::filterByParameters).skip(this.offset).limit(this.limit)
                     .map(Map.Entry::getValue).collect(Collectors.toList());
         }
 
-        private Boolean filterByParameters(Map.Entry<String, ScenarioSession<?, ?>> sessionEntry) {
+        private Boolean filterByParameters(Map.Entry<String, ScenarioConversation> sessionEntry) {
             Boolean match = true;
 
-            Object parameters = sessionEntry.getValue().getParameters();
+            Object parameters = sessionEntry.getValue().parameters();
             for (Map.Entry<String, String> filter : filterParameters.entrySet()) {
                 try {
                     if (parameters == null) {

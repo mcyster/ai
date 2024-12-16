@@ -2,6 +2,8 @@
 
 # Next
 
+- endpoint to turn schema into json example
+- summarize the campaign changes for a message for the campaign change log
 - provide ability to get a url reference to the current conversation
   - context for scenaio == context for tool
     - want adapter for extole super -> extole admin (scenario context != tool context)

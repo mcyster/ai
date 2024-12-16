@@ -46,8 +46,7 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Parame
     }
 
     @Override
-    public com.cyster.ai.weave.service.scenario.Scenario.ConversationBuilder createConversationBuilder(
-            Parameters parameters, ExtoleSessionContext context) {
+    public ConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSessionContext context) {
         var builder = this.getScenario().createConversationBuilder(parameters, context);
 
         if (parameters != null && parameters.prehandlerId != null) {

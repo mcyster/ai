@@ -2,9 +2,10 @@ package com.extole.jira.support;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -15,32 +16,35 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
 class SupportTicketClients {
-    private AtomicReference<Instant> lastUpdated = new AtomicReference<>();;
-    private AtomicReference<Map<String, Integer>> clients = new AtomicReference<>();;
+    private final AtomicReference<Instant> lastUpdated = new AtomicReference<>();
+    private final AtomicReference<Map<String, Client>> clients = new AtomicReference<>();
 
-    private JiraWebClientFactory jiraWebClientFactory;
+    private final JiraWebClientFactory jiraWebClientFactory;
 
     public SupportTicketClients(JiraWebClientFactory jiraWebClientFactory) {
         this.jiraWebClientFactory = jiraWebClientFactory;
     }
 
-    public Integer getJiraOrganizationIndexFromClientShortName(String clientShortName) throws TicketException {
+    public Integer getJiraClientIndexForClientShortName(String clientShortName) throws TicketException {
         var clients = getClients();
+
+        // clients.forEach((key, value) -> System.out.println(key + " -> " + value));
+
         if (!clients.containsKey(clientShortName)) {
             throw new TicketException("Client shortName not found: " + clientShortName);
         }
-        return clients.get(clientShortName);
+        return clients.get(clientShortName).id();
     }
 
-    public String getClientShortNameForJiraOrganizationIndex(Integer organizationIndex) throws TicketException {
+    public String getClientShortNameForJiraClientIndex(Integer jiraClientIndex) throws TicketException {
         var clients = getClients();
 
-        return clients.entrySet().stream().filter(entry -> entry.getValue().equals(organizationIndex))
+        return clients.entrySet().stream().filter(entry -> entry.getValue().equals(jiraClientIndex))
                 .map(Map.Entry::getKey).findFirst()
-                .orElseThrow(() -> new TicketException("Organization index not found: " + organizationIndex));
+                .orElseThrow(() -> new TicketException("Client index not found: " + jiraClientIndex));
     }
 
-    private Map<String, Integer> getClients() throws TicketException {
+    private Map<String, Client> getClients() throws TicketException {
         if (needsRefresh()) {
             refresh();
         }
@@ -55,47 +59,52 @@ class SupportTicketClients {
     }
 
     private boolean needsRefresh() {
-        if (lastUpdated.get() == null) {
-            return true;
-        }
-
-        return ChronoUnit.HOURS.between(lastUpdated.get(), Instant.now()) >= 1;
+        var lastRefresh = lastUpdated.get();
+        return lastRefresh == null || ChronoUnit.HOURS.between(lastRefresh, Instant.now()) >= 1;
     }
 
-    private Map<String, Integer> loadClients() throws TicketException {
-        var organizations = new HashMap<String, Integer>();
-
-        int offset = 0;
-        final int limit = 50;
+    private Map<String, Client> loadClients() throws TicketException {
+        var clients = new ArrayList<Client>();
 
         try {
-            while (true) {
-                final int start = offset;
-                JsonNode result = this.jiraWebClientFactory.getWebClient().get()
-                        .uri(uriBuilder -> uriBuilder.path("/rest/servicedeskapi/organization")
-                                .queryParam("start", start).queryParam("limit", limit).build())
-                        .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class).block();
+            JsonNode result = this.jiraWebClientFactory.getWebClient().get()
+                    .uri("/rest/api/3/issue/createmeta?expand=projects.issuetypes.fields")
+                    .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class).block();
 
-                if (result != null && result.has("values")) {
-                    for (JsonNode organizationNode : result.get("values")) {
-                        String name = organizationNode.get("name").asText();
-                        int id = organizationNode.get("id").asInt();
-                        organizations.put(name, id);
-                    }
+            if (result != null && result.has("projects")) {
+                result.get("projects").forEach(project -> {
+                    project.get("issuetypes").forEach(issueType -> {
+                        if (issueType.has("fields") && issueType.get("fields").has("customfield_11312")) {
+                            JsonNode allowedValues = issueType.get("fields").get("customfield_11312")
+                                    .get("allowedValues");
+                            if (allowedValues != null) {
+                                allowedValues.forEach(value -> {
+                                    String clientValue = value.get("value").asText();
+                                    String[] clientParts = clientValue.split("-");
 
-                    if (result.get("isLastPage").asBoolean()) {
-                        break;
-                    }
+                                    if (clientParts.length == 2) {
+                                        // this has problems as the names are not consistent
+                                        String clientShortName = clientParts[0].trim().replaceAll("(?i)VIP.*$", "")
+                                                .trim().toLowerCase();
+                                        String clientId = clientParts[1].trim();
 
-                    offset += limit;
-                } else {
-                    break;
-                }
+                                        int id = value.get("id").asInt();
+                                        clients.add(new Client(clientShortName, clientId, id));
+                                    }
+                                });
+                            }
+                        }
+                    });
+                });
             }
         } catch (Throwable exception) {
             throw new TicketException("Unable to load client list", exception);
         }
 
-        return organizations;
+        return clients.stream()
+                .collect(Collectors.toMap(Client::shortName, client -> client, (existing, duplicate) -> existing));
     }
+
+    record Client(String shortName, String clientId, Integer id) {
+    };
 }

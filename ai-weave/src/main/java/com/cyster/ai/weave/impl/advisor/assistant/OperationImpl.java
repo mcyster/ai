@@ -24,7 +24,7 @@ public class OperationImpl implements Operation, OperationLogger {
     public OperationImpl(Level level, String description, Object context) {
         this.level = level;
         this.description = description;
-        this.context = Optional.of(context);
+        this.context = Optional.ofNullable(context);
         this.children = new CopyOnWriteArrayList<>();
     }
 
@@ -41,7 +41,7 @@ public class OperationImpl implements Operation, OperationLogger {
         this.context = Optional.of(context);
         this.children = new CopyOnWriteArrayList<>();
     }
-    
+
     public OperationImpl(String description) {
         this.level = Level.Normal;
         this.description = description;
@@ -66,17 +66,17 @@ public class OperationImpl implements Operation, OperationLogger {
 
     @Override
     public Optional<Object> context() {
-       return context;
+        return context;
     }
 
     @Override
     public void log(String description, Object context) {
-       children.add(new OperationImpl(level, description, context));
+        children.add(new OperationImpl(level, description, context));
     }
 
     @Override
     public void log(Level level, String description, Object context) {
-       children.add(new OperationImpl(level, description, context));
+        children.add(new OperationImpl(level, description, context));
     }
 
     @Override
@@ -92,7 +92,7 @@ public class OperationImpl implements Operation, OperationLogger {
         children.add(operation);
         return operation;
     }
-    
+
     @Override
     public OperationLogger childLogger(Level level, String description) {
         var operation = new OperationImpl(level, description);
@@ -100,7 +100,6 @@ public class OperationImpl implements Operation, OperationLogger {
         return operation;
     }
 
-    
     @Override
     public String toString() {
         ObjectMapper objectMapper = new ObjectMapper();

@@ -1,7 +1,6 @@
 package com.cyster.scheduler.impl;
 
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.quartz.Job;
@@ -13,16 +12,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
+import com.cyster.ai.weave.service.conversation.ScenarioConversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.Scenario.ConversationBuilder;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
-import com.cyster.weave.session.service.scenariosession.ScenarioSession;
-import com.cyster.weave.session.service.scenariosession.ScenarioSessionStore;
+import com.cyster.weave.session.service.scenariosession.ScenarioConversationStore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,7 +31,7 @@ public class ScheduledJob implements Job {
     private final ObjectMapper objectMapper;
     private final ApplicationContext applicationContext;
     private AtomicReference<Optional<ScenarioSet>> lazyScenarioSet;
-    private AtomicReference<Optional<ScenarioSessionStore>> lazyScenarioSessionStore;
+    private AtomicReference<Optional<ScenarioConversationStore>> lazyScenarioSessionStore;
 
     public ScheduledJob(ObjectMapper objectMapper, ApplicationContext applicationContext) {
         this.objectMapper = objectMapper;
@@ -73,24 +71,24 @@ public class ScheduledJob implements Job {
             }
         }
 
-        ScenarioSession<?, ?> scenarioSession = createScenarioSession(scenario, parameters, null);
+        ScenarioConversation scenarioConversation = createScenarioSession(scenario, parameters, null);
 
-        logger.info("Scheduled scenario session id: " + scenarioSession.getId() + " started");
+        logger.info("Scheduled scenario session id: " + scenarioConversation.id() + " started");
 
-        Conversation conversation = scenarioSession.getConversation();
         if (prompt != null) {
-            conversation.addMessage(Type.USER, prompt);
+            scenarioConversation.addMessage(Type.USER, prompt);
         }
 
         Message message;
         try {
-            message = conversation.respond();
+            message = scenarioConversation.respond();
         } catch (ConversationException exception) {
             logger.error("Failed to execute scheduled scenario " + scenarioName, exception);
             return;
         }
 
-        logger.info("Scheduled scenario session id: " + scenarioSession.getId() + " response: " + message.getContent());
+        logger.info(
+                "Scheduled scenario session id: " + scenarioConversation.id() + " response: " + message.getContent());
     }
 
     private ScenarioSet getScenarioSet() {
@@ -102,27 +100,24 @@ public class ScheduledJob implements Job {
         }).orElseThrow(() -> new RuntimeException("Unable to initialize scenario set"));
     }
 
-    private ScenarioSessionStore scenarioSessionStore() {
+    private ScenarioConversationStore scenarioConversationStore() {
         return lazyScenarioSessionStore.updateAndGet(currentValue -> {
             if (!currentValue.isPresent()) {
-                return Optional.of(applicationContext.getBean(ScenarioSessionStore.class));
+                return Optional.of(applicationContext.getBean(ScenarioConversationStore.class));
             }
             return currentValue;
         }).orElseThrow(() -> new RuntimeException("Unable to initialize scenario set"));
     }
 
     @SuppressWarnings("unchecked")
-    private <PARAMETERS, CONTEXT> ScenarioSession<PARAMETERS, CONTEXT> createScenarioSession(
-            Scenario<PARAMETERS, CONTEXT> scenario, Object parameters, Object context) {
+    private <PARAMETERS, CONTEXT> ScenarioConversation createScenarioSession(Scenario<PARAMETERS, CONTEXT> scenario,
+            Object parameters, Object context) {
         PARAMETERS castParameters = (PARAMETERS) parameters;
         CONTEXT castContext = (CONTEXT) context;
 
-        var id = UUID.randomUUID().toString();
-        // TODO use id for context so ConversationController
-
         ConversationBuilder conversationBuilder = scenario.createConversationBuilder(castParameters, castContext);
-        Conversation conversation = conversationBuilder.start();
+        ScenarioConversation conversation = conversationBuilder.start();
 
-        return scenarioSessionStore().addSession(id, scenario, castParameters, conversation);
+        return scenarioConversationStore().addConversation(conversation);
     }
 }

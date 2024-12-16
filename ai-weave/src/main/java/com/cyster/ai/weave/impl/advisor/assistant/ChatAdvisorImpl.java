@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.cyster.ai.weave.impl.advisor.Advisor;
-import com.cyster.ai.weave.service.conversation.Conversation;
+import com.cyster.ai.weave.service.conversation.AdvisorConversation;
 import com.cyster.ai.weave.service.conversation.Message;
 
 import io.github.stefanbratanov.jvm.openai.OpenAI;
@@ -57,7 +57,7 @@ public class ChatAdvisorImpl<C> implements Advisor<C> {
         }
 
         @Override
-        public Conversation start() {
+        public AdvisorConversation start() {
             // TODO implement overrideInstruction
             return new ChatAdvisorConversation(ChatAdvisorImpl.this.openAi, ChatAdvisorImpl.this.messages);
         }

@@ -21,11 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
+import com.cyster.ai.weave.service.conversation.ScenarioConversation;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
-import com.cyster.weave.session.service.scenariosession.ScenarioSession;
-import com.cyster.weave.session.service.scenariosession.ScenarioSessionStore;
+import com.cyster.weave.session.service.scenariosession.ScenarioConversationStore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,16 +35,16 @@ import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
 public class ConversationController {
     private static final String PARAMETER_PREFIX = "parameter.";
 
-    private ScenarioSessionStore scenarioSessionStore;
+    private ScenarioConversationStore scenarioConversationStore;
     private ScenarioSet scenarioStore;
     private ObjectMapper objectMapper;
     private List<ScenarioContextFactory<?>> contextFactories;
 
     private static final Logger logger = LoggerFactory.getLogger(ConversationController.class);
 
-    public ConversationController(ScenarioSessionStore scenarioSessionStore, ScenarioSet scenarioStore,
+    public ConversationController(ScenarioConversationStore scenarioSessionStore, ScenarioSet scenarioStore,
             List<ScenarioContextFactory<?>> contextFactories) {
-        this.scenarioSessionStore = scenarioSessionStore;
+        this.scenarioConversationStore = scenarioSessionStore;
         this.scenarioStore = scenarioStore;
         this.contextFactories = contextFactories;
         this.objectMapper = new ObjectMapper();
@@ -56,18 +56,21 @@ public class ConversationController {
     public List<ConversationResponse> index(@RequestParam Map<String, String> allParameters,
             @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level) {
 
-        var scenarioQueryBuilder = scenarioSessionStore.createQueryBuilder();
+        var scenarioConverstationQueryBuilder = scenarioConversationStore.createQueryBuilder();
 
         allParameters.entrySet().stream().filter(entry -> entry.getKey().startsWith(PARAMETER_PREFIX))
                 .forEach(entry -> {
                     String parameterName = entry.getKey().substring(PARAMETER_PREFIX.length());
-                    scenarioQueryBuilder.withFilterParameter(parameterName, entry.getValue());
+                    scenarioConverstationQueryBuilder.withFilterParameter(parameterName, entry.getValue());
                 });
 
-        return scenarioQueryBuilder.list().stream()
-                .map(value -> new ConversationResponse.Builder(level).setId(value.getId())
-                        .setScenario(value.getScenario().getName()).setParameters(value.getParameters())
-                        .setMessages(value.getConversation().getMessages()).build())
+        List<ScenarioConversation> conversations = scenarioConverstationQueryBuilder.list();
+
+        return conversations.stream()
+                .map(scenarioConversation -> new ConversationResponse.Builder(level).setId(scenarioConversation.id())
+                        .setScenario(scenarioConversation.scenarioType().name())
+                        .setParameters(scenarioConversation.parameters()).setMessages(scenarioConversation.messages())
+                        .build())
                 .collect(Collectors.toList());
     }
 
@@ -89,12 +92,10 @@ public class ConversationController {
             throw new ScenarioNameNotFoundRestException(request.scenario());
         }
 
-        var session = createScenarioSession(scenario, request.parameters(), headers);
+        var conversation = createScenarioConversation(scenario, request.parameters(), headers);
 
-        var conversation = session.getConversation();
-
-        return new ConversationResponse.Builder(level).setId(session.getId()).setScenario(scenario.getName())
-                .setParameters(session.getParameters()).setMessages(conversation.getMessages()).build();
+        return new ConversationResponse.Builder(level).setId(conversation.id()).setScenario(scenario.getName())
+                .setParameters(conversation.parameters()).setMessages(conversation.messages()).build();
     }
 
     @GetMapping("/conversations/{id}")
@@ -105,14 +106,14 @@ public class ConversationController {
         if (id == null || id.isBlank()) {
             throw new ScenarioSessionNotSpecifiedRestException();
         }
-        Optional<ScenarioSession<?, ?>> session = this.scenarioSessionStore.getSession(id);
-        if (session.isEmpty()) {
+        Optional<ScenarioConversation> conversation = this.scenarioConversationStore.getSession(id);
+        if (conversation.isEmpty()) {
             throw new ScenarioSessionNotFoundRestException(id);
         }
 
-        return new ConversationResponse.Builder(level).setId(session.get().getId())
-                .setScenario(session.get().getScenario().getName()).setParameters(session.get().getParameters())
-                .setMessages(session.get().getConversation().getMessages()).build();
+        return new ConversationResponse.Builder(level).setId(conversation.get().id())
+                .setScenario(conversation.get().scenarioType().name()).setParameters(conversation.get().parameters())
+                .setMessages(conversation.get().messages()).build();
     }
 
     @PostMapping("/conversations/messages")
@@ -133,9 +134,7 @@ public class ConversationController {
             throw new ScenarioNameNotFoundRestException(request.scenario());
         }
 
-        var session = createScenarioSession(scenario, request.parameters(), headers);
-
-        var conversation = session.getConversation();
+        var conversation = createScenarioConversation(scenario, request.parameters(), headers);
 
         Message answer;
         try {
@@ -146,13 +145,13 @@ public class ConversationController {
                 answer = conversation.respond();
             }
         } catch (ConversationException exception) {
-            throw new ConversationRestException(session.getId(), exception);
+            throw new ConversationRestException(conversation.id(), exception);
         }
 
         MessageResponse messageResponse = new MessageResponse.Builder(level).create(answer.getType().toString(),
                 answer.getContent(), answer.operation());
 
-        return new ConvenienceMessageResponse(session.getId(), messageResponse);
+        return new ConvenienceMessageResponse(conversation.id(), messageResponse);
     }
 
     @GetMapping("/conversations/{id}/messages")
@@ -163,14 +162,14 @@ public class ConversationController {
         if (id == null || id.isBlank()) {
             throw new ScenarioSessionNotSpecifiedRestException();
         }
-        Optional<ScenarioSession<?, ?>> session = this.scenarioSessionStore.getSession(id);
-        if (session.isEmpty()) {
+        Optional<ScenarioConversation> conversation = this.scenarioConversationStore.getSession(id);
+        if (conversation.isEmpty()) {
             throw new ScenarioSessionNotFoundRestException(id);
         }
 
         var builder = new MessageResponse.Builder(level);
         var messages = new ArrayList<MessageResponse>();
-        for (var message : session.get().getConversation().getMessages()) {
+        for (var message : conversation.get().messages()) {
             messages.add(builder.create(message.getType().toString(), message.getContent(), message.operation()));
         }
 
@@ -186,19 +185,19 @@ public class ConversationController {
         if (id == null || id.isBlank()) {
             throw new ScenarioSessionNotSpecifiedRestException();
         }
-        Optional<ScenarioSession<?, ?>> session = this.scenarioSessionStore.getSession(id);
-        if (session.isEmpty()) {
+        Optional<ScenarioConversation> conversation = this.scenarioConversationStore.getSession(id);
+        if (conversation.isEmpty()) {
             throw new ScenarioSessionNotFoundRestException(id);
         }
 
-        logger.info("Converstation.continue conversationId: " + session.get().getId());
+        logger.info("Converstation.continue conversationId: " + conversation.get().id());
 
         Message response;
         try {
-            session.get().getConversation().addMessage(Type.USER, request.getPrompt());
-            response = session.get().getConversation().respond();
+            conversation.get().addMessage(Type.USER, request.getPrompt());
+            response = conversation.get().respond();
         } catch (ConversationException exception) {
-            throw new ConversationRestException(session.get().getId(), exception);
+            throw new ConversationRestException(conversation.get().id(), exception);
         }
 
         return new MessageResponse.Builder(level).create(response.getType().toString(), response.getContent(),
@@ -206,7 +205,7 @@ public class ConversationController {
     }
 
     @SuppressWarnings("unchecked")
-    private <PARAMETERS, CONTEXT> ScenarioSession<PARAMETERS, CONTEXT> createScenarioSession(
+    private <PARAMETERS, CONTEXT> ScenarioConversation createScenarioConversation(
             Scenario<PARAMETERS, CONTEXT> scenario, Map<String, Object> parameterMap,
             MultiValueMap<String, String> headers) throws ScenarioParametersException, ScenarioContextException {
 
@@ -237,13 +236,15 @@ public class ConversationController {
                 match = true;
             }
         }
+
         if (!match) {
             throw new ScenarioContextException("No Context Factory Found for Scenario: " + scenario.getName()
                     + " with context type: " + scenario.getContextClass().getName());
         }
 
-        return scenarioSessionStore.addSession(id, scenario, parameters,
-                scenario.createConversationBuilder(parameters, context).start());
+        ScenarioConversation scenarioConversation = scenario.createConversationBuilder(parameters, context).start();
+
+        return scenarioConversationStore.addConversation(scenarioConversation);
     }
 
 }

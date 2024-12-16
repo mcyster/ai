@@ -1,6 +1,6 @@
 package com.cyster.ai.weave.impl.advisor;
 
-import com.cyster.ai.weave.service.conversation.Conversation;
+import com.cyster.ai.weave.service.conversation.AdvisorConversation;
 
 public interface Advisor<C> {
 
@@ -16,6 +16,6 @@ public interface Advisor<C> {
 
         AdvisorConversationBuilder<C> addMessage(String message);
 
-        Conversation start();
+        AdvisorConversation start();
     }
 }

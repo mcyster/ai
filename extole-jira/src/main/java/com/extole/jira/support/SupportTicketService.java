@@ -21,12 +21,14 @@ import reactor.core.publisher.Mono;
 public class SupportTicketService implements TicketService<SupportTicket> {
     private final JiraWebClientFactory jiraWebClientFactory;
     private final TicketService<SupportTicket> ticketService;
+    private final SupportTicketOrganizations supportTicketOrganizations;
     private final SupportTicketClients supportTicketClients;
 
     SupportTicketService(TicketServiceFactory ticketServiceFactory, JiraWebClientFactory jiraWebClientFactory,
-            SupportTicketClients supportTicketClients) {
+            SupportTicketOrganizations supportTicketOrganization, SupportTicketClients supportTicketClients) {
         this.jiraWebClientFactory = jiraWebClientFactory;
         this.ticketService = ticketServiceFactory.createTicketService(new SupportTicketMapper());
+        this.supportTicketOrganizations = supportTicketOrganization;
         this.supportTicketClients = supportTicketClients;
     }
 
@@ -46,7 +48,51 @@ public class SupportTicketService implements TicketService<SupportTicket> {
     }
 
     public void setClient(String ticketNumber, String clientShortName) throws TicketException {
-        var organizationIndex = supportTicketClients.getJiraOrganizationIndexFromClientShortName(clientShortName);
+        if (ticketNumber.startsWith("HELP")) {
+            setClientAsOrganization(ticketNumber, clientShortName);
+        } else {
+            setClientAsCustomField(ticketNumber, clientShortName);
+        }
+    }
+
+    private void setClientAsCustomField(String ticketNumber, String clientShortName) throws TicketException {
+        var jiraClientId = supportTicketClients.getJiraClientIndexForClientShortName(clientShortName);
+
+        ObjectNode payload = JsonNodeFactory.instance.objectNode();
+        {
+            ObjectNode fields = JsonNodeFactory.instance.objectNode();
+            ObjectNode customField = JsonNodeFactory.instance.objectNode();
+
+            customField.set("id", JsonNodeFactory.instance.textNode(jiraClientId.toString()));
+            fields.set("customfield_11312", customField);
+
+            payload.set("fields", fields);
+
+        }
+
+        try {
+            this.jiraWebClientFactory.getWebClient().put()
+                    .uri(uriBuilder -> uriBuilder.path("/rest/api/3/issue/" + ticketNumber)
+                            .queryParam("notifyUsers", "false").build())
+                    .accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON).bodyValue(payload)
+                    .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response -> response
+                            .bodyToMono(String.class)
+                            .map(errorBody -> new TicketException("Problems putting client " + clientShortName
+                                    + " to ticket " + ticketNumber + " Bad request code: " + response.statusCode()
+                                    + " body: " + errorBody + " payload:" + payload.toString()))
+                            .flatMap(Mono::error))
+                    .toBodilessEntity().block();
+        } catch (Throwable exception) {
+            if (exception.getCause() instanceof TicketException) {
+                throw (TicketException) exception.getCause();
+            }
+            throw exception;
+        }
+    }
+
+    private void setClientAsOrganization(String ticketNumber, String clientShortName) throws TicketException {
+        var organizationIndex = supportTicketOrganizations.getJiraOrganizationIndexFromClientShortName(clientShortName);
 
         ObjectNode payload = JsonNodeFactory.instance.objectNode();
         {
