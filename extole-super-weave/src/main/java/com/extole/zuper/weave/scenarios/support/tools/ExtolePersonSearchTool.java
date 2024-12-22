@@ -9,9 +9,9 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.client.web.ExtoleWebClientException;
 import com.extole.zuper.weave.ExtoleSuperContext;
@@ -52,7 +52,7 @@ class ExtolePersonSearchTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
+    public Object execute(Request request, ExtoleSuperContext context, Weave weave) throws ToolException {
         if (request.person_id != null) {
             return executeGet(request.client_id, request.person_id);
         } else {

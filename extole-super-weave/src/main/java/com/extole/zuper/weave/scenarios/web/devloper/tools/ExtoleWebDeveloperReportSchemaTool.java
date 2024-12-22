@@ -4,8 +4,8 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.web.weave.scenarios.ManagedWebsites;
 import com.cyster.web.weave.scenarios.WebsiteDeveloperTool;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleReportSchemaTool;
@@ -40,8 +40,8 @@ public class ExtoleWebDeveloperReportSchemaTool implements WebsiteDeveloperTool<
     }
 
     @Override
-    public Object execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
-        return this.reportSchemaTool.execute(request, null, operation);
+    public Object execute(Request request, ManagedWebsites context, Weave weave) throws ToolException {
+        return this.reportSchemaTool.execute(request, null, weave);
     }
 
     public int hash() {

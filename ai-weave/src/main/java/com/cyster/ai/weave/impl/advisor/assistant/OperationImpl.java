@@ -8,7 +8,7 @@ import com.cyster.ai.weave.service.conversation.Operation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class OperationImpl implements Operation, OperationLogger {
+public class OperationImpl implements Operation, WeaveOperation {
     private final Level level;
     private final String description;
     private final Optional<Object> context;
@@ -80,21 +80,21 @@ public class OperationImpl implements Operation, OperationLogger {
     }
 
     @Override
-    public OperationLogger childLogger(String description) {
+    public WeaveOperation childLogger(String description) {
         var operation = new OperationImpl(level, description);
         children.add(operation);
         return operation;
     }
 
     @Override
-    public OperationLogger childLogger(String description, Object context) {
+    public WeaveOperation childLogger(String description, Object context) {
         var operation = new OperationImpl(level, description, context);
         children.add(operation);
         return operation;
     }
 
     @Override
-    public OperationLogger childLogger(Level level, String description) {
+    public WeaveOperation childLogger(Level level, String description) {
         var operation = new OperationImpl(level, description);
         children.add(operation);
         return operation;

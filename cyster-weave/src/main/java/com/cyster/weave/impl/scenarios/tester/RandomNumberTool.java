@@ -4,9 +4,9 @@ import java.util.Random;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.weave.impl.scenarios.tester.RandomNumberTool.Parameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -40,7 +40,7 @@ public class RandomNumberTool implements Tool<Parameters, Void> {
     };
 
     @Override
-    public Object execute(Parameters parameters, Void context, OperationLogger operation) throws ToolException {
+    public Object execute(Parameters parameters, Void context, Weave weave) throws ToolException {
         int lowerBound = 0;
         if (parameters.lowerBound != null) {
             lowerBound = parameters.lowerBound;

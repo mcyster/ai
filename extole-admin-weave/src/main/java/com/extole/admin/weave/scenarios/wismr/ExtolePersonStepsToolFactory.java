@@ -12,8 +12,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.Weave;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -72,7 +72,7 @@ class ExtolePersonStepsTool implements Tool<ExtolePersonStepsToolParameters, Voi
     }
 
     @Override
-    public Object execute(ExtolePersonStepsToolParameters parameters, Void context, OperationLogger operation) {
+    public Object execute(ExtolePersonStepsToolParameters parameters, Void context, Weave weave) {
         return this.getExecutor().apply((ExtolePersonStepsToolParameters) parameters);
     }
 

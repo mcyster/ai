@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.extole.admin.weave.scenarios.help.tools.ExtoleReportGetTool.Request;
 import com.extole.admin.weave.session.ExtoleSessionContext;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
@@ -50,8 +50,7 @@ public class ExtoleReportGetTool implements Tool<Request, ExtoleSessionContext> 
     }
 
     @Override
-    public Object execute(Request request, ExtoleSessionContext context, OperationLogger operation)
-            throws ToolException {
+    public Object execute(Request request, ExtoleSessionContext context, Weave weave) throws ToolException {
         JsonNode result;
 
         try {

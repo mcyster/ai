@@ -2,7 +2,7 @@ package com.cyster.ai.weave.service.conversation;
 
 import java.util.List;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 
 public interface AdvisorConversation extends Conversation {
@@ -13,7 +13,7 @@ public interface AdvisorConversation extends Conversation {
 
     Message respond() throws ConversationException;
 
-    Message respond(OperationLogger operation) throws ConversationException;
+    Message respond(Weave weave) throws ConversationException;
 
     List<Message> messages();
 }

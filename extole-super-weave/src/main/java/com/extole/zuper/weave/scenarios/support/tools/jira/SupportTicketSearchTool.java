@@ -6,8 +6,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.jira.client.web.JiraWebClientFactory;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
@@ -48,8 +48,7 @@ class SupportTicketSearchTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request searchRequest, ExtoleSuperContext context, OperationLogger operation)
-            throws ToolException {
+    public Object execute(Request searchRequest, ExtoleSuperContext context, Weave weave) throws ToolException {
 
         String jql = "project = SUP";
         if (searchRequest.query != null && !searchRequest.query.isEmpty()) {

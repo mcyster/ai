@@ -9,8 +9,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.Weave;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -68,7 +68,7 @@ class ExtolePersonFindTool implements Tool<ExtolePersonFileToolParameters, Void>
     }
 
     @Override
-    public Object execute(ExtolePersonFileToolParameters parameters, Void context, OperationLogger operation) {
+    public Object execute(ExtolePersonFileToolParameters parameters, Void context, Weave weave) {
         return this.getExecutor().apply((ExtolePersonFileToolParameters) parameters);
     }
 

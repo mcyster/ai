@@ -18,10 +18,10 @@ import org.quartz.TriggerBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
@@ -71,7 +71,7 @@ public class SchedulerTool implements Tool<Parameters, Void> {
     }
 
     @Override
-    public Object execute(Parameters parameters, Void context, OperationLogger operation) throws ToolException {
+    public Object execute(Parameters parameters, Void context, Weave weave) throws ToolException {
 
         Scenario<?, ?> scenario;
         try {

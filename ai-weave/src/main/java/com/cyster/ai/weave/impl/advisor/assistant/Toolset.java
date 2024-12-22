@@ -15,6 +15,7 @@ import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolContextException;
 import com.cyster.ai.weave.service.ToolContextFactory;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
@@ -35,7 +36,7 @@ public class Toolset {
     }
 
     public <SCENARIO_CONTEXT> String execute(String name, String jsonParameters, SCENARIO_CONTEXT scenarioContext,
-            OperationLogger operation) {
+            Weave weave) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new Jdk8Module());
         mapper.registerModules(new JavaTimeModule());
@@ -46,7 +47,7 @@ public class Toolset {
         Tool<?, ?> tool = tools.get(name);
 
         try {
-            var result = executeTool(tool, jsonParameters, scenarioContext, operation);
+            var result = executeTool(tool, jsonParameters, scenarioContext, weave);
 
             return mapper.writeValueAsString(result);
         } catch (FatalToolException exception) {
@@ -67,14 +68,14 @@ public class Toolset {
 
     public <TOOL_PARAMETERS, TOOL_CONTEXT, SCENARIO_CONTEXT> Object executeTool(
             Tool<TOOL_PARAMETERS, TOOL_CONTEXT> tool, String jsonArguments, SCENARIO_CONTEXT scenarioContext,
-            OperationLogger operation) throws ToolException {
+            Weave weave) throws ToolException {
         ObjectMapper mapper = new ObjectMapper();
 
         TOOL_CONTEXT toolContext = toolContextFactory.createContext(tool.getContextClass(), scenarioContext);
 
         try {
             TOOL_PARAMETERS parameters = mapper.readValue(jsonArguments, tool.getParameterClass());
-            return tool.execute(parameters, toolContext, operation);
+            return tool.execute(parameters, toolContext, weave);
         } catch (MismatchedInputException exception) {
             // Original Message can help describe the problem in enough detail to resolve,
             // often references the exact field.

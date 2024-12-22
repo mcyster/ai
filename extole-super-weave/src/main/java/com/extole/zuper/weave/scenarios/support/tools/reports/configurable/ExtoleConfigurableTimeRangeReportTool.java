@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
@@ -53,9 +53,8 @@ class ExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool<Request
     }
 
     @Override
-    public Object execute(Request parameters, ExtoleSuperContext context, OperationLogger operation)
-            throws ToolException {
-        return this.tool.execute(parameters, context, operation);
+    public Object execute(Request parameters, ExtoleSuperContext context, Weave weave) throws ToolException {
+        return this.tool.execute(parameters, context, weave);
     }
 
     public int hash() {
@@ -177,7 +176,7 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool
     }
 
     @Override
-    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
+    public Object execute(Request request, ExtoleSuperContext context, Weave weave) throws ToolException {
         ObjectNode parameters = JsonNodeFactory.instance.objectNode();
         {
             ObjectMapper mapper = new ObjectMapper();

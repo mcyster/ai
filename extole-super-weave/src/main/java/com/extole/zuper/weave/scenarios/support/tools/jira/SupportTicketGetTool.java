@@ -4,9 +4,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.jira.client.ticket.TicketException;
 import com.extole.jira.support.SupportTicket;
 import com.extole.jira.support.SupportTicketService;
@@ -45,7 +45,7 @@ public class SupportTicketGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
+    public Object execute(Request request, ExtoleSuperContext context, Weave weave) throws ToolException {
 
         if (request.key != null && request.key.isEmpty()) {
             throw new FatalToolException("Attribute ticket key not specified");

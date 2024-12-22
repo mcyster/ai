@@ -4,8 +4,8 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
@@ -52,7 +52,7 @@ class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
+    public Object execute(Request request, ExtoleSuperContext context, Weave weave) throws ToolException {
         var tags = "";
         if (request.tags != null) {
             tags = request.tags;
@@ -69,8 +69,7 @@ class ExtoleClientEventSearchTool implements ExtoleSupportTool<Request> {
             notificationRequest.userId = request.userId;
             notificationRequest.notificationId = request.likeNotificationId;
 
-            JsonNode notification = (JsonNode) this.extoleNotificationGetTool.execute(notificationRequest, null,
-                    operation);
+            JsonNode notification = (JsonNode) this.extoleNotificationGetTool.execute(notificationRequest, null, weave);
 
             JsonNode tagsNode = new ObjectMapper().createArrayNode();
             if (notification.has("tags")) {

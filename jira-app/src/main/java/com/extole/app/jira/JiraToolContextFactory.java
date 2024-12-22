@@ -1,24 +1,24 @@
 package com.extole.app.jira;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.ToolContextException;
 import com.cyster.ai.weave.service.ToolContextFactory;
-import com.cyster.template.StringTemplate;
 import com.cyster.weave.impl.scenarios.conversation.ConversationLinkTool;
+import com.cyster.web.weave.scenarios.ManagedWebsites;
+import com.cyster.web.weave.scenarios.WebsiteProvider;
 import com.extole.zuper.weave.ExtoleSuperContext;
 
 @Component
 public class JiraToolContextFactory implements ToolContextFactory {
     private final String conversationLinkTemplate;
+    private final WebsiteProvider websiteProvider;
 
-    public JiraToolContextFactory(
-            @Value("${extoleConversationPageTemplate:https://beep-boop.extole.com/sites/managed/conversations/index.html?id={{conversationId}}}") String conversationLinkTemplate) {
+    public JiraToolContextFactory(WebsiteProvider websiteProvider,
+            @Value("${app.url}/sites/managed/conversations/index.html?id={{conversationId}}") String conversationLinkTemplate) {
         this.conversationLinkTemplate = conversationLinkTemplate;
+        this.websiteProvider = websiteProvider;
     }
 
     @SuppressWarnings("unchecked")
@@ -36,20 +36,12 @@ public class JiraToolContextFactory implements ToolContextFactory {
             }
         }
 
+        if (toolContextClass == ManagedWebsites.class) {
+            return (TOOL_CONTEXT) new ManagedWebsites(websiteProvider);
+        }
+
         if (toolContextClass == ConversationLinkTool.Context.class) {
-            if (scenarioContext instanceof ExtoleSuperContext) {
-                String id = ((ExtoleSuperContext) scenarioContext).conversionId();
-
-                Map<String, Object> parameters = new HashMap<>() {
-                    {
-                        put("conversationId", id);
-                    }
-                };
-
-                String link = new StringTemplate(conversationLinkTemplate).render(parameters);
-
-                return (TOOL_CONTEXT) new ConversationLinkTool.Context(id, link);
-            }
+            return (TOOL_CONTEXT) new ConversationLinkTool.Context(conversationLinkTemplate);
         }
 
         throw new ToolContextException("Unable to create tool context class: " + toolContextClass.getName()

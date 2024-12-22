@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,11 +47,11 @@ public class CachingTool<TOOL_REQUEST, TOOL_CONTEXT> implements Tool<TOOL_REQUES
     }
 
     @Override
-    public Object execute(TOOL_REQUEST request, TOOL_CONTEXT context, OperationLogger operation) throws ToolException {
+    public Object execute(TOOL_REQUEST request, TOOL_CONTEXT context, Weave weave) throws ToolException {
         Key<TOOL_REQUEST, TOOL_CONTEXT> key = new Key<TOOL_REQUEST, TOOL_CONTEXT>(this.tool, request, context);
 
         try {
-            return cache.get(key, () -> execute(key, operation));
+            return cache.get(key, () -> execute(key, weave));
         } catch (ExecutionException exception) {
             Throwable cause = exception.getCause();
             if (cause instanceof ToolException) {
@@ -66,9 +67,8 @@ public class CachingTool<TOOL_REQUEST, TOOL_CONTEXT> implements Tool<TOOL_REQUES
         return Objects.hash(getName(), getDescription(), getParameterClass(), tool.hash());
     }
 
-    private static <Request, Context> Object execute(Key<Request, Context> key, OperationLogger operation)
-            throws ToolException {
-        return key.getTool().execute(key.getRequest(), key.getContext(), operation);
+    private static <Request, Context> Object execute(Key<Request, Context> key, Weave weave) throws ToolException {
+        return key.getTool().execute(key.getRequest(), key.getContext(), weave);
     }
 
     private static class Key<Request, Context> {

@@ -7,11 +7,7 @@ import com.cyster.ai.weave.service.conversation.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public record ConversationResponse(
-    String id,
-    String scenario,
-    Object parameters,
-    List<MessageResponse> messages) {
+public record ConversationResponse(String id, String scenario, Object parameters, List<MessageResponse> messages) {
 
     public ConversationResponse {
         if (id == null || id.isBlank()) {
@@ -64,8 +60,8 @@ public record ConversationResponse(
         public Builder setMessages(List<Message> messages) {
             var response = new ArrayList<MessageResponse>();
             for (var message : messages) {
-                response.add(new MessageResponse.Builder(level)
-                    .create(message.getType().toString(), message.getContent(), message.operation()));
+                response.add(new MessageResponse.Builder(level).create(message.getType().toString(),
+                        message.getContent(), message.operation()));
             }
             this.messages = response;
             return this;

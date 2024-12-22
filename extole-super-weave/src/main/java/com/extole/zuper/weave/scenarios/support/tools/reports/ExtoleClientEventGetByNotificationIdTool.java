@@ -2,10 +2,10 @@ package com.extole.zuper.weave.scenarios.support.tools.reports;
 
 import java.util.Objects;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
@@ -48,9 +48,8 @@ class ExtoleClientEventGetByNotificationIdTool implements ExtoleSupportTool<Requ
     }
 
     @Override
-    public Object execute(Request parameters, ExtoleSuperContext context, OperationLogger operation)
-            throws ToolException {
-        return this.tool.execute(parameters, context, operation);
+    public Object execute(Request parameters, ExtoleSuperContext context, Weave weave) throws ToolException {
+        return this.tool.execute(parameters, context, weave);
     }
 
     public int hash() {
@@ -125,7 +124,7 @@ class UncachedClientEventGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
+    public Object execute(Request request, ExtoleSuperContext context, Weave weave) throws ToolException {
         if (request.notificationId == null || request.notificationId.isBlank()) {
             throw new ToolException("notificationId is required");
         }

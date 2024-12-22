@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cyster.ai.weave.impl.openai.OpenAiService;
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
@@ -62,12 +63,12 @@ public class AssistantAdvisorThread<CONTEXT> {
         this.context = context;
     }
 
-    public Message respond(List<Message> messages, OperationLogger operation) throws ConversationException {
+    public Message respond(List<Message> messages, Weave weave) throws ConversationException {
         if (thread.isEmpty()) {
-            thread = Optional.of(createThread(messages, operation));
+            thread = Optional.of(createThread(messages, weave));
         } else {
             for (var message : messages) {
-                addThreadedMessage(thread.get(), message, operation);
+                addThreadedMessage(thread.get(), message, weave);
             }
         }
 
@@ -75,7 +76,7 @@ public class AssistantAdvisorThread<CONTEXT> {
         String response = null;
         do {
             try {
-                response = doRun(thread.get(), operation);
+                response = doRun(thread.get(), weave);
             } catch (RetryableAdvisorConversationException exception) {
                 retries = retries + 1;
                 if (retries > CONVERSATION_RETIES_MAX) {
@@ -89,11 +90,11 @@ public class AssistantAdvisorThread<CONTEXT> {
             }
         } while (response == null);
 
-        return new MessageImpl(Type.AI, response, operation);
+        return new MessageImpl(Type.AI, response, weave.operation());
     }
 
-    private String doRun(Thread thread, OperationLogger operations) throws AdvisorConversationException {
-        RunsClient runsClient = this.openAiService.createClient(RunsClient.class, operations,
+    private String doRun(Thread thread, Weave weave) throws AdvisorConversationException {
+        RunsClient runsClient = this.openAiService.createClient(RunsClient.class, weave,
                 Map.of("assistantId", this.assistantId, "threadId", thread.id()));
 
         int retryCount = 0;
@@ -168,13 +169,14 @@ public class AssistantAdvisorThread<CONTEXT> {
 
                     var output = this.toolset.execute(functionToolCall.function().name(),
                             functionToolCall.function().arguments(), this.context,
-                            operations.childLogger("Tool - " + functionToolCall.function().name(),
-                                    functionToolCall.function().arguments()));
+                            new WeaveImpl(weave.conversation(),
+                                    weave.operation().childLogger("Tool - " + functionToolCall.function().name(),
+                                            functionToolCall.function().arguments())));
 
                     ToolOutput toolOutput = ToolOutput.newBuilder().toolCallId(callId).output(output).build();
 
                     toolOutputsBuilder.toolOutput(toolOutput);
-                    operations.log(Operation.Level.Normal, "Toolcall: " + toolCall.toString(), toolOutput);
+                    weave.operation().log(Operation.Level.Normal, "Toolcall: " + toolCall.toString(), toolOutput);
                 }
 
                 try {
@@ -200,35 +202,35 @@ public class AssistantAdvisorThread<CONTEXT> {
             logger.info("Run.status[" + run.id() + "]: " + run.status() + " (delay " + delay + "ms)");
         } while (!run.status().equals("completed"));
 
-        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations,
+        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, weave,
                 Map.of("threadId", thread.id()));
 
         var responseMessages = messagesClient.listMessages(thread.id(), PaginationQueryParameters.none(),
                 Optional.empty());
 
         if (responseMessages.data().size() == 0) {
-            operations.log(Operation.Level.Normal, "No Response from AI", null);
+            weave.operation().log(Operation.Level.Normal, "No Response from AI", null);
             throw new AdvisorConversationException("No Reponses");
         }
         var responseMessage = responseMessages.data().get(0);
         if (!responseMessage.role().equals("assistant")) {
-            operations.log(Operation.Level.Normal, "Assistant did not respond", null);
+            weave.operation().log(Operation.Level.Normal, "Assistant did not respond", null);
             throw new AdvisorConversationException("Assistant did not respond");
         }
 
         var content = responseMessage.content();
         if (content.size() == 0) {
-            operations.log(Operation.Level.Normal, "Assistant responded with no content", null);
+            weave.operation().log(Operation.Level.Normal, "Assistant responded with no content", null);
             throw new AdvisorConversationException("No Content: " + responseMessages.toString());
         }
 
         if (content.size() > 1) {
-            operations.log(Operation.Level.Normal, "Assistant responded with lots of content, ignoring", null);
+            weave.operation().log(Operation.Level.Normal, "Assistant responded with lots of content, ignoring", null);
             throw new AdvisorConversationException("Lots of Content");
         }
 
         if (!content.get(0).type().equals("text")) {
-            operations.log(Operation.Level.Normal, "Assistant responded with non text content, ignoring", null);
+            weave.operation().log(Operation.Level.Normal, "Assistant responded with non text content, ignoring", null);
             throw new AdvisorConversationException("Content not of type text");
         }
         var textContent = (TextContent) content.get(0);
@@ -236,8 +238,8 @@ public class AssistantAdvisorThread<CONTEXT> {
         return textContent.text().value();
     }
 
-    private ThreadMessage addThreadedMessage(Thread thread, Message message, OperationLogger operations) {
-        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, operations,
+    private ThreadMessage addThreadedMessage(Thread thread, Message message, Weave weave) {
+        MessagesClient messagesClient = openAiService.createClient(MessagesClient.class, weave,
                 Map.of("threadId", thread.id()));
 
         Role role;
@@ -260,8 +262,8 @@ public class AssistantAdvisorThread<CONTEXT> {
         return messagesClient.createMessage(thread.id(), createMessageRequest);
     }
 
-    private Thread createThread(List<Message> messages, OperationLogger operations) {
-        ThreadsClient threadsClient = openAiService.createClient(ThreadsClient.class, operations, "createThread");
+    private Thread createThread(List<Message> messages, Weave weave) {
+        ThreadsClient threadsClient = openAiService.createClient(ThreadsClient.class, weave, "createThread");
 
         var threadRequestBuilder = CreateThreadRequest.newBuilder();
 

@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
+import com.cyster.ai.weave.impl.advisor.assistant.WeaveOperation;
 import com.cyster.ai.weave.service.conversation.Operation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,9 +34,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class HttpClientLogger extends HttpClient {
 
     private final HttpClient delegate;
-    private final OperationLogger logger;
+    private final WeaveOperation logger;
 
-    public HttpClientLogger(HttpClient delegate, OperationLogger logger) {
+    public HttpClientLogger(HttpClient delegate, WeaveOperation logger) {
         this.delegate = delegate;
         this.logger = logger.childLogger(Operation.Level.Verbose, "Http Client");
     }
@@ -172,9 +172,9 @@ public class HttpClientLogger extends HttpClient {
 
 
     private static class LoggingSubscriber implements Subscriber<ByteBuffer> {
-        private final OperationLogger logger;
+        private final WeaveOperation logger;
 
-        public LoggingSubscriber(OperationLogger logger) {
+        public LoggingSubscriber(WeaveOperation logger) {
             this.logger = logger;
         }
 

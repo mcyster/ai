@@ -78,18 +78,18 @@ public class ChatAdvisorImpl<C> implements Advisor<C> {
             return this;
         }
 
-        public Builder<C2> addUserMessage(String content) {
-            this.messages.add(new MessageImpl(content));
+        public Builder<C2> addUserMessage(String content, WeaveOperation operation) {
+            this.messages.add(new MessageImpl(Message.Type.USER, content, operation));
             return this;
         }
 
-        public Builder<C2> addSystemMessage(String content) {
-            this.messages.add(new MessageImpl(Message.Type.SYSTEM, content));
+        public Builder<C2> addSystemMessage(String content, WeaveOperation operation) {
+            this.messages.add(new MessageImpl(Message.Type.SYSTEM, content, operation));
             return this;
         }
 
-        public Builder<C2> addAiMessage(String content) {
-            this.messages.add(new MessageImpl(Message.Type.AI, content));
+        public Builder<C2> addAiMessage(String content, WeaveOperation operation) {
+            this.messages.add(new MessageImpl(Message.Type.AI, content, operation));
             return this;
         }
 

@@ -8,8 +8,8 @@ import java.util.function.Function;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.Weave;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,7 +53,7 @@ class ExtoleStepsTool implements Tool<ExtoleStepsToolParameters, Void> {
     }
 
     @Override
-    public Object execute(ExtoleStepsToolParameters parameters, Void context, OperationLogger operation) {
+    public Object execute(ExtoleStepsToolParameters parameters, Void context, Weave waeve) {
         return this.getExecutor().apply((ExtoleStepsToolParameters) parameters);
     }
 

@@ -2,19 +2,17 @@ package com.cyster.jira.client.ticket;
 
 import java.util.List;
 
-import com.cyster.jira.client.ticket.impl.TicketQueryBuilderImpl;
-
 public interface TicketQueryBuilder<TICKET> {
 
-    TicketQueryBuilderImpl withProject(String project);
+    TicketQueryBuilder<TICKET> withProject(String project);
 
-    TicketQueryBuilderImpl withProjects(List<String> projects);
+    TicketQueryBuilder<TICKET> withProjects(List<String> projects);
 
-    TicketQueryBuilderImpl withLimit(Integer limit);
+    TicketQueryBuilder<TICKET> withLimit(Integer limit);
 
-    TicketQueryBuilderImpl addFilter(String filter);
+    TicketQueryBuilder<TICKET> addFilter(String filter);
 
-    TicketQueryBuilderImpl withOrder(String orderBy);
+    TicketQueryBuilder<TICKET> withOrder(String orderBy);
 
     List<TICKET> query() throws TicketException;
 

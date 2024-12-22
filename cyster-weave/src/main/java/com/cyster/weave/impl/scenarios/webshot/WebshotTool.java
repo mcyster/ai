@@ -3,8 +3,8 @@ package com.cyster.weave.impl.scenarios.webshot;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetId;
 import com.cyster.weave.impl.scenarios.webshot.WebshotTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -41,7 +41,7 @@ class WebshotTool implements Tool<Request, Void> {
     }
 
     @Override
-    public Object execute(Request request, Void context, OperationLogger operation) {
+    public Object execute(Request request, Void context, Weave weave) {
         AssetId assetId = this.webshot.getImage(request.url);
         return new Response(assetId.getId());
     }

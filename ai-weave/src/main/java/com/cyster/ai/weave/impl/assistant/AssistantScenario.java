@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.cyster.ai.weave.impl.advisor.Advisor;
 import com.cyster.ai.weave.impl.advisor.assistant.OperationImpl;
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
-import com.cyster.ai.weave.service.WeaveContext;
+import com.cyster.ai.weave.impl.advisor.assistant.WeaveOperation;
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.conversation.AdvisorConversation;
 import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
@@ -51,7 +51,7 @@ public class AssistantScenario<PARAMETERS, CONTEXT> implements Scenario<PARAMETE
 
     @Override
     public ConversationBuilder createConversationBuilder(PARAMETERS parameters, CONTEXT context) {
-        OperationLogger logger = new OperationImpl(OperationLogger.Level.Normal, advisor.getName(), context);
+        WeaveOperation logger = new OperationImpl(WeaveOperation.Level.Normal, advisor.getName(), context);
 
         return new ConversationBuilderImpl(this, parameters, context, logger,
                 this.advisor.createConversation().withContext(context));
@@ -62,9 +62,9 @@ public class AssistantScenario<PARAMETERS, CONTEXT> implements Scenario<PARAMETE
         private final Scenario<?, ?> scenario;
         private Object parameters;
         private Object context;
-        private OperationLogger logger;
+        private WeaveOperation logger;
 
-        ConversationBuilderImpl(Scenario<?, ?> scenario, Object parameters, Object context, OperationLogger logger,
+        ConversationBuilderImpl(Scenario<?, ?> scenario, Object parameters, Object context, WeaveOperation logger,
                 Advisor.AdvisorConversationBuilder<?> advisorConversationBuilder) {
             this.scenario = scenario;
             this.parameters = parameters;
@@ -91,19 +91,19 @@ public class AssistantScenario<PARAMETERS, CONTEXT> implements Scenario<PARAMETE
 
     }
 
-    public static class AssistantScenarioConversation implements ScenarioConversation, WeaveContext {
+    public static class AssistantScenarioConversation implements ScenarioConversation, Weave {
         private final ScenarioType scenarioType;
         private final Object parameters;
         private final Object context;
-        private final OperationLogger logger;
+        private final WeaveOperation operation;
         private final AdvisorConversation advisorConversation;
 
         public AssistantScenarioConversation(ScenarioType scenarioType, Object parameters, Object context,
-                OperationLogger logger, AdvisorConversation advisorConversation) {
+                WeaveOperation operation, AdvisorConversation advisorConversation) {
             this.scenarioType = scenarioType;
             this.parameters = parameters;
             this.context = context;
-            this.logger = logger;
+            this.operation = operation;
             this.advisorConversation = advisorConversation;
         }
 
@@ -138,8 +138,8 @@ public class AssistantScenario<PARAMETERS, CONTEXT> implements Scenario<PARAMETE
         }
 
         @Override
-        public Message respond(OperationLogger operation) throws ConversationException {
-            return advisorConversation.respond(operation);
+        public Message respond(Weave weave) throws ConversationException {
+            return advisorConversation.respond(weave);
         }
 
         @Override
@@ -153,8 +153,8 @@ public class AssistantScenario<PARAMETERS, CONTEXT> implements Scenario<PARAMETE
         }
 
         @Override
-        public OperationLogger logger() {
-            return logger;
+        public WeaveOperation operation() {
+            return operation;
         }
 
     }

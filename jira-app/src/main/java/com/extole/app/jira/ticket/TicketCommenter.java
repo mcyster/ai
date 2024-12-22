@@ -59,9 +59,10 @@ public class TicketCommenter {
         var parameters = new com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario.Parameters(
                 ticketNumber);
         try {
-            // TODO add these conversations to our session store - re TBD
+            // TODO add these conversations to our session store - also need to pass super
+            // context!
             var conversation = supportTicketClientScenario
-                    .createConversationBuilder(parameters, jiraScenaioContextFactory.createContext("TBD")).start();
+                    .createConversationBuilder(parameters, jiraScenaioContextFactory.createContext()).start();
 
             response = conversation.respond();
         } catch (ConversationException | ScenarioContextException exception) {
@@ -81,9 +82,10 @@ public class TicketCommenter {
                 ticketNumber);
 
         try {
-            // TODO add these conversations to our session store - re TBD
+            // TODO add these conversations to our session store - also need to pass super
+            // context!
             var conversation = supportTicketScenario
-                    .createConversationBuilder(parameters, jiraScenaioContextFactory.createContext("TBD")).start();
+                    .createConversationBuilder(parameters, jiraScenaioContextFactory.createContext()).start();
 
             if (prompt.isPresent()) {
                 conversation.addMessage(Type.USER, prompt.get());

@@ -1,6 +1,6 @@
 package com.cyster.ai.weave.service.conversation;
 
-import java.util.Optional;
+import com.cyster.ai.weave.impl.advisor.assistant.WeaveOperation;
 
 public interface Message {
 
@@ -22,6 +22,6 @@ public interface Message {
 
     String getContent();
 
-    Optional<Operation> operation();
+    WeaveOperation operation();
 
 }

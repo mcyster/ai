@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.conversation.AdvisorConversation;
+import com.cyster.ai.weave.service.conversation.Conversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
@@ -15,16 +17,18 @@ import io.github.stefanbratanov.jvm.openai.ChatMessage;
 import io.github.stefanbratanov.jvm.openai.CreateChatCompletionRequest;
 import io.github.stefanbratanov.jvm.openai.OpenAI;
 
-public class ChatAdvisorConversation implements AdvisorConversation {
+public class ChatAdvisorConversation implements AdvisorConversation, Weave {
     private static final String MODEL = "gpt-4o";
     private final String id;
     private OpenAI openAi;
     private List<Message> messages;
+    private final WeaveOperation operation;
 
     ChatAdvisorConversation(OpenAI openAi, List<Message> messages) {
         this.id = UUID.randomUUID().toString();
         this.openAi = openAi;
         this.messages = messages;
+        this.operation = new OperationImpl("ChatAdvisor Conversation", new ArrayList<>(messages));
     }
 
     public String id() {
@@ -33,7 +37,8 @@ public class ChatAdvisorConversation implements AdvisorConversation {
 
     @Override
     public Message addMessage(Type type, String content) {
-        Message message = new MessageImpl(type, content);
+        Message message = new MessageImpl(type, content,
+                this.operation().childLogger("add message(" + type + "): " + content));
         this.messages.add(message);
         return message;
     }
@@ -60,21 +65,21 @@ public class ChatAdvisorConversation implements AdvisorConversation {
 
         var choices = result.choices();
         if (choices.size() == 0) {
-            messages.add(new MessageImpl(Message.Type.ERROR, "No responses"));
+            messages.add(new MessageImpl(Message.Type.ERROR, "No responses", operation));
             throw new ConversationException("No Reponses");
         }
         if (choices.size() > 1) {
-            messages.add(new MessageImpl(Message.Type.ERROR, "Multiple responses (ignored)"));
+            messages.add(new MessageImpl(Message.Type.ERROR, "Multiple responses (ignored)", operation));
             throw new ConversationException("Multiple Reponses");
         }
 
-        var message = new MessageImpl(Message.Type.AI, choices.get(0).message().content());
+        var message = new MessageImpl(Message.Type.AI, choices.get(0).message().content(), operation);
         messages.add(message);
         return message;
     }
 
     @Override
-    public Message respond(OperationLogger operation) throws ConversationException {
+    public Message respond(Weave weave) throws ConversationException {
         // TODO Auto-generated method stub
         return null;
     }
@@ -84,6 +89,16 @@ public class ChatAdvisorConversation implements AdvisorConversation {
         return messages.stream()
                 .filter(message -> message.getType() == Message.Type.AI || message.getType() == Message.Type.USER)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Conversation conversation() {
+        return this;
+    }
+
+    @Override
+    public WeaveOperation operation() {
+        return operation;
     }
 
 }

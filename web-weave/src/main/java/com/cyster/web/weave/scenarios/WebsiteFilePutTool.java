@@ -2,9 +2,9 @@ package com.cyster.web.weave.scenarios;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
 import com.cyster.web.weave.scenarios.WebsiteFilePutTool.Request;
 import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Asset;
@@ -38,7 +38,7 @@ class WebsiteFilePutTool implements WebsiteDeveloperTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
+    public Object execute(Request request, ManagedWebsites context, Weave weave) throws ToolException {
 
         ManagedWebsite website;
         try {

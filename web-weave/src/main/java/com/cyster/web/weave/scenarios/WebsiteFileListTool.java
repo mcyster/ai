@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
 import com.cyster.web.weave.scenarios.WebsiteFileListTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -38,7 +38,7 @@ class WebsiteFileListTool implements WebsiteDeveloperTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
+    public Object execute(Request request, ManagedWebsites context, Weave weave) throws ToolException {
         ManagedWebsite website;
         try {
             website = context.getSite(request.websiteId());

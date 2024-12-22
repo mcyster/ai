@@ -5,9 +5,10 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
+import com.cyster.template.StringTemplate;
 import com.cyster.weave.impl.scenarios.conversation.ConversationLinkTool.Context;
 
 @Component
@@ -37,18 +38,27 @@ public class ConversationLinkTool implements Tool<Void, Context> {
     }
 
     @Override
-    public Object execute(Void parameters, Context context, OperationLogger operation) throws ToolException {
+    public Object execute(Void parameters, Context context, Weave weave) throws ToolException {
+
+        var template = new StringTemplate(context.conversationLinkTemplate);
+        var templateParameters = new HashMap<>() {
+            {
+                put("id", weave.conversation().id());
+            }
+        };
+        var link = template.render(templateParameters);
+
         Map<String, String> response = new HashMap<>() {
             {
-                put("id", context.conversationId);
-                put("link", context.conversationLink);
+                put("id", weave.conversation().id());
+                put("link", link);
             }
         };
 
         return response;
     }
 
-    public static record Context(String conversationId, String conversationLink) {
+    public static record Context(String conversationLinkTemplate) {
     };
 
 }

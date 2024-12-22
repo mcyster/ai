@@ -2,8 +2,8 @@ package com.cyster.web.weave.scenarios;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
 import com.cyster.web.weave.scenarios.WebsiteCopyTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,7 +35,7 @@ public class WebsiteCopyTool implements WebsiteDeveloperTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, ManagedWebsites context, OperationLogger operation) throws ToolException {
+    public Object execute(Request request, ManagedWebsites context, Weave weave) throws ToolException {
 
         ManagedWebsite newWebsite;
         try {

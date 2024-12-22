@@ -1,5 +1,7 @@
 package com.cyster.weave.rest.conversation;
 
+import static com.cyster.weave.rest.conversation.MessageResponse.createOperationResponse;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -11,15 +13,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public interface MessageResponse {
     enum Level {
-        debug,
-        verbose,
-        normal,
-        quiet;
+        debug, verbose, normal, quiet;
     }
 
     String getType();
-    String getContent();
 
+    String getContent();
 
     public static class QuietMessageResponse implements MessageResponse {
         private final String type;
@@ -57,7 +56,6 @@ public interface MessageResponse {
         private final String type;
         private final String content;
 
-
         private VerboseMessageResponse(String type, String content, Operation operation) {
             this.type = type;
             this.content = content;
@@ -90,14 +88,12 @@ public interface MessageResponse {
         }
     }
 
-    private static OperationResponse createOperationResponse(Operation operation) {
+    public static OperationResponse createOperationResponse(Operation operation) {
         if (operation.context().isEmpty() && operation.children().size() == 0) {
             return new OperationResponseNoContextOrChildren(operation);
-        }
-        else if (operation.children().size() == 0) {
+        } else if (operation.children().size() == 0) {
             return new OperationResponseNoChildren(operation);
-        }
-        else {
+        } else {
             return new OperationResponseWithChildren(operation);
         }
     }
@@ -146,7 +142,7 @@ public interface MessageResponse {
         public OperationResponseWithChildren(Operation operation) {
             this.description = operation.getDescription();
             this.children = new ArrayList<>();
-            for (Operation child: operation.children()) {
+            for (Operation child : operation.children()) {
                 children.add(createOperationResponse(child));
             }
             this.context = operation.context();
@@ -160,7 +156,7 @@ public interface MessageResponse {
         public Object getContext() {
             return this.context;
         }
-        
+
         public List<OperationResponse> getChildren() {
             return this.children;
         }
@@ -168,18 +164,18 @@ public interface MessageResponse {
 
     public static MessageResponse.Level toResponseLevel(Operation.Level level) {
         return switch (level) {
-            case Normal -> MessageResponse.Level.normal;
-            case Verbose -> MessageResponse.Level.verbose;
-            case Debug -> MessageResponse.Level.debug;
+        case Normal -> MessageResponse.Level.normal;
+        case Verbose -> MessageResponse.Level.verbose;
+        case Debug -> MessageResponse.Level.debug;
         };
     }
 
     public static Operation.Level toLevel(MessageResponse.Level level) {
         return switch (level) {
-            case quiet -> Operation.Level.Normal;
-            case normal -> Operation.Level.Normal;
-            case verbose -> Operation.Level.Verbose;
-            case debug -> Operation.Level.Debug;
+        case quiet -> Operation.Level.Normal;
+        case normal -> Operation.Level.Normal;
+        case verbose -> Operation.Level.Verbose;
+        case debug -> Operation.Level.Debug;
         };
     }
 
@@ -190,11 +186,12 @@ public interface MessageResponse {
             this.responseLevel = level;
         }
 
-        public MessageResponse create(String type, String content, Optional<Operation> operation) {
-            if (responseLevel == MessageResponse.Level.quiet || operation.isEmpty()) {
+        public MessageResponse create(String type, String content, Operation operation) {
+            if (responseLevel == MessageResponse.Level.quiet) {
                 return new QuietMessageResponse(type, content);
             } else {
-                return new VerboseMessageResponse(type, content, new FilteredOperation(operation.get(), toLevel(this.responseLevel)));
+                return new VerboseMessageResponse(type, content,
+                        new FilteredOperation(operation, toLevel(this.responseLevel)));
             }
         }
     }
@@ -230,9 +227,7 @@ public interface MessageResponse {
     }
 
     private static List<Operation> filterOperations(List<Operation> operations, Operation.Level level) {
-        return operations.stream()
-            .filter(operation -> operation.getLevel().ordinal() >= level.ordinal())
-            .map(operation -> new FilteredOperation(operation, level))
-            .collect(Collectors.toList());
+        return operations.stream().filter(operation -> operation.getLevel().ordinal() >= level.ordinal())
+                .map(operation -> new FilteredOperation(operation, level)).collect(Collectors.toList());
     }
 }

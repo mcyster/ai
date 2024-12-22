@@ -5,10 +5,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.extole.admin.weave.session.ExtoleSessionContext;
 import com.extole.client.web.ExtoleWebClientFactory;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -44,7 +44,7 @@ public class ExtoleMyAuthorizationsTool implements Tool<MyAuthorizationsRequest,
     }
 
     @Override
-    public Object execute(MyAuthorizationsRequest request, ExtoleSessionContext context, OperationLogger operation)
+    public Object execute(MyAuthorizationsRequest request, ExtoleSessionContext context, Weave weave)
             throws ToolException {
         var webClient = this.extoleWebClientFactory.getWebClient(context.getAccessToken());
 

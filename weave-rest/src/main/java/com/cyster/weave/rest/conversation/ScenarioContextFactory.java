@@ -6,5 +6,5 @@ public interface ScenarioContextFactory<CONTEXT> {
 
     Class<CONTEXT> getContextClass();
 
-    CONTEXT createContext(String conversationId, MultiValueMap<String, String> headers) throws ScenarioContextException;
+    CONTEXT createContext(MultiValueMap<String, String> headers) throws ScenarioContextException;
 }

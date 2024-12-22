@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.client.web.ExtoleWebClientException;
 import com.extole.zuper.weave.ExtoleSuperContext;
@@ -48,7 +48,7 @@ class ExtoleWebhookGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
+    public Object execute(Request request, ExtoleSuperContext context, Weave weave) throws ToolException {
         JsonNode result;
         try {
             result = this.extoleWebClientFactory.getWebClientById(request.client_id).get()

@@ -7,10 +7,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.conversation.AdvisorConversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
@@ -54,7 +54,7 @@ public class ExtoleSupportTicketRunbookExecuterTool implements Tool<RunbookScena
     }
 
     @Override
-    public Object execute(RunbookScenarioParameters request, ExtoleSuperContext context, OperationLogger operation)
+    public Object execute(RunbookScenarioParameters request, ExtoleSuperContext context, Weave weave)
             throws ToolException {
         var scenario = this.runbookScenarios.get(request.runbookName());
         if (scenario == null) {
@@ -74,7 +74,7 @@ public class ExtoleSupportTicketRunbookExecuterTool implements Tool<RunbookScena
 
         Message message;
         try {
-            message = conversation.respond(operation);
+            message = conversation.respond(weave);
         } catch (ConversationException exception) {
             throw new ToolException("execute runbook failed to start conversation", exception);
         }

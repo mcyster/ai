@@ -10,11 +10,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.Weave;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.client.web.ExtoleWebClientException;
 import com.extole.zuper.weave.ExtoleSuperContext;
@@ -57,9 +57,8 @@ public class ExtoleNotificationGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request parameters, ExtoleSuperContext context, OperationLogger operation)
-            throws ToolException {
-        return this.tool.execute(parameters, context, operation);
+    public Object execute(Request parameters, ExtoleSuperContext context, Weave weave) throws ToolException {
+        return this.tool.execute(parameters, context, weave);
     }
 
     public int hash() {
@@ -141,7 +140,7 @@ class UncachedNotificationGetTool implements ExtoleSupportTool<Request> {
     }
 
     @Override
-    public Object execute(Request request, ExtoleSuperContext context, OperationLogger operation) throws ToolException {
+    public Object execute(Request request, ExtoleSuperContext context, Weave weave) throws ToolException {
         JsonNode notification = null;
 
         if (request.notificationId == null || request.notificationId.isBlank()) {

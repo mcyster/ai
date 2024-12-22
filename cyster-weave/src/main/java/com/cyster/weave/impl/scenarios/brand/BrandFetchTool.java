@@ -8,8 +8,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
 import com.cyster.ai.weave.service.Tool;
+import com.cyster.ai.weave.service.Weave;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -48,7 +48,7 @@ class BrandFetchTool implements Tool<BrandFetchRequest, Void> {
     }
 
     @Override
-    public Object execute(BrandFetchRequest fetchRequest, Void context, OperationLogger operation) {
+    public Object execute(BrandFetchRequest fetchRequest, Void context, Weave weave) {
         var webClient = WebClient.builder().baseUrl("https://api.brandfetch.io/v2/brands/{domainName}").build();
 
         if (brandFetchApiKey.isEmpty()) {

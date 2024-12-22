@@ -3,7 +3,8 @@ package com.cyster.ai.weave.impl.openai;
 import java.net.http.HttpClient;
 import java.time.Duration;
 
-import com.cyster.ai.weave.impl.advisor.assistant.OperationLogger;
+import com.cyster.ai.weave.impl.advisor.assistant.WeaveOperation;
+import com.cyster.ai.weave.service.Weave;
 
 import io.github.stefanbratanov.jvm.openai.AssistantsClient;
 import io.github.stefanbratanov.jvm.openai.AudioClient;
@@ -37,40 +38,30 @@ public class OpenAiService {
     }
 
     public <T> T createClient(Class<T> clientClass) {
-        HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(20))
-            .build();
+        HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
 
-        return client(clientClass,  OpenAI.newBuilder(apiKey)
-            .httpClient(httpClient)
-            .build());
+        return client(clientClass, OpenAI.newBuilder(apiKey).httpClient(httpClient).build());
     }
 
-    public <T> T createClient(Class<T> clientClass, OperationLogger operationLogger) {
-        OperationLogger logger = operationLogger.childLogger(clientClass.getSimpleName());
+    public <T> T createClient(Class<T> clientClass, WeaveOperation operationLogger) {
+        WeaveOperation logger = operationLogger.childLogger(clientClass.getSimpleName());
 
-        HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(20))
-            .build();
+        HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
 
-        return client(clientClass, OpenAI.newBuilder(apiKey)
-            .httpClient(new HttpClientLogger(httpClient, logger))
-            .build());
+        return client(clientClass,
+                OpenAI.newBuilder(apiKey).httpClient(new HttpClientLogger(httpClient, logger)).build());
     }
 
-    public <T> T createClient(Class<T> clientClass, OperationLogger operationLogger, Object context) {
-        OperationLogger logger = operationLogger.childLogger(clientClass.getSimpleName(), context);
+    public <T> T createClient(Class<T> clientClass, Weave weave, Object context) {
+        var logger = weave.operation().childLogger(clientClass.getSimpleName(), context);
 
-        HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(20))
-            .build();
+        HttpClient httpClient = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(20)).build();
 
-        return client(clientClass, OpenAI.newBuilder(apiKey)
-            .httpClient(new HttpClientLogger(httpClient, logger))
-            .build());
+        return client(clientClass,
+                OpenAI.newBuilder(apiKey).httpClient(new HttpClientLogger(httpClient, logger)).build());
     }
-    
-    private <T> T client(Class<T> clientClass,   OpenAI openAiClient) {
+
+    private <T> T client(Class<T> clientClass, OpenAI openAiClient) {
         if (clientClass == AudioClient.class) {
             return clientClass.cast(openAiClient.audioClient());
         } else if (clientClass == ChatClient.class) {
