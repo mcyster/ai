@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.template.StringTemplate;
@@ -100,8 +100,8 @@ public class ExtoleEventStreamJsonPathScenario implements Scenario<Parameters, E
             };
 
             String instructions = new StringTemplate(instructionsTemplate).render(context);
-            AssistantScenarioBuilder<Parameters, ExtoleSessionContext> builder = this.aiWeaveService
-                    .getOrCreateAssistantScenario(getName());
+            ScenarioBuilder<Parameters, ExtoleSessionContext> builder = this.aiWeaveService
+                    .getOrCreateScenario(getName());
 
             builder.setInstructions(instructions);
             builder.withTool(searchTool);

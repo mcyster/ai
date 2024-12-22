@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.zuper.weave.ExtoleSuperContext;
 
@@ -108,8 +108,8 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
                     Where possible, link to interfaces and classes mentioned in your response.
                     """;
 
-            AssistantScenarioBuilder<Void, ExtoleSuperContext> builder = this.aiWeaveService
-                    .getOrCreateAssistantScenario(getName());
+            ScenarioBuilder<Void, ExtoleSuperContext> builder = this.aiWeaveService
+                    .getOrCreateScenario(getName());
 
             builder.setInstructions(instructions);
 

@@ -6,8 +6,7 @@ import com.cyster.ai.weave.impl.advisor.Advisor;
 import com.cyster.ai.weave.impl.advisor.assistant.OperationImpl;
 import com.cyster.ai.weave.impl.advisor.assistant.WeaveOperation;
 import com.cyster.ai.weave.service.Weave;
-import com.cyster.ai.weave.service.conversation.AdvisorConversation;
-import com.cyster.ai.weave.service.conversation.Conversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
@@ -96,10 +95,10 @@ public class AssistantScenario<PARAMETERS, CONTEXT> implements Scenario<PARAMETE
         private final Object parameters;
         private final Object context;
         private final WeaveOperation operation;
-        private final AdvisorConversation advisorConversation;
+        private final ActiveConversation advisorConversation;
 
         public AssistantScenarioConversation(ScenarioType scenarioType, Object parameters, Object context,
-                WeaveOperation operation, AdvisorConversation advisorConversation) {
+                WeaveOperation operation, ActiveConversation advisorConversation) {
             this.scenarioType = scenarioType;
             this.parameters = parameters;
             this.context = context;
@@ -148,7 +147,7 @@ public class AssistantScenario<PARAMETERS, CONTEXT> implements Scenario<PARAMETE
         }
 
         @Override
-        public Conversation conversation() {
+        public ActiveConversation conversation() {
             return this;
         }
 

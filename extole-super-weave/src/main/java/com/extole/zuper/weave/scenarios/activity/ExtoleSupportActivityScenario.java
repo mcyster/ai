@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.template.StringTemplate;
@@ -113,7 +113,7 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
 
             System.out.println("!!!!!!!! extole suppport activity instructions: " + instructions);
 
-            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
+            ScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateScenario(getName());
             builder.setInstructions(instructions);
             builder.withTool(searchTool);
 

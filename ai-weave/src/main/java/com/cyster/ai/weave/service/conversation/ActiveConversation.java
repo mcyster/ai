@@ -5,9 +5,7 @@ import java.util.List;
 import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 
-public interface AdvisorConversation extends Conversation {
-
-    String id();
+public interface ActiveConversation extends Conversation {
 
     Message addMessage(Type type, String message);
 

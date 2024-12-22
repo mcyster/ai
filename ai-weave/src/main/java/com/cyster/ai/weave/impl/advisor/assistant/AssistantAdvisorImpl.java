@@ -12,7 +12,7 @@ import com.cyster.ai.weave.impl.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolContextFactory;
-import com.cyster.ai.weave.service.conversation.AdvisorConversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversation;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 
 import io.github.stefanbratanov.jvm.openai.Assistant;
@@ -82,7 +82,7 @@ public class AssistantAdvisorImpl<SCENARIO_CONTEXT> implements Advisor<SCENARIO_
         }
 
         @Override
-        public AdvisorConversation start() {
+        public ActiveConversation start() {
             var conversation = new AssistantAdvisorConversation<CONTEXT>(this.advisor.openAiService,
                     this.advisor.getName(), this.advisor.getId(), this.advisor.toolset, overrideInstructions, context);
 

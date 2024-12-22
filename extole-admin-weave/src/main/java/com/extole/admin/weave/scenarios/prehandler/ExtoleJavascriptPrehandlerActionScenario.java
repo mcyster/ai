@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.admin.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionScenario.Parameters;
 import com.extole.admin.weave.session.ExtoleSessionContext;
@@ -99,8 +99,8 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Parame
                          - **Check API calls**: Check the code leverages the documented api.
                          """;
 
-                AssistantScenarioBuilder<Parameters, ExtoleSessionContext> builder = this.aiWeaveService
-                        .getOrCreateAssistantScenario(getName());
+                ScenarioBuilder<Parameters, ExtoleSessionContext> builder = this.aiWeaveService
+                        .getOrCreateScenario(getName());
 
                 builder.setInstructions(instructions);
                 builder.withTool(extoleStore.createStoreTool());

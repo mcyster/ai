@@ -8,7 +8,7 @@ import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
-import com.cyster.ai.weave.service.conversation.AdvisorConversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.weave.impl.scenarios.tester.NestedAiTool.Parameters;
@@ -45,7 +45,7 @@ public class NestedAiTool implements Tool<Parameters, Void> {
 
     @Override
     public Object execute(Parameters request, Void context, Weave weave) throws ToolException {
-        AdvisorConversation conversation = this.nestedTesterScenario.createConversationBuilder(null, null)
+        ActiveConversation conversation = this.nestedTesterScenario.createConversationBuilder(null, null)
                 .addMessage(request.prompt).start();
 
         Message message;

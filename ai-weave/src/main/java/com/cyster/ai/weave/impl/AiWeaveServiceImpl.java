@@ -8,7 +8,7 @@ import com.cyster.ai.weave.impl.assistant.AssistantScenarioBuilderImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.impl.scenario.ScenarioSetBuilderImpl;
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.CodeInterpreterTool;
 import com.cyster.ai.weave.service.DocumentStore.DirectoryDocumentStoreBuilder;
 import com.cyster.ai.weave.service.DocumentStore.SimpleDocumentStoreBuilder;
@@ -38,7 +38,7 @@ public class AiWeaveServiceImpl implements AiWeaveService {
     }
 
     @Override
-    public <PARAMETERS, CONTEXT> AssistantScenarioBuilder<PARAMETERS, CONTEXT> getOrCreateAssistantScenario(
+    public <PARAMETERS, CONTEXT> ScenarioBuilder<PARAMETERS, CONTEXT> getOrCreateScenario(
             String name) {
         // TODO get scenario if it already exists
         return new AssistantScenarioBuilderImpl<PARAMETERS, CONTEXT>(this.openAiService, this.toolContextFactory, name);

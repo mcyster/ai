@@ -5,7 +5,9 @@ import java.net.Authenticator;
 import java.net.CookieHandler;
 import java.net.ProxySelector;
 import java.net.URI;
-import java.net.http.*;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
 import java.net.http.HttpResponse.PushPromiseHandler;
 import java.nio.ByteBuffer;
@@ -38,11 +40,12 @@ public class HttpClientLogger extends HttpClient {
 
     public HttpClientLogger(HttpClient delegate, WeaveOperation logger) {
         this.delegate = delegate;
-        this.logger = logger.childLogger(Operation.Level.Verbose, "Http Client");
+        this.logger = logger.childLogger("Http Client");
     }
 
     @Override
-    public <T> HttpResponse<T> send(HttpRequest request, HttpResponse.BodyHandler<T> responseBodyHandler) throws IOException, InterruptedException {
+    public <T> HttpResponse<T> send(HttpRequest request, HttpResponse.BodyHandler<T> responseBodyHandler)
+            throws IOException, InterruptedException {
         logRequest(request);
         HttpResponse<T> response = delegate.send(request, loggingBodyHandler(responseBodyHandler));
         logResponse(response);
@@ -50,13 +53,13 @@ public class HttpClientLogger extends HttpClient {
     }
 
     @Override
-    public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request, HttpResponse.BodyHandler<T> responseBodyHandler) {
+    public <T> CompletableFuture<HttpResponse<T>> sendAsync(HttpRequest request,
+            HttpResponse.BodyHandler<T> responseBodyHandler) {
         logRequest(request);
-        return delegate.sendAsync(request, loggingBodyHandler(responseBodyHandler))
-                .thenApply(response -> {
-                    logResponse(response);
-                    return response;
-                });
+        return delegate.sendAsync(request, loggingBodyHandler(responseBodyHandler)).thenApply(response -> {
+            logResponse(response);
+            return response;
+        });
     }
 
     private void logRequest(HttpRequest request) {
@@ -64,13 +67,12 @@ public class HttpClientLogger extends HttpClient {
 
         Optional<List<String>> authorizationHeader = Optional.ofNullable(headers.get("Authorization"));
         authorizationHeader.ifPresent(headerValues -> {
-            List<String> maskedHeaderValues = headerValues.stream()
-                .map(HttpClientLogger::maskToken)
-                .collect(Collectors.toList());
+            List<String> maskedHeaderValues = headerValues.stream().map(HttpClientLogger::maskToken)
+                    .collect(Collectors.toList());
             headers.put("Authorization", maskedHeaderValues);
         });
 
-        logger.log("Request", new Request(request.uri(), request.method()));
+        logger.log(Operation.Level.Verbose, "Request", new Request(request.uri(), request.method()));
         logger.log(Operation.Level.Debug, "details", new RequestDetails(headers));
 
         request.bodyPublisher().ifPresent(bodyPublisher -> {
@@ -79,11 +81,10 @@ public class HttpClientLogger extends HttpClient {
     }
 
     private <T> void logResponse(HttpResponse<T> response) {
-        logger.log("Response", new Response(response.statusCode()));
+        logger.log(Operation.Level.Verbose, "Response", new Response(response.statusCode()));
         logger.log(Operation.Level.Debug, "details", new ResponseDetails(response.headers().map()));
 
     }
-
 
     private static String maskToken(String token) {
         if (token == null || token.length() <= 4) {
@@ -170,7 +171,6 @@ public class HttpClientLogger extends HttpClient {
         return delegate.version();
     }
 
-
     private static class LoggingSubscriber implements Subscriber<ByteBuffer> {
         private final WeaveOperation logger;
 
@@ -223,7 +223,7 @@ public class HttpClientLogger extends HttpClient {
         }
     }
 
-    public static record RequestDetails(Map<String,List<String>> headers) {
+    public static record RequestDetails(Map<String, List<String>> headers) {
         @Override
         public String toString() {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -247,7 +247,7 @@ public class HttpClientLogger extends HttpClient {
         }
     }
 
-    public static record ResponseDetails(Map<String,List<String>> headers) {
+    public static record ResponseDetails(Map<String, List<String>> headers) {
         @Override
         public String toString() {
             ObjectMapper objectMapper = new ObjectMapper();

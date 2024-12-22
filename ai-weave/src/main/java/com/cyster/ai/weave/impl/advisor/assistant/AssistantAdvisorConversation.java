@@ -9,13 +9,12 @@ import java.util.stream.Stream;
 
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.Weave;
-import com.cyster.ai.weave.service.conversation.AdvisorConversation;
-import com.cyster.ai.weave.service.conversation.Conversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 
-public class AssistantAdvisorConversation<CONTEXT> implements AdvisorConversation, Weave {
+public class AssistantAdvisorConversation<CONTEXT> implements ActiveConversation, Weave {
     private final String id;
     private final List<Message> messages = new ArrayList<>();
     private final List<Message> newMessages = new ArrayList<>();
@@ -76,7 +75,7 @@ public class AssistantAdvisorConversation<CONTEXT> implements AdvisorConversatio
     }
 
     @Override
-    public Conversation conversation() {
+    public ActiveConversation conversation() {
         return this;
     }
 

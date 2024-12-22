@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
@@ -131,8 +131,8 @@ public class ExtoleTicketGuideSelectorScenario implements Scenario<Parameters, E
 
             System.out.println("!!!!!!!! extole support ticket guies: " + instructions);
 
-            AssistantScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiWeaveService
-                    .getOrCreateAssistantScenario(getName());
+            ScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiWeaveService
+                    .getOrCreateScenario(getName());
             builder.setInstructions(instructions);
 
             for (var tool : tools) {

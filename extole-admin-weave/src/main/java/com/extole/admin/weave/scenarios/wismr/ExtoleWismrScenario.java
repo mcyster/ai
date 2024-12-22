@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.admin.weave.session.ExtoleSessionContext;
 
@@ -71,7 +71,7 @@ public class ExtoleWismrScenario implements Scenario<Void, ExtoleSessionContext>
     
     """;
 
-            AssistantScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
+            ScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService.getOrCreateScenario(getName());
 
             builder
                 .setInstructions(instructions);

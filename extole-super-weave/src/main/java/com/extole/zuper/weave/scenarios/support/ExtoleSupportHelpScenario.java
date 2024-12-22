@@ -8,7 +8,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.scheduler.impl.SchedulerTool;
@@ -76,8 +76,8 @@ public class ExtoleSupportHelpScenario implements Scenario<Void, ExtoleSuperCont
                     When referring to a client, use the client short_name.
                     """;
 
-            AssistantScenarioBuilder<Void, ExtoleSuperContext> builder = this.aiWeaveService
-                    .getOrCreateAssistantScenario(getName());
+            ScenarioBuilder<Void, ExtoleSuperContext> builder = this.aiWeaveService
+                    .getOrCreateScenario(getName());
 
             builder.setInstructions(instructions);
             for (var tool : tools.values()) {

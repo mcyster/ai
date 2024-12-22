@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.scheduler.impl.SchedulerTool;
@@ -70,8 +70,8 @@ public class ExtoleSupportTicketScenario implements Scenario<Parameters, ExtoleS
                     Respond with the ticket_number followed by a selected runbook in brackets and then a brief summary of your analysis, i.e:
                     TICKET_NUMBER (RUNBOOK): SUMMARY
                     """;
-            AssistantScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiWeaveService
-                    .getOrCreateAssistantScenario(getName());
+            ScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiWeaveService
+                    .getOrCreateScenario(getName());
 
             builder.setInstructions(defaultInstruction);
             for (var tool : tools) {

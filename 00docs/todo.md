@@ -2,6 +2,11 @@
 
 # Next
 
+- Conversation persistence - abstract, pass to weave, then jira conversations will be visible
+- Scenario/ToolContextFactories clumsy - perhaps use Spring's FactoryBean
+  - Decorator to convert Scenario<Void, ExtoleSessionContext> to Scenario<Void, Void>
+    - Need to move not use global super key, pass in ExtoleSessionContext
+- Parralel graphs clumsy: Weave <-> Conversation / WeaveOperation <-> Conversation/Message
 - endpoint to turn schema into json example
 - summarize the campaign changes for a message for the campaign change log
 - provide ability to get a url reference to the current conversation
@@ -9,19 +14,19 @@
     - want adapter for extole super -> extole admin (scenario context != tool context)
 - update jira interface to be AI-Friendly: simple, consistent, semanting naming, structured, natural (e.g. markdown)
 - get details on ip for checking fuzz/fraud etc
-- Decorator to convert Scenario<Void, ExtoleSessionContext> to Scenario<Void, Void>
 - set "strict": true on tool parameters
 - fix startup time
 - check for expired gtp files - rebuild / handle
-- ticket to client scenario 
+- ticket to client scenario
 - ticket to runbook scenario
-- ensure we beep-boop can respond to HELP, SUP, LAUNCH, SPEED
 - review noitficiations, callout suggestions in tickit
 - lint, listen on client events
 - vector store for confluence runbooks, via github
 - conversation messages, support nesting
 - validate Extole campaign, page to leverage
-- jira / engineering tickets
+- Scenario / Tools have parameterized results, leverage json respnse of openai
+- ScenarioTool(Scenario) or Scenario implements Tool
+
 - ---
 - support ticket classifier iteration
 - slack integration
@@ -82,7 +87,7 @@ Expose a flunet jira enpodoints
 Generify Scenarion Result
   - support the concept of a typed response from chat
      - leverage the json response of chat
-     - 
+     -
 Do we need, both
 - Scenario
   - Describes an api and context for having a Conversation
@@ -94,7 +99,7 @@ Do we need, both
 ScenarioSet doesn't really need to exist, just conveninent for Spring integration
 - perhaps richer concept holds Context
   - Context-> select scenario set, generalize endpoints
-  
+
 Log level
   - should include all aspects of conversation.
   - If nested conversations, it should be possible to navigate and see them.  To properly support this, feel I might need to move to an event based architecture.
@@ -103,7 +108,7 @@ Log level
 ## Weave++ Concepts
 
 - Schedule in external service
-- 
+-
 
 ## Conversation
 
@@ -123,6 +128,3 @@ Use java modules to declare public classes etc rather than separate builds
 
 Testing here
 - https://github.com/mcyster/jpms
-
-
-

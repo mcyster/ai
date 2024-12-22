@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 
 @Component
@@ -54,8 +54,8 @@ public class WebshotScenario implements Scenario<Void, Void> {
                         You take snapshots of web pages.
                         """;
 
-                AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService
-                        .getOrCreateAssistantScenario(getName());
+                ScenarioBuilder<Void, Void> builder = this.aiWeaveService
+                        .getOrCreateScenario(getName());
 
                 builder.setInstructions(instructions).withTool(webshotTool).withTool(webshotTool);
 

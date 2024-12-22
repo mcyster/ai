@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 
 @Component
@@ -53,7 +53,7 @@ public class SchedulerScenario implements Scenario<Void, Void> {
                 Your job is focused on scheduling the execution of scenarios in the future
                 """;
 
-            AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
+            ScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateScenario(getName());
             
             builder.setInstructions(instructions)
                 .withTool(this.schedulerTool);

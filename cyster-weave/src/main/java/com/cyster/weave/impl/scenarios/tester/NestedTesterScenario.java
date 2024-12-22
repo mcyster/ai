@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 
@@ -54,8 +54,8 @@ public class NestedTesterScenario implements Scenario<Void, Void> {
     private Scenario<Void, Void> getScenario() {
         return scenario.updateAndGet(existing -> {
             if (existing == null) {
-                AssistantScenarioBuilder<Void, Void> builder = this.aiWeaveService
-                        .getOrCreateAssistantScenario(getName());
+                ScenarioBuilder<Void, Void> builder = this.aiWeaveService
+                        .getOrCreateScenario(getName());
 
                 builder.setInstructions("You are a helpful assistant.");
                 for (var tool : this.tools) {

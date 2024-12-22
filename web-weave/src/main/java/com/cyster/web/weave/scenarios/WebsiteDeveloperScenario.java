@@ -8,7 +8,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
@@ -85,7 +85,7 @@ Use the web_developer_file_put tool to create or update the website as requested
     
     private Scenario<Void, ManagedWebsites> getScenario() {
         if (this.scenario.isEmpty()) {
-            AssistantScenarioBuilder<Void, ManagedWebsites> builder = this.aiWeaveService.getOrCreateAssistantScenario(getName());
+            ScenarioBuilder<Void, ManagedWebsites> builder = this.aiWeaveService.getOrCreateScenario(getName());
             
             builder.setInstructions(INSTRUCTIONS);
             for(var tool: tools.values()) {

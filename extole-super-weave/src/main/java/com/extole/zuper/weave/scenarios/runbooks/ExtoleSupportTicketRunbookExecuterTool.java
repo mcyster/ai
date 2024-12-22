@@ -11,7 +11,7 @@ import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
-import com.cyster.ai.weave.service.conversation.AdvisorConversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.extole.zuper.weave.ExtoleSuperContext;
@@ -69,7 +69,7 @@ public class ExtoleSupportTicketRunbookExecuterTool implements Tool<RunbookScena
             throw new RuntimeException("Unable to convert to json: " + request.toString());
         }
 
-        AdvisorConversation conversation = scenario.createConversationBuilder(request, context).addMessage(requestJson)
+        ActiveConversation conversation = scenario.createConversationBuilder(request, context).addMessage(requestJson)
                 .start();
 
         Message message;

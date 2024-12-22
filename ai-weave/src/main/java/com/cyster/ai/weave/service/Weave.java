@@ -1,11 +1,11 @@
 package com.cyster.ai.weave.service;
 
 import com.cyster.ai.weave.impl.advisor.assistant.WeaveOperation;
-import com.cyster.ai.weave.service.conversation.Conversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversation;
 
 public interface Weave {
 
-    Conversation conversation();
+    ActiveConversation conversation();
 
     WeaveOperation operation();
 

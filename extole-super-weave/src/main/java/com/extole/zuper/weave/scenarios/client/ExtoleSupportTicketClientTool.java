@@ -8,7 +8,7 @@ import com.cyster.ai.weave.service.AiWeaveService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
-import com.cyster.ai.weave.service.conversation.AdvisorConversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.extole.zuper.weave.ExtoleSuperContext;
@@ -47,7 +47,7 @@ public class ExtoleSupportTicketClientTool implements Tool<Parameters, ExtoleSup
 
     @Override
     public Object execute(Parameters request, ExtoleSuperContext context, Weave weave) throws ToolException {
-        AdvisorConversation conversation = extoleTicketClientScenario.createConversationBuilder(request, context)
+        ActiveConversation conversation = extoleTicketClientScenario.createConversationBuilder(request, context)
                 .addMessage("Ticket Number: " + request.ticketNumber()).start();
 
         Message message;

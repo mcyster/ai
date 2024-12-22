@@ -7,7 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiWeaveService;
-import com.cyster.ai.weave.service.AssistantScenarioBuilder;
+import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.admin.weave.scenarios.help.tools.ExtoleClientTimelineTool;
@@ -69,8 +69,8 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
                     You help with questions around using the Extole SaaS Marketing platform.
                     """;
 
-            AssistantScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService
-                    .getOrCreateAssistantScenario(getName());
+            ScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService
+                    .getOrCreateScenario(getName());
 
             builder.setInstructions(instructions);
 

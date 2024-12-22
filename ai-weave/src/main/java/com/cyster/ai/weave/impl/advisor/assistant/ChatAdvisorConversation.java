@@ -6,8 +6,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.cyster.ai.weave.service.Weave;
-import com.cyster.ai.weave.service.conversation.AdvisorConversation;
-import com.cyster.ai.weave.service.conversation.Conversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
@@ -17,7 +16,7 @@ import io.github.stefanbratanov.jvm.openai.ChatMessage;
 import io.github.stefanbratanov.jvm.openai.CreateChatCompletionRequest;
 import io.github.stefanbratanov.jvm.openai.OpenAI;
 
-public class ChatAdvisorConversation implements AdvisorConversation, Weave {
+public class ChatAdvisorConversation implements ActiveConversation, Weave {
     private static final String MODEL = "gpt-4o";
     private final String id;
     private OpenAI openAi;
@@ -92,7 +91,7 @@ public class ChatAdvisorConversation implements AdvisorConversation, Weave {
     }
 
     @Override
-    public Conversation conversation() {
+    public ActiveConversation conversation() {
         return this;
     }
 
