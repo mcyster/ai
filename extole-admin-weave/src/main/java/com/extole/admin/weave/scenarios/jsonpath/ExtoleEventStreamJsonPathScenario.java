@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.scenario.Scenario;
@@ -18,12 +18,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
 public class ExtoleEventStreamJsonPathScenario implements Scenario<Parameters, ExtoleSessionContext> {
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private Optional<Scenario<Parameters, ExtoleSessionContext>> scenario = Optional.empty();
     private ExtoleApiStore extoleStore;
     private ExtoleEventStreamEventsGetTool extoleEventStreamEventsGetTool;
 
-    ExtoleEventStreamJsonPathScenario(AiWeaveService aiWeaveService, ExtoleApiStore extoleStore,
+    ExtoleEventStreamJsonPathScenario(AiService aiWeaveService, ExtoleApiStore extoleStore,
             ExtoleEventStreamEventsGetTool extoleEventStreamEventsGetTool) {
         this.aiWeaveService = aiWeaveService;
         this.extoleStore = extoleStore;

@@ -9,7 +9,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.SearchTool;
 
 // @Component
@@ -18,9 +18,9 @@ public class ExtoleGuideStore {
 
     private static String remoteJavaApiRepository = "git@github.com:extole/guides.git";
     private static File localJavaApiRepository = new File("/tmp/extole/guides");
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
 
-    ExtoleGuideStore(AiWeaveService aiWeaveService) {
+    ExtoleGuideStore(AiService aiWeaveService) {
         this.aiWeaveService = aiWeaveService;
     }
 

@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
@@ -16,11 +16,11 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 @ConditionalOnBean(BrandFetchTool.class)
 public class BrandScenario implements Scenario<Void, Void> {
     private final String DESCRIPTION = "Provides details about company brands";
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private List<Tool<?, Void>> tools = new ArrayList<>();
     private final AtomicReference<Scenario<Void, Void>> scenario = new AtomicReference<>();
 
-    public BrandScenario(AiWeaveService aiWeaveService, BrandFetchTool brandFetchTool,
+    public BrandScenario(AiService aiWeaveService, BrandFetchTool brandFetchTool,
             BrandSearchTool brandSearchTool) {
         this.aiWeaveService = aiWeaveService;
         this.tools.add(brandFetchTool);

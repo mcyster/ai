@@ -8,7 +8,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.Tool;
@@ -23,13 +23,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Parameters, ExtoleSuperContext> {
     private final String DESCRIPTION = "Find the best Runbook for the specified ticket";
 
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private Optional<Scenario<Parameters, ExtoleSuperContext>> scenario = Optional.empty();
     private List<Tool<?, ?>> tools = new ArrayList<>();
     private String defaultRunbookName;
     private SearchTool searchTool;
 
-    public ExtoleSupportTicketRunbookSelectorScenario(AiWeaveService aiWeaveService,
+    public ExtoleSupportTicketRunbookSelectorScenario(AiService aiWeaveService,
             ExtoleRunbookToolFactory runbookToolFactory, SupportTicketGetTool ticketGetTool,
             ExtoleRunbookDefault defaultRunbook) {
         this.aiWeaveService = aiWeaveService;

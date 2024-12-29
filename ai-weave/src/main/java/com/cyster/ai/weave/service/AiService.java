@@ -4,7 +4,7 @@ import com.cyster.ai.weave.service.DocumentStore.DirectoryDocumentStoreBuilder;
 import com.cyster.ai.weave.service.DocumentStore.SimpleDocumentStoreBuilder;
 import com.cyster.ai.weave.service.scenario.ScenarioSetBuilder;
 
-public interface AiWeaveService {
+public interface AiService {
 
     <PARAMETERS, CONTEXT> ScenarioBuilder<PARAMETERS, CONTEXT> getOrCreateScenario(String name);
 

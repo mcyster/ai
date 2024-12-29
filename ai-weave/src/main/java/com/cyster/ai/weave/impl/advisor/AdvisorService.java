@@ -7,7 +7,7 @@ import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.Tool;
 
 public interface AdvisorService {
-    <C> AdvisorBuilder<C> getOrCreateAdvisor(String name);
+    <CONTEXT> AdvisorBuilder<CONTEXT> getOrCreateAdvisor(String name);
 
     <PARAMETERS, CONTEXT> Tool<PARAMETERS, CONTEXT> cachingTool(Tool<PARAMETERS, CONTEXT> tool);
 
@@ -18,5 +18,4 @@ public interface AdvisorService {
     SimpleDocumentStoreBuilder simpleDocumentStoreBuilder();
 
     DirectoryDocumentStoreBuilder directoryDocumentStoreBuilder();
-
 }

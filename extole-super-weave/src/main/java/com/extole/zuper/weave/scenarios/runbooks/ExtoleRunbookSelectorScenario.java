@@ -8,7 +8,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
@@ -21,12 +21,12 @@ public class ExtoleRunbookSelectorScenario implements Scenario<Void, Void> {
     public final String NAME = "extoleRunbookSelector";
     private final String DESCRIPTION = "Find the best Runbook given a set of keywords (intended for testing)";
 
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private Optional<Scenario<Void, Void>> scenario = Optional.empty();
     private List<Tool<?, Void>> tools = new ArrayList<>();
     private String defaultRunbookName;
     
-    public ExtoleRunbookSelectorScenario(AiWeaveService aiWeaveService, ExtoleRunbookToolFactory runbookToolFactory,
+    public ExtoleRunbookSelectorScenario(AiService aiWeaveService, ExtoleRunbookToolFactory runbookToolFactory,
             ExtoleRunbookDefault defaultRunbook) {
         
         this.aiWeaveService = aiWeaveService;

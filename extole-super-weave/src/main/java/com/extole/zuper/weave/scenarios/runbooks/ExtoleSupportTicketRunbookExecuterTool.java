@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ExtoleSupportTicketRunbookExecuterTool implements Tool<RunbookScenarioParameters, ExtoleSuperContext> {
     Map<String, RunbookScenario> runbookScenarios;
 
-    ExtoleSupportTicketRunbookExecuterTool(AiWeaveService aiWeaveService,
+    ExtoleSupportTicketRunbookExecuterTool(AiService aiWeaveService,
             ExtoleRunbookScenarioLoader runbookScenarioLoader, List<RunbookScenario> runbookScenarios) {
         this.runbookScenarios = runbookScenarios.stream()
                 .collect(Collectors.toMap(RunbookScenario::getName, runbook -> runbook));

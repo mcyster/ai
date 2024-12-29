@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.SearchTool;
 
 @Component
@@ -19,9 +19,9 @@ public class ExtoleApiStore {
 
     private static String remoteJavaApiRepository = "git@github.com:extole/java-api.git";
     private static File localJavaApiRepository = new File("/tmp/extole/java-api");
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
 
-    ExtoleApiStore(AiWeaveService aiWeaveService) {
+    ExtoleApiStore(AiService aiWeaveService) {
         this.aiWeaveService = aiWeaveService;
     }
 

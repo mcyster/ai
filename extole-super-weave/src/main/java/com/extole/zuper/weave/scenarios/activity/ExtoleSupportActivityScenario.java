@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.scenario.Scenario;
@@ -18,11 +18,11 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
     private final String DEFAULT_ACTIVITY = "unclassified";
     private final String DESCRIPTION = "Find the best Activity given a set of keywords (intended for testing)";
 
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private Optional<Scenario<Void, Void>> scenario = Optional.empty();
     private SearchTool searchTool;
 
-    public ExtoleSupportActivityScenario(AiWeaveService aiWeaveService, ExtoleSupportActivityTool activityTool) {
+    public ExtoleSupportActivityScenario(AiService aiWeaveService, ExtoleSupportActivityTool activityTool) {
         this.aiWeaveService = aiWeaveService;
         this.searchTool = activityTool.getActivityTool();
     }

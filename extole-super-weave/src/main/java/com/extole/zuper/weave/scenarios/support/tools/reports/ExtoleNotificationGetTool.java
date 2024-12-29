@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.FatalToolException;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class ExtoleNotificationGetTool implements ExtoleSupportTool<Request> {
     private Tool<Request, ExtoleSuperContext> tool;
 
-    ExtoleNotificationGetTool(ExtoleTrustedWebClientFactory extoleWebClientFactory, AiWeaveService aiWeaveService) {
+    ExtoleNotificationGetTool(ExtoleTrustedWebClientFactory extoleWebClientFactory, AiService aiWeaveService) {
         this.tool = aiWeaveService.cachingTool(new UncachedNotificationGetTool(extoleWebClientFactory));
     }
 

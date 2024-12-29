@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
@@ -24,14 +24,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, ExtoleSuperContext> {
     private final String DESCRIPTION = "Find the Extole client associated for the specified ticket";
 
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private Optional<Scenario<Parameters, ExtoleSuperContext>> scenario = Optional.empty();
     private List<Tool<?, ?>> tools = new ArrayList<>();
     private SupportTicketGetTool ticketGetTool;
     private SupportTicketClientSetTool extoleClientSetTool;
     private ExtoleClientGetTool extoleClientGetTool;
 
-    public ExtoleSupportTicketClientScenario(AiWeaveService aiWeaveService, SupportTicketGetTool ticketGetTool,
+    public ExtoleSupportTicketClientScenario(AiService aiWeaveService, SupportTicketGetTool ticketGetTool,
             SupportTicketClientSetTool extoleClientSetTool, ExtoleClientGetTool extoleClientGetTool,
             ExtoleClientSearchTool extoleClientSearchTool) {
         this.aiWeaveService = aiWeaveService;

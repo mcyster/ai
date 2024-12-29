@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
@@ -20,10 +20,10 @@ import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelec
 public class ExtoleSupportTicketRunbookSelectorTool implements Tool<Parameters, ExtoleSuperContext> {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleSupportTicketRunbookSelectorTool.class);
 
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private ExtoleSupportTicketRunbookSelectorScenario runbookSelectorScenario;
 
-    ExtoleSupportTicketRunbookSelectorTool(AiWeaveService aiWeaveService,
+    ExtoleSupportTicketRunbookSelectorTool(AiService aiWeaveService,
             ExtoleSupportTicketRunbookSelectorScenario runbookSelectorScenario) {
         this.aiWeaveService = aiWeaveService;
         this.runbookSelectorScenario = runbookSelectorScenario;

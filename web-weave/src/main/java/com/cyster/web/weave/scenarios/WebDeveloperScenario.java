@@ -3,7 +3,7 @@ package com.cyster.web.weave.scenarios;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.web.weave.scenarios.WebDeveloperScenario.Parameters;
 
@@ -14,7 +14,7 @@ public class WebDeveloperScenario implements Scenario<Parameters, Void> {
     private WebsiteDeveloperScenario websiteDeveloperScenario;
     private ManagedWebsites managedWebsites;
     
-    WebDeveloperScenario(AiWeaveService aiWeaveService, WebsiteProvider websiteProvider, WebsiteDeveloperScenario builderScenario) {
+    WebDeveloperScenario(AiService aiWeaveService, WebsiteProvider websiteProvider, WebsiteDeveloperScenario builderScenario) {
         this.managedWebsites = new ManagedWebsites(websiteProvider);
         this.websiteDeveloperScenario = builderScenario;
     }

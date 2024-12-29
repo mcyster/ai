@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
@@ -21,11 +21,11 @@ import com.extole.admin.weave.session.ExtoleSessionContext;
 public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> {
     private final String DESCRIPTION = "Helps using the Extole Platform";
 
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private Optional<Scenario<Void, ExtoleSessionContext>> scenario = Optional.empty();
     private List<Tool<?, ExtoleSessionContext>> tools = new ArrayList<>();
 
-    ExtoleHelpScenario(AiWeaveService aiWeaveService, ExtoleMeTool extoleMeTool, ExtoleClientTool extoleClientTool,
+    ExtoleHelpScenario(AiService aiWeaveService, ExtoleMeTool extoleMeTool, ExtoleClientTool extoleClientTool,
             ExtoleMyAuthorizationsTool extoleMyAuthorizationsTool, ExtoleClientTimelineTool extoleClientTimelineTool,
             ExtoleReportGetTool extoleReportTool) {
         this.aiWeaveService = aiWeaveService;

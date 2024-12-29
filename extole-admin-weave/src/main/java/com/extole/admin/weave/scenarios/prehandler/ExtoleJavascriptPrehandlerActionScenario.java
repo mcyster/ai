@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.admin.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionScenario.Parameters;
@@ -13,12 +13,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
 public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Parameters, ExtoleSessionContext> {
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private ExtoleApiStore extoleStore;
     private ExtolePrehandlerGetTool extolePrehandlerGetTool;
     private final AtomicReference<Scenario<Parameters, ExtoleSessionContext>> scenario = new AtomicReference<>();
 
-    ExtoleJavascriptPrehandlerActionScenario(AiWeaveService aiWeaveService, ExtoleApiStore extoleStore,
+    ExtoleJavascriptPrehandlerActionScenario(AiService aiWeaveService, ExtoleApiStore extoleStore,
             ExtolePrehandlerGetTool extolePrehandlerGetTool) {
         this.aiWeaveService = aiWeaveService;
         this.extoleStore = extoleStore;

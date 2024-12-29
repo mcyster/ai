@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.zuper.weave.ExtoleSuperContext;
@@ -19,11 +19,11 @@ import com.extole.zuper.weave.ExtoleSuperContext;
 public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, ExtoleSuperContext> {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleJavascriptPrehandlerActionScenario.class);
 
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private Optional<Scenario<Void, ExtoleSuperContext>> scenario = Optional.empty();
     private ExtoleApiStore extoleStore;
 
-    ExtoleJavascriptPrehandlerActionScenario(AiWeaveService aiWeaveService, ExtoleApiStore extoleStore) {
+    ExtoleJavascriptPrehandlerActionScenario(AiService aiWeaveService, ExtoleApiStore extoleStore) {
         this.aiWeaveService = aiWeaveService;
         this.extoleStore = extoleStore;
     }

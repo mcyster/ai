@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
@@ -15,11 +15,11 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 public class TesterScenario implements Scenario<Void, Void> {
     private final String DESCRIPTION = "Helps with testing scenarios";
 
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private List<Tool<?, ?>> tools = new ArrayList<>();
     private final AtomicReference<Scenario<Void, Void>> scenario = new AtomicReference<>();
 
-    public TesterScenario(AiWeaveService aiWeaveService, RandomNumberTool randomNumberTool,
+    public TesterScenario(AiService aiWeaveService, RandomNumberTool randomNumberTool,
             FailingTesterTool failingTesterTool, NestedAiTool nestedAiTool) {
         this.aiWeaveService = aiWeaveService;
         this.tools.add(randomNumberTool);

@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
@@ -16,10 +16,10 @@ import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario
 
 @Component
 public class ExtoleSupportTicketClientTool implements Tool<Parameters, ExtoleSuperContext> {
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private ExtoleSupportTicketClientScenario extoleTicketClientScenario;
 
-    ExtoleSupportTicketClientTool(AiWeaveService aiWeaveService,
+    ExtoleSupportTicketClientTool(AiService aiWeaveService,
             ExtoleSupportTicketClientScenario extoleTicketClientScenario) {
         this.aiWeaveService = aiWeaveService;
         this.extoleTicketClientScenario = extoleTicketClientScenario;

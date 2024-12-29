@@ -7,7 +7,7 @@ import com.cyster.ai.weave.impl.advisor.assistant.AdvisorServiceImpl;
 import com.cyster.ai.weave.impl.assistant.AssistantScenarioBuilderImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.impl.scenario.ScenarioSetBuilderImpl;
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.CodeInterpreterTool;
 import com.cyster.ai.weave.service.DocumentStore.DirectoryDocumentStoreBuilder;
@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
 
-public class AiWeaveServiceImpl implements AiWeaveService {
+public class AiWeaveServiceImpl implements AiService {
     private final OpenAiService openAiService;
     private final AdvisorService advisorService;
     private final ToolContextFactory toolContextFactory;

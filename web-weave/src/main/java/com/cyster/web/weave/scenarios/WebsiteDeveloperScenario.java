@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -34,11 +34,11 @@ Then ask the user how they would like to modify the website.
 Use the web_developer_file_put tool to create or update the website as requested by the user.
 """;
     
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private Optional<Scenario<Void, ManagedWebsites>> scenario = Optional.empty();    
     private Map<String, WebsiteDeveloperTool<?>> tools = new HashMap<>();
 
-    public WebsiteDeveloperScenario(AiWeaveService aiWeaveService, List<WebsiteDeveloperTool<?>> tools) {
+    public WebsiteDeveloperScenario(AiService aiWeaveService, List<WebsiteDeveloperTool<?>> tools) {
         this.aiWeaveService = aiWeaveService;
 
         for(var tool: tools) {

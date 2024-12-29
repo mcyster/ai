@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 public class NestedAiTool implements Tool<Parameters, Void> {
     private NestedTesterScenario nestedTesterScenario;
 
-    NestedAiTool(AiWeaveService aiWeaveService, NestedTesterScenario nestedTesterScenario) {
+    NestedAiTool(AiService aiWeaveService, NestedTesterScenario nestedTesterScenario) {
         this.nestedTesterScenario = nestedTesterScenario;
     }
 

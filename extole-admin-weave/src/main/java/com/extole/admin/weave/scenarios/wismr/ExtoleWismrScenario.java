@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.admin.weave.session.ExtoleSessionContext;
@@ -13,10 +13,10 @@ import com.extole.admin.weave.session.ExtoleSessionContext;
 public class ExtoleWismrScenario implements Scenario<Void, ExtoleSessionContext> {
     private static final String DESCRIPTION = "Extole tool to help find the reward of a person";
     
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private Optional<Scenario<Void, ExtoleSessionContext>> scenario = Optional.empty();
 
-    ExtoleWismrScenario(AiWeaveService aiWeaveService,
+    ExtoleWismrScenario(AiService aiWeaveService,
         ExtolePersonFindToolFactory extolePersonFindToolFactory,
         ExtolePersonRewardsToolFactory extolePersonRewardsToolFactory,
         ExtolePersonStepsToolFactory extolePersonStepsToolFactory,

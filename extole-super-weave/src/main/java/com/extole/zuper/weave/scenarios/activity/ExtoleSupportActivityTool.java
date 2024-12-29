@@ -10,7 +10,7 @@ import java.util.List;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.SearchTool;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +26,7 @@ public class ExtoleSupportActivityTool {
 
     private SearchTool searchTool;
 
-    public ExtoleSupportActivityTool(AiWeaveService aiWeaveService) {
+    public ExtoleSupportActivityTool(AiService aiWeaveService) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         var documentStoreBuilder = aiWeaveService.simpleDocumentStoreBuilder();

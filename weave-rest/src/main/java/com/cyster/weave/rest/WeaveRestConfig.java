@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
 import com.cyster.ai.weave.impl.AiWeaveServiceImpl;
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ToolContextFactory;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
@@ -22,7 +22,7 @@ public class WeaveRestConfig {
     }
 
     @Bean
-    public AiWeaveService getAiWeaveService(@Value("${OPENAI_API_KEY}") String openAiApiKey,
+    public AiService getAiWeaveService(@Value("${OPENAI_API_KEY}") String openAiApiKey,
             ToolContextFactory toolContextFactory) {
         if (!StringUtils.hasText(openAiApiKey)) {
             throw new IllegalArgumentException("OPENAI_API_KEY not defined");
@@ -32,7 +32,7 @@ public class WeaveRestConfig {
     }
 
     @Bean
-    public ScenarioSet getScenarioService(AiWeaveService aiWeaveService, List<ScenarioLoader> scenarioLoaders,
+    public ScenarioSet getScenarioService(AiService aiWeaveService, List<ScenarioLoader> scenarioLoaders,
             List<Scenario<?, ?>> scenarios) {
         return aiWeaveService.senarioSetBuilder().addScenarioLoaders(scenarioLoaders).addScenarios(scenarios).create();
     }

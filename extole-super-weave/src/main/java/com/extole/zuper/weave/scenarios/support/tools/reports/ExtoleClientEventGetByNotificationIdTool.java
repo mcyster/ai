@@ -2,7 +2,7 @@ package com.extole.zuper.weave.scenarios.support.tools.reports;
 
 import java.util.Objects;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
@@ -23,7 +23,7 @@ class ExtoleClientEventGetByNotificationIdTool implements ExtoleSupportTool<Requ
     Tool<Request, ExtoleSuperContext> tool;
 
     ExtoleClientEventGetByNotificationIdTool(ExtoleTrustedWebClientFactory extoleWebClientFactory,
-            AiWeaveService aiWeaveService) {
+            AiService aiWeaveService) {
         this.tool = aiWeaveService.cachingTool(new UncachedClientEventGetTool(extoleWebClientFactory));
     }
 

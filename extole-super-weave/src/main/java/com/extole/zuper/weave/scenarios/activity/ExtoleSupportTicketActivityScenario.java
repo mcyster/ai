@@ -8,7 +8,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.SearchTool;
 import com.cyster.ai.weave.service.Tool;
@@ -24,12 +24,12 @@ public class ExtoleSupportTicketActivityScenario implements Scenario<Parameters,
     private final String DEFAULT_ACTIVITY = "unclassified";
     private final String DESCRIPTION = "Find the best Runbook for the specified ticket";
 
-    private AiWeaveService aiWeaveService;
+    private AiService aiWeaveService;
     private Optional<Scenario<Parameters, ExtoleSuperContext>> scenario = Optional.empty();
     private List<Tool<?, ?>> tools = new ArrayList<>();
     private SearchTool searchTool;
 
-    public ExtoleSupportTicketActivityScenario(AiWeaveService aiWeaveService,
+    public ExtoleSupportTicketActivityScenario(AiService aiWeaveService,
             ExtoleSupportActivityTool supportActivityToolFactory, SupportTicketGetTool ticketGetTool) {
         this.aiWeaveService = aiWeaveService;
         this.searchTool = supportActivityToolFactory.getActivityTool();

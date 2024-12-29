@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiWeaveService;
+import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.SearchTool;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +15,7 @@ public class ExtoleRunbookToolFactory {
 
     private SearchTool searchTool;
 
-    public ExtoleRunbookToolFactory(AiWeaveService aiWeaveService, List<RunbookScenario> runbookScenarios,
+    public ExtoleRunbookToolFactory(AiService aiWeaveService, List<RunbookScenario> runbookScenarios,
             ExtoleRunbookScenarioLoader runbookScenarioLoader, ExtoleRunbookDefault defaultRunbook) {
         ObjectMapper objectMapper = new ObjectMapper();
 
