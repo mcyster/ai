@@ -9,10 +9,10 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiService;
-import com.cyster.ai.weave.service.ScenarioBuilder;
-import com.cyster.ai.weave.service.SearchTool;
-import com.cyster.ai.weave.service.Tool;
 import com.cyster.ai.weave.service.scenario.Scenario;
+import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
+import com.cyster.ai.weave.service.tool.SearchTool;
+import com.cyster.ai.weave.service.tool.Tool;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.activity.ExtoleSupportTicketActivityScenario.Parameters;

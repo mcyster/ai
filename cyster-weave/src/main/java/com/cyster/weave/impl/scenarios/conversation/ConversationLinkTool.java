@@ -5,9 +5,9 @@ import java.util.Map;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.Tool;
-import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
+import com.cyster.ai.weave.service.tool.Tool;
+import com.cyster.ai.weave.service.tool.ToolException;
 import com.cyster.template.StringTemplate;
 import com.cyster.weave.impl.scenarios.conversation.ConversationLinkTool.Context;
 

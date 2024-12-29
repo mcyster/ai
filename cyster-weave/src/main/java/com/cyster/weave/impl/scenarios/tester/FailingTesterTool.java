@@ -2,9 +2,9 @@ package com.cyster.weave.impl.scenarios.tester;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.Tool;
-import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
+import com.cyster.ai.weave.service.tool.Tool;
+import com.cyster.ai.weave.service.tool.ToolException;
 
 @Component
 public class FailingTesterTool implements Tool<Void, Void> {

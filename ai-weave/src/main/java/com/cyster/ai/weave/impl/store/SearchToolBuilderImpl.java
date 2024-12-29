@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.DocumentStore;
 import com.cyster.ai.weave.service.DocumentStore.Document;
-import com.cyster.ai.weave.service.SearchTool;
+import com.cyster.ai.weave.service.tool.SearchTool;
 
 import io.github.stefanbratanov.jvm.openai.CreateVectorStoreFileBatchRequest;
 import io.github.stefanbratanov.jvm.openai.CreateVectorStoreRequest;

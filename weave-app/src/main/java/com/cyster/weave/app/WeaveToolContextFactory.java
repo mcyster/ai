@@ -3,8 +3,8 @@ package com.cyster.weave.app;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.ToolContextException;
-import com.cyster.ai.weave.service.ToolContextFactory;
+import com.cyster.ai.weave.service.tool.ToolContextException;
+import com.cyster.ai.weave.service.tool.ToolContextFactory;
 import com.cyster.weave.impl.scenarios.conversation.ConversationLinkTool;
 import com.cyster.web.weave.scenarios.ManagedWebsites;
 import com.cyster.web.weave.scenarios.WebsiteProvider;

@@ -4,9 +4,9 @@ import java.util.Random;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.Tool;
-import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
+import com.cyster.ai.weave.service.tool.Tool;
+import com.cyster.ai.weave.service.tool.ToolException;
 import com.cyster.weave.impl.scenarios.tester.RandomNumberTool.Parameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;

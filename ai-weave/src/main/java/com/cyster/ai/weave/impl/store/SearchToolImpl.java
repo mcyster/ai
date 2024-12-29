@@ -4,9 +4,9 @@ import java.util.Collections;
 import java.util.Objects;
 
 import com.cyster.ai.weave.impl.openai.OpenAiService;
-import com.cyster.ai.weave.service.SearchTool;
-import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
+import com.cyster.ai.weave.service.tool.SearchTool;
+import com.cyster.ai.weave.service.tool.ToolException;
 
 import io.github.stefanbratanov.jvm.openai.VectorStore;
 import io.github.stefanbratanov.jvm.openai.VectorStoresClient;

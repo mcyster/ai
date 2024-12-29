@@ -2,8 +2,8 @@ package com.cyster.web.weave.scenarios;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
+import com.cyster.ai.weave.service.tool.ToolException;
 import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
 import com.cyster.web.weave.scenarios.WebsiteFileGetTool.Request;
 import com.cyster.web.weave.scenarios.WebsiteProvider.Website.Asset;

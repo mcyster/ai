@@ -2,8 +2,8 @@ package com.extole.app.admin;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.ToolContextException;
-import com.cyster.ai.weave.service.ToolContextFactory;
+import com.cyster.ai.weave.service.tool.ToolContextException;
+import com.cyster.ai.weave.service.tool.ToolContextFactory;
 import com.extole.admin.weave.session.ExtoleSessionContext;
 
 @Component

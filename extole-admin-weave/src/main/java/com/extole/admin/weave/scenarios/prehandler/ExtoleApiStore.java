@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiService;
-import com.cyster.ai.weave.service.SearchTool;
+import com.cyster.ai.weave.service.tool.SearchTool;
 
 @Component
 public class ExtoleApiStore {

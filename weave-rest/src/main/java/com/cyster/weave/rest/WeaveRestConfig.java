@@ -8,12 +8,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 
-import com.cyster.ai.weave.impl.AiWeaveServiceImpl;
+import com.cyster.ai.weave.impl.AiServiceImpl;
+import com.cyster.ai.weave.impl.openai.advisor.assistant.AssistantAiAdvisorServiceImpl;
+import com.cyster.ai.weave.impl.scenario.AiScenarioServiceImpl;
+import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.AiService;
-import com.cyster.ai.weave.service.ToolContextFactory;
+import com.cyster.ai.weave.service.advisor.AiAdvisorService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
+import com.cyster.ai.weave.service.tool.ToolContextFactory;
 
 @Configuration
 public class WeaveRestConfig {
@@ -28,7 +32,22 @@ public class WeaveRestConfig {
             throw new IllegalArgumentException("OPENAI_API_KEY not defined");
         }
 
-        return new AiWeaveServiceImpl(openAiApiKey, toolContextFactory);
+        return new AiServiceImpl(openAiApiKey, toolContextFactory);
+    }
+
+    @Bean
+    public AiAdvisorService getAiAgentService(@Value("${OPENAI_API_KEY}") String openAiApiKey,
+            ToolContextFactory toolContextFactory) {
+        if (!StringUtils.hasText(openAiApiKey)) {
+            throw new IllegalArgumentException("OPENAI_API_KEY not defined");
+        }
+
+        return new AssistantAiAdvisorServiceImpl(openAiApiKey, toolContextFactory);
+    }
+
+    @Bean
+    public AiScenarioService getAiScenarioService(AiAdvisorService advisorService) {
+        return new AiScenarioServiceImpl(advisorService);
     }
 
     @Bean

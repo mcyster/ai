@@ -3,7 +3,7 @@ package com.cyster.weave.session.service.scenariosession;
 import java.util.List;
 import java.util.Optional;
 
-import com.cyster.ai.weave.service.conversation.ScenarioConversation;
+import com.cyster.ai.weave.service.scenario.ScenarioConversation;
 
 public interface ScenarioConversationStore {
     Optional<ScenarioConversation> getSession(String id);

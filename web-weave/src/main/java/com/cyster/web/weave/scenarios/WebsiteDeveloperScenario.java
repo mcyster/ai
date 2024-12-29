@@ -8,8 +8,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiService;
-import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
+import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
 import com.cyster.web.weave.scenarios.WebsiteDeveloperScenario.Request;

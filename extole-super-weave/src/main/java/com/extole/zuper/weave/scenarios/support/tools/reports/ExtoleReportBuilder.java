@@ -10,8 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import com.cyster.ai.weave.service.FatalToolException;
-import com.cyster.ai.weave.service.ToolException;
+import com.cyster.ai.weave.service.tool.FatalToolException;
+import com.cyster.ai.weave.service.tool.ToolException;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.client.web.ExtoleWebClientException;
 import com.fasterxml.jackson.databind.JsonNode;

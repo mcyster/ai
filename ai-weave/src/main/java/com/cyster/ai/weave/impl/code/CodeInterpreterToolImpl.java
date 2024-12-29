@@ -4,9 +4,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import com.cyster.ai.weave.service.CodeInterpreterTool;
-import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
+import com.cyster.ai.weave.service.tool.CodeInterpreterTool;
+import com.cyster.ai.weave.service.tool.ToolException;
 
 public class CodeInterpreterToolImpl implements CodeInterpreterTool {
     public static final String NAME = "code_interpreter";

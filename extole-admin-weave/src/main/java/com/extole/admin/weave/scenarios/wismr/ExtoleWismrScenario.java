@@ -5,8 +5,8 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiService;
-import com.cyster.ai.weave.service.ScenarioBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
+import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.extole.admin.weave.session.ExtoleSessionContext;
 
 @Component

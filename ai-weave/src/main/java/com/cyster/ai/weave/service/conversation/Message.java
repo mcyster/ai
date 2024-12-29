@@ -1,6 +1,6 @@
 package com.cyster.ai.weave.service.conversation;
 
-import com.cyster.ai.weave.impl.advisor.assistant.WeaveOperation;
+import com.cyster.ai.weave.impl.WeaveOperation;
 
 public interface Message {
 

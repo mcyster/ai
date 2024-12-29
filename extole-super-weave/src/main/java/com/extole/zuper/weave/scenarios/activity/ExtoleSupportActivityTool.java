@@ -11,7 +11,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiService;
-import com.cyster.ai.weave.service.SearchTool;
+import com.cyster.ai.weave.service.tool.SearchTool;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVReader;

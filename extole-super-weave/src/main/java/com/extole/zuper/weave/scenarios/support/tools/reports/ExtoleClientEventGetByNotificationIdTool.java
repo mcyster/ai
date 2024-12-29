@@ -3,9 +3,9 @@ package com.extole.zuper.weave.scenarios.support.tools.reports;
 import java.util.Objects;
 
 import com.cyster.ai.weave.service.AiService;
-import com.cyster.ai.weave.service.Tool;
-import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
+import com.cyster.ai.weave.service.tool.Tool;
+import com.cyster.ai.weave.service.tool.ToolException;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;

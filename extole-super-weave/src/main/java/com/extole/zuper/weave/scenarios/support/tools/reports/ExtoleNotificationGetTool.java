@@ -11,10 +11,10 @@ import org.springframework.web.reactive.function.client.WebClientException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import com.cyster.ai.weave.service.AiService;
-import com.cyster.ai.weave.service.FatalToolException;
-import com.cyster.ai.weave.service.Tool;
-import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
+import com.cyster.ai.weave.service.tool.FatalToolException;
+import com.cyster.ai.weave.service.tool.Tool;
+import com.cyster.ai.weave.service.tool.ToolException;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.client.web.ExtoleWebClientException;
 import com.extole.zuper.weave.ExtoleSuperContext;

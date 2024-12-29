@@ -2,8 +2,6 @@ package com.cyster.ai.weave.service.scenario;
 
 import java.util.Objects;
 
-import com.cyster.ai.weave.service.conversation.ScenarioConversation;
-
 public interface Scenario<PARAMETERS, CONTEXT> {
 
     String getName();

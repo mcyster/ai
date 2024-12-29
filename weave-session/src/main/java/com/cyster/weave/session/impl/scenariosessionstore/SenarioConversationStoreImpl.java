@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.conversation.ScenarioConversation;
+import com.cyster.ai.weave.service.scenario.ScenarioConversation;
 import com.cyster.weave.session.service.scenariosession.ScenarioConversationStore;
 
 @Component

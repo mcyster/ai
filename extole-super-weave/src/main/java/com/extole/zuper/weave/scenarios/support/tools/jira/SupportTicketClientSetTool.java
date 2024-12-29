@@ -5,8 +5,8 @@ import java.util.Objects;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.ToolException;
 import com.cyster.ai.weave.service.Weave;
+import com.cyster.ai.weave.service.tool.ToolException;
 import com.cyster.jira.client.ticket.TicketException;
 import com.extole.jira.support.SupportTicketService;
 import com.extole.zuper.weave.ExtoleSuperContext;
