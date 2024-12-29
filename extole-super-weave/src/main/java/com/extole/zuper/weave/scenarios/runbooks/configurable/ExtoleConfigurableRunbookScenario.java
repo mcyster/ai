@@ -1,5 +1,6 @@
 package com.extole.zuper.weave.scenarios.runbooks.configurable;
 
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.runbooks.RunbookScenario;
@@ -50,7 +51,7 @@ public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters,
+    public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(RunbookScenarioParameters parameters,
             ExtoleSuperContext context) {
         String instructions = new StringTemplate(instructionsTemplate).render(parameters);
 

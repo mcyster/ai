@@ -3,12 +3,14 @@ package com.cyster.weave.session.service.scenariosession;
 import java.util.List;
 import java.util.Optional;
 
-import com.cyster.ai.weave.service.scenario.ScenarioConversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversation;
+import com.cyster.ai.weave.service.scenario.ScenarioType;
 
 public interface ScenarioConversationStore {
     Optional<ScenarioConversation> getSession(String id);
 
-    <REQUEST, CONTEXT> ScenarioConversation addConversation(ScenarioConversation scenarioConversation);
+    <PARAMETERS, CONTEXT> ScenarioConversation addConversation(ActiveConversation scenarioConversation,
+            ScenarioType scenarioType, PARAMETERS parameers, CONTEXT context);
 
     QueryBuilder createQueryBuilder();
 

@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiScenarioService;
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
@@ -67,7 +68,8 @@ public class WebsiteDeveloperScenario implements Scenario<Request, ManagedWebsit
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Request parameters, ManagedWebsites context) {
+    public ActiveConversationBuilder<ManagedWebsites> createConversationBuilder(Request parameters,
+            ManagedWebsites context) {
         String messageTemplate = "There is a website with id %s at %s (we're in developer mode, so localhost is ok)";
 
         ManagedWebsite website;

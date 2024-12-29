@@ -2,6 +2,7 @@ package com.extole.admin.weave.scenarios.report;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.template.StringTemplate;
 import com.extole.admin.weave.scenarios.help.ExtoleHelpScenario;
@@ -40,7 +41,8 @@ public class ExtoleReportDescriptionScenario implements Scenario<Parameters, Ext
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSessionContext context) {
+    public ActiveConversationBuilder<ExtoleSessionContext> createConversationBuilder(Parameters parameters,
+            ExtoleSessionContext context) {
         String messageTemplate = """
                 You are looking at the report with id: {{reportId}}
 

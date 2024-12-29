@@ -17,13 +17,14 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cyster.ai.weave.service.conversation.ActiveConversation;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.ai.weave.service.scenario.ScenarioConversation;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
+import com.cyster.weave.session.service.scenariosession.ScenarioConversation;
 import com.cyster.weave.session.service.scenariosession.ScenarioConversationStore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -239,9 +240,10 @@ public class ConversationController {
                     + " with context type: " + scenario.getContextClass().getName());
         }
 
-        ScenarioConversation scenarioConversation = scenario.createConversationBuilder(parameters, context).start();
+        ActiveConversation scenarioConversation = scenario.createConversationBuilder(parameters, context).start();
 
-        return scenarioConversationStore.addConversation(scenarioConversation);
+        return scenarioConversationStore.addConversation(scenarioConversation, scenario.toScenarioType(), parameters,
+                context);
     }
 
 }

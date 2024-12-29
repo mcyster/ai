@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.AiService;
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.ai.weave.service.tool.SearchTool;
@@ -61,7 +62,8 @@ public class ExtoleTicketGuideSelectorScenario implements Scenario<Parameters, E
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSuperContext context) {
+    public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(Parameters parameters,
+            ExtoleSuperContext context) {
         if (parameters == null || parameters.ticketNumber() == null || parameters.ticketNumber().isBlank()) {
             throw new IllegalArgumentException("No ticketNumber specified");
         }

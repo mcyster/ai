@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiScenarioService;
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.ai.weave.service.tool.Tool;
@@ -58,7 +59,8 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Void parameters, ExtoleSessionContext context) {
+    public ActiveConversationBuilder<ExtoleSessionContext> createConversationBuilder(Void parameters,
+            ExtoleSessionContext context) {
         return this.getScenario().createConversationBuilder(parameters, context);
     }
 

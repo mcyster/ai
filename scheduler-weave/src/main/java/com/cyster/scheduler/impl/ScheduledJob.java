@@ -12,14 +12,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.conversation.ActiveConversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.ai.weave.service.scenario.ScenarioConversation;
-import com.cyster.ai.weave.service.scenario.Scenario.ConversationBuilder;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
+import com.cyster.weave.session.service.scenariosession.ScenarioConversation;
 import com.cyster.weave.session.service.scenariosession.ScenarioConversationStore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -115,9 +116,11 @@ public class ScheduledJob implements Job {
         PARAMETERS castParameters = (PARAMETERS) parameters;
         CONTEXT castContext = (CONTEXT) context;
 
-        ConversationBuilder conversationBuilder = scenario.createConversationBuilder(castParameters, castContext);
-        ScenarioConversation conversation = conversationBuilder.start();
+        ActiveConversationBuilder<CONTEXT> conversationBuilder = scenario.createConversationBuilder(castParameters,
+                castContext);
+        ActiveConversation conversation = conversationBuilder.start();
 
-        return scenarioConversationStore().addConversation(conversation);
+        return scenarioConversationStore().addConversation(conversation, scenario.toScenarioType(), castParameters,
+                castContext);
     }
 }

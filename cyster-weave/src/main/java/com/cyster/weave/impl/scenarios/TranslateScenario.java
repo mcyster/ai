@@ -2,6 +2,7 @@ package com.cyster.weave.impl.scenarios;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.template.StringTemplate;
 import com.cyster.weave.impl.scenarios.TranslateScenario.Parameters;
@@ -37,7 +38,7 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
+    public ActiveConversationBuilder<Void> createConversationBuilder(Parameters parameters, Void context) {
         String instructionsTemplate = "Please translate messages from {{language}} to {{target_language}}.";
 
         String instructions = new StringTemplate(instructionsTemplate).render(parameters);

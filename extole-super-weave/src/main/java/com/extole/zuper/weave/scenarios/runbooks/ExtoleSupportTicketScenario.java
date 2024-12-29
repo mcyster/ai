@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiScenarioService;
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.ai.weave.service.tool.Tool;
@@ -55,7 +56,8 @@ public class ExtoleSupportTicketScenario implements Scenario<Parameters, ExtoleS
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSuperContext context) {
+    public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(Parameters parameters,
+            ExtoleSuperContext context) {
         return this.getScenario().createConversationBuilder(parameters, context)
                 .addMessage("Ticket: " + parameters.ticketNumber());
     }

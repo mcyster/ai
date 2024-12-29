@@ -2,6 +2,7 @@ package com.extole.zuper.weave.scenarios.campaign;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.campaign.ExtoleCampaignCheckScenario.Parameters;
@@ -39,7 +40,8 @@ public class ExtoleCampaignCheckScenario implements Scenario<Parameters, ExtoleS
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSuperContext context) {
+    public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(Parameters parameters,
+            ExtoleSuperContext context) {
         String instructions = """
                 You are a member of the Support team at Extole, a SaaS marketing platform. You are tasked with checking the variables associated with campaigns
 

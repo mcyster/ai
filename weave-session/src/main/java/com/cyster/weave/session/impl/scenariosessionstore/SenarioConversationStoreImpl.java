@@ -9,7 +9,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.scenario.ScenarioConversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversation;
+import com.cyster.ai.weave.service.scenario.ScenarioType;
+import com.cyster.weave.session.service.scenariosession.ScenarioConversation;
 import com.cyster.weave.session.service.scenariosession.ScenarioConversationStore;
 
 @Component
@@ -30,14 +32,18 @@ public class SenarioConversationStoreImpl implements ScenarioConversationStore {
     }
 
     @Override
-    public <PARAMETERS, CONTEXT> ScenarioConversation addConversation(ScenarioConversation scenarioConversation) {
-        if (this.store.containsKey(scenarioConversation.id())) {
-            throw new RuntimeException("Id taken " + scenarioConversation.id());
+    public <PARAMETERS, CONTEXT> ScenarioConversation addConversation(ActiveConversation activeConversation,
+            ScenarioType scenarioType, PARAMETERS parameters, CONTEXT context) {
+        if (this.store.containsKey(activeConversation.id())) {
+            throw new RuntimeException("Id taken " + activeConversation.id());
         }
 
-        this.store.put(scenarioConversation.id(), scenarioConversation);
+        var conversation = new ScenarioConversationImpl(activeConversation, scenarioType, (Object) parameters,
+                (Object) context);
 
-        return scenarioConversation;
+        this.store.put(conversation.id(), conversation);
+
+        return conversation;
     }
 
     public QueryBuilder createQueryBuilder() {

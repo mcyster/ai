@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiScenarioService;
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 
@@ -43,7 +44,7 @@ public class SchedulerScenario implements Scenario<Void, Void> {
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Void parameters, Void context) {
+    public ActiveConversationBuilder<Void> createConversationBuilder(Void parameters, Void context) {
         return this.getScenario().createConversationBuilder(parameters, context);
     }
 

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiScenarioService;
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.extole.zuper.weave.ExtoleSuperContext;
@@ -49,7 +50,8 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Void parameters, ExtoleSuperContext context) {
+    public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(Void parameters,
+            ExtoleSuperContext context) {
         return this.getScenario().createConversationBuilder(parameters, context);
     }
 

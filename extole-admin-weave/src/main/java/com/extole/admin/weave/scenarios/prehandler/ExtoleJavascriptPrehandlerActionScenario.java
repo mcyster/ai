@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiScenarioService;
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.extole.admin.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionScenario.Parameters;
@@ -46,7 +47,8 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Parame
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSessionContext context) {
+    public ActiveConversationBuilder<ExtoleSessionContext> createConversationBuilder(Parameters parameters,
+            ExtoleSessionContext context) {
         var builder = this.getScenario().createConversationBuilder(parameters, context);
 
         if (parameters != null && parameters.prehandlerId != null) {

@@ -2,6 +2,7 @@ package com.extole.zuper.weave.scenarios.runbooks;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.ExtoleSupportHelpScenario;
@@ -48,7 +49,7 @@ public class ExtoleRunbookDefault implements RunbookScenario {
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters,
+    public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(RunbookScenarioParameters parameters,
             ExtoleSuperContext context) {
         String instructions = new StringTemplate(INSTRUCTIONS_TEMPLATE).render(parameters);
 
