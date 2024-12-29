@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
@@ -21,17 +22,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ExtoleTicketGuideSelectorScenario implements Scenario<Parameters, ExtoleSuperContext> {
     private final String DESCRIPTION = "Find the best Guide for the specified ticket";
 
-    private AiService aiWeaveService;
+    private AiService aiService;
+    private AiScenarioService aiScenarioService;
     private Optional<Scenario<Parameters, ExtoleSuperContext>> scenario = Optional.empty();
     private List<Tool<?, ?>> tools = new ArrayList<>();
     private SearchTool searchTool;
 
-    public ExtoleTicketGuideSelectorScenario(AiService aiWeaveService, SupportTicketGetTool ticketGetTool,
-            ExtoleGuideStore extoleGuideStore) {
+    public ExtoleTicketGuideSelectorScenario(AiService aiService, AiScenarioService aiScenarioService,
+            SupportTicketGetTool ticketGetTool, ExtoleGuideStore extoleGuideStore) {
 
         SearchTool storeSearchTool = extoleGuideStore.createStoreTool();
 
-        this.aiWeaveService = aiWeaveService;
+        this.aiService = aiService;
+        this.aiScenarioService = aiScenarioService;
         this.tools.add(storeSearchTool);
         this.tools.add(ticketGetTool);
         this.searchTool = storeSearchTool;
@@ -119,7 +122,7 @@ public class ExtoleTicketGuideSelectorScenario implements Scenario<Parameters, E
                     }
                     """;
 
-            var schema = aiWeaveService.getJsonSchema(Response.class);
+            var schema = aiService.getJsonSchema(Response.class);
 
             Map<String, Object> parameters = new HashMap<>() {
                 {
@@ -131,7 +134,7 @@ public class ExtoleTicketGuideSelectorScenario implements Scenario<Parameters, E
 
             System.out.println("!!!!!!!! extole support ticket guies: " + instructions);
 
-            ScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiWeaveService
+            ScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiScenarioService
                     .getOrCreateScenario(getName());
             builder.setInstructions(instructions);
 

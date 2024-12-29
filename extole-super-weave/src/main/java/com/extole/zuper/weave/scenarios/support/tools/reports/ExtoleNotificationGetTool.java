@@ -32,8 +32,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class ExtoleNotificationGetTool implements ExtoleSupportTool<Request> {
     private Tool<Request, ExtoleSuperContext> tool;
 
-    ExtoleNotificationGetTool(ExtoleTrustedWebClientFactory extoleWebClientFactory, AiService aiWeaveService) {
-        this.tool = aiWeaveService.cachingTool(new UncachedNotificationGetTool(extoleWebClientFactory));
+    ExtoleNotificationGetTool(ExtoleTrustedWebClientFactory extoleWebClientFactory, AiService aiService) {
+        this.tool = aiService.cachingTool(new UncachedNotificationGetTool(extoleWebClientFactory));
     }
 
     @Override

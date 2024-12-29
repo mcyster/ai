@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiService;
+import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.ai.weave.service.tool.Tool;
@@ -20,14 +20,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ExtoleSupportTicketScenario implements Scenario<Parameters, ExtoleSuperContext> {
     private final String DESCRIPTION = "Execute the best Runbook for the specified ticket";
 
-    private AiService aiWeaveService;
+    private AiScenarioService aiScenarioService;
     private Optional<Scenario<Parameters, ExtoleSuperContext>> scenario = Optional.empty();
     private List<Tool<?, ?>> tools = new ArrayList<>();
 
-    public ExtoleSupportTicketScenario(AiService aiWeaveService,
+    public ExtoleSupportTicketScenario(AiScenarioService aiScenarioService,
             ExtoleSupportTicketRunbookSelectorTool runbookSelectorTool, ExtoleSupportTicketClientTool ticketClientTool,
             ExtoleSupportTicketRunbookExecuterTool runbookExecuterTool, SchedulerTool schedulerTool) {
-        this.aiWeaveService = aiWeaveService;
+        this.aiScenarioService = aiScenarioService;
         this.tools.add(runbookSelectorTool);
         this.tools.add(ticketClientTool);
         this.tools.add(runbookExecuterTool);
@@ -70,7 +70,7 @@ public class ExtoleSupportTicketScenario implements Scenario<Parameters, ExtoleS
                     Respond with the ticket_number followed by a selected runbook in brackets and then a brief summary of your analysis, i.e:
                     TICKET_NUMBER (RUNBOOK): SUMMARY
                     """;
-            ScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiWeaveService
+            ScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiScenarioService
                     .getOrCreateScenario(getName());
 
             builder.setInstructions(defaultInstruction);

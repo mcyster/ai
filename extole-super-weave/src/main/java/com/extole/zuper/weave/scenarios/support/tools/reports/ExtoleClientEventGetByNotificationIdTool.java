@@ -23,8 +23,8 @@ class ExtoleClientEventGetByNotificationIdTool implements ExtoleSupportTool<Requ
     Tool<Request, ExtoleSuperContext> tool;
 
     ExtoleClientEventGetByNotificationIdTool(ExtoleTrustedWebClientFactory extoleWebClientFactory,
-            AiService aiWeaveService) {
-        this.tool = aiWeaveService.cachingTool(new UncachedClientEventGetTool(extoleWebClientFactory));
+            AiService aiService) {
+        this.tool = aiService.cachingTool(new UncachedClientEventGetTool(extoleWebClientFactory));
     }
 
     @Override

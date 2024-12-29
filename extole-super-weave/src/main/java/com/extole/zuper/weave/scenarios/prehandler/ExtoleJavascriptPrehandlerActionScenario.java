@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiService;
+import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.extole.zuper.weave.ExtoleSuperContext;
@@ -19,12 +19,12 @@ import com.extole.zuper.weave.ExtoleSuperContext;
 public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, ExtoleSuperContext> {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleJavascriptPrehandlerActionScenario.class);
 
-    private AiService aiWeaveService;
+    private AiScenarioService aiScenarioService;
     private Optional<Scenario<Void, ExtoleSuperContext>> scenario = Optional.empty();
     private ExtoleApiStore extoleStore;
 
-    ExtoleJavascriptPrehandlerActionScenario(AiService aiWeaveService, ExtoleApiStore extoleStore) {
-        this.aiWeaveService = aiWeaveService;
+    ExtoleJavascriptPrehandlerActionScenario(AiScenarioService aiScenarioService, ExtoleApiStore extoleStore) {
+        this.aiScenarioService = aiScenarioService;
         this.extoleStore = extoleStore;
     }
 
@@ -108,8 +108,7 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
                     Where possible, link to interfaces and classes mentioned in your response.
                     """;
 
-            ScenarioBuilder<Void, ExtoleSuperContext> builder = this.aiWeaveService
-                    .getOrCreateScenario(getName());
+            ScenarioBuilder<Void, ExtoleSuperContext> builder = this.aiScenarioService.getOrCreateScenario(getName());
 
             builder.setInstructions(instructions);
 

@@ -9,6 +9,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.cyster.ai.weave.service.AiAdvisorService;
 import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.tool.SearchTool;
 
@@ -16,22 +17,25 @@ import com.cyster.ai.weave.service.tool.SearchTool;
 public class ExtoleGuideStore {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleGuideStore.class);
 
-    private static String remoteJavaApiRepository = "git@github.com:extole/guides.git";
-    private static File localJavaApiRepository = new File("/tmp/extole/guides");
-    private AiService aiWeaveService;
+    private static final String remoteJavaApiRepository = "git@github.com:extole/guides.git";
+    private static final File localJavaApiRepository = new File("/tmp/extole/guides");
 
-    ExtoleGuideStore(AiService aiWeaveService) {
-        this.aiWeaveService = aiWeaveService;
+    private final AiService aiService;
+    private final AiAdvisorService aiAdvisorService;
+
+    ExtoleGuideStore(AiService aiService, AiAdvisorService aiAdvisorService) {
+        this.aiService = aiService;
+        this.aiAdvisorService = aiAdvisorService;
     }
 
     public SearchTool createStoreTool() {
 
         String hash = loadOrUpdateLocalRepository();
 
-        var documentStore = aiWeaveService.directoryDocumentStoreBuilder()
-                .withDirectory(localJavaApiRepository.toPath()).withHash(hash).create();
+        var documentStore = aiService.directoryDocumentStoreBuilder().withDirectory(localJavaApiRepository.toPath())
+                .withHash(hash).create();
 
-        SearchTool.Builder builder = aiWeaveService.searchToolBuilder().withName("extole-guides")
+        SearchTool.Builder builder = aiAdvisorService.searchToolBuilder().withName("extole-guides")
                 .withDocumentStore(documentStore);
 
         return builder.create();

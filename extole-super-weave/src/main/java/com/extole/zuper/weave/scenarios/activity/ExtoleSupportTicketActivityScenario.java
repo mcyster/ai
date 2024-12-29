@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
@@ -24,14 +25,16 @@ public class ExtoleSupportTicketActivityScenario implements Scenario<Parameters,
     private final String DEFAULT_ACTIVITY = "unclassified";
     private final String DESCRIPTION = "Find the best Runbook for the specified ticket";
 
-    private AiService aiWeaveService;
+    private AiService aiService;
+    private AiScenarioService aiScenarioService;
     private Optional<Scenario<Parameters, ExtoleSuperContext>> scenario = Optional.empty();
     private List<Tool<?, ?>> tools = new ArrayList<>();
     private SearchTool searchTool;
 
-    public ExtoleSupportTicketActivityScenario(AiService aiWeaveService,
+    public ExtoleSupportTicketActivityScenario(AiService aiService, AiScenarioService aiScenarioService,
             ExtoleSupportActivityTool supportActivityToolFactory, SupportTicketGetTool ticketGetTool) {
-        this.aiWeaveService = aiWeaveService;
+        this.aiService = aiService;
+        this.aiScenarioService = aiScenarioService;
         this.searchTool = supportActivityToolFactory.getActivityTool();
         this.tools.add(this.searchTool);
         this.tools.add(ticketGetTool);
@@ -123,7 +126,7 @@ public class ExtoleSupportTicketActivityScenario implements Scenario<Parameters,
                     }
                     """;
 
-            var schema = aiWeaveService.getJsonSchema(Response.class);
+            var schema = aiService.getJsonSchema(Response.class);
 
             Map<String, String> parameters = new HashMap<>() {
                 {
@@ -136,7 +139,7 @@ public class ExtoleSupportTicketActivityScenario implements Scenario<Parameters,
 
             System.out.println("!!!!!!!! extole support ticket activty instructions: " + instructions);
 
-            ScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiWeaveService
+            ScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiScenarioService
                     .getOrCreateScenario(getName());
             builder.setInstructions(instructions);
 

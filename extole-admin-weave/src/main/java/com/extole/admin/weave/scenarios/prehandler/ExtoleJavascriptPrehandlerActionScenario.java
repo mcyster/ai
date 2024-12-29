@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiService;
+import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.extole.admin.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionScenario.Parameters;
@@ -13,14 +13,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
 public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Parameters, ExtoleSessionContext> {
-    private AiService aiWeaveService;
+    private AiScenarioService aiScenarioService;
     private ExtoleApiStore extoleStore;
     private ExtolePrehandlerGetTool extolePrehandlerGetTool;
     private final AtomicReference<Scenario<Parameters, ExtoleSessionContext>> scenario = new AtomicReference<>();
 
-    ExtoleJavascriptPrehandlerActionScenario(AiService aiWeaveService, ExtoleApiStore extoleStore,
+    ExtoleJavascriptPrehandlerActionScenario(AiScenarioService aiScenarioService, ExtoleApiStore extoleStore,
             ExtolePrehandlerGetTool extolePrehandlerGetTool) {
-        this.aiWeaveService = aiWeaveService;
+        this.aiScenarioService = aiScenarioService;
         this.extoleStore = extoleStore;
         this.extolePrehandlerGetTool = extolePrehandlerGetTool;
     }
@@ -99,7 +99,7 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Parame
                          - **Check API calls**: Check the code leverages the documented api.
                          """;
 
-                ScenarioBuilder<Parameters, ExtoleSessionContext> builder = this.aiWeaveService
+                ScenarioBuilder<Parameters, ExtoleSessionContext> builder = this.aiScenarioService
                         .getOrCreateScenario(getName());
 
                 builder.setInstructions(instructions);

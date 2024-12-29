@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
@@ -24,17 +25,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, ExtoleSuperContext> {
     private final String DESCRIPTION = "Find the Extole client associated for the specified ticket";
 
-    private AiService aiWeaveService;
+    private AiService aiService;
+    private AiScenarioService aiScenarioService;
     private Optional<Scenario<Parameters, ExtoleSuperContext>> scenario = Optional.empty();
     private List<Tool<?, ?>> tools = new ArrayList<>();
     private SupportTicketGetTool ticketGetTool;
     private SupportTicketClientSetTool extoleClientSetTool;
     private ExtoleClientGetTool extoleClientGetTool;
 
-    public ExtoleSupportTicketClientScenario(AiService aiWeaveService, SupportTicketGetTool ticketGetTool,
-            SupportTicketClientSetTool extoleClientSetTool, ExtoleClientGetTool extoleClientGetTool,
-            ExtoleClientSearchTool extoleClientSearchTool) {
-        this.aiWeaveService = aiWeaveService;
+    public ExtoleSupportTicketClientScenario(AiService aiService, AiScenarioService aiScenarioService,
+            SupportTicketGetTool ticketGetTool, SupportTicketClientSetTool extoleClientSetTool,
+            ExtoleClientGetTool extoleClientGetTool, ExtoleClientSearchTool extoleClientSearchTool) {
+        this.aiService = aiService;
+        this.aiScenarioService = aiScenarioService;
         this.tools.add(ticketGetTool);
         this.tools.add(extoleClientSetTool);
         this.tools.add(extoleClientGetTool);
@@ -99,11 +102,11 @@ public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, E
 
             Map<String, Object> parameters = Map.of("ticketGetTool", ticketGetTool.getName(), "clientGetTool",
                     extoleClientGetTool.getName(), "clientSetTool", extoleClientSetTool.getName(), "schema",
-                    aiWeaveService.getJsonSchema(Response.class));
+                    aiService.getJsonSchema(Response.class));
 
             String instructions = new StringTemplate(instructionsTemplate).render(parameters);
 
-            ScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiWeaveService
+            ScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiScenarioService
                     .getOrCreateScenario(getName());
             builder.setInstructions(instructions);
 

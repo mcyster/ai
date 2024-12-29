@@ -10,6 +10,7 @@ import java.util.List;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.AiAdvisorService;
 import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.tool.SearchTool;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,10 +27,10 @@ public class ExtoleSupportActivityTool {
 
     private SearchTool searchTool;
 
-    public ExtoleSupportActivityTool(AiService aiWeaveService) {
+    public ExtoleSupportActivityTool(AiService aiService, AiAdvisorService aiAdvisorService) {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        var documentStoreBuilder = aiWeaveService.simpleDocumentStoreBuilder();
+        var documentStoreBuilder = aiService.simpleDocumentStoreBuilder();
 
         for (var activity : loadActivities()) {
             String json;
@@ -41,7 +42,7 @@ public class ExtoleSupportActivityTool {
             documentStoreBuilder.addDocument(activity.activityName() + ".json", json);
         }
 
-        SearchTool.Builder builder = aiWeaveService.searchToolBuilder();
+        SearchTool.Builder builder = aiAdvisorService.searchToolBuilder();
         builder.withName("activities").withDocumentStore(documentStoreBuilder.create());
 
         this.searchTool = builder.create();

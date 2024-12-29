@@ -2,8 +2,8 @@ package com.cyster.ai.weave.impl.scenario;
 
 import java.util.Optional;
 
+import com.cyster.ai.weave.service.AiAdvisorService;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
-import com.cyster.ai.weave.service.advisor.AiAdvisorService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.ai.weave.service.tool.Tool;

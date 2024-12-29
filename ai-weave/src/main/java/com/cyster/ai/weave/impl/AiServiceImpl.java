@@ -2,19 +2,13 @@ package com.cyster.ai.weave.impl;
 
 import java.util.Optional;
 
-import com.cyster.ai.weave.impl.openai.OpenAiService;
-import com.cyster.ai.weave.impl.openai.advisor.assistant.AssistantAiAdvisorServiceImpl;
-import com.cyster.ai.weave.impl.scenario.ScenarioSetBuilderImpl;
+import com.cyster.ai.weave.impl.store.DirectoryDocumentStore;
+import com.cyster.ai.weave.impl.store.SimpleDocumentStore;
+import com.cyster.ai.weave.impl.tool.CachingTool;
 import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.DocumentStore.DirectoryDocumentStoreBuilder;
 import com.cyster.ai.weave.service.DocumentStore.SimpleDocumentStoreBuilder;
-import com.cyster.ai.weave.service.advisor.AiAdvisorService;
-import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
-import com.cyster.ai.weave.service.scenario.ScenarioSetBuilder;
-import com.cyster.ai.weave.service.tool.CodeInterpreterTool;
-import com.cyster.ai.weave.service.tool.SearchTool;
 import com.cyster.ai.weave.service.tool.Tool;
-import com.cyster.ai.weave.service.tool.ToolContextFactory;
 import com.cyster.ai.weave.service.tool.ToolException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -26,52 +20,23 @@ import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
 
 public class AiServiceImpl implements AiService {
-    private final OpenAiService openAiService;
-    private final AiAdvisorService advisorService;
-    private final ToolContextFactory toolContextFactory;
 
-    public AiServiceImpl(String openAiKey, ToolContextFactory toolContextFactory) {
-        this.openAiService = new OpenAiService(openAiKey);
-        this.advisorService = new AssistantAiAdvisorServiceImpl(openAiKey, toolContextFactory);
-        this.toolContextFactory = toolContextFactory;
-    }
-
-    @Override
-    public <PARAMETERS, CONTEXT> ScenarioBuilder<PARAMETERS, CONTEXT> getOrCreateScenario(String name) {
-        // TODO get scenario if it already exists
-        // return new ScenarioBuilderImpl<PARAMETERS, CONTEXT>(this.openAiService,
-        // this.toolContextFactory, name);
-        return null;
+    public AiServiceImpl() {
     }
 
     @Override
     public <PARAMETERS, CONTEXT> Tool<PARAMETERS, CONTEXT> cachingTool(Tool<PARAMETERS, CONTEXT> tool) {
-        return advisorService.cachingTool(tool);
-    }
-
-    @Override
-    public SearchTool.Builder searchToolBuilder() {
-        return advisorService.searchToolBuilder();
-    }
-
-    @Override
-    public CodeInterpreterTool.Builder codeToolBuilder() {
-        return advisorService.codeToolBuilder();
+        return CachingTool.builder(tool).build();
     }
 
     @Override
     public SimpleDocumentStoreBuilder simpleDocumentStoreBuilder() {
-        return advisorService.simpleDocumentStoreBuilder();
+        return new SimpleDocumentStore.Builder();
     }
 
     @Override
     public DirectoryDocumentStoreBuilder directoryDocumentStoreBuilder() {
-        return advisorService.directoryDocumentStoreBuilder();
-    }
-
-    @Override
-    public ScenarioSetBuilder senarioSetBuilder() {
-        return new ScenarioSetBuilderImpl();
+        return new DirectoryDocumentStore.Builder();
     }
 
     @Override

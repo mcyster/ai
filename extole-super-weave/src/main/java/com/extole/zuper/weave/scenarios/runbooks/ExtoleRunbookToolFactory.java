@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.AiAdvisorService;
 import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.tool.SearchTool;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,11 +16,12 @@ public class ExtoleRunbookToolFactory {
 
     private SearchTool searchTool;
 
-    public ExtoleRunbookToolFactory(AiService aiWeaveService, List<RunbookScenario> runbookScenarios,
-            ExtoleRunbookScenarioLoader runbookScenarioLoader, ExtoleRunbookDefault defaultRunbook) {
+    public ExtoleRunbookToolFactory(AiService aiService, AiAdvisorService aiAdvisorService,
+            List<RunbookScenario> runbookScenarios, ExtoleRunbookScenarioLoader runbookScenarioLoader,
+            ExtoleRunbookDefault defaultRunbook) {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        var documentStoreBuilder = aiWeaveService.simpleDocumentStoreBuilder();
+        var documentStoreBuilder = aiService.simpleDocumentStoreBuilder();
 
         List<RunbookScenario> scenarios = new ArrayList<>();
         scenarios.addAll(runbookScenarios);
@@ -37,7 +39,7 @@ public class ExtoleRunbookToolFactory {
             documentStoreBuilder.addDocument(runbook.getName() + ".json", json);
         }
 
-        SearchTool.Builder builder = aiWeaveService.searchToolBuilder();
+        SearchTool.Builder builder = aiAdvisorService.searchToolBuilder();
         builder.withName("runbooks").withDocumentStore(documentStoreBuilder.create());
 
         this.searchTool = builder.create();

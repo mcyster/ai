@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiService;
+import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.ai.weave.service.tool.Tool;
@@ -15,13 +15,13 @@ import com.cyster.ai.weave.service.tool.Tool;
 public class TesterScenario implements Scenario<Void, Void> {
     private final String DESCRIPTION = "Helps with testing scenarios";
 
-    private AiService aiWeaveService;
+    private AiScenarioService aiScenarioService;
     private List<Tool<?, ?>> tools = new ArrayList<>();
     private final AtomicReference<Scenario<Void, Void>> scenario = new AtomicReference<>();
 
-    public TesterScenario(AiService aiWeaveService, RandomNumberTool randomNumberTool,
+    public TesterScenario(AiScenarioService aiScenarioService, RandomNumberTool randomNumberTool,
             FailingTesterTool failingTesterTool, NestedAiTool nestedAiTool) {
-        this.aiWeaveService = aiWeaveService;
+        this.aiScenarioService = aiScenarioService;
         this.tools.add(randomNumberTool);
         this.tools.add(failingTesterTool);
         this.tools.add(nestedAiTool);
@@ -55,8 +55,7 @@ public class TesterScenario implements Scenario<Void, Void> {
     private Scenario<Void, Void> getScenario() {
         return scenario.updateAndGet(existing -> {
             if (existing == null) {
-                ScenarioBuilder<Void, Void> builder = this.aiWeaveService
-                        .getOrCreateScenario(getName());
+                ScenarioBuilder<Void, Void> builder = this.aiScenarioService.getOrCreateScenario(getName());
 
                 builder.setInstructions("You are a helpful assistant.");
                 for (var tool : this.tools) {

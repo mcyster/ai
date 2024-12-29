@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiService;
+import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.ai.weave.service.tool.Tool;
@@ -21,14 +21,14 @@ import com.extole.admin.weave.session.ExtoleSessionContext;
 public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> {
     private final String DESCRIPTION = "Helps using the Extole Platform";
 
-    private AiService aiWeaveService;
+    private AiScenarioService aiScenarioService;
     private Optional<Scenario<Void, ExtoleSessionContext>> scenario = Optional.empty();
     private List<Tool<?, ExtoleSessionContext>> tools = new ArrayList<>();
 
-    ExtoleHelpScenario(AiService aiWeaveService, ExtoleMeTool extoleMeTool, ExtoleClientTool extoleClientTool,
-            ExtoleMyAuthorizationsTool extoleMyAuthorizationsTool, ExtoleClientTimelineTool extoleClientTimelineTool,
-            ExtoleReportGetTool extoleReportTool) {
-        this.aiWeaveService = aiWeaveService;
+    ExtoleHelpScenario(AiScenarioService aiScenarioService, ExtoleMeTool extoleMeTool,
+            ExtoleClientTool extoleClientTool, ExtoleMyAuthorizationsTool extoleMyAuthorizationsTool,
+            ExtoleClientTimelineTool extoleClientTimelineTool, ExtoleReportGetTool extoleReportTool) {
+        this.aiScenarioService = aiScenarioService;
 
         this.tools.add(extoleMeTool);
         this.tools.add(extoleClientTool);
@@ -69,8 +69,7 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
                     You help with questions around using the Extole SaaS Marketing platform.
                     """;
 
-            ScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiWeaveService
-                    .getOrCreateScenario(getName());
+            ScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiScenarioService.getOrCreateScenario(getName());
 
             builder.setInstructions(instructions);
 

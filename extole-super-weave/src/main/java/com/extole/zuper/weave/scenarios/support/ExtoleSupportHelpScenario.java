@@ -7,7 +7,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiService;
+import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.ai.weave.service.tool.Tool;
@@ -21,13 +21,13 @@ import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 public class ExtoleSupportHelpScenario implements Scenario<Void, ExtoleSuperContext> {
     private static String DESCRIPTION = "Help with the Extole platform for members of the Extole Support Team";
 
-    private AiService aiWeaveService;
+    private AiScenarioService aiScenarioService;
     private Optional<Scenario<Void, ExtoleSuperContext>> scenario = Optional.empty();
     private Map<String, Tool<?, ?>> tools = new HashMap<>();
 
-    ExtoleSupportHelpScenario(AiService aiWeaveService, List<ExtoleSupportAdvisorToolLoader> toolLoaders,
+    ExtoleSupportHelpScenario(AiScenarioService aiScenarioService, List<ExtoleSupportAdvisorToolLoader> toolLoaders,
             List<ExtoleSupportTool<?>> tools, ConversationLinkTool conversationLinkTool, SchedulerTool schedulerTool) {
-        this.aiWeaveService = aiWeaveService;
+        this.aiScenarioService = aiScenarioService;
 
         for (var tool : tools) {
             this.tools.put(tool.getName(), tool);
@@ -76,8 +76,7 @@ public class ExtoleSupportHelpScenario implements Scenario<Void, ExtoleSuperCont
                     When referring to a client, use the client short_name.
                     """;
 
-            ScenarioBuilder<Void, ExtoleSuperContext> builder = this.aiWeaveService
-                    .getOrCreateScenario(getName());
+            ScenarioBuilder<Void, ExtoleSuperContext> builder = this.aiScenarioService.getOrCreateScenario(getName());
 
             builder.setInstructions(instructions);
             for (var tool : tools.values()) {

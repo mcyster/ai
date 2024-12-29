@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiService;
+import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.ai.weave.service.tool.SearchTool;
@@ -18,14 +18,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
 public class ExtoleEventStreamJsonPathScenario implements Scenario<Parameters, ExtoleSessionContext> {
-    private AiService aiWeaveService;
+    private AiScenarioService aiScenarioService;
     private Optional<Scenario<Parameters, ExtoleSessionContext>> scenario = Optional.empty();
     private ExtoleApiStore extoleStore;
     private ExtoleEventStreamEventsGetTool extoleEventStreamEventsGetTool;
 
-    ExtoleEventStreamJsonPathScenario(AiService aiWeaveService, ExtoleApiStore extoleStore,
+    ExtoleEventStreamJsonPathScenario(AiScenarioService aiScenarioService, ExtoleApiStore extoleStore,
             ExtoleEventStreamEventsGetTool extoleEventStreamEventsGetTool) {
-        this.aiWeaveService = aiWeaveService;
+        this.aiScenarioService = aiScenarioService;
         this.extoleStore = extoleStore;
         this.extoleEventStreamEventsGetTool = extoleEventStreamEventsGetTool;
     }
@@ -100,7 +100,7 @@ public class ExtoleEventStreamJsonPathScenario implements Scenario<Parameters, E
             };
 
             String instructions = new StringTemplate(instructionsTemplate).render(context);
-            ScenarioBuilder<Parameters, ExtoleSessionContext> builder = this.aiWeaveService
+            ScenarioBuilder<Parameters, ExtoleSessionContext> builder = this.aiScenarioService
                     .getOrCreateScenario(getName());
 
             builder.setInstructions(instructions);

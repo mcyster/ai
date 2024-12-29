@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
@@ -18,12 +19,15 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
     private final String DEFAULT_ACTIVITY = "unclassified";
     private final String DESCRIPTION = "Find the best Activity given a set of keywords (intended for testing)";
 
-    private AiService aiWeaveService;
+    private AiService aiService;
+    private AiScenarioService aiScenarioService;
     private Optional<Scenario<Void, Void>> scenario = Optional.empty();
     private SearchTool searchTool;
 
-    public ExtoleSupportActivityScenario(AiService aiWeaveService, ExtoleSupportActivityTool activityTool) {
-        this.aiWeaveService = aiWeaveService;
+    public ExtoleSupportActivityScenario(AiService aiService, AiScenarioService aiScenarioService,
+            ExtoleSupportActivityTool activityTool) {
+        this.aiService = aiService;
+        this.aiScenarioService = aiScenarioService;
         this.searchTool = activityTool.getActivityTool();
     }
 
@@ -100,7 +104,7 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
                     }
                     """;
 
-            var schema = aiWeaveService.getJsonSchema(Response.class);
+            var schema = aiService.getJsonSchema(Response.class);
 
             Map<String, String> parameters = new HashMap<>() {
                 {
@@ -113,7 +117,7 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
 
             System.out.println("!!!!!!!! extole suppport activity instructions: " + instructions);
 
-            ScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateScenario(getName());
+            ScenarioBuilder<Void, Void> builder = this.aiScenarioService.getOrCreateScenario(getName());
             builder.setInstructions(instructions);
             builder.withTool(searchTool);
 

@@ -5,20 +5,20 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiService;
+import com.cyster.ai.weave.service.AiScenarioService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 
 @Component
 public class SchedulerScenario implements Scenario<Void, Void> {
     private final String DESCRIPTION = "Schedules execution of scenarios in the future";
-    private AiService aiWeaveService;
+    private AiScenarioService aiScenarioService;
     private SchedulerTool schedulerTool;
     private Optional<Scenario<Void, Void>> scenario = Optional.empty();
 
     @Autowired
-    public SchedulerScenario(AiService aiWeaveService, SchedulerTool schedulerTool) {
-        this.aiWeaveService = aiWeaveService;
+    public SchedulerScenario(AiScenarioService aiScenarioService, SchedulerTool schedulerTool) {
+        this.aiScenarioService = aiScenarioService;
         this.schedulerTool = schedulerTool;
     }
 
@@ -43,25 +43,22 @@ public class SchedulerScenario implements Scenario<Void, Void> {
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(Void parameters, Void context) {        
+    public ConversationBuilder createConversationBuilder(Void parameters, Void context) {
         return this.getScenario().createConversationBuilder(parameters, context);
     }
 
     private Scenario<Void, Void> getScenario() {
         if (this.scenario.isEmpty()) {
             var instructions = """
-                Your job is focused on scheduling the execution of scenarios in the future
-                """;
+                    Your job is focused on scheduling the execution of scenarios in the future
+                    """;
 
-            ScenarioBuilder<Void, Void> builder = this.aiWeaveService.getOrCreateScenario(getName());
-            
-            builder.setInstructions(instructions)
-                .withTool(this.schedulerTool);
-            
+            ScenarioBuilder<Void, Void> builder = this.aiScenarioService.getOrCreateScenario(getName());
+
+            builder.setInstructions(instructions).withTool(this.schedulerTool);
+
             this.scenario = Optional.of(builder.getOrCreate());
         }
         return this.scenario.get();
     }
 }
-
-
