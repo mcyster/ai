@@ -12,6 +12,7 @@ import com.cyster.ai.weave.impl.tool.Toolset;
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.tool.Tool;
 import com.cyster.ai.weave.service.tool.ToolContextFactory;
@@ -54,7 +55,7 @@ public class AssistantAdvisorImpl<SCENARIO_CONTEXT> implements Advisor<SCENARIO_
         return new ConversationBuilder<SCENARIO_CONTEXT>(this);
     }
 
-    public static class ConversationBuilder<CONTEXT> implements Advisor.AdvisorConversationBuilder<CONTEXT> {
+    public static class ConversationBuilder<CONTEXT> implements ActiveConversationBuilder<CONTEXT> {
         private Optional<String> overrideInstructions = Optional.empty();
         private CONTEXT context = null;
         private AssistantAdvisorImpl<CONTEXT> advisor;

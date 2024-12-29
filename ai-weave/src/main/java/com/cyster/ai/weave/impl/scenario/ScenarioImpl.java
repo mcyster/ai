@@ -7,6 +7,7 @@ import com.cyster.ai.weave.impl.WeaveOperation;
 import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.conversation.ActiveConversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
@@ -57,14 +58,14 @@ public class ScenarioImpl<PARAMETERS, CONTEXT> implements Scenario<PARAMETERS, C
     }
 
     private static class ConversationBuilderImpl implements ConversationBuilder {
-        Advisor.AdvisorConversationBuilder<?> advisorConversationBuilder;
+        ActiveConversationBuilder<?> advisorConversationBuilder;
         private final Scenario<?, ?> scenario;
         private Object parameters;
         private Object context;
         private WeaveOperation logger;
 
         ConversationBuilderImpl(Scenario<?, ?> scenario, Object parameters, Object context, WeaveOperation logger,
-                Advisor.AdvisorConversationBuilder<?> advisorConversationBuilder) {
+                ActiveConversationBuilder<?> advisorConversationBuilder) {
             this.scenario = scenario;
             this.parameters = parameters;
             this.context = context;

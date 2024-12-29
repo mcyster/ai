@@ -8,6 +8,7 @@ import com.cyster.ai.weave.impl.MessageImpl;
 import com.cyster.ai.weave.impl.WeaveOperation;
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.conversation.ActiveConversation;
+import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.conversation.Message;
 
 import io.github.stefanbratanov.jvm.openai.OpenAI;
@@ -34,7 +35,7 @@ public class ChatAdvisorImpl<C> implements Advisor<C> {
         return new ConversationBuilder();
     }
 
-    public class ConversationBuilder implements Advisor.AdvisorConversationBuilder<C> {
+    public class ConversationBuilder implements ActiveConversationBuilder<C> {
         Optional<String> overrideInstructions = Optional.empty();
         C context = null;
 
@@ -53,7 +54,7 @@ public class ChatAdvisorImpl<C> implements Advisor<C> {
         }
 
         @Override
-        public com.cyster.ai.weave.service.advisor.Advisor.AdvisorConversationBuilder<C> addMessage(String message) {
+        public ActiveConversationBuilder<C> addMessage(String message) {
             // TODO Auto-generated method stub
             return null;
         }
