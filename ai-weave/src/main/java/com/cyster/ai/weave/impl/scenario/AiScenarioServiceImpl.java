@@ -13,7 +13,7 @@ public class AiScenarioServiceImpl implements AiScenarioService {
     }
 
     @Override
-    public <PARAMETERS, CONTEXT> ScenarioBuilder<PARAMETERS, CONTEXT> getOrCreateScenario(String name) {
+    public <PARAMETERS, CONTEXT> ScenarioBuilder<PARAMETERS, CONTEXT> getOrCreateScenarioBuilder(String name) {
         return new ScenarioBuilderImpl<PARAMETERS, CONTEXT>(advisorService, name);
     }
 

@@ -40,7 +40,7 @@ public class ScenarioImpl<PARAMETERS, CONTEXT> implements Scenario<PARAMETERS, C
 
     @Override
     public ActiveConversationBuilder<CONTEXT> createConversationBuilder(PARAMETERS parameters, CONTEXT context) {
-        return this.advisor.createConversation(context);
+        return this.advisor.createConversationBuilder(context);
     }
 
 }

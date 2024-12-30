@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
 public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Parameters, ExtoleSessionContext> {
+
     private final Advisor<ExtoleSessionContext> advisor;
 
     ExtoleJavascriptPrehandlerActionScenario(AiAdvisorService aiAdvisorService, ExtoleApiStore extoleStore,
@@ -90,7 +91,7 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Parame
     @Override
     public ActiveConversationBuilder<ExtoleSessionContext> createConversationBuilder(Parameters parameters,
             ExtoleSessionContext context) {
-        var builder = this.advisor.createConversation(context);
+        var builder = this.advisor.createConversationBuilder(context);
 
         if (parameters != null && parameters.prehandlerId != null) {
             builder.addMessage("This discussion is about the prehandler with perhandlerId: " + parameters.prehandlerId

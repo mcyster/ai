@@ -2,8 +2,6 @@ package com.extole.zuper.weave.scenarios.prehandler;
 
 import java.net.URL;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiAdvisorService;
@@ -16,7 +14,6 @@ import com.extole.zuper.weave.ExtoleSuperContext;
 
 @Component
 public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, ExtoleSuperContext> {
-    private static final Logger logger = LoggerFactory.getLogger(ExtoleJavascriptPrehandlerActionScenario.class);
 
     private final Advisor<ExtoleSuperContext> advisor;
 
@@ -109,7 +106,7 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
     @Override
     public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(Void parameters,
             ExtoleSuperContext context) {
-        return this.advisor.createConversation(context);
+        return this.advisor.createConversationBuilder(context);
     }
 
 }

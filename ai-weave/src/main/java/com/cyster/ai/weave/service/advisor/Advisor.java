@@ -6,6 +6,6 @@ public interface Advisor<CONTEXT> {
 
     String getName();
 
-    ActiveConversationBuilder<CONTEXT> createConversation(CONTEXT context);
+    ActiveConversationBuilder<CONTEXT> createConversationBuilder(CONTEXT context);
 
 }

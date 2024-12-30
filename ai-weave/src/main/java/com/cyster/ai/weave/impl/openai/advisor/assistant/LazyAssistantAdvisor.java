@@ -49,8 +49,8 @@ public class LazyAssistantAdvisor<CONTEXT> implements Advisor<CONTEXT> {
     }
 
     @Override
-    public ActiveConversationBuilder<CONTEXT> createConversation(CONTEXT context) {
-        return getAdvisor().createConversation(context);
+    public ActiveConversationBuilder<CONTEXT> createConversationBuilder(CONTEXT context) {
+        return getAdvisor().createConversationBuilder(context);
     }
 
     private AssistantAdvisorImpl<CONTEXT> getAdvisor() {

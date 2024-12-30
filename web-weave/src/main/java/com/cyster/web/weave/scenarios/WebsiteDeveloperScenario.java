@@ -1,16 +1,14 @@
 package com.cyster.web.weave.scenarios;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiScenarioService;
+import com.cyster.ai.weave.service.AiAdvisorService;
+import com.cyster.ai.weave.service.advisor.Advisor;
+import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.web.weave.scenarios.ManagedWebsites.ManagedWebsite;
 import com.cyster.web.weave.scenarios.WebsiteDeveloperScenario.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,16 +33,17 @@ public class WebsiteDeveloperScenario implements Scenario<Request, ManagedWebsit
             Use the web_developer_file_put tool to create or update the website as requested by the user.
             """;
 
-    private AiScenarioService aiScenarioService;
-    private Optional<Scenario<Void, ManagedWebsites>> scenario = Optional.empty();
-    private Map<String, WebsiteDeveloperTool<?>> tools = new HashMap<>();
+    private final Advisor<ManagedWebsites> advisor;
 
-    public WebsiteDeveloperScenario(AiScenarioService aiScenarioService, List<WebsiteDeveloperTool<?>> tools) {
-        this.aiScenarioService = aiScenarioService;
+    public WebsiteDeveloperScenario(AiAdvisorService aiAdvisorService, List<WebsiteDeveloperTool<?>> tools) {
+        AdvisorBuilder<ManagedWebsites> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
 
+        builder.setInstructions(INSTRUCTIONS);
         for (var tool : tools) {
-            this.tools.put(tool.getName(), tool);
+            builder.withTool(tool);
         }
+
+        this.advisor = builder.getOrCreate();
     }
 
     @Override
@@ -81,22 +80,7 @@ public class WebsiteDeveloperScenario implements Scenario<Request, ManagedWebsit
 
         String message = String.format(messageTemplate, website.site().getId(), website.site().getUri());
 
-        return this.getScenario().createConversationBuilder(null, context).addMessage(message);
-    }
-
-    private Scenario<Void, ManagedWebsites> getScenario() {
-        if (this.scenario.isEmpty()) {
-            ScenarioBuilder<Void, ManagedWebsites> builder = this.aiScenarioService.getOrCreateScenario(getName());
-
-            builder.setInstructions(INSTRUCTIONS);
-            for (var tool : tools.values()) {
-                builder.withTool(tool);
-            }
-
-            this.scenario = Optional.of(builder.getOrCreate());
-        }
-
-        return this.scenario.get();
+        return this.advisor.createConversationBuilder(context).addMessage(message);
     }
 
     public static record Request(@JsonProperty(required = true) String websiteId) {

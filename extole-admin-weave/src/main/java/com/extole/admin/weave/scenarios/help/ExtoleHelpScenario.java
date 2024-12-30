@@ -1,16 +1,12 @@
 package com.extole.admin.weave.scenarios.help;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiScenarioService;
+import com.cyster.ai.weave.service.AiAdvisorService;
+import com.cyster.ai.weave.service.advisor.Advisor;
+import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
-import com.cyster.ai.weave.service.tool.Tool;
 import com.extole.admin.weave.scenarios.help.tools.ExtoleClientTimelineTool;
 import com.extole.admin.weave.scenarios.help.tools.ExtoleClientTool;
 import com.extole.admin.weave.scenarios.help.tools.ExtoleMeTool;
@@ -22,20 +18,28 @@ import com.extole.admin.weave.session.ExtoleSessionContext;
 public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> {
     private final String DESCRIPTION = "Helps using the Extole Platform";
 
-    private AiScenarioService aiScenarioService;
-    private Optional<Scenario<Void, ExtoleSessionContext>> scenario = Optional.empty();
-    private List<Tool<?, ExtoleSessionContext>> tools = new ArrayList<>();
+    private final Advisor<ExtoleSessionContext> advisor;
 
-    ExtoleHelpScenario(AiScenarioService aiScenarioService, ExtoleMeTool extoleMeTool,
-            ExtoleClientTool extoleClientTool, ExtoleMyAuthorizationsTool extoleMyAuthorizationsTool,
-            ExtoleClientTimelineTool extoleClientTimelineTool, ExtoleReportGetTool extoleReportTool) {
-        this.aiScenarioService = aiScenarioService;
+    ExtoleHelpScenario(AiAdvisorService aiAdvisorService, ExtoleMeTool extoleMeTool, ExtoleClientTool extoleClientTool,
+            ExtoleMyAuthorizationsTool extoleMyAuthorizationsTool, ExtoleClientTimelineTool extoleClientTimelineTool,
+            ExtoleReportGetTool extoleReportTool) {
 
-        this.tools.add(extoleMeTool);
-        this.tools.add(extoleClientTool);
-        this.tools.add(extoleMyAuthorizationsTool);
-        this.tools.add(extoleClientTimelineTool);
-        this.tools.add(extoleReportTool);
+        String instructions = """
+                You help with questions around using the Extole SaaS Marketing platform.
+                """;
+
+        AdvisorBuilder<ExtoleSessionContext> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
+
+        builder.setInstructions(instructions);
+
+        builder.withTool(extoleMeTool);
+        builder.withTool(extoleClientTool);
+        builder.withTool(extoleMyAuthorizationsTool);
+        builder.withTool(extoleClientTimelineTool);
+        builder.withTool(extoleReportTool);
+
+        this.advisor = builder.getOrCreate();
+
     }
 
     @Override
@@ -61,27 +65,6 @@ public class ExtoleHelpScenario implements Scenario<Void, ExtoleSessionContext> 
     @Override
     public ActiveConversationBuilder<ExtoleSessionContext> createConversationBuilder(Void parameters,
             ExtoleSessionContext context) {
-        return this.getScenario().createConversationBuilder(parameters, context);
-    }
-
-    private Scenario<Void, ExtoleSessionContext> getScenario() {
-
-        if (this.scenario.isEmpty()) {
-            String instructions = """
-                    You help with questions around using the Extole SaaS Marketing platform.
-                    """;
-
-            ScenarioBuilder<Void, ExtoleSessionContext> builder = this.aiScenarioService.getOrCreateScenario(getName());
-
-            builder.setInstructions(instructions);
-
-            for (var tool : this.tools) {
-                builder.withTool(tool);
-            }
-
-            this.scenario = Optional.of(builder.getOrCreate());
-        }
-
-        return this.scenario.get();
+        return this.advisor.createConversationBuilder(context);
     }
 }

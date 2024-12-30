@@ -12,6 +12,7 @@ import com.cyster.weave.impl.scenarios.conversation.ConversationLinkTool;
 @Component
 public class ChatScenario implements Scenario<Void, Void> {
     private final String DESCRIPTION = "A helpful assistant";
+
     private final Advisor<Void> advisor;
 
     public ChatScenario(AiAdvisorService advisorService, ConversationLinkTool conversationLinkTool) {
@@ -45,6 +46,6 @@ public class ChatScenario implements Scenario<Void, Void> {
 
     @Override
     public ActiveConversationBuilder<Void> createConversationBuilder(Void parameters, Void context) {
-        return this.advisor.createConversation(context);
+        return this.advisor.createConversationBuilder(context);
     }
 }

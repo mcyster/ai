@@ -5,7 +5,7 @@ import com.cyster.ai.weave.service.scenario.ScenarioSetBuilder;
 
 public interface AiScenarioService {
 
-    <PARAMETERS, CONTEXT> ScenarioBuilder<PARAMETERS, CONTEXT> getOrCreateScenario(String name);
+    <PARAMETERS, CONTEXT> ScenarioBuilder<PARAMETERS, CONTEXT> getOrCreateScenarioBuilder(String name);
 
     ScenarioSetBuilder senarioSetBuilder();
 

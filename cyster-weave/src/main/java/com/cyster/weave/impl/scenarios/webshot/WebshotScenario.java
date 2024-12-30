@@ -1,26 +1,35 @@
 package com.cyster.weave.impl.scenarios.webshot;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiScenarioService;
+import com.cyster.ai.weave.service.AiAdvisorService;
+import com.cyster.ai.weave.service.advisor.Advisor;
+import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 
 @Component
 @ConditionalOnBean(WebshotTool.class)
 public class WebshotScenario implements Scenario<Void, Void> {
     private final String DESCRIPTION = "Turns the specified url into an image";
-    private AiScenarioService aiScenarioService;
-    private WebshotTool webshotTool;
-    private final AtomicReference<Scenario<Void, Void>> scenario = new AtomicReference<>();
 
-    public WebshotScenario(AiScenarioService aiScenarioService, WebshotTool webshotTool) {
-        this.aiScenarioService = aiScenarioService;
-        this.webshotTool = webshotTool;
+    private final Advisor<Void> advisor;
+
+    public WebshotScenario(AiAdvisorService aiAdvisorService, WebshotTool webshotTool) {
+
+        var instructions = """
+                You take snapshots of web pages.
+                """;
+
+        AdvisorBuilder<Void> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
+
+        builder.setInstructions(instructions).withTool(webshotTool).withTool(webshotTool);
+
+        builder.withTool(webshotTool);
+
+        this.advisor = builder.getOrCreate();
+
     }
 
     @Override
@@ -45,23 +54,7 @@ public class WebshotScenario implements Scenario<Void, Void> {
 
     @Override
     public ActiveConversationBuilder<Void> createConversationBuilder(Void parameters, Void context) {
-        return this.getScenario().createConversationBuilder(parameters, context);
+        return this.advisor.createConversationBuilder(context);
     }
 
-    private Scenario<Void, Void> getScenario() {
-        return scenario.updateAndGet(existing -> {
-            if (existing == null) {
-                var instructions = """
-                        You take snapshots of web pages.
-                        """;
-
-                ScenarioBuilder<Void, Void> builder = this.aiScenarioService.getOrCreateScenario(getName());
-
-                builder.setInstructions(instructions).withTool(webshotTool).withTool(webshotTool);
-
-                return builder.getOrCreate();
-            }
-            return existing;
-        });
-    }
 }

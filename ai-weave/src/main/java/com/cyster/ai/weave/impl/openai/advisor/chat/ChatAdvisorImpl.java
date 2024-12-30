@@ -31,7 +31,7 @@ public class ChatAdvisorImpl<CONTEXT> implements Advisor<CONTEXT> {
     }
 
     @Override
-    public ConversationBuilder createConversation(CONTEXT context) {
+    public ConversationBuilder createConversationBuilder(CONTEXT context) {
         return new ConversationBuilder();
     }
 

@@ -1,18 +1,15 @@
 package com.extole.zuper.weave.scenarios.client;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiScenarioService;
+import com.cyster.ai.weave.service.AiAdvisorService;
 import com.cyster.ai.weave.service.AiService;
+import com.cyster.ai.weave.service.advisor.Advisor;
+import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
-import com.cyster.ai.weave.service.tool.Tool;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario.Parameters;
@@ -26,27 +23,48 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, ExtoleSuperContext> {
     private final String DESCRIPTION = "Find the Extole client associated for the specified ticket";
 
-    private AiService aiService;
-    private AiScenarioService aiScenarioService;
-    private Optional<Scenario<Parameters, ExtoleSuperContext>> scenario = Optional.empty();
-    private List<Tool<?, ExtoleSuperContext>> tools = new ArrayList<>();
-    private SupportTicketGetTool ticketGetTool;
-    private SupportTicketClientSetTool extoleClientSetTool;
-    private ExtoleClientGetTool extoleClientGetTool;
+    private final Advisor<ExtoleSuperContext> advisor;
 
-    public ExtoleSupportTicketClientScenario(AiService aiService, AiScenarioService aiScenarioService,
+    public ExtoleSupportTicketClientScenario(AiService aiService, AiAdvisorService aiAdvisorService,
             SupportTicketGetTool ticketGetTool, SupportTicketClientSetTool extoleClientSetTool,
             ExtoleClientGetTool extoleClientGetTool, ExtoleClientSearchTool extoleClientSearchTool) {
-        this.aiService = aiService;
-        this.aiScenarioService = aiScenarioService;
-        this.tools.add(ticketGetTool);
-        this.tools.add(extoleClientSetTool);
-        this.tools.add(extoleClientGetTool);
-        this.tools.add(extoleClientSearchTool);
 
-        this.ticketGetTool = ticketGetTool;
-        this.extoleClientGetTool = extoleClientGetTool;
-        this.extoleClientSetTool = extoleClientSetTool;
+        String instructionsTemplate = """
+                You are an Extole Support Team member handling an incoming ticket. Your task is to identify the Extole client associated with the ticket.
+
+                Use the {{ticketGetTool}} tool to get the specified ticket.
+
+                If the ticket has a non-null clientId, use that. If the ticket does not have an associated clientId, look in the content for a clientId.
+                URLs often appear in the form client_id=CLIENT_ID.
+
+                If you find a client_id, verify the clientId and get the client name and short name using the {{clientGetTool}}.
+
+                If you can't find a client_id, load all clients using {{clientSetTool}} and see if you can find a matching name or short name in the ticket.
+
+                If a client is found, set the client on the ticket using the {{clientSetTool}} tool.
+
+                If no client is found, use NOT_FOUND for the client_id, name, and short_name.
+
+                Provide your answer in JSON format as described by this schema:
+                {{{schema}}}
+                """;
+
+        Map<String, Object> parameters = Map.of("ticketGetTool", ticketGetTool.getName(), "clientGetTool",
+                extoleClientGetTool.getName(), "clientSetTool", extoleClientSetTool.getName(), "schema",
+                aiService.getJsonSchema(Response.class));
+
+        String instructions = new StringTemplate(instructionsTemplate).render(parameters);
+
+        AdvisorBuilder<ExtoleSuperContext> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
+        builder.setInstructions(instructions);
+
+        builder.withTool(ticketGetTool);
+        builder.withTool(extoleClientSetTool);
+        builder.withTool(extoleClientGetTool);
+        builder.withTool(extoleClientSearchTool);
+
+        this.advisor = builder.getOrCreate();
+
     }
 
     @Override
@@ -76,49 +94,7 @@ public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, E
             throw new IllegalArgumentException("No ticketNumber specified");
         }
 
-        return getScenario().createConversationBuilder(parameters, context)
-                .addMessage("Ticket: " + parameters.ticketNumber());
-    }
-
-    private Scenario<Parameters, ExtoleSuperContext> getScenario() {
-        if (this.scenario.isEmpty()) {
-            String instructionsTemplate = """
-                    You are an Extole Support Team member handling an incoming ticket. Your task is to identify the Extole client associated with the ticket.
-
-                    Use the {{ticketGetTool}} tool to get the specified ticket.
-
-                    If the ticket has a non-null clientId, use that. If the ticket does not have an associated clientId, look in the content for a clientId.
-                    URLs often appear in the form client_id=CLIENT_ID.
-
-                    If you find a client_id, verify the clientId and get the client name and short name using the {{clientGetTool}}.
-
-                    If you can't find a client_id, load all clients using {{clientSetTool}} and see if you can find a matching name or short name in the ticket.
-
-                    If a client is found, set the client on the ticket using the {{clientSetTool}} tool.
-
-                    If no client is found, use NOT_FOUND for the client_id, name, and short_name.
-
-                    Provide your answer in JSON format as described by this schema:
-                    {{{schema}}}
-                    """;
-
-            Map<String, Object> parameters = Map.of("ticketGetTool", ticketGetTool.getName(), "clientGetTool",
-                    extoleClientGetTool.getName(), "clientSetTool", extoleClientSetTool.getName(), "schema",
-                    aiService.getJsonSchema(Response.class));
-
-            String instructions = new StringTemplate(instructionsTemplate).render(parameters);
-
-            ScenarioBuilder<Parameters, ExtoleSuperContext> builder = this.aiScenarioService
-                    .getOrCreateScenario(getName());
-            builder.setInstructions(instructions);
-
-            for (var tool : tools) {
-                builder.withTool(tool);
-            }
-
-            this.scenario = Optional.of(builder.getOrCreate());
-        }
-        return this.scenario.get();
+        return this.advisor.createConversationBuilder(context).addMessage("Ticket: " + parameters.ticketNumber());
     }
 
     public record Parameters(@JsonProperty(required = true) String ticketNumber) {

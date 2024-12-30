@@ -42,7 +42,7 @@ public class AssistantAdvisorImpl<SCENARIO_CONTEXT> implements Advisor<SCENARIO_
     }
 
     @Override
-    public ConversationBuilder<SCENARIO_CONTEXT> createConversation(SCENARIO_CONTEXT context) {
+    public ConversationBuilder<SCENARIO_CONTEXT> createConversationBuilder(SCENARIO_CONTEXT context) {
         return new ConversationBuilder<SCENARIO_CONTEXT>(this, context);
     }
 

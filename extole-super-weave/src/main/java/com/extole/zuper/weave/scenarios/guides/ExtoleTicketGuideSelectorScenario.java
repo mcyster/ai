@@ -130,7 +130,7 @@ public class ExtoleTicketGuideSelectorScenario implements Scenario<Parameters, E
             System.out.println("!!!!!!!!!! search tool - vector store not ready !!!");
         }
 
-        return advisor.createConversation(context).addMessage("Ticket: " + parameters.ticketNumber());
+        return advisor.createConversationBuilder(context).addMessage("Ticket: " + parameters.ticketNumber());
     }
 
     public record Parameters(@JsonProperty(required = true) String ticketNumber) {
