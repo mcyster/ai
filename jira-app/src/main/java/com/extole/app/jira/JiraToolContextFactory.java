@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.tool.ToolContextException;
 import com.cyster.ai.weave.service.tool.ToolContextFactory;
-import com.cyster.weave.impl.scenarios.conversation.ConversationLinkTool;
 import com.cyster.web.weave.scenarios.ManagedWebsites;
 import com.cyster.web.weave.scenarios.WebsiteProvider;
 import com.extole.zuper.weave.ExtoleSuperContext;
@@ -38,10 +37,6 @@ public class JiraToolContextFactory implements ToolContextFactory {
 
         if (toolContextClass == ManagedWebsites.class) {
             return (TOOL_CONTEXT) new ManagedWebsites(websiteProvider);
-        }
-
-        if (toolContextClass == ConversationLinkTool.Context.class) {
-            return (TOOL_CONTEXT) new ConversationLinkTool.Context(conversationLinkTemplate);
         }
 
         throw new ToolContextException("Unable to create tool context class: " + toolContextClass.getName()

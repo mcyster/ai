@@ -2,9 +2,7 @@ package com.cyster.ai.weave.impl.openai.advisor.assistant;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import com.cyster.ai.weave.impl.openai.OpenAiService;
@@ -18,16 +16,9 @@ import com.cyster.ai.weave.service.tool.Tool;
 import com.cyster.ai.weave.service.tool.ToolContextFactory;
 
 import io.github.stefanbratanov.jvm.openai.Assistant;
-import io.github.stefanbratanov.jvm.openai.AssistantsClient;
-import io.github.stefanbratanov.jvm.openai.AssistantsClient.PaginatedAssistants;
-import io.github.stefanbratanov.jvm.openai.CreateAssistantRequest;
-import io.github.stefanbratanov.jvm.openai.File;
-import io.github.stefanbratanov.jvm.openai.FilesClient;
-import io.github.stefanbratanov.jvm.openai.PaginationQueryParameters;
-import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
 
 public class AssistantAdvisorImpl<SCENARIO_CONTEXT> implements Advisor<SCENARIO_CONTEXT> {
-
+    public static final String MODEL = "gpt-4o";
     public static String VERSION = "0.1";
     public static String METADATA_VERSION = "version";
     public static String METADATA_IDENTITY = "identityHash";
@@ -51,24 +42,19 @@ public class AssistantAdvisorImpl<SCENARIO_CONTEXT> implements Advisor<SCENARIO_
     }
 
     @Override
-    public ConversationBuilder<SCENARIO_CONTEXT> createConversation() {
-        return new ConversationBuilder<SCENARIO_CONTEXT>(this);
+    public ConversationBuilder<SCENARIO_CONTEXT> createConversation(SCENARIO_CONTEXT context) {
+        return new ConversationBuilder<SCENARIO_CONTEXT>(this, context);
     }
 
     public static class ConversationBuilder<CONTEXT> implements ActiveConversationBuilder<CONTEXT> {
         private Optional<String> overrideInstructions = Optional.empty();
-        private CONTEXT context = null;
+        private CONTEXT context;
         private AssistantAdvisorImpl<CONTEXT> advisor;
         private List<String> messages = new ArrayList<String>();
 
-        private ConversationBuilder(AssistantAdvisorImpl<CONTEXT> advisor) {
+        private ConversationBuilder(AssistantAdvisorImpl<CONTEXT> advisor, CONTEXT context) {
             this.advisor = advisor;
-        }
-
-        @Override
-        public ConversationBuilder<CONTEXT> withContext(CONTEXT context) {
             this.context = context;
-            return this;
         }
 
         @Override
@@ -97,7 +83,6 @@ public class AssistantAdvisorImpl<SCENARIO_CONTEXT> implements Advisor<SCENARIO_
     }
 
     public static class Builder<CONTEXT> implements AdvisorBuilder<CONTEXT> {
-        private static final String MODEL = "gpt-4o";
 
         private final OpenAiService openAiService;
         private final String name;
@@ -120,8 +105,7 @@ public class AssistantAdvisorImpl<SCENARIO_CONTEXT> implements Advisor<SCENARIO_
         }
 
         @Override
-        public <TOOL_PARAMETERS, TOOL_CONTEXT> AdvisorBuilder<CONTEXT> withTool(
-                Tool<TOOL_PARAMETERS, TOOL_CONTEXT> tool) {
+        public AdvisorBuilder<CONTEXT> withTool(Tool<?, CONTEXT> tool) {
             this.toolsetBuilder.addTool(tool);
             return this;
         }
@@ -134,74 +118,10 @@ public class AssistantAdvisorImpl<SCENARIO_CONTEXT> implements Advisor<SCENARIO_
 
         @Override
         public Advisor<CONTEXT> getOrCreate() {
-            String hash = String.valueOf(assistantHash());
+            var advisor = new LazyAssistantAdvisor<CONTEXT>(openAiService, name, toolsetBuilder, filePaths,
+                    instructions);
 
-            var assistant = this.findAssistant(hash);
-            if (assistant.isEmpty()) {
-                assistant = Optional.of(this.create(hash));
-            }
-
-            return new AssistantAdvisorImpl<CONTEXT>(this.openAiService, assistant.get(), this.toolsetBuilder.create());
-        }
-
-        private Assistant create(String hash) {
-            List<String> fileIds = new ArrayList<String>();
-            for (var filePath : this.filePaths) {
-                FilesClient filesClient = this.openAiService.createClient(FilesClient.class);
-                UploadFileRequest uploadInputFileRequest = UploadFileRequest.newBuilder().file(filePath)
-                        .purpose("assistants").build();
-                File file = filesClient.uploadFile(uploadInputFileRequest);
-                fileIds.add(file.id());
-            }
-
-            var metadata = new HashMap<String, String>();
-            metadata.put(METADATA_VERSION, VERSION);
-            metadata.put(METADATA_IDENTITY, hash);
-
-            var toolset = new AssistantAdvisorToolset(this.toolsetBuilder.create());
-
-            AssistantsClient assistantsClient = this.openAiService.createClient(AssistantsClient.class);
-            CreateAssistantRequest.Builder requestBuilder = CreateAssistantRequest.newBuilder().name(this.name)
-                    .model(MODEL).metadata(metadata);
-
-            toolset.applyTools(requestBuilder);
-
-            if (this.instructions.isPresent()) {
-                requestBuilder.instructions(this.instructions.get());
-            }
-
-            Assistant assistant = assistantsClient.createAssistant(requestBuilder.build());
-
-            return assistant;
-        }
-
-        private Optional<Assistant> findAssistant(String hash) {
-            AssistantsClient assistantsClient = this.openAiService.createClient(AssistantsClient.class);
-
-            PaginatedAssistants response = null;
-            do {
-                PaginationQueryParameters.Builder queryBuilder = PaginationQueryParameters.newBuilder().limit(99);
-                if (response != null) {
-                    queryBuilder.after(response.lastId());
-                }
-                response = assistantsClient.listAssistants(queryBuilder.build());
-
-                for (var assistant : response.data()) {
-                    if (assistant.name() != null && assistant.name().equals(this.name)) {
-                        if (assistant.metadata().containsKey(METADATA_IDENTITY)) {
-                            if (assistant.metadata().get(METADATA_IDENTITY).equals(hash)) {
-                                return Optional.of(assistant);
-                            }
-                        }
-                    }
-                }
-            } while (response.hasMore());
-
-            return Optional.empty();
-        }
-
-        private int assistantHash() {
-            return Objects.hash(MODEL, VERSION, name, instructions, filePaths, this.toolsetBuilder.create().getTools());
+            return advisor;
         }
     }
 }

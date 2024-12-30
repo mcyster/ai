@@ -13,7 +13,7 @@ import com.cyster.ai.weave.service.conversation.Message;
 
 import io.github.stefanbratanov.jvm.openai.OpenAI;
 
-public class ChatAdvisorImpl<C> implements Advisor<C> {
+public class ChatAdvisorImpl<CONTEXT> implements Advisor<CONTEXT> {
 
     private OpenAI openAi;
     private String name;
@@ -31,21 +31,15 @@ public class ChatAdvisorImpl<C> implements Advisor<C> {
     }
 
     @Override
-    public ConversationBuilder createConversation() {
+    public ConversationBuilder createConversation(CONTEXT context) {
         return new ConversationBuilder();
     }
 
-    public class ConversationBuilder implements ActiveConversationBuilder<C> {
+    public class ConversationBuilder implements ActiveConversationBuilder<CONTEXT> {
         Optional<String> overrideInstructions = Optional.empty();
-        C context = null;
+        CONTEXT context = null;
 
         private ConversationBuilder() {
-        }
-
-        @Override
-        public ConversationBuilder withContext(C context) {
-            this.context = context;
-            return this;
         }
 
         public ConversationBuilder setOverrideInstructions(String instructions) {
@@ -54,7 +48,7 @@ public class ChatAdvisorImpl<C> implements Advisor<C> {
         }
 
         @Override
-        public ActiveConversationBuilder<C> addMessage(String message) {
+        public ActiveConversationBuilder<CONTEXT> addMessage(String message) {
             // TODO Auto-generated method stub
             return null;
         }

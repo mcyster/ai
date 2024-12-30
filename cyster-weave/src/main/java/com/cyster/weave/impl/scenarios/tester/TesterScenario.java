@@ -17,7 +17,7 @@ public class TesterScenario implements Scenario<Void, Void> {
     private final String DESCRIPTION = "Helps with testing scenarios";
 
     private AiScenarioService aiScenarioService;
-    private List<Tool<?, ?>> tools = new ArrayList<>();
+    private List<Tool<?, Void>> tools = new ArrayList<>();
     private final AtomicReference<Scenario<Void, Void>> scenario = new AtomicReference<>();
 
     public TesterScenario(AiScenarioService aiScenarioService, RandomNumberTool randomNumberTool,

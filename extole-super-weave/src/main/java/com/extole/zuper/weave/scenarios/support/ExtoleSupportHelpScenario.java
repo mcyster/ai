@@ -1,17 +1,15 @@
 package com.extole.zuper.weave.scenarios.support;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiScenarioService;
+import com.cyster.ai.weave.service.AiAdvisorService;
+import com.cyster.ai.weave.service.advisor.Advisor;
+import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
-import com.cyster.ai.weave.service.tool.Tool;
+import com.cyster.ai.weave.service.tool.VoidToolAdapter;
 import com.cyster.scheduler.impl.SchedulerTool;
 import com.cyster.weave.impl.scenarios.conversation.ConversationLinkTool;
 import com.extole.zuper.weave.ExtoleSuperContext;
@@ -22,25 +20,34 @@ import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 public class ExtoleSupportHelpScenario implements Scenario<Void, ExtoleSuperContext> {
     private static String DESCRIPTION = "Help with the Extole platform for members of the Extole Support Team";
 
-    private AiScenarioService aiScenarioService;
-    private Optional<Scenario<Void, ExtoleSuperContext>> scenario = Optional.empty();
-    private Map<String, Tool<?, ?>> tools = new HashMap<>();
+    private final Advisor<ExtoleSuperContext> advisor;
 
-    ExtoleSupportHelpScenario(AiScenarioService aiScenarioService, List<ExtoleSupportAdvisorToolLoader> toolLoaders,
+    ExtoleSupportHelpScenario(AiAdvisorService aiAdvisorService, List<ExtoleSupportAdvisorToolLoader> toolLoaders,
             List<ExtoleSupportTool<?>> tools, ConversationLinkTool conversationLinkTool, SchedulerTool schedulerTool) {
-        this.aiScenarioService = aiScenarioService;
+        String instructions = """
+                You are an senior member of the support team at Extole a SaaS marketing platform.
+
+                Keep answers brief, and where possible in point form.
+                When referring to a client, use the client short_name.
+                """;
+
+        AdvisorBuilder<ExtoleSuperContext> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
+
+        builder.setInstructions(instructions);
 
         for (var tool : tools) {
-            this.tools.put(tool.getName(), tool);
+            builder.withTool(tool);
         }
-
         for (var loader : toolLoaders) {
             for (var tool : loader.getTools()) {
-                this.tools.put(tool.getName(), tool);
+                builder.withTool(tool);
             }
         }
-        this.tools.put(schedulerTool.getName(), schedulerTool);
-        this.tools.put(conversationLinkTool.getName(), conversationLinkTool);
+
+        builder.withTool(new VoidToolAdapter<>(schedulerTool, ExtoleSuperContext.class));
+        builder.withTool(new VoidToolAdapter<>(conversationLinkTool, ExtoleSuperContext.class));
+
+        this.advisor = builder.getOrCreate();
     }
 
     @Override
@@ -66,28 +73,7 @@ public class ExtoleSupportHelpScenario implements Scenario<Void, ExtoleSuperCont
     @Override
     public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(Void parameters,
             ExtoleSuperContext context) {
-        return this.getScenario().createConversationBuilder(parameters, context);
+        return this.advisor.createConversation(context);
     }
 
-    private Scenario<Void, ExtoleSuperContext> getScenario() {
-        if (this.scenario.isEmpty()) {
-            String instructions = """
-                    You are an senior member of the support team at Extole a SaaS marketing platform.
-
-                    Keep answers brief, and where possible in point form.
-                    When referring to a client, use the client short_name.
-                    """;
-
-            ScenarioBuilder<Void, ExtoleSuperContext> builder = this.aiScenarioService.getOrCreateScenario(getName());
-
-            builder.setInstructions(instructions);
-            for (var tool : tools.values()) {
-                builder.withTool(tool);
-            }
-
-            this.scenario = Optional.of(builder.getOrCreate());
-        }
-
-        return this.scenario.get();
-    }
 }

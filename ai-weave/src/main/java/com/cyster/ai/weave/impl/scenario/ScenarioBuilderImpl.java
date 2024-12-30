@@ -33,7 +33,7 @@ public class ScenarioBuilderImpl<PARAMETERS, CONTEXT> implements ScenarioBuilder
     }
 
     @Override
-    public ScenarioBuilder<PARAMETERS, CONTEXT> withTool(Tool<?, ?> tool) {
+    public ScenarioBuilder<PARAMETERS, CONTEXT> withTool(Tool<?, CONTEXT> tool) {
         this.advisorBuilder.withTool(tool);
         return this;
     }

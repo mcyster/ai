@@ -15,6 +15,7 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.ai.weave.service.tool.SearchTool;
 import com.cyster.ai.weave.service.tool.Tool;
+import com.cyster.ai.weave.service.tool.VoidToolAdapter;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorScenario.Parameters;
@@ -28,7 +29,7 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
     private AiService aiService;
     private AiScenarioService aiScenarioService;
     private Optional<Scenario<Parameters, ExtoleSuperContext>> scenario = Optional.empty();
-    private List<Tool<?, ?>> tools = new ArrayList<>();
+    private List<Tool<?, ExtoleSuperContext>> tools = new ArrayList<>();
     private String defaultRunbookName;
     private SearchTool searchTool;
 
@@ -37,7 +38,7 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
             ExtoleRunbookDefault defaultRunbook) {
         this.aiService = aiService;
         this.aiScenarioService = aiScenarioService;
-        this.tools.add(runbookToolFactory.getRunbookSearchTool());
+        this.tools.add(new VoidToolAdapter<>(runbookToolFactory.getRunbookSearchTool(), ExtoleSuperContext.class));
         this.tools.add(ticketGetTool);
         this.defaultRunbookName = defaultRunbook.getName();
         this.searchTool = runbookToolFactory.getRunbookSearchTool();

@@ -15,6 +15,7 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.ai.weave.service.tool.SearchTool;
 import com.cyster.ai.weave.service.tool.Tool;
+import com.cyster.ai.weave.service.tool.VoidToolAdapter;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.activity.ExtoleSupportTicketActivityScenario.Parameters;
@@ -29,7 +30,7 @@ public class ExtoleSupportTicketActivityScenario implements Scenario<Parameters,
     private AiService aiService;
     private AiScenarioService aiScenarioService;
     private Optional<Scenario<Parameters, ExtoleSuperContext>> scenario = Optional.empty();
-    private List<Tool<?, ?>> tools = new ArrayList<>();
+    private List<Tool<?, ExtoleSuperContext>> tools = new ArrayList<>();
     private SearchTool searchTool;
 
     public ExtoleSupportTicketActivityScenario(AiService aiService, AiScenarioService aiScenarioService,
@@ -37,7 +38,7 @@ public class ExtoleSupportTicketActivityScenario implements Scenario<Parameters,
         this.aiService = aiService;
         this.aiScenarioService = aiScenarioService;
         this.searchTool = supportActivityToolFactory.getActivityTool();
-        this.tools.add(this.searchTool);
+        this.tools.add(new VoidToolAdapter<>(this.searchTool, ExtoleSuperContext.class));
         this.tools.add(ticketGetTool);
     }
 

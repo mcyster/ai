@@ -1,7 +1,5 @@
 package com.cyster.ai.weave.impl.scenario;
 
-import com.cyster.ai.weave.impl.OperationImpl;
-import com.cyster.ai.weave.impl.WeaveOperation;
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
@@ -42,9 +40,7 @@ public class ScenarioImpl<PARAMETERS, CONTEXT> implements Scenario<PARAMETERS, C
 
     @Override
     public ActiveConversationBuilder<CONTEXT> createConversationBuilder(PARAMETERS parameters, CONTEXT context) {
-        WeaveOperation logger = new OperationImpl(WeaveOperation.Level.Normal, advisor.getName(), context);
-
-        return this.advisor.createConversation().withContext(context);
+        return this.advisor.createConversation(context);
     }
 
 }

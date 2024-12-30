@@ -9,12 +9,13 @@ import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.tool.Tool;
 import com.cyster.ai.weave.service.tool.ToolException;
 import com.cyster.template.StringTemplate;
-import com.cyster.weave.impl.scenarios.conversation.ConversationLinkTool.Context;
 
 @Component
-public class ConversationLinkTool implements Tool<Void, Context> {
+public class ConversationLinkTool implements Tool<Void, Void> {
+    private String conversationLinkTemplate;
 
     ConversationLinkTool() {
+        this.conversationLinkTemplate = "TODO initialize";
     }
 
     @Override
@@ -33,14 +34,14 @@ public class ConversationLinkTool implements Tool<Void, Context> {
     }
 
     @Override
-    public Class<Context> getContextClass() {
-        return Context.class;
+    public Class<Void> getContextClass() {
+        return Void.class;
     }
 
     @Override
-    public Object execute(Void parameters, Context context, Weave weave) throws ToolException {
+    public Object execute(Void parameters, Void context, Weave weave) throws ToolException {
 
-        var template = new StringTemplate(context.conversationLinkTemplate);
+        var template = new StringTemplate(conversationLinkTemplate);
         var templateParameters = new HashMap<>() {
             {
                 put("id", weave.conversation().id());
@@ -57,8 +58,5 @@ public class ConversationLinkTool implements Tool<Void, Context> {
 
         return response;
     }
-
-    public static record Context(String conversationLinkTemplate) {
-    };
 
 }

@@ -29,7 +29,7 @@ public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, E
     private AiService aiService;
     private AiScenarioService aiScenarioService;
     private Optional<Scenario<Parameters, ExtoleSuperContext>> scenario = Optional.empty();
-    private List<Tool<?, ?>> tools = new ArrayList<>();
+    private List<Tool<?, ExtoleSuperContext>> tools = new ArrayList<>();
     private SupportTicketGetTool ticketGetTool;
     private SupportTicketClientSetTool extoleClientSetTool;
     private ExtoleClientGetTool extoleClientGetTool;

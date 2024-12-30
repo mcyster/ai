@@ -11,6 +11,7 @@ import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioBuilder;
 import com.cyster.ai.weave.service.tool.Tool;
+import com.cyster.ai.weave.service.tool.VoidToolAdapter;
 import com.cyster.scheduler.impl.SchedulerTool;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientTool;
@@ -23,7 +24,7 @@ public class ExtoleSupportTicketScenario implements Scenario<Parameters, ExtoleS
 
     private AiScenarioService aiScenarioService;
     private Optional<Scenario<Parameters, ExtoleSuperContext>> scenario = Optional.empty();
-    private List<Tool<?, ?>> tools = new ArrayList<>();
+    private List<Tool<?, ExtoleSuperContext>> tools = new ArrayList<>();
 
     public ExtoleSupportTicketScenario(AiScenarioService aiScenarioService,
             ExtoleSupportTicketRunbookSelectorTool runbookSelectorTool, ExtoleSupportTicketClientTool ticketClientTool,
@@ -32,7 +33,7 @@ public class ExtoleSupportTicketScenario implements Scenario<Parameters, ExtoleS
         this.tools.add(runbookSelectorTool);
         this.tools.add(ticketClientTool);
         this.tools.add(runbookExecuterTool);
-        this.tools.add(schedulerTool);
+        this.tools.add(new VoidToolAdapter<>(schedulerTool, ExtoleSuperContext.class));
     }
 
     @Override
