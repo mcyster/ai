@@ -3,6 +3,7 @@ package com.cyster.weave.impl.scenarios.conversation;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.Weave;
@@ -14,8 +15,8 @@ import com.cyster.template.StringTemplate;
 public class ConversationLinkTool implements Tool<Void, Void> {
     private String conversationLinkTemplate;
 
-    ConversationLinkTool() {
-        this.conversationLinkTemplate = "TODO initialize";
+    public ConversationLinkTool(@Value("${conversation.link.template}") String conversationLinkTemplate) {
+        this.conversationLinkTemplate = conversationLinkTemplate;
     }
 
     @Override

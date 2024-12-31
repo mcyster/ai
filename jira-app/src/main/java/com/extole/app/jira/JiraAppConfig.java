@@ -49,7 +49,7 @@ public class JiraAppConfig implements WebMvcConfigurer {
             config.addContentNegotiations(configurer);
         }
     }
-    
+
     @Override
     public void addFormatters(FormatterRegistry registry) {
         for (var converter : converters) {
@@ -61,6 +61,5 @@ public class JiraAppConfig implements WebMvcConfigurer {
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
         converters.add(new MappingJackson2HttpMessageConverter(objectMapper));
     }
-    
 
 }
