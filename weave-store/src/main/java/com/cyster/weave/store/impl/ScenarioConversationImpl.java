@@ -1,4 +1,4 @@
-package com.cyster.weave.session.impl.scenariosessionstore;
+package com.cyster.weave.store.impl;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import com.cyster.ai.weave.service.conversation.ConversationException;
 import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.scenario.ScenarioType;
-import com.cyster.weave.session.service.scenariosession.ScenarioConversation;
+import com.cyster.weave.store.service.ScenarioConversation;
 
 public class ScenarioConversationImpl implements ScenarioConversation {
     private ActiveConversation activeConversation;

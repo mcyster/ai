@@ -1,4 +1,4 @@
-package com.cyster.weave.session.impl.scenariosessionstore;
+package com.cyster.weave.store.impl;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.conversation.ActiveConversation;
 import com.cyster.ai.weave.service.scenario.ScenarioType;
-import com.cyster.weave.session.service.scenariosession.ScenarioConversation;
-import com.cyster.weave.session.service.scenariosession.ScenarioConversationStore;
+import com.cyster.weave.store.service.ScenarioConversation;
+import com.cyster.weave.store.service.ScenarioConversationStore;
 
 @Component
 public class SenarioConversationStoreImpl implements ScenarioConversationStore {

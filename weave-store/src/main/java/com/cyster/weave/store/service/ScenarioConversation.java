@@ -1,4 +1,4 @@
-package com.cyster.weave.session.service.scenariosession;
+package com.cyster.weave.store.service;
 
 import com.cyster.ai.weave.service.conversation.ActiveConversation;
 import com.cyster.ai.weave.service.scenario.ScenarioType;

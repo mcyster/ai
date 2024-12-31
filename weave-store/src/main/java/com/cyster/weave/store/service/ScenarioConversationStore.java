@@ -1,4 +1,4 @@
-package com.cyster.weave.session.service.scenariosession;
+package com.cyster.weave.store.service;
 
 import java.util.List;
 import java.util.Optional;
