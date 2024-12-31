@@ -2,13 +2,16 @@ package com.cyster.ai.weave.service.scenario;
 
 import java.util.List;
 
-public interface ScenarioSetBuilder {
+public interface ScenarioSetBuilder<CONTEXT> {
 
-    ScenarioSetBuilder addScenario(Scenario<?,?> scenario);
-    ScenarioSetBuilder addScenarios(List<Scenario<?,?>> scenario);
-    ScenarioSetBuilder addScenarioLoader(ScenarioLoader scenarioLoader);
-    ScenarioSetBuilder addScenarioLoaders(List<ScenarioLoader> scenarioLoaders);
-    
-    ScenarioSet create();
-        
+    ScenarioSetBuilder<CONTEXT> addScenario(Scenario<?, CONTEXT> scenario);
+
+    ScenarioSetBuilder<CONTEXT> addScenarios(List<Scenario<?, CONTEXT>> scenario);
+
+    ScenarioSetBuilder<CONTEXT> addScenarioLoader(ScenarioLoader<CONTEXT> scenarioLoader);
+
+    ScenarioSetBuilder<CONTEXT> addScenarioLoaders(List<ScenarioLoader<CONTEXT>> scenarioLoaders);
+
+    ScenarioSet<CONTEXT> create();
+
 }

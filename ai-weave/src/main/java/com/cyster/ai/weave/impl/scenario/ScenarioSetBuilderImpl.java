@@ -8,45 +8,43 @@ import com.cyster.ai.weave.service.scenario.ScenarioLoader;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
 import com.cyster.ai.weave.service.scenario.ScenarioSetBuilder;
 
-public class ScenarioSetBuilderImpl implements ScenarioSetBuilder {
-    private List<Scenario<?, ?>> scenarios = new ArrayList<>();;
-    
+public class ScenarioSetBuilderImpl<CONTEXT> implements ScenarioSetBuilder<CONTEXT> {
+    private List<Scenario<?, CONTEXT>> scenarios = new ArrayList<>();;
+
     @Override
-    public ScenarioSetBuilder addScenario(Scenario<?, ?> scenario) {
+    public ScenarioSetBuilder<CONTEXT> addScenario(Scenario<?, CONTEXT> scenario) {
         scenarios.add(scenario);
         return this;
     }
 
     @Override
-    public ScenarioSetBuilder addScenarios(List<Scenario<?,?>> scenarios) {
-        for(var scenario: scenarios) {
+    public ScenarioSetBuilder<CONTEXT> addScenarios(List<Scenario<?, CONTEXT>> scenarios) {
+        for (var scenario : scenarios) {
             this.scenarios.add(scenario);
         }
         return this;
     }
 
-
     @Override
-    public ScenarioSetBuilder addScenarioLoader(ScenarioLoader scenarioLoader) {
+    public ScenarioSetBuilder<CONTEXT> addScenarioLoader(ScenarioLoader<CONTEXT> scenarioLoader) {
         for (var scenario : scenarioLoader.getScenarios()) {
             this.scenarios.add(scenario);
         }
         return this;
     }
 
-
     @Override
-    public ScenarioSetBuilder addScenarioLoaders(List<ScenarioLoader> scenarioLoaders) {
-        for(var loader: scenarioLoaders) {
+    public ScenarioSetBuilder<CONTEXT> addScenarioLoaders(List<ScenarioLoader<CONTEXT>> scenarioLoaders) {
+        for (var loader : scenarioLoaders) {
             addScenarioLoader(loader);
         }
-        
+
         return this;
     }
-    
+
     @Override
-    public ScenarioSet create() {
-        return new ScenarioSetImpl(this.scenarios);
+    public ScenarioSet<CONTEXT> create() {
+        return new ScenarioSetImpl<CONTEXT>(this.scenarios);
     }
 
 }

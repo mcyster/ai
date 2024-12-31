@@ -10,17 +10,17 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioException;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
 
-public class ScenarioSetImpl implements ScenarioSet {
-    private Map<String, Scenario<?,?>> scenarios = new HashMap<String, Scenario<?, ?>>();
+public class ScenarioSetImpl<CONTEXT> implements ScenarioSet<CONTEXT> {
+    private Map<String, Scenario<?, CONTEXT>> scenarios = new HashMap<>();
 
-    public ScenarioSetImpl(List<Scenario<?,?>> scenarios) {
-       for(var scenario: scenarios) {
-           this.scenarios.put(scenario.getName(), scenario);
-       }
+    public ScenarioSetImpl(List<Scenario<?, CONTEXT>> scenarios) {
+        for (var scenario : scenarios) {
+            this.scenarios.put(scenario.getName(), scenario);
+        }
     }
 
     @Override
-    public Set<Scenario<?,?>> getScenarios() {
+    public Set<Scenario<?, CONTEXT>> getScenarios() {
         return scenarios.values().stream().collect(Collectors.toSet());
     }
 
@@ -30,7 +30,7 @@ public class ScenarioSetImpl implements ScenarioSet {
     }
 
     @Override
-    public Scenario<?,?> getScenario(String name) throws ScenarioException {
+    public Scenario<?, CONTEXT> getScenario(String name) throws ScenarioException {
         if (this.scenarios.containsKey(name)) {
             return this.scenarios.get(name);
         } else {

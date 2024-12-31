@@ -17,6 +17,7 @@ import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
+import com.cyster.ai.weave.service.scenario.ScenarioSetBuilder;
 import com.cyster.ai.weave.service.tool.ToolContextFactory;
 
 @Configuration
@@ -51,10 +52,14 @@ public class WeaveRestConfig {
     }
 
     @Bean
-    public ScenarioSet getScenarioService(AiScenarioService aiScenarioService, List<ScenarioLoader> scenarioLoaders,
-            List<Scenario<?, ?>> scenarios) {
-        return aiScenarioService.senarioSetBuilder().addScenarioLoaders(scenarioLoaders).addScenarios(scenarios)
-                .create();
+    public <CONTEXT> ScenarioSet<CONTEXT> getScenarioService(AiScenarioService aiScenarioService,
+            List<ScenarioLoader<CONTEXT>> scenarioLoaders, List<Scenario<?, CONTEXT>> scenarios) {
+
+        ScenarioSetBuilder<CONTEXT> builder = aiScenarioService.senarioSetBuilder();
+        builder.addScenarios(scenarios);
+        builder.addScenarioLoaders(scenarioLoaders);
+
+        return builder.create();
     }
 
 }

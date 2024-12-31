@@ -7,6 +7,6 @@ public interface AiScenarioService {
 
     <PARAMETERS, CONTEXT> ScenarioBuilder<PARAMETERS, CONTEXT> getOrCreateScenarioBuilder(String name);
 
-    ScenarioSetBuilder senarioSetBuilder();
+    <CONTEXT> ScenarioSetBuilder<CONTEXT> senarioSetBuilder();
 
 }

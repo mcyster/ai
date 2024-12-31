@@ -19,9 +19,9 @@ import com.cyster.ai.weave.service.scenario.ScenarioSet;
 public class ScenarioController {
     private static final Logger logger = LoggerFactory.getLogger(ScenarioController.class);
 
-    private ScenarioSet scenarioStore;
+    private ScenarioSet<?> scenarioStore;
 
-    public ScenarioController(ScenarioSet scenarioStore) {
+    public ScenarioController(ScenarioSet<?> scenarioStore) {
         this.scenarioStore = scenarioStore;
     }
 

@@ -36,16 +36,16 @@ public class ConversationController {
     private static final String PARAMETER_PREFIX = "parameter.";
 
     private ScenarioConversationStore scenarioConversationStore;
-    private ScenarioSet scenarioStore;
+    private ScenarioSet<?> scenarioSet;
     private ObjectMapper objectMapper;
     private List<ScenarioContextFactory<?>> contextFactories;
 
     private static final Logger logger = LoggerFactory.getLogger(ConversationController.class);
 
-    public ConversationController(ScenarioConversationStore scenarioSessionStore, ScenarioSet scenarioStore,
+    public ConversationController(ScenarioConversationStore scenarioSessionStore, ScenarioSet<?> scenarioSet,
             List<ScenarioContextFactory<?>> contextFactories) {
         this.scenarioConversationStore = scenarioSessionStore;
-        this.scenarioStore = scenarioStore;
+        this.scenarioSet = scenarioSet;
         this.contextFactories = contextFactories;
         this.objectMapper = new ObjectMapper();
         // objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES,
@@ -87,7 +87,7 @@ public class ConversationController {
 
         Scenario<?, ?> scenario;
         try {
-            scenario = this.scenarioStore.getScenario(request.scenario());
+            scenario = this.scenarioSet.getScenario(request.scenario());
         } catch (ScenarioException exception) {
             throw new ScenarioNameNotFoundRestException(request.scenario());
         }
@@ -129,7 +129,7 @@ public class ConversationController {
 
         Scenario<?, ?> scenario;
         try {
-            scenario = this.scenarioStore.getScenario(request.scenario());
+            scenario = this.scenarioSet.getScenario(request.scenario());
         } catch (ScenarioException exception) {
             throw new ScenarioNameNotFoundRestException(request.scenario());
         }

@@ -2,11 +2,11 @@ package com.cyster.ai.weave.service.scenario;
 
 import java.util.Set;
 
-public interface ScenarioSet {
+public interface ScenarioSet<CONTEXT> {
 
-    Set<Scenario<?,?>> getScenarios();
+    Set<Scenario<?, CONTEXT>> getScenarios();
 
     boolean hasScenario(String name);
 
-    Scenario<?,?> getScenario(String name) throws ScenarioException;
+    Scenario<?, CONTEXT> getScenario(String name) throws ScenarioException;
 }
