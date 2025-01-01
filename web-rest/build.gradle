@@ -20,6 +20,7 @@ dependencies {
 
     implementation project(':rest')
     implementation project(':ai-weave')
+    implementation project(':weave-rest')
     implementation project(':web-weave')
 
     testImplementation('org.springframework.boot:spring-boot-starter-test')

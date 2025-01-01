@@ -4,17 +4,17 @@ import java.util.Objects;
 
 import com.cyster.ai.weave.service.Weave;
 
-public interface Tool<TOOL_PARAMETERS, TOOL_CONTEXT> {
+public interface Tool<PARAMETERS, CONTEXT> {
 
     String getName();
 
     String getDescription();
 
-    Class<TOOL_PARAMETERS> getParameterClass();
+    Class<PARAMETERS> getParameterClass();
 
-    Class<TOOL_CONTEXT> getContextClass();
+    Class<CONTEXT> getContextClass();
 
-    Object execute(TOOL_PARAMETERS parameters, TOOL_CONTEXT context, Weave weave) throws ToolException;
+    Object execute(PARAMETERS parameters, CONTEXT context, Weave weave) throws ToolException;
 
     default int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass());

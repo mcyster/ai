@@ -14,7 +14,6 @@ import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.tool.FatalToolException;
 import com.cyster.ai.weave.service.tool.Tool;
 import com.cyster.ai.weave.service.tool.ToolContextException;
-import com.cyster.ai.weave.service.tool.ToolContextFactory;
 import com.cyster.ai.weave.service.tool.ToolException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,21 +21,18 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-public class Toolset {
+public class Toolset<CONTEXT> {
     private static final Logger logger = LoggerFactory.getLogger(Toolset.class);
 
-    private final ToolContextFactory toolContextFactory;
-    private final Map<String, Tool<?, ?>> tools = new HashMap<String, Tool<?, ?>>();
+    private final Map<String, Tool<?, CONTEXT>> tools = new HashMap<>();
 
-    private Toolset(ToolContextFactory toolContextFactory, List<Tool<?, ?>> tools) {
-        this.toolContextFactory = toolContextFactory;
+    private Toolset(List<Tool<?, CONTEXT>> tools) {
         for (var tool : tools) {
             this.tools.put(tool.getName(), tool);
         }
     }
 
-    public <SCENARIO_CONTEXT> String execute(String name, String jsonParameters, SCENARIO_CONTEXT scenarioContext,
-            Weave weave) {
+    public String execute(String name, String jsonParameters, CONTEXT context, Weave weave) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new Jdk8Module());
         mapper.registerModules(new JavaTimeModule());
@@ -44,10 +40,10 @@ public class Toolset {
         if (!tools.containsKey(name)) {
             return error("No tool called: " + name, Type.BAD_TOOL_NAME);
         }
-        Tool<?, ?> tool = tools.get(name);
+        Tool<?, CONTEXT> tool = tools.get(name);
 
         try {
-            var result = executeTool(tool, jsonParameters, scenarioContext, weave);
+            var result = executeTool(tool, jsonParameters, context, weave);
 
             return mapper.writeValueAsString(result);
         } catch (FatalToolException exception) {
@@ -66,16 +62,13 @@ public class Toolset {
         }
     }
 
-    public <TOOL_PARAMETERS, TOOL_CONTEXT, SCENARIO_CONTEXT> Object executeTool(
-            Tool<TOOL_PARAMETERS, TOOL_CONTEXT> tool, String jsonArguments, SCENARIO_CONTEXT scenarioContext,
+    public <PARAMETERS> Object executeTool(Tool<PARAMETERS, CONTEXT> tool, String jsonArguments, CONTEXT context,
             Weave weave) throws ToolException {
         ObjectMapper mapper = new ObjectMapper();
 
-        TOOL_CONTEXT toolContext = toolContextFactory.createContext(tool.getContextClass(), scenarioContext);
-
         try {
-            TOOL_PARAMETERS parameters = mapper.readValue(jsonArguments, tool.getParameterClass());
-            return tool.execute(parameters, toolContext, weave);
+            var parameters = mapper.readValue(jsonArguments, tool.getParameterClass());
+            return tool.execute(parameters, context, weave);
         } catch (MismatchedInputException exception) {
             // Original Message can help describe the problem in enough detail to resolve,
             // often references the exact field.
@@ -86,26 +79,24 @@ public class Toolset {
         }
     }
 
-    public Collection<Tool<?, ?>> getTools() {
+    public Collection<Tool<?, CONTEXT>> getTools() {
         return this.tools.values();
     }
 
-    public static class Builder {
-        private final ToolContextFactory toolContextFactory;
-        private final List<Tool<?, ?>> tools = new ArrayList<Tool<?, ?>>();
+    public static class Builder<CONTEXT> {
+        private final List<Tool<?, CONTEXT>> tools = new ArrayList<>();
 
-        public Builder(ToolContextFactory toolContextFactory) {
-            this.toolContextFactory = toolContextFactory;
+        public Builder() {
         }
 
-        public <TOOL_PARAMETERS, TOOL_CONTEXT> Builder addTool(Tool<TOOL_PARAMETERS, TOOL_CONTEXT> tool) {
+        public <PARAMETERS> Builder<CONTEXT> addTool(Tool<PARAMETERS, CONTEXT> tool) {
             this.tools.add(tool);
 
             return this;
         }
 
-        public Toolset create() {
-            return new Toolset(toolContextFactory, tools);
+        public Toolset<CONTEXT> create() {
+            return new Toolset<CONTEXT>(tools);
         }
     }
 

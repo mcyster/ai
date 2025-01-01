@@ -26,8 +26,8 @@ public class AssistantAdvisorConversation<CONTEXT> implements ActiveConversation
     private final AssistantAdvisorThread<CONTEXT> assistantAdvisorThread;
     private final WeaveOperation operation;
 
-    AssistantAdvisorConversation(OpenAiService openAiService, String assistantName, String assistantId, Toolset toolset,
-            Optional<String> overrideInstructions, CONTEXT context) {
+    AssistantAdvisorConversation(OpenAiService openAiService, String assistantName, String assistantId,
+            Toolset<CONTEXT> toolset, Optional<String> overrideInstructions, CONTEXT context) {
         this.id = UUID.randomUUID().toString();
         this.assistantAdvisorThread = new AssistantAdvisorThread<>(openAiService, assistantName, assistantId, toolset,
                 overrideInstructions, context);

@@ -101,14 +101,14 @@ public class ConversationController {
     @GetMapping("/conversations/{id}")
     public ConversationResponse getConversation(@PathVariable("id") String id,
             @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level)
-            throws ScenarioSessionNotFoundRestException, ScenarioSessionNotSpecifiedRestException {
+            throws ConversationNotFoundRestException, ConversationIdNotSpecifiedRestException {
 
         if (id == null || id.isBlank()) {
-            throw new ScenarioSessionNotSpecifiedRestException();
+            throw new ConversationIdNotSpecifiedRestException();
         }
-        Optional<ScenarioConversation> conversation = this.scenarioConversationStore.getSession(id);
+        Optional<ScenarioConversation> conversation = this.scenarioConversationStore.getConversation(id);
         if (conversation.isEmpty()) {
-            throw new ScenarioSessionNotFoundRestException(id);
+            throw new ConversationNotFoundRestException(id);
         }
 
         return new ConversationResponse.Builder(level).setId(conversation.get().id())
@@ -157,14 +157,14 @@ public class ConversationController {
     @GetMapping("/conversations/{id}/messages")
     public List<MessageResponse> getConversationMessages(@PathVariable("id") String id,
             @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level)
-            throws ScenarioSessionNotFoundRestException, ScenarioSessionNotSpecifiedRestException {
+            throws ConversationNotFoundRestException, ConversationIdNotSpecifiedRestException {
 
         if (id == null || id.isBlank()) {
-            throw new ScenarioSessionNotSpecifiedRestException();
+            throw new ConversationIdNotSpecifiedRestException();
         }
-        Optional<ScenarioConversation> conversation = this.scenarioConversationStore.getSession(id);
+        Optional<ScenarioConversation> conversation = this.scenarioConversationStore.getConversation(id);
         if (conversation.isEmpty()) {
-            throw new ScenarioSessionNotFoundRestException(id);
+            throw new ConversationNotFoundRestException(id);
         }
 
         var builder = new MessageResponse.Builder(level);
@@ -179,15 +179,15 @@ public class ConversationController {
     @PostMapping("/conversations/{id}/messages")
     public MessageResponse continueConversation(@PathVariable("id") String id,
             @RequestParam(name = "level", required = false, defaultValue = "Quiet") MessageResponse.Level level,
-            @RequestBody MessagePromptRequest request) throws ScenarioSessionNotFoundRestException,
-            ScenarioSessionNotSpecifiedRestException, ConversationRestException {
+            @RequestBody MessagePromptRequest request) throws ConversationNotFoundRestException,
+            ConversationIdNotSpecifiedRestException, ConversationRestException {
 
         if (id == null || id.isBlank()) {
-            throw new ScenarioSessionNotSpecifiedRestException();
+            throw new ConversationIdNotSpecifiedRestException();
         }
-        Optional<ScenarioConversation> conversation = this.scenarioConversationStore.getSession(id);
+        Optional<ScenarioConversation> conversation = this.scenarioConversationStore.getConversation(id);
         if (conversation.isEmpty()) {
-            throw new ScenarioSessionNotFoundRestException(id);
+            throw new ConversationNotFoundRestException(id);
         }
 
         logger.info("Converstation.continue conversationId: " + conversation.get().id());
@@ -236,7 +236,7 @@ public class ConversationController {
         }
 
         if (!match) {
-            throw new ScenarioContextException("No Context Factory Found for Scenario: " + scenario.getName()
+            throw new ScenarioContextException("Context Factory not found found for scenario: " + scenario.getName()
                     + " with context type: " + scenario.getContextClass().getName());
         }
 

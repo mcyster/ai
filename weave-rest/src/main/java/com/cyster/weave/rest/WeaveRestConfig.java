@@ -18,7 +18,6 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
 import com.cyster.ai.weave.service.scenario.ScenarioSet;
 import com.cyster.ai.weave.service.scenario.ScenarioSetBuilder;
-import com.cyster.ai.weave.service.tool.ToolContextFactory;
 
 @Configuration
 public class WeaveRestConfig {
@@ -27,8 +26,7 @@ public class WeaveRestConfig {
     }
 
     @Bean
-    public AiService getAiService(@Value("${OPENAI_API_KEY}") String openAiApiKey,
-            ToolContextFactory toolContextFactory) {
+    public AiService getAiService(@Value("${OPENAI_API_KEY}") String openAiApiKey) {
         if (!StringUtils.hasText(openAiApiKey)) {
             throw new IllegalArgumentException("OPENAI_API_KEY not defined");
         }
@@ -37,13 +35,12 @@ public class WeaveRestConfig {
     }
 
     @Bean
-    public AiAdvisorService getAiAgentService(@Value("${OPENAI_API_KEY}") String openAiApiKey,
-            ToolContextFactory toolContextFactory) {
+    public AiAdvisorService getAiAgentService(@Value("${OPENAI_API_KEY}") String openAiApiKey) {
         if (!StringUtils.hasText(openAiApiKey)) {
             throw new IllegalArgumentException("OPENAI_API_KEY not defined");
         }
 
-        return new AssistantAiAdvisorServiceImpl(openAiApiKey, toolContextFactory);
+        return new AssistantAiAdvisorServiceImpl(openAiApiKey);
     }
 
     @Bean

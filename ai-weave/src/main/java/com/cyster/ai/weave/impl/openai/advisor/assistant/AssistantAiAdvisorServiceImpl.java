@@ -7,7 +7,6 @@ import com.cyster.ai.weave.service.AiAdvisorService;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.tool.CodeInterpreterTool;
 import com.cyster.ai.weave.service.tool.SearchTool;
-import com.cyster.ai.weave.service.tool.ToolContextFactory;
 
 // https://platform.openai.com/docs/assistants/overview
 // https://platform.openai.com/docs/assistants/tools/code-interpreter
@@ -19,16 +18,14 @@ import com.cyster.ai.weave.service.tool.ToolContextFactory;
 public class AssistantAiAdvisorServiceImpl implements AiAdvisorService {
 
     private final OpenAiService openAiService;
-    private final ToolContextFactory toolContextFactory;
 
-    public AssistantAiAdvisorServiceImpl(String openAiKey, ToolContextFactory toolContextFactory) {
+    public AssistantAiAdvisorServiceImpl(String openAiKey) {
         this.openAiService = new OpenAiService(openAiKey);
-        this.toolContextFactory = toolContextFactory;
     }
 
     @Override
     public <CONTEXT> AdvisorBuilder<CONTEXT> getOrCreateAdvisorBuilder(String name) {
-        return new AssistantAdvisorImpl.Builder<CONTEXT>(this.openAiService, toolContextFactory, name);
+        return new AssistantAdvisorImpl.Builder<CONTEXT>(this.openAiService, name);
     }
 
     @Override

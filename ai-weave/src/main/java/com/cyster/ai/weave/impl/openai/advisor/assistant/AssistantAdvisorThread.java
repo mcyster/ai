@@ -51,13 +51,13 @@ public class AssistantAdvisorThread<CONTEXT> {
     private final OpenAiService openAiService;
     private final String assistantName;
     private final String assistantId;
-    private final Toolset toolset;
+    private final Toolset<CONTEXT> toolset;
     private final Optional<String> overrideInstructions;
     private final CONTEXT context;
     private Optional<Thread> thread = Optional.empty();
 
-    AssistantAdvisorThread(OpenAiService openAiService, String assistantName, String assistantId, Toolset toolset,
-            Optional<String> overrideInstructions, CONTEXT context) {
+    AssistantAdvisorThread(OpenAiService openAiService, String assistantName, String assistantId,
+            Toolset<CONTEXT> toolset, Optional<String> overrideInstructions, CONTEXT context) {
         this.openAiService = openAiService;
         this.assistantName = assistantName;
         this.assistantId = assistantId;
@@ -194,11 +194,12 @@ public class AssistantAdvisorThread<CONTEXT> {
             } catch (Throwable exception) {
                 if (exception instanceof SocketTimeoutException) {
                     if (retryCount++ > RUN_RETRIES_MAX) {
-                        throw new AssistantAdvisorConversationException("Socket Timeout while checking OpenAi.run.status",
-                                exception);
+                        throw new AssistantAdvisorConversationException(
+                                "Socket Timeout while checking OpenAi.run.status", exception);
                     }
                 } else {
-                    throw new AssistantAdvisorConversationException("Error while checking OpenAi.run.status", exception);
+                    throw new AssistantAdvisorConversationException("Error while checking OpenAi.run.status",
+                            exception);
                 }
             }
 

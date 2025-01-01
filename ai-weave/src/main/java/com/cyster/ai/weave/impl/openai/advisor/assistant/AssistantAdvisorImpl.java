@@ -13,11 +13,10 @@ import com.cyster.ai.weave.service.conversation.ActiveConversation;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.ai.weave.service.tool.Tool;
-import com.cyster.ai.weave.service.tool.ToolContextFactory;
 
 import io.github.stefanbratanov.jvm.openai.Assistant;
 
-public class AssistantAdvisorImpl<SCENARIO_CONTEXT> implements Advisor<SCENARIO_CONTEXT> {
+public class AssistantAdvisorImpl<CONTEXT> implements Advisor<CONTEXT> {
     public static final String MODEL = "gpt-4o";
     public static String VERSION = "0.1";
     public static String METADATA_VERSION = "version";
@@ -25,9 +24,9 @@ public class AssistantAdvisorImpl<SCENARIO_CONTEXT> implements Advisor<SCENARIO_
 
     private OpenAiService openAiService;
     private Assistant assistant;
-    private Toolset toolset;
+    private Toolset<CONTEXT> toolset;
 
-    public AssistantAdvisorImpl(OpenAiService openAiService, Assistant assistant, Toolset toolset) {
+    public AssistantAdvisorImpl(OpenAiService openAiService, Assistant assistant, Toolset<CONTEXT> toolset) {
         this.openAiService = openAiService;
         this.assistant = assistant;
         this.toolset = toolset;
@@ -42,8 +41,8 @@ public class AssistantAdvisorImpl<SCENARIO_CONTEXT> implements Advisor<SCENARIO_
     }
 
     @Override
-    public ConversationBuilder<SCENARIO_CONTEXT> createConversationBuilder(SCENARIO_CONTEXT context) {
-        return new ConversationBuilder<SCENARIO_CONTEXT>(this, context);
+    public ConversationBuilder<CONTEXT> createConversationBuilder(CONTEXT context) {
+        return new ConversationBuilder<CONTEXT>(this, context);
     }
 
     public static class ConversationBuilder<CONTEXT> implements ActiveConversationBuilder<CONTEXT> {
@@ -86,15 +85,15 @@ public class AssistantAdvisorImpl<SCENARIO_CONTEXT> implements Advisor<SCENARIO_
 
         private final OpenAiService openAiService;
         private final String name;
-        private final Toolset.Builder toolsetBuilder;
+        private final Toolset.Builder<CONTEXT> toolsetBuilder;
 
         private final List<Path> filePaths = new ArrayList<Path>();
         private Optional<String> instructions = Optional.empty();
 
-        public Builder(OpenAiService openAiService, ToolContextFactory toolContextFactory, String name) {
+        public Builder(OpenAiService openAiService, String name) {
             this.openAiService = openAiService;
             this.name = name;
-            this.toolsetBuilder = new Toolset.Builder(toolContextFactory);
+            this.toolsetBuilder = new Toolset.Builder<CONTEXT>();
 
         }
 

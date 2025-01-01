@@ -22,10 +22,10 @@ import io.github.stefanbratanov.jvm.openai.Function;
 import io.github.stefanbratanov.jvm.openai.Tool.FileSearchTool.FileSearch;
 import io.github.stefanbratanov.jvm.openai.ToolResources;
 
-class AssistantAdvisorToolset {
-    private Toolset toolset;
+class AssistantAdvisorToolset<CONTEXT> {
+    private Toolset<CONTEXT> toolset;
 
-    AssistantAdvisorToolset(Toolset toolset) {
+    AssistantAdvisorToolset(Toolset<CONTEXT> toolset) {
         this.toolset = toolset;
     }
 

@@ -1,22 +1,17 @@
 package com.cyster.weave.app;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.tool.ToolContextException;
 import com.cyster.ai.weave.service.tool.ToolContextFactory;
-import com.cyster.weave.impl.scenarios.conversation.ConversationLinkTool;
 import com.cyster.web.weave.scenarios.ManagedWebsites;
 import com.cyster.web.weave.scenarios.WebsiteProvider;
 
 @Component
 public class WeaveToolContextFactory implements ToolContextFactory {
-    private final String conversationLinkTemplate;
     private final WebsiteProvider websiteProvider;
 
-    public WeaveToolContextFactory(WebsiteProvider websiteProvider,
-            @Value("${app.url}/sites/managed/conversations/index.html?id={{conversationId}}") String conversationLinkTemplate) {
-        this.conversationLinkTemplate = conversationLinkTemplate;
+    public WeaveToolContextFactory(WebsiteProvider websiteProvider) {
         this.websiteProvider = websiteProvider;
     }
 
@@ -31,10 +26,6 @@ public class WeaveToolContextFactory implements ToolContextFactory {
 
         if (toolContextClass == ManagedWebsites.class) {
             return (TOOL_CONTEXT) new ManagedWebsites(websiteProvider);
-        }
-
-        if (toolContextClass == ConversationLinkTool.Context.class) {
-            return (TOOL_CONTEXT) new ConversationLinkTool.Context(conversationLinkTemplate);
         }
 
         throw new ToolContextException("Unable to create tool context class: " + toolContextClass.getName()

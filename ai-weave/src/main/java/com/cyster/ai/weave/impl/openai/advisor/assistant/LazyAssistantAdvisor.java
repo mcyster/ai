@@ -26,15 +26,15 @@ public class LazyAssistantAdvisor<CONTEXT> implements Advisor<CONTEXT> {
 
     private final OpenAiService openAiService;
     private final String name;
-    private final Toolset.Builder toolsetBuilder;
+    private final Toolset.Builder<CONTEXT> toolsetBuilder;
 
     private final List<Path> filePaths;
     private final Optional<String> instructions;
 
     private AtomicReference<AssistantAdvisorImpl<CONTEXT>> advisor = new AtomicReference<>();
 
-    LazyAssistantAdvisor(OpenAiService openAiService, String name, Toolset.Builder toolsetBuilder, List<Path> filePaths,
-            Optional<String> instructions) {
+    LazyAssistantAdvisor(OpenAiService openAiService, String name, Toolset.Builder<CONTEXT> toolsetBuilder,
+            List<Path> filePaths, Optional<String> instructions) {
         this.openAiService = openAiService;
         this.name = name;
         this.toolsetBuilder = toolsetBuilder;
@@ -87,7 +87,7 @@ public class LazyAssistantAdvisor<CONTEXT> implements Advisor<CONTEXT> {
         metadata.put(AssistantAdvisorImpl.METADATA_VERSION, AssistantAdvisorImpl.VERSION);
         metadata.put(AssistantAdvisorImpl.METADATA_IDENTITY, hash);
 
-        var toolset = new AssistantAdvisorToolset(this.toolsetBuilder.create());
+        var toolset = new AssistantAdvisorToolset<CONTEXT>(this.toolsetBuilder.create());
 
         AssistantsClient assistantsClient = this.openAiService.createClient(AssistantsClient.class);
         CreateAssistantRequest.Builder requestBuilder = CreateAssistantRequest.newBuilder().name(this.name)

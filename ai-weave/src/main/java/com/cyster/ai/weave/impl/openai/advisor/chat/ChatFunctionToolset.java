@@ -1,8 +1,8 @@
 package com.cyster.ai.weave.impl.openai.advisor.chat;
 
 import com.cyster.ai.weave.impl.tool.ToolError;
-import com.cyster.ai.weave.impl.tool.Toolset;
 import com.cyster.ai.weave.impl.tool.ToolError.Type;
+import com.cyster.ai.weave.impl.tool.Toolset;
 import com.cyster.ai.weave.service.Weave;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,11 +13,11 @@ import io.github.stefanbratanov.jvm.openai.ChatMessage.ToolMessage;
 import io.github.stefanbratanov.jvm.openai.ToolCall.FunctionToolCall;
 
 public class ChatFunctionToolset<CONTEXT> {
-    private Toolset toolset;
+    private Toolset<CONTEXT> toolset;
     CONTEXT context = null;
     Weave weave = null;
 
-    public ChatFunctionToolset(Toolset toolset) {
+    public ChatFunctionToolset(Toolset<CONTEXT> toolset) {
         this.toolset = toolset;
     }
 

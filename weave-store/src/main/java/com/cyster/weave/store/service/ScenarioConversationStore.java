@@ -7,7 +7,7 @@ import com.cyster.ai.weave.service.conversation.ActiveConversation;
 import com.cyster.ai.weave.service.scenario.ScenarioType;
 
 public interface ScenarioConversationStore {
-    Optional<ScenarioConversation> getSession(String id);
+    Optional<ScenarioConversation> getConversation(String id);
 
     <PARAMETERS, CONTEXT> ScenarioConversation addConversation(ActiveConversation scenarioConversation,
             ScenarioType scenarioType, PARAMETERS parameers, CONTEXT context);

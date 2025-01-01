@@ -23,7 +23,7 @@ public class SenarioConversationStoreImpl implements ScenarioConversationStore {
         this.store = new HashMap<String, ScenarioConversation>();
     }
 
-    public Optional<ScenarioConversation> getSession(String id) {
+    public Optional<ScenarioConversation> getConversation(String id) {
         if (this.store.containsKey(id)) {
             return Optional.of(this.store.get(id));
         } else {
