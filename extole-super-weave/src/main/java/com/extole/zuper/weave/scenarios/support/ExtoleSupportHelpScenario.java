@@ -71,8 +71,7 @@ public class ExtoleSupportHelpScenario implements Scenario<Void, ExtoleSuperCont
     }
 
     @Override
-    public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(Void parameters,
-            ExtoleSuperContext context) {
+    public ActiveConversationBuilder createConversationBuilder(Void parameters, ExtoleSuperContext context) {
         return this.advisor.createConversationBuilder(context);
     }
 

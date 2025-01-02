@@ -33,6 +33,7 @@ dependencies {
     implementation project(':cyster-weave')  // for converstation link tool - TBD
     implementation project(':web-weave')
     implementation project(':extole-client')
+    implementation project(':extole-admin-weave')
         
     testImplementation('org.springframework.boot:spring-boot-starter-test')
 }

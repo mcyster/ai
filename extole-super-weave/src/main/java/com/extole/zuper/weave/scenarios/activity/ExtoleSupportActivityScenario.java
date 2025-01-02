@@ -11,6 +11,7 @@ import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
+import com.cyster.ai.weave.service.tool.SearchTool;
 import com.cyster.template.StringTemplate;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -20,9 +21,10 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
     private final String DESCRIPTION = "Find the best Activity given a set of keywords (intended for testing)";
 
     private final Advisor<Void> advisor;
+    private final SearchTool<Void> searchTool;
 
     public ExtoleSupportActivityScenario(AiService aiService, AiAdvisorService aiAdvisorService,
-            ExtoleSupportActivityTool activityTool) {
+            ExtoleSupportActivityDocuments activityDocuments) {
 
         String instructionsTemplate = """
                 {
@@ -85,7 +87,10 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
 
         AdvisorBuilder<Void> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
         builder.setInstructions(instructions);
-        builder.withTool(activityTool.getActivityTool());
+
+        this.searchTool = builder.searchToolBuilder(Void.class).withName("activities")
+                .withDocumentStore(activityDocuments.getDocuments()).create();
+        builder.withTool(searchTool);
 
         this.advisor = builder.getOrCreate();
     }
@@ -111,7 +116,13 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
     }
 
     @Override
-    public ActiveConversationBuilder<Void> createConversationBuilder(Void parameters, Void context) {
+    public ActiveConversationBuilder createConversationBuilder(Void parameters, Void context) {
+
+        if (!searchTool.isReady()) {
+            // Still seem to have to wait a bit sometimes, even when its ready here
+            System.out.println("!!!!!!!!!! search tool - vector store not ready !!!");
+        }
+
         return this.advisor.createConversationBuilder(context);
     }
 

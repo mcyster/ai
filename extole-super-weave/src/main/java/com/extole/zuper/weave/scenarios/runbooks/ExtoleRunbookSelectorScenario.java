@@ -11,6 +11,7 @@ import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
+import com.cyster.ai.weave.service.tool.SearchTool;
 import com.cyster.template.StringTemplate;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -23,9 +24,10 @@ public class ExtoleRunbookSelectorScenario implements Scenario<Void, Void> {
     private String defaultRunbookName;
 
     private final Advisor<Void> advisor;
+    private SearchTool<Void> searchTool;
 
     public ExtoleRunbookSelectorScenario(AiService aiService, AiAdvisorService aiAdvisorService,
-            ExtoleRunbookToolFactory runbookToolFactory, ExtoleRunbookDefault defaultRunbook) {
+            ExtoleRunbookDocuments runbookDocuments, ExtoleRunbookDefault defaultRunbook) {
 
         String instructionsTemplate = """
                 {
@@ -89,7 +91,9 @@ public class ExtoleRunbookSelectorScenario implements Scenario<Void, Void> {
         AdvisorBuilder<Void> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
         builder.setInstructions(instructions);
 
-        builder.withTool(runbookToolFactory.getRunbookSearchTool());
+        this.searchTool = builder.searchToolBuilder(Void.class).withName("runbooks")
+                .withDocumentStore(runbookDocuments.getDocumentStore()).create();
+        builder.withTool(this.searchTool);
 
         this.defaultRunbookName = defaultRunbook.getName();
 
@@ -118,7 +122,13 @@ public class ExtoleRunbookSelectorScenario implements Scenario<Void, Void> {
     }
 
     @Override
-    public ActiveConversationBuilder<Void> createConversationBuilder(Void parameters, Void context) {
+    public ActiveConversationBuilder createConversationBuilder(Void parameters, Void context) {
+
+        if (!searchTool.isReady()) {
+            // Still seem to have to wait a bit sometimes, even when its ready here
+            System.out.println("!!!!!!!!!! search tool - vector store not ready !!!");
+        }
+
         return this.advisor.createConversationBuilder(context);
     }
 

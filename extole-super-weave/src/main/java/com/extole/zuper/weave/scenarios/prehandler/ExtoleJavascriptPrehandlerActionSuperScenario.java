@@ -9,17 +9,18 @@ import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.ai.weave.service.tool.VoidToolAdapter;
+import com.cyster.ai.weave.service.tool.SearchTool;
 import com.extole.zuper.weave.ExtoleSuperContext;
 
 @Component
-public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, ExtoleSuperContext> {
+public class ExtoleJavascriptPrehandlerActionSuperScenario implements Scenario<Void, ExtoleSuperContext> {
 
     private final Advisor<ExtoleSuperContext> advisor;
+    private final SearchTool<ExtoleSuperContext> searchTool;
 
-    ExtoleJavascriptPrehandlerActionScenario(AiAdvisorService aiAdvisorService, ExtoleApiStore extoleStore) {
+    ExtoleJavascriptPrehandlerActionSuperScenario(AiAdvisorService aiAdvisorService, ExtoleApiSuperStore extoleStore) {
         String resourcePath = "/extole/scenario/prehandler_action_context.js";
-        URL resourceUrl = ExtoleJavascriptPrehandlerActionScenario.class.getResource(resourcePath);
+        URL resourceUrl = ExtoleJavascriptPrehandlerActionSuperScenario.class.getResource(resourcePath);
         if (resourceUrl == null) {
             throw new IllegalArgumentException("Resource not found: " + resourcePath);
         }
@@ -75,17 +76,16 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
 
         builder.setInstructions(instructions);
 
-        // TODO update to use SearchTool
-        // .withFile(javascriptActionContextPath);
-
-        builder.withTool(new VoidToolAdapter<>(extoleStore.createStoreTool(), ExtoleSuperContext.class));
+        this.searchTool = builder.searchToolBuilder(ExtoleSuperContext.class).withName("extole-store")
+                .withDocumentStore(extoleStore.getDocumentStore()).create();
+        builder.withTool(searchTool);
 
         this.advisor = builder.getOrCreate();
     }
 
     @Override
     public String getName() {
-        return this.getClass().getSimpleName().replace("Scenario", "");
+        return this.getClass().getSimpleName().replace("SuperScenario", "");
     }
 
     @Override
@@ -104,8 +104,13 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Void, 
     }
 
     @Override
-    public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(Void parameters,
-            ExtoleSuperContext context) {
+    public ActiveConversationBuilder createConversationBuilder(Void parameters, ExtoleSuperContext context) {
+
+        if (!searchTool.isReady()) {
+            // Still seem to have to wait a bit sometimes, even when its ready here
+            System.out.println("!!!!!!!!!! search tool - vector store not ready !!!");
+        }
+
         return this.advisor.createConversationBuilder(context);
     }
 

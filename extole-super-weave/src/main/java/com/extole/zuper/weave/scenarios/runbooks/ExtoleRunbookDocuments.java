@@ -7,16 +7,16 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiAdvisorService;
 import com.cyster.ai.weave.service.AiService;
-import com.cyster.ai.weave.service.tool.SearchTool;
+import com.cyster.ai.weave.service.DocumentStore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
-public class ExtoleRunbookToolFactory {
+public class ExtoleRunbookDocuments {
 
-    private SearchTool searchTool;
+    private DocumentStore documentStore;
 
-    public ExtoleRunbookToolFactory(AiService aiService, AiAdvisorService aiAdvisorService,
+    public ExtoleRunbookDocuments(AiService aiService, AiAdvisorService aiAdvisorService,
             List<RunbookScenario> runbookScenarios, ExtoleRunbookScenarioLoader runbookScenarioLoader,
             ExtoleRunbookDefault defaultRunbook) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -39,14 +39,11 @@ public class ExtoleRunbookToolFactory {
             documentStoreBuilder.addDocument(runbook.getName() + ".json", json);
         }
 
-        SearchTool.Builder builder = aiAdvisorService.searchToolBuilder();
-        builder.withName("runbooks").withDocumentStore(documentStoreBuilder.create());
-
-        this.searchTool = builder.create();
+        this.documentStore = documentStoreBuilder.create();
     }
 
-    public SearchTool getRunbookSearchTool() {
-        return this.searchTool;
+    public DocumentStore getDocumentStore() {
+        return this.documentStore;
     }
 
     public static class Runbook {

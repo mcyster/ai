@@ -42,8 +42,7 @@ public class WebDeveloperScenario implements Scenario<Parameters, ManagedWebsite
     }
 
     @Override
-    public ActiveConversationBuilder<ManagedWebsites> createConversationBuilder(Parameters parameters,
-            ManagedWebsites context) {
+    public ActiveConversationBuilder createConversationBuilder(Parameters parameters, ManagedWebsites context) {
         var request = new WebsiteDeveloperScenario.Request(parameters.websiteId());
         return websiteDeveloperScenario.createConversationBuilder(request, managedWebsites);
     }

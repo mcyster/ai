@@ -49,7 +49,7 @@ public class ExtoleRunbookDefault implements RunbookScenario {
     }
 
     @Override
-    public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(RunbookScenarioParameters parameters,
+    public ActiveConversationBuilder createConversationBuilder(RunbookScenarioParameters parameters,
             ExtoleSuperContext context) {
         String instructions = new StringTemplate(INSTRUCTIONS_TEMPLATE).render(parameters);
 

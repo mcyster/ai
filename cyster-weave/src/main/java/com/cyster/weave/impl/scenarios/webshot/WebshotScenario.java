@@ -53,7 +53,7 @@ public class WebshotScenario implements Scenario<Void, Void> {
     }
 
     @Override
-    public ActiveConversationBuilder<Void> createConversationBuilder(Void parameters, Void context) {
+    public ActiveConversationBuilder createConversationBuilder(Void parameters, Void context) {
         return this.advisor.createConversationBuilder(context);
     }
 

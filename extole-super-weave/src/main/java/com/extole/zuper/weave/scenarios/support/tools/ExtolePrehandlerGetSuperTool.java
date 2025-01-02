@@ -13,23 +13,23 @@ import com.cyster.ai.weave.service.tool.ToolException;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.client.web.ExtoleWebClientException;
 import com.extole.zuper.weave.ExtoleSuperContext;
-import com.extole.zuper.weave.scenarios.support.tools.ExtolePrehandlerGetTool.Request;
+import com.extole.zuper.weave.scenarios.support.tools.ExtolePrehandlerGetSuperTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Component
-class ExtolePrehandlerGetTool implements ExtoleSupportTool<Request> {
+class ExtolePrehandlerGetSuperTool implements ExtoleSupportTool<Request> {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleTrustedWebClientFactory.class);
 
     private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 
-    ExtolePrehandlerGetTool(ExtoleTrustedWebClientFactory extoleWebClientFactory) {
+    ExtolePrehandlerGetSuperTool(ExtoleTrustedWebClientFactory extoleWebClientFactory) {
         this.extoleWebClientFactory = extoleWebClientFactory;
     }
 
     @Override
     public String getName() {
-        return this.getClass().getSimpleName().replace("Tool", "");
+        return this.getClass().getSimpleName().replace("SuperTool", "");
     }
 
     @Override

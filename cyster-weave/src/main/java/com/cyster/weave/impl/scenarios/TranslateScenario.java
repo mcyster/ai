@@ -38,7 +38,7 @@ public class TranslateScenario implements Scenario<Parameters, Void> {
     }
 
     @Override
-    public ActiveConversationBuilder<Void> createConversationBuilder(Parameters parameters, Void context) {
+    public ActiveConversationBuilder createConversationBuilder(Parameters parameters, Void context) {
         String instructionsTemplate = "Please translate messages from {{language}} to {{target_language}}.";
 
         String instructions = new StringTemplate(instructionsTemplate).render(parameters);

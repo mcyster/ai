@@ -62,7 +62,7 @@ public class Toolset<CONTEXT> {
         }
     }
 
-    public <PARAMETERS> Object executeTool(Tool<PARAMETERS, CONTEXT> tool, String jsonArguments, CONTEXT context,
+    private <PARAMETERS> Object executeTool(Tool<PARAMETERS, CONTEXT> tool, String jsonArguments, CONTEXT context,
             Weave weave) throws ToolException {
         ObjectMapper mapper = new ObjectMapper();
 

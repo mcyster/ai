@@ -1,19 +1,24 @@
 
 
 ScenarioSetBuilder<Context>
-- currently spring focus
-- move to be type focused
-- allow multiple types
-- support translating context types / having a set of supported type
 - enable
   - ExtoleSupperContext to use ExtoleAdminContext scenarios
   - ExtoleAdmiNContext to also use void scenarios
 
 Weave -> AdvisorContext
-
+- operations?
 WeaveOperation -> AdvisorOperation
 
 Support nesting of Weave Operations between scenarios
+
+ScenarioType where?
+- WeaveStore
+- ScenarioSet
+
+OpenAi searchTool / codeInterpreterTool are special for OpenAI
+- move tool builder to be part of AdvisorBuidler
+- need to remove special code from withTool  <<<<<-------- TODO
+
 
 ---
 
@@ -44,11 +49,9 @@ ScenarioSet
 - Scenarios must be built in the context of a specific Advisor
 - Scenarios must be executed with a WeaveContext
 
-ScenarioTemplate extends ScenarioType
-Scenario extends ScenarioType
-
 Weave  // future: if make async this should be safe
 - Conversation
+  - id()
   - list of Message
     - operation
   - operation

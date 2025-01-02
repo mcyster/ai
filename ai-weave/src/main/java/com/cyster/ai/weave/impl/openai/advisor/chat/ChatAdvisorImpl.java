@@ -35,7 +35,7 @@ public class ChatAdvisorImpl<CONTEXT> implements Advisor<CONTEXT> {
         return new ConversationBuilder();
     }
 
-    public class ConversationBuilder implements ActiveConversationBuilder<CONTEXT> {
+    public class ConversationBuilder implements ActiveConversationBuilder {
         Optional<String> overrideInstructions = Optional.empty();
         CONTEXT context = null;
 
@@ -48,7 +48,7 @@ public class ChatAdvisorImpl<CONTEXT> implements Advisor<CONTEXT> {
         }
 
         @Override
-        public ActiveConversationBuilder<CONTEXT> addMessage(String message) {
+        public ActiveConversationBuilder addMessage(String message) {
             // TODO Auto-generated method stub
             return null;
         }

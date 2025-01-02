@@ -31,7 +31,7 @@ public class ScheduledJob implements Job {
 
     private final ObjectMapper objectMapper;
     private final ApplicationContext applicationContext;
-    private AtomicReference<Optional<ScenarioSet>> lazyScenarioSet;
+    private AtomicReference<Optional<ScenarioSet<?>>> lazyScenarioSet;
     private AtomicReference<Optional<ScenarioConversationStore>> lazyScenarioSessionStore;
 
     public ScheduledJob(ObjectMapper objectMapper, ApplicationContext applicationContext) {
@@ -52,7 +52,7 @@ public class ScheduledJob implements Job {
             prompt = jobData.getString(SchedulerTool.JOB_DATA_PROMPT);
         }
 
-        ScenarioSet scenarioSet = getScenarioSet();
+        ScenarioSet<?> scenarioSet = getScenarioSet();
         Scenario<?, ?> scenario;
         try {
             scenario = scenarioSet.getScenario(scenarioName);
@@ -92,7 +92,7 @@ public class ScheduledJob implements Job {
                 "Scheduled scenario session id: " + scenarioConversation.id() + " response: " + message.getContent());
     }
 
-    private ScenarioSet getScenarioSet() {
+    private ScenarioSet<?> getScenarioSet() {
         return lazyScenarioSet.updateAndGet(currentValue -> {
             if (!currentValue.isPresent()) {
                 return Optional.of(applicationContext.getBean(ScenarioSet.class));
@@ -116,8 +116,7 @@ public class ScheduledJob implements Job {
         PARAMETERS castParameters = (PARAMETERS) parameters;
         CONTEXT castContext = (CONTEXT) context;
 
-        ActiveConversationBuilder<CONTEXT> conversationBuilder = scenario.createConversationBuilder(castParameters,
-                castContext);
+        ActiveConversationBuilder conversationBuilder = scenario.createConversationBuilder(castParameters, castContext);
         ActiveConversation conversation = conversationBuilder.start();
 
         return scenarioConversationStore().addConversation(conversation, scenario.toScenarioType(), castParameters,

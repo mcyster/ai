@@ -12,7 +12,6 @@ import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.tool.SearchTool;
-import com.cyster.ai.weave.service.tool.VoidToolAdapter;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorScenario.Parameters;
@@ -23,12 +22,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Parameters, ExtoleSuperContext> {
     private final String DESCRIPTION = "Find the best Runbook for the specified ticket";
 
-    private SearchTool searchTool;
+    private SearchTool<ExtoleSuperContext> searchTool;
 
     private final Advisor<ExtoleSuperContext> advisor;
 
     public ExtoleSupportTicketRunbookSelectorScenario(AiService aiService, AiAdvisorService aiAdvisorService,
-            ExtoleRunbookToolFactory runbookToolFactory, SupportTicketGetTool ticketGetTool,
+            ExtoleRunbookDocuments runbookDocuments, SupportTicketGetTool ticketGetTool,
             ExtoleRunbookDefault defaultRunbook) {
 
         String instructionsTemplate = """
@@ -96,8 +95,9 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
         AdvisorBuilder<ExtoleSuperContext> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
         builder.setInstructions(instructions);
 
-        this.searchTool = runbookToolFactory.getRunbookSearchTool();
-        builder.withTool(new VoidToolAdapter<>(this.searchTool, ExtoleSuperContext.class));
+        this.searchTool = builder.searchToolBuilder(ExtoleSuperContext.class).withName("runbooks")
+                .withDocumentStore(runbookDocuments.getDocumentStore()).create();
+        builder.withTool(this.searchTool);
         builder.withTool(ticketGetTool);
 
         this.advisor = builder.getOrCreate();
@@ -124,8 +124,7 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
     }
 
     @Override
-    public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(Parameters parameters,
-            ExtoleSuperContext context) {
+    public ActiveConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSuperContext context) {
         if (parameters == null || parameters.ticketNumber() == null || parameters.ticketNumber().isBlank()) {
             throw new IllegalArgumentException("No ticketNumber specified");
         }

@@ -40,8 +40,7 @@ public class ExtoleCampaignCheckScenario implements Scenario<Parameters, ExtoleS
     }
 
     @Override
-    public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(Parameters parameters,
-            ExtoleSuperContext context) {
+    public ActiveConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSuperContext context) {
         String instructions = """
                 You are a member of the Support team at Extole, a SaaS marketing platform. You are tasked with checking the variables associated with campaigns
 

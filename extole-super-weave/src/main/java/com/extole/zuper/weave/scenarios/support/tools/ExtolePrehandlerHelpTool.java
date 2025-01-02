@@ -15,7 +15,7 @@ import com.cyster.ai.weave.service.tool.ToolException;
 import com.extole.client.web.ExtoleTrustedWebClientFactory;
 import com.extole.client.web.ExtoleWebClientException;
 import com.extole.zuper.weave.ExtoleSuperContext;
-import com.extole.zuper.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionScenario;
+import com.extole.zuper.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionSuperScenario;
 import com.extole.zuper.weave.scenarios.support.tools.ExtolePrehandlerHelpTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -25,10 +25,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Component
 class ExtolePrehandlerHelpTool implements ExtoleSupportTool<Request> {
-    private ExtoleJavascriptPrehandlerActionScenario scenario;
+    private ExtoleJavascriptPrehandlerActionSuperScenario scenario;
     private ExtoleTrustedWebClientFactory extoleWebClientFactory;
 
-    ExtolePrehandlerHelpTool(ExtoleJavascriptPrehandlerActionScenario scenario,
+    ExtolePrehandlerHelpTool(ExtoleJavascriptPrehandlerActionSuperScenario scenario,
             ExtoleTrustedWebClientFactory extoleWebClientFactory) {
         this.scenario = scenario;
         this.extoleWebClientFactory = extoleWebClientFactory;

@@ -10,35 +10,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiAdvisorService;
 import com.cyster.ai.weave.service.AiService;
-import com.cyster.ai.weave.service.tool.SearchTool;
+import com.cyster.ai.weave.service.DocumentStore;
 
 @Component
-public class ExtoleApiStore {
-    private static final Logger logger = LoggerFactory.getLogger(ExtoleApiStore.class);
+public class ExtoleApiSuperStore {
+    private static final Logger logger = LoggerFactory.getLogger(ExtoleApiSuperStore.class);
 
     private static final String remoteJavaApiRepository = "git@github.com:extole/java-api.git";
     private static final File localJavaApiRepository = new File("/tmp/extole/java-api");
 
     private final AiService aiService;
-    private final AiAdvisorService aiAdvisorService;
 
-    ExtoleApiStore(AiService aiService, AiAdvisorService aiAdvisorService) {
+    ExtoleApiSuperStore(AiService aiService) {
         this.aiService = aiService;
-        this.aiAdvisorService = aiAdvisorService;
     }
 
-    public SearchTool createStoreTool() {
+    public DocumentStore getDocumentStore() {
         String hash = loadOrUpdateLocalRepository();
 
-        var documentStore = aiService.directoryDocumentStoreBuilder().withDirectory(localJavaApiRepository.toPath())
-                .withHash(hash).create();
-
-        SearchTool.Builder builder = (SearchTool.Builder) aiAdvisorService.searchToolBuilder().withName("extole-store")
-                .withDocumentStore(documentStore);
-
-        return builder.create();
+        return aiService.directoryDocumentStoreBuilder().withDirectory(localJavaApiRepository.toPath()).withHash(hash)
+                .create();
     }
 
     private String loadOrUpdateLocalRepository() {

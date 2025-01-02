@@ -12,22 +12,22 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiAdvisorService;
 import com.cyster.ai.weave.service.AiService;
-import com.cyster.ai.weave.service.tool.SearchTool;
+import com.cyster.ai.weave.service.DocumentStore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 
 @Component
-public class ExtoleSupportActivityTool {
+public class ExtoleSupportActivityDocuments {
     private static final String ACTIVITY_CSV_FILE = "/extole/activities.csv";
     private static final String CSV_CATEGORY = "category";
     private static final String CSV_ACTIVITY_NAME = "activityName";
     private static final String CSV_KEYWORDS = "keywords";
 
-    private SearchTool searchTool;
+    private DocumentStore documents;
 
-    public ExtoleSupportActivityTool(AiService aiService, AiAdvisorService aiAdvisorService) {
+    public ExtoleSupportActivityDocuments(AiService aiService, AiAdvisorService aiAdvisorService) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         var documentStoreBuilder = aiService.simpleDocumentStoreBuilder();
@@ -42,14 +42,12 @@ public class ExtoleSupportActivityTool {
             documentStoreBuilder.addDocument(activity.activityName() + ".json", json);
         }
 
-        SearchTool.Builder builder = aiAdvisorService.searchToolBuilder();
-        builder.withName("activities").withDocumentStore(documentStoreBuilder.create());
+        this.documents = documentStoreBuilder.create();
 
-        this.searchTool = builder.create();
     }
 
-    public SearchTool getActivityTool() {
-        return this.searchTool;
+    public DocumentStore getDocuments() {
+        return this.documents;
     }
 
     private List<Activity> loadActivities() {

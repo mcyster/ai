@@ -67,8 +67,7 @@ public class WebsiteDeveloperScenario implements Scenario<Request, ManagedWebsit
     }
 
     @Override
-    public ActiveConversationBuilder<ManagedWebsites> createConversationBuilder(Request parameters,
-            ManagedWebsites context) {
+    public ActiveConversationBuilder createConversationBuilder(Request parameters, ManagedWebsites context) {
         String messageTemplate = "There is a website with id %s at %s (we're in developer mode, so localhost is ok)";
 
         ManagedWebsite website;

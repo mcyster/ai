@@ -66,8 +66,7 @@ public class ExtoleSupportTicketScenario implements Scenario<Parameters, ExtoleS
     }
 
     @Override
-    public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(Parameters parameters,
-            ExtoleSuperContext context) {
+    public ActiveConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSuperContext context) {
         return this.advisor.createConversationBuilder(context).addMessage("Ticket: " + parameters.ticketNumber());
     }
 

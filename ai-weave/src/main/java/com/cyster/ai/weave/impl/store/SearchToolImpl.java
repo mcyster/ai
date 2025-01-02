@@ -11,15 +11,17 @@ import com.cyster.ai.weave.service.tool.ToolException;
 import io.github.stefanbratanov.jvm.openai.VectorStore;
 import io.github.stefanbratanov.jvm.openai.VectorStoresClient;
 
-public class SearchToolImpl implements SearchTool {
+public class SearchToolImpl<CONTEXT> implements SearchTool<CONTEXT> {
     public static final String NAME = "file_search";
 
-    private OpenAiService openAiService;
-    private VectorStore vectorStore;
+    private final OpenAiService openAiService;
+    private final VectorStore vectorStore;
+    private final Class<CONTEXT> contextClass;
 
-    public SearchToolImpl(OpenAiService openAiService, VectorStore vectorStore) {
+    public SearchToolImpl(OpenAiService openAiService, VectorStore vectorStore, Class<CONTEXT> contextClass) {
         this.openAiService = openAiService;
         this.vectorStore = vectorStore;
+        this.contextClass = contextClass;
     }
 
     @Override
@@ -38,12 +40,12 @@ public class SearchToolImpl implements SearchTool {
     }
 
     @Override
-    public Class<Void> getContextClass() {
-        return Void.class;
+    public Class<CONTEXT> getContextClass() {
+        return contextClass;
     }
 
     @Override
-    public Object execute(Void parameters, Void context, Weave weave) throws ToolException {
+    public Object execute(Void parameters, CONTEXT context, Weave weave) throws ToolException {
         // Implemented directly by OpenAI
         return Collections.emptyMap();
     }

@@ -1,12 +1,8 @@
 package com.cyster.ai.weave.impl.openai.advisor.assistant;
 
-import com.cyster.ai.weave.impl.code.CodeInterpreterToolBuilderImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
-import com.cyster.ai.weave.impl.store.SearchToolBuilderImpl;
 import com.cyster.ai.weave.service.AiAdvisorService;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
-import com.cyster.ai.weave.service.tool.CodeInterpreterTool;
-import com.cyster.ai.weave.service.tool.SearchTool;
 
 // https://platform.openai.com/docs/assistants/overview
 // https://platform.openai.com/docs/assistants/tools/code-interpreter
@@ -26,16 +22,6 @@ public class AssistantAiAdvisorServiceImpl implements AiAdvisorService {
     @Override
     public <CONTEXT> AdvisorBuilder<CONTEXT> getOrCreateAdvisorBuilder(String name) {
         return new AssistantAdvisorImpl.Builder<CONTEXT>(this.openAiService, name);
-    }
-
-    @Override
-    public SearchTool.Builder searchToolBuilder() {
-        return new SearchToolBuilderImpl(this.openAiService);
-    }
-
-    @Override
-    public CodeInterpreterTool.Builder codeToolBuilder() {
-        return new CodeInterpreterToolBuilderImpl(this.openAiService);
     }
 
 }

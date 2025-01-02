@@ -48,7 +48,7 @@ public class NestedTesterScenario implements Scenario<Void, Void> {
     }
 
     @Override
-    public ActiveConversationBuilder<Void> createConversationBuilder(Void parameters, Void context) {
+    public ActiveConversationBuilder createConversationBuilder(Void parameters, Void context) {
         // todo nest Weave context
         return this.scenario.createConversationBuilder(parameters, context);
     }

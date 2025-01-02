@@ -7,7 +7,7 @@ import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.ai.weave.service.tool.VoidToolAdapter;
+import com.cyster.ai.weave.service.tool.SearchTool;
 import com.extole.admin.weave.scenarios.prehandler.ExtoleJavascriptPrehandlerActionScenario.Parameters;
 import com.extole.admin.weave.session.ExtoleSessionContext;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -62,7 +62,11 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Parame
         AdvisorBuilder<ExtoleSessionContext> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
 
         builder.setInstructions(instructions);
-        builder.withTool(new VoidToolAdapter<>(extoleStore.createStoreTool(), ExtoleSessionContext.class));
+
+        SearchTool.Builder<ExtoleSessionContext> searchToolBuilder = builder
+                .searchToolBuilder(ExtoleSessionContext.class);
+        extoleStore.createStoreTool(searchToolBuilder);
+
         builder.withTool(extolePrehandlerGetTool);
 
         this.advisor = builder.getOrCreate();
@@ -89,8 +93,7 @@ public class ExtoleJavascriptPrehandlerActionScenario implements Scenario<Parame
     }
 
     @Override
-    public ActiveConversationBuilder<ExtoleSessionContext> createConversationBuilder(Parameters parameters,
-            ExtoleSessionContext context) {
+    public ActiveConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSessionContext context) {
         var builder = this.advisor.createConversationBuilder(context);
 
         if (parameters != null && parameters.prehandlerId != null) {

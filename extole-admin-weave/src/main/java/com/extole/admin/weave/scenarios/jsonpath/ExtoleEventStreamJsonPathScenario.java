@@ -11,7 +11,6 @@ import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.tool.SearchTool;
-import com.cyster.ai.weave.service.tool.VoidToolAdapter;
 import com.cyster.template.StringTemplate;
 import com.extole.admin.weave.scenarios.jsonpath.ExtoleEventStreamJsonPathScenario.Parameters;
 import com.extole.admin.weave.scenarios.prehandler.ExtoleApiStore;
@@ -23,7 +22,7 @@ public class ExtoleEventStreamJsonPathScenario implements Scenario<Parameters, E
 
     private final Advisor<ExtoleSessionContext> advisor;
 
-    ExtoleEventStreamJsonPathScenario(AiAdvisorService aiAdvisorService, ExtoleApiStore extoleStore,
+    public ExtoleEventStreamJsonPathScenario(AiAdvisorService aiAdvisorService, ExtoleApiStore extoleStore,
             ExtoleEventStreamEventsGetTool extoleEventStreamEventsGetTool) {
 
         String instructionsTemplate = """
@@ -48,7 +47,11 @@ public class ExtoleEventStreamJsonPathScenario implements Scenario<Parameters, E
                 Its important to load some sample events using the {{eventTool}} tool.
                 """;
 
-        SearchTool searchTool = extoleStore.createStoreTool();
+        AdvisorBuilder<ExtoleSessionContext> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
+
+        SearchTool.Builder<ExtoleSessionContext> searchToolBuilder = builder
+                .searchToolBuilder(ExtoleSessionContext.class);
+        SearchTool<ExtoleSessionContext> searchTool = extoleStore.createStoreTool(searchToolBuilder);
 
         Map<String, String> context = new HashMap<>() {
             {
@@ -58,10 +61,9 @@ public class ExtoleEventStreamJsonPathScenario implements Scenario<Parameters, E
         };
 
         String instructions = new StringTemplate(instructionsTemplate).render(context);
-        AdvisorBuilder<ExtoleSessionContext> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
 
         builder.setInstructions(instructions);
-        builder.withTool(new VoidToolAdapter<>(searchTool, ExtoleSessionContext.class));
+
         builder.withTool(extoleEventStreamEventsGetTool);
 
         this.advisor = builder.getOrCreate();
@@ -88,8 +90,7 @@ public class ExtoleEventStreamJsonPathScenario implements Scenario<Parameters, E
     }
 
     @Override
-    public ActiveConversationBuilder<ExtoleSessionContext> createConversationBuilder(Parameters parameters,
-            ExtoleSessionContext context) {
+    public ActiveConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSessionContext context) {
         var builder = this.advisor.createConversationBuilder(context);
 
         if (parameters != null && parameters.eventStreamId != null) {

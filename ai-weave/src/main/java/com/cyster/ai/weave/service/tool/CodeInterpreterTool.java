@@ -3,7 +3,7 @@ package com.cyster.ai.weave.service.tool;
 import java.io.IOException;
 import java.io.InputStream;
 
-public interface CodeInterpreterTool extends Tool<Void, Void> {
+public interface CodeInterpreterTool<CONTEXT> extends Tool<Void, CONTEXT> {
 
     static interface Asset {
         String getName();
@@ -11,11 +11,11 @@ public interface CodeInterpreterTool extends Tool<Void, Void> {
         InputStream getInputStream() throws IOException;
     }
 
-    static interface Builder {
-        Builder addAsset(String name, String contents);
+    static interface Builder<CONTEXT> {
+        Builder<CONTEXT> addAsset(String name, String contents);
 
-        Builder addAsset(Asset asest);
+        Builder<CONTEXT> addAsset(Asset asest);
 
-        CodeInterpreterTool create();
+        CodeInterpreterTool<CONTEXT> create();
     }
 }

@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.cyster.ai.weave.service.AiAdvisorService;
 import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.tool.SearchTool;
 
@@ -22,21 +21,19 @@ public class ExtoleApiStore {
     private static final File localJavaApiRepository = new File("/tmp/extole/java-api");
 
     private final AiService aiService;
-    private final AiAdvisorService aiAdvisorService;
 
-    ExtoleApiStore(AiService aiService, AiAdvisorService aiAdvisorService) {
+    ExtoleApiStore(AiService aiService) {
         this.aiService = aiService;
-        this.aiAdvisorService = aiAdvisorService;
     }
 
-    public SearchTool createStoreTool() {
+    public <CONTEXT> SearchTool<CONTEXT> createStoreTool(SearchTool.Builder<CONTEXT> builder) {
         String hash = loadOrUpdateLocalRepository();
 
         var documentStore = aiService.directoryDocumentStoreBuilder().withDirectory(localJavaApiRepository.toPath())
                 .withHash(hash).create();
 
-        SearchTool.Builder builder = (SearchTool.Builder) aiAdvisorService.searchToolBuilder().withName("extole-store")
-                .withDocumentStore(documentStore);
+        builder.withName("extole-store");
+        builder.withDocumentStore(documentStore);
 
         return builder.create();
     }

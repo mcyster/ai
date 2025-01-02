@@ -17,7 +17,7 @@ public interface Scenario<PARAMETERS, CONTEXT> {
     // Object execute(PARAMETERS parameters, CONTEXT context, WeaveContext
     // weaveContext) throws ToolException;
 
-    ActiveConversationBuilder<CONTEXT> createConversationBuilder(PARAMETERS parameters, CONTEXT context);
+    ActiveConversationBuilder createConversationBuilder(PARAMETERS parameters, CONTEXT context);
 
     default int hash() {
         return Objects.hash(getName(), getDescription(), getParameterClass(), getContextClass());
@@ -46,4 +46,5 @@ public interface Scenario<PARAMETERS, CONTEXT> {
             }
         };
     }
+
 }

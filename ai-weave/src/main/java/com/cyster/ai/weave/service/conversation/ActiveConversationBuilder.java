@@ -1,10 +1,10 @@
 package com.cyster.ai.weave.service.conversation;
 
-public interface ActiveConversationBuilder<CONTEXT> {
+public interface ActiveConversationBuilder {
 
-    ActiveConversationBuilder<CONTEXT> setOverrideInstructions(String instruction);
+    ActiveConversationBuilder setOverrideInstructions(String instruction);
 
-    ActiveConversationBuilder<CONTEXT> addMessage(String message);
+    ActiveConversationBuilder addMessage(String message);
 
     ActiveConversation start();
 }

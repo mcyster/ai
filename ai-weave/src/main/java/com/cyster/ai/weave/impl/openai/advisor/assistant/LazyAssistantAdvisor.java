@@ -49,7 +49,7 @@ public class LazyAssistantAdvisor<CONTEXT> implements Advisor<CONTEXT> {
     }
 
     @Override
-    public ActiveConversationBuilder<CONTEXT> createConversationBuilder(CONTEXT context) {
+    public ActiveConversationBuilder createConversationBuilder(CONTEXT context) {
         return getAdvisor().createConversationBuilder(context);
     }
 

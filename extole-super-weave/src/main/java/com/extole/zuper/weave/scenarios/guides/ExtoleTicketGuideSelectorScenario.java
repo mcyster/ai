@@ -10,7 +10,6 @@ import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.tool.SearchTool;
-import com.cyster.ai.weave.service.tool.VoidToolAdapter;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.guides.ExtoleTicketGuideSelectorScenario.Parameters;
@@ -22,15 +21,12 @@ public class ExtoleTicketGuideSelectorScenario implements Scenario<Parameters, E
     private final String DESCRIPTION = "Find the best Guide for the specified ticket";
 
     private AiAdvisorService aiAdvisorService;
-    private SearchTool searchTool;
+    private SearchTool<ExtoleSuperContext> searchTool;
 
     private Advisor<ExtoleSuperContext> advisor;
 
     public ExtoleTicketGuideSelectorScenario(AiService aiService, AiAdvisorService aiScenarioService,
             SupportTicketGetTool ticketGetTool, ExtoleGuideStore extoleGuideStore) {
-
-        SearchTool storeSearchTool = extoleGuideStore.createStoreTool();
-        this.searchTool = storeSearchTool;
 
         String instructionsTemplate = """
                 {
@@ -93,7 +89,10 @@ public class ExtoleTicketGuideSelectorScenario implements Scenario<Parameters, E
         builder.setInstructions(instructions);
 
         builder.withTool(ticketGetTool);
-        builder.withTool(new VoidToolAdapter<>(storeSearchTool, ExtoleSuperContext.class));
+
+        this.searchTool = builder.searchToolBuilder(ExtoleSuperContext.class).withName("guides")
+                .withDocumentStore(extoleGuideStore.getDocumentStore()).create();
+        builder.withTool(searchTool);
 
         this.advisor = builder.getOrCreate();
     }
@@ -119,8 +118,7 @@ public class ExtoleTicketGuideSelectorScenario implements Scenario<Parameters, E
     }
 
     @Override
-    public ActiveConversationBuilder<ExtoleSuperContext> createConversationBuilder(Parameters parameters,
-            ExtoleSuperContext context) {
+    public ActiveConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSuperContext context) {
         if (parameters == null || parameters.ticketNumber() == null || parameters.ticketNumber().isBlank()) {
             throw new IllegalArgumentException("No ticketNumber specified");
         }

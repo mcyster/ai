@@ -41,8 +41,7 @@ public class ExtoleReportDescriptionScenario implements Scenario<Parameters, Ext
     }
 
     @Override
-    public ActiveConversationBuilder<ExtoleSessionContext> createConversationBuilder(Parameters parameters,
-            ExtoleSessionContext context) {
+    public ActiveConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSessionContext context) {
         String messageTemplate = """
                 You are looking at the report with id: {{reportId}}
 

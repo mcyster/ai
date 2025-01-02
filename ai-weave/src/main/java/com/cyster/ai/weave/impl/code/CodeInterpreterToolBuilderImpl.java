@@ -16,29 +16,31 @@ import com.cyster.ai.weave.service.tool.CodeInterpreterTool.Asset;
 import io.github.stefanbratanov.jvm.openai.FilesClient;
 import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
 
-public class CodeInterpreterToolBuilderImpl implements CodeInterpreterTool.Builder {
+public class CodeInterpreterToolBuilderImpl<CONTEXT> implements CodeInterpreterTool.Builder<CONTEXT> {
     private OpenAiService openAiService;
+    private Class<CONTEXT> contextClass;
     private List<Asset> assets = new ArrayList<>();
     private String name;
 
-    public CodeInterpreterToolBuilderImpl(OpenAiService openAiService) {
+    public CodeInterpreterToolBuilderImpl(OpenAiService openAiService, Class<CONTEXT> contextClass) {
         this.openAiService = openAiService;
+        this.contextClass = contextClass;
     }
 
     @Override
-    public CodeInterpreterToolBuilderImpl addAsset(String name, String contents) {
+    public CodeInterpreterToolBuilderImpl<CONTEXT> addAsset(String name, String contents) {
         this.assets.add(new StringAsset(name, contents));
         return this;
     }
 
     @Override
-    public CodeInterpreterToolBuilderImpl addAsset(Asset asset) {
+    public CodeInterpreterToolBuilderImpl<CONTEXT> addAsset(Asset asset) {
         this.assets.add(asset);
         return this;
     }
 
     @Override
-    public CodeInterpreterTool create() {
+    public CodeInterpreterTool<CONTEXT> create() {
         List<String> files = new ArrayList<String>();
 
         try {
@@ -78,7 +80,7 @@ public class CodeInterpreterToolBuilderImpl implements CodeInterpreterTool.Build
             throw new RuntimeException(e);
         }
 
-        return new CodeInterpreterToolImpl(files);
+        return new CodeInterpreterToolImpl<CONTEXT>(files, contextClass);
     }
 
     private static String safeName(String name) {

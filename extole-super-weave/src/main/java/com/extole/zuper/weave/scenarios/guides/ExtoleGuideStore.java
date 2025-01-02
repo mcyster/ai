@@ -9,9 +9,8 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cyster.ai.weave.service.AiAdvisorService;
 import com.cyster.ai.weave.service.AiService;
-import com.cyster.ai.weave.service.tool.SearchTool;
+import com.cyster.ai.weave.service.DocumentStore;
 
 // @Component
 public class ExtoleGuideStore {
@@ -21,24 +20,16 @@ public class ExtoleGuideStore {
     private static final File localJavaApiRepository = new File("/tmp/extole/guides");
 
     private final AiService aiService;
-    private final AiAdvisorService aiAdvisorService;
 
-    ExtoleGuideStore(AiService aiService, AiAdvisorService aiAdvisorService) {
+    ExtoleGuideStore(AiService aiService) {
         this.aiService = aiService;
-        this.aiAdvisorService = aiAdvisorService;
     }
 
-    public SearchTool createStoreTool() {
-
+    public DocumentStore getDocumentStore() {
         String hash = loadOrUpdateLocalRepository();
 
-        var documentStore = aiService.directoryDocumentStoreBuilder().withDirectory(localJavaApiRepository.toPath())
-                .withHash(hash).create();
-
-        SearchTool.Builder builder = aiAdvisorService.searchToolBuilder().withName("extole-guides")
-                .withDocumentStore(documentStore);
-
-        return builder.create();
+        return aiService.directoryDocumentStoreBuilder().withDirectory(localJavaApiRepository.toPath()).withHash(hash)
+                .create();
     }
 
     private String loadOrUpdateLocalRepository() {

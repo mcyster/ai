@@ -34,7 +34,7 @@ public class HtmlifyScenario implements Scenario<Void, Void> {
     }
 
     @Override
-    public ActiveConversationBuilder<Void> createConversationBuilder(Void parameters, Void context) {
+    public ActiveConversationBuilder createConversationBuilder(Void parameters, Void context) {
         String instructions = """
                 Convert the input to a marked up HTML fragment.
 
