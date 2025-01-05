@@ -2,7 +2,7 @@ package com.cyster.jira.client.ticket;
 
 public interface TicketCommentBuilder {
 
-    TicketCommentBuilder withIsInternal();
+    TicketCommentBuilder withIsExternal();
 
     TicketCommentBuilder withComment(String comment) throws TicketException;
 

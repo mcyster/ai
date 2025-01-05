@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 public class TicketCommentBuilderImpl implements TicketCommentBuilder {
     private final JiraWebClientFactory jiraWebClientFactory;
     private final String key;
+    private boolean isInternal = true;
     ObjectNode payload = JsonNodeFactory.instance.objectNode();
 
     TicketCommentBuilderImpl(JiraWebClientFactory jiraWebClientFactory, String key) {
@@ -24,19 +25,8 @@ public class TicketCommentBuilderImpl implements TicketCommentBuilder {
         this.key = key;
     }
 
-    public TicketCommentBuilder withIsInternal() {
-        ArrayNode properties = getPropertyNode();
-
-        ObjectNode internalCommentProperty = JsonNodeFactory.instance.objectNode();
-        internalCommentProperty.put("key", "sd.public.comment");
-
-        ObjectNode internalCommentValue = JsonNodeFactory.instance.objectNode();
-        internalCommentValue.put("internal", true);
-
-        properties.add(internalCommentProperty);
-
-        internalCommentProperty.set("value", internalCommentValue);
-
+    public TicketCommentBuilder withIsExternal() {
+        this.isInternal = false;
         return this;
     }
 
@@ -52,6 +42,10 @@ public class TicketCommentBuilderImpl implements TicketCommentBuilder {
     }
 
     public void post() throws TicketException {
+        if (isInternal) {
+            withIsInternal();
+        }
+
         JsonNode result;
         try {
             result = this.jiraWebClientFactory.getWebClient().post()
@@ -74,6 +68,22 @@ public class TicketCommentBuilderImpl implements TicketCommentBuilder {
         if (result == null || !result.has("id")) {
             throw new TicketException("Failed to add comment, unexpected response");
         }
+    }
+
+    private TicketCommentBuilder withIsInternal() {
+        ArrayNode properties = getPropertyNode();
+
+        ObjectNode internalCommentProperty = JsonNodeFactory.instance.objectNode();
+        internalCommentProperty.put("key", "sd.public.comment");
+
+        ObjectNode internalCommentValue = JsonNodeFactory.instance.objectNode();
+        internalCommentValue.put("internal", true);
+
+        properties.add(internalCommentProperty);
+
+        internalCommentProperty.set("value", internalCommentValue);
+
+        return this;
     }
 
     private ArrayNode getPropertyNode() {
