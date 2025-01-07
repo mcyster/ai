@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>T1 Pod Top 10 Activities</title>
-    <meta name="tags" content="extole,support,tickets,activities,t1-pod">
+    <title>HELP Ticket Client Open Rate</title>
+    <meta name="tags" content="extole,support,help,tickets,velocity">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,29 +25,46 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">T1 Pod - Top 10 Activity</h2>
+            <h2 id="graphTitle">HELP - Ticket Client Open Rate</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
+
 
     <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
     <script src="../extole/support-tickets.js"></script>
     <script>
 
-function countTicketsPerCategoryPerWeek(tickets) {
-    const categoryCounts = {};
-
+function countTicketsPerWeek(tickets) {
+    const extoleCounts = {};
+    const nonExtoleCounts = {};
+    
     tickets.forEach(ticket => {
-        const creationDate = ticket.createdDate;
-        const category = ticket.activities || 'Uncategorized';
-        const weekEndDate = getWeekEndDate(creationDate);
+        const startDate = ticket.startDate;
+        const email = ticket.reporter;
+        const isExtoleUser = (email == null || email.endsWith('@extole.com')); 
 
-        if (!categoryCounts[category]) {
-            categoryCounts[category] = {};
+        const weekEnd = getWeekEndDate(startDate);
+
+        if (!(weekEnd in extoleCounts)) {
+            extoleCounts[weekEnd] = 0;
         }
-        categoryCounts[category][weekEndDate] = (categoryCounts[category][weekEndDate] || 0) + 1;
+        if (!(weekEnd in nonExtoleCounts)) {
+            nonExtoleCounts[weekEnd] = 0;
+        }
+ 
+        if (isExtoleUser) {
+            extoleCounts[weekEnd] = extoleCounts[weekEnd] + 1;
+        } else {
+            nonExtoleCounts[weekEnd] = nonExtoleCounts[weekEnd] + 1;
+        }
+        //console.log(isExtoleUser, extoleCounts, nonExtoleCounts)
     });
-    return categoryCounts;
+
+    console.log("1extoleCounts", extoleCounts);
+    console.log("1nonExtoleCounts", nonExtoleCounts);
+
+    return { extoleCounts, nonExtoleCounts };
 }
 
 function getWeekEndDate(date) {
@@ -58,50 +75,44 @@ function getWeekEndDate(date) {
     return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
 }
 
-function getTopCategories(categoryCounts, limit = 10) {
-    const categoryTotals = {};
-    for (const category in categoryCounts) {
-        categoryTotals[category] = Object.values(categoryCounts[category]).reduce((sum, count) => sum + count, 0);
-    }
-
-    return Object.entries(categoryTotals)
-        .sort(([, totalA], [, totalB]) => totalB - totalA)
-        .slice(0, limit)
-        .map(([category]) => category);
-}
-
-function renderChart(categoryCounts, topCategories) {
+function renderChart(extoleCounts, nonExtoleCounts) {
     const ctx = document.getElementById('chart');
     if (!ctx) return;
+    let weeks = Object.keys(extoleCounts).sort();
+    
+    // Remove the first week unconditionally
+    if (weeks.length > 1) {
+        weeks.shift();
+    }
+    // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
+    if (weeks.length > 24) {
+        weeks = weeks.slice(-24);
+    }
 
-    let weeks = new Set();
-    topCategories.forEach(category => {
-        Object.keys(categoryCounts[category]).forEach(week => weeks.add(week));
-    });
-    weeks = new Set(Array.from(weeks).sort());
-
-    // Filter weeks to include only the last 6 months
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    weeks = new Set(Array.from(weeks).filter(week => new Date(week) >= sixMonthsAgo));
-
-    const colors = generateColors(topCategories.length);
-    const datasets = topCategories.map((category, index) => {
-        const data = Array.from(weeks).map(week => ({ x: new Date(week), y: categoryCounts[category][week] || 0 }));
-        return {
-            label: category,
-            backgroundColor: colors[index], // Set the backgroundColor to match the borderColor
-            borderColor: colors[index], // Use the same color for the border
-            fill: false,
-            data,
-            borderWidth: 4
-        };
-    });
+    const extoleData = weeks.map(week => ({ x: new Date(week), y: extoleCounts[week] || 0 }));
+    const nonExtoleData = weeks.map(week => ({ x: new Date(week), y: nonExtoleCounts[week] || 0 }));
 
     new Chart(ctx, {
         type: 'line',
         data: {
-            datasets
+            datasets: [
+                {
+                    label: 'Extole User Tickets',
+                    backgroundColor: 'rgba(139, 34, 34, 0.2)',
+                    borderColor: 'rgba(200, 30, 30, 1)',
+                    fill: false,
+                    data: extoleData,
+                    borderWidth: 4 
+                },
+                {
+                    label: 'Non-Extole User Tickets',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(34, 139, 34, 1)',
+                    fill: false,
+                    data: nonExtoleData,
+                    borderWidth: 4 
+                }
+            ]
         },
         options: {
             scales: {
@@ -129,7 +140,7 @@ function renderChart(categoryCounts, topCategories) {
                     }
                 },
                 y: {
-                    beginAtZero: true, // Ensure y-axis starts at 0
+                    beginAtZero: true,
                     title: {
                         display: true,
                         text: 'Number of Tickets',
@@ -149,32 +160,26 @@ function renderChart(categoryCounts, topCategories) {
     });
 }
 
-function generateColors(numColors) {
-    const colors = [];
-    const hueStep = 360 / numColors;
-    for (let i = 0; i < numColors; i++) {
-        const hue = i * hueStep;
-        const color = `hsl(${hue}, 50%, 45%)`;
-        colors.push(color);
-    }
-    return colors;
-}
-
 const app = {
     data() {
         return {
             jsonData: []
         };
     },
-    created() {
-        getSupportTickets().then(tickets => {
-            tickets = tickets.filter(ticket => ticket.pod === 'Support T1 Pod' || (ticket.key && ticket.key.includes("HELP")));
-            const categoryCounts = countTicketsPerCategoryPerWeek(tickets);
-            const topCategories = getTopCategories(categoryCounts);
-            renderChart(categoryCounts, topCategories);
-        }).catch(error => {
-            console.error('Error loading data:', error);
-        });
+    async created() {
+        const tickets = await getSupportTickets();
+
+        const filteredTickets = tickets.filter(ticket =>
+            ticket.project == "Extole Help"
+        );
+
+        console.log("filteredTickets", filteredTickets);
+
+        const { extoleCounts, nonExtoleCounts } = countTicketsPerWeek(filteredTickets);
+        console.log("extoleCounts", extoleCounts);
+        console.log("nonExtoleCounts", nonExtoleCounts);
+
+        renderChart(extoleCounts, nonExtoleCounts);
     }
 };
 

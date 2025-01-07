@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>UI Pod Top 10 Runbooks</title>
+    <title>UI Pod Top 10 Activities</title>
     <meta name="tags" content="extole,support,tickets,activities,ui-pod">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">UI Pod - Top 10 Runbooks</h2>
+            <h2 id="graphTitle">UI Pod - Top 10 Activities</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -38,7 +38,7 @@ function countTicketsPerCategoryPerWeek(tickets) {
 
     tickets.forEach(ticket => {
         const creationDate = new Date(ticket.createdDate);
-        const category = ticket.runbook || 'Uncategorized';
+        const category = ticket.activity || 'Uncategorized';
         const weekEndDate = getWeekEndDate(creationDate);
 
         if (!categoryCounts[category]) {
