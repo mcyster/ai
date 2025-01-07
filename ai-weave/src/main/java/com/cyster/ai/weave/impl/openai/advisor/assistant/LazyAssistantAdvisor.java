@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.cyster.ai.weave.impl.openai.OpenAiService;
+import com.cyster.ai.weave.impl.openai.advisor.assistant.code.CodeInterpreterToolImpl;
+import com.cyster.ai.weave.impl.openai.advisor.assistant.store.SearchToolImpl;
 import com.cyster.ai.weave.impl.tool.Toolset;
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
@@ -20,6 +22,8 @@ import io.github.stefanbratanov.jvm.openai.CreateAssistantRequest;
 import io.github.stefanbratanov.jvm.openai.File;
 import io.github.stefanbratanov.jvm.openai.FilesClient;
 import io.github.stefanbratanov.jvm.openai.PaginationQueryParameters;
+import io.github.stefanbratanov.jvm.openai.Tool.FileSearchTool.FileSearch;
+import io.github.stefanbratanov.jvm.openai.ToolResources;
 import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
 
 public class LazyAssistantAdvisor<CONTEXT> implements Advisor<CONTEXT> {
@@ -29,16 +33,23 @@ public class LazyAssistantAdvisor<CONTEXT> implements Advisor<CONTEXT> {
     private final Toolset.Builder<CONTEXT> toolsetBuilder;
 
     private final List<Path> filePaths;
+    private final Optional<SearchToolImpl<CONTEXT>> searchTool;
+    private final Optional<CodeInterpreterToolImpl<CONTEXT>> codeInterpreterTool;
     private final Optional<String> instructions;
 
     private AtomicReference<AssistantAdvisorImpl<CONTEXT>> advisor = new AtomicReference<>();
 
     LazyAssistantAdvisor(OpenAiService openAiService, String name, Toolset.Builder<CONTEXT> toolsetBuilder,
-            List<Path> filePaths, Optional<String> instructions) {
+            Optional<SearchToolImpl<CONTEXT>> searchTool,
+            Optional<CodeInterpreterToolImpl<CONTEXT>> codeInterpreterTool, List<Path> filePaths,
+            Optional<String> instructions) {
         this.openAiService = openAiService;
         this.name = name;
         this.toolsetBuilder = toolsetBuilder;
         this.filePaths = filePaths;
+        this.searchTool = searchTool;
+        this.codeInterpreterTool = codeInterpreterTool;
+
         this.instructions = instructions;
 
     }
@@ -92,6 +103,30 @@ public class LazyAssistantAdvisor<CONTEXT> implements Advisor<CONTEXT> {
         AssistantsClient assistantsClient = this.openAiService.createClient(AssistantsClient.class);
         CreateAssistantRequest.Builder requestBuilder = CreateAssistantRequest.newBuilder().name(this.name)
                 .model(AssistantAdvisorImpl.MODEL).metadata(metadata);
+
+        if (codeInterpreterTool.isPresent()) {
+            requestBuilder.tool(new io.github.stefanbratanov.jvm.openai.Tool.CodeInterpreterTool());
+            fileIds.addAll(codeInterpreterTool.get().getFileIds());
+        }
+
+        List<String> vectorStoreIds = null;
+        if (searchTool.isPresent()) {
+            var search = new FileSearch(Optional.of(10), Optional.empty());
+            requestBuilder.tool(new io.github.stefanbratanov.jvm.openai.Tool.FileSearchTool(Optional.of(search)));
+            vectorStoreIds = List.of(searchTool.get().getVectorStore().id());
+        }
+
+        if (vectorStoreIds != null && fileIds != null) {
+            var resources = ToolResources.codeInterpreterAndFileSearchToolResources(fileIds,
+                    vectorStoreIds.toArray(new String[0]));
+            requestBuilder.toolResources(resources);
+        } else if (fileIds != null) {
+            var resources = ToolResources.codeInterpreterToolResources(fileIds);
+            requestBuilder.toolResources(resources);
+        } else if (vectorStoreIds != null) {
+            var resources = ToolResources.fileSearchToolResources(vectorStoreIds.toArray(new String[0]));
+            requestBuilder.toolResources(resources);
+        }
 
         toolset.applyTools(requestBuilder);
 

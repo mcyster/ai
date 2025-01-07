@@ -1,4 +1,4 @@
-package com.cyster.ai.weave.impl.code;
+package com.cyster.ai.weave.impl.openai.advisor.assistant.code;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.tool.CodeInterpreterTool;
@@ -17,14 +18,17 @@ import io.github.stefanbratanov.jvm.openai.FilesClient;
 import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
 
 public class CodeInterpreterToolBuilderImpl<CONTEXT> implements CodeInterpreterTool.Builder<CONTEXT> {
-    private OpenAiService openAiService;
-    private Class<CONTEXT> contextClass;
-    private List<Asset> assets = new ArrayList<>();
+    private final OpenAiService openAiService;
+    private final Class<CONTEXT> contextClass;
+    private final Consumer<CodeInterpreterToolImpl<CONTEXT>> codeInterpreterToolResult;
+    private final List<Asset> assets = new ArrayList<>();
     private String name;
 
-    public CodeInterpreterToolBuilderImpl(OpenAiService openAiService, Class<CONTEXT> contextClass) {
+    public CodeInterpreterToolBuilderImpl(OpenAiService openAiService, Class<CONTEXT> contextClass,
+            Consumer<CodeInterpreterToolImpl<CONTEXT>> codeInterpreterToolResult) {
         this.openAiService = openAiService;
         this.contextClass = contextClass;
+        this.codeInterpreterToolResult = codeInterpreterToolResult;
     }
 
     @Override
@@ -41,7 +45,7 @@ public class CodeInterpreterToolBuilderImpl<CONTEXT> implements CodeInterpreterT
 
     @Override
     public CodeInterpreterTool<CONTEXT> create() {
-        List<String> files = new ArrayList<String>();
+        List<String> fileIds = new ArrayList<String>();
 
         try {
             var directory = Files.createTempDirectory("store-" + safeName(this.name));
@@ -67,7 +71,7 @@ public class CodeInterpreterToolBuilderImpl<CONTEXT> implements CodeInterpreterT
 
                     var fileUpload = new UploadFileRequest(realFile, "assistants");
                     var file = this.openAiService.createClient(FilesClient.class).uploadFile(fileUpload);
-                    files.add(file.id());
+                    fileIds.add(file.id());
                 }
                 Files.delete(realFile);
             }
@@ -80,7 +84,10 @@ public class CodeInterpreterToolBuilderImpl<CONTEXT> implements CodeInterpreterT
             throw new RuntimeException(e);
         }
 
-        return new CodeInterpreterToolImpl<CONTEXT>(files, contextClass);
+        var tool = new CodeInterpreterToolImpl<CONTEXT>(fileIds, contextClass);
+        codeInterpreterToolResult.accept(tool);
+
+        return tool;
     }
 
     private static String safeName(String name) {

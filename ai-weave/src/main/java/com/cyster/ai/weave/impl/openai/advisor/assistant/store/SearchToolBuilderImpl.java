@@ -1,4 +1,4 @@
-package com.cyster.ai.weave.impl.store;
+package com.cyster.ai.weave.impl.openai.advisor.assistant.store;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import com.cyster.ai.weave.impl.openai.OpenAiService;
@@ -31,14 +32,17 @@ import io.github.stefanbratanov.jvm.openai.VectorStoresClient.PaginatedVectorSto
 public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEXT> {
     private final static String METADATA_HASH = "data_hash";
 
-    private OpenAiService openAiService;
-    private Class<CONTEXT> contextClass;
+    private final OpenAiService openAiService;
+    private final Class<CONTEXT> contextClass;
+    private final Consumer<SearchToolImpl<CONTEXT>> searchToolResult;
     private DocumentStore documentStore;
     private String name;
 
-    public SearchToolBuilderImpl(OpenAiService openAiService, Class<CONTEXT> contextClass) {
+    public SearchToolBuilderImpl(OpenAiService openAiService, Class<CONTEXT> contextClass,
+            Consumer<SearchToolImpl<CONTEXT>> searchToolResult) {
         this.openAiService = openAiService;
         this.contextClass = contextClass;
+        this.searchToolResult = searchToolResult;
     }
 
     @Override
@@ -57,13 +61,17 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
     public SearchTool<CONTEXT> create() {
         Optional<VectorStore> store = findVectorStore();
         if (store.isEmpty()) {
-            return createStore();
+            store = Optional.of(createStore());
         }
 
-        return useStore(store.get());
+        var tool = useStore(store.get());
+
+        this.searchToolResult.accept(tool);
+
+        return tool;
     }
 
-    public SearchTool<CONTEXT> createStore() {
+    private VectorStore createStore() {
         List<String> files = new ArrayList<String>();
 
         try {
@@ -140,10 +148,10 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
             }
         }
 
-        return new SearchToolImpl<CONTEXT>(this.openAiService, vectorStore, this.contextClass);
+        return vectorStore;
     }
 
-    public SearchTool<CONTEXT> useStore(VectorStore vectorStore) {
+    private SearchToolImpl<CONTEXT> useStore(VectorStore vectorStore) {
         return new SearchToolImpl<CONTEXT>(this.openAiService, vectorStore, this.contextClass);
     }
 

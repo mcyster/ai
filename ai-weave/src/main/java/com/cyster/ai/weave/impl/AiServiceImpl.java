@@ -2,8 +2,8 @@ package com.cyster.ai.weave.impl;
 
 import java.util.Optional;
 
-import com.cyster.ai.weave.impl.store.DirectoryDocumentStore;
-import com.cyster.ai.weave.impl.store.SimpleDocumentStore;
+import com.cyster.ai.weave.impl.openai.advisor.assistant.store.DirectoryDocumentStore;
+import com.cyster.ai.weave.impl.openai.advisor.assistant.store.SimpleDocumentStore;
 import com.cyster.ai.weave.impl.tool.CachingTool;
 import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.DocumentStore.DirectoryDocumentStoreBuilder;

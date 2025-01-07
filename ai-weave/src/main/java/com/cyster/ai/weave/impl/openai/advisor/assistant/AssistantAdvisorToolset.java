@@ -1,14 +1,11 @@
 package com.cyster.ai.weave.impl.openai.advisor.assistant;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import com.cyster.ai.weave.impl.code.CodeInterpreterToolImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiSchema;
-import com.cyster.ai.weave.impl.store.SearchToolImpl;
+import com.cyster.ai.weave.impl.openai.advisor.assistant.code.CodeInterpreterToolImpl;
+import com.cyster.ai.weave.impl.openai.advisor.assistant.store.SearchToolImpl;
 import com.cyster.ai.weave.impl.tool.Toolset;
 import com.cyster.ai.weave.service.tool.Tool;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -19,8 +16,6 @@ import com.fasterxml.jackson.module.jsonSchema.jakarta.JsonSchemaGenerator;
 
 import io.github.stefanbratanov.jvm.openai.CreateAssistantRequest;
 import io.github.stefanbratanov.jvm.openai.Function;
-import io.github.stefanbratanov.jvm.openai.Tool.FileSearchTool.FileSearch;
-import io.github.stefanbratanov.jvm.openai.ToolResources;
 
 class AssistantAdvisorToolset<CONTEXT> {
     private Toolset<CONTEXT> toolset;
@@ -30,26 +25,11 @@ class AssistantAdvisorToolset<CONTEXT> {
     }
 
     public void applyTools(CreateAssistantRequest.Builder requestBuilder) {
-        List<String> fileIds = null;
-        String[] vectorStoreIds = null;
         for (var tool : this.toolset.getTools()) {
             if (tool.getDescription().equals(CodeInterpreterToolImpl.NAME)) {
-                requestBuilder.tool(new io.github.stefanbratanov.jvm.openai.Tool.CodeInterpreterTool());
-
-                var codeInterpreterTool = (CodeInterpreterToolImpl) tool;
-
-                fileIds = codeInterpreterTool.getFileIds();
+                // special handling separately
             } else if (tool.getName().equals(SearchToolImpl.NAME)) {
-                var search = new FileSearch(Optional.of(10), Optional.empty());
-                requestBuilder.tool(new io.github.stefanbratanov.jvm.openai.Tool.FileSearchTool(Optional.of(search)));
-
-                var searchTool = (SearchToolImpl) tool;
-
-                List<String> ids = new ArrayList<>();
-                ids.add(searchTool.getVectorStore().id());
-
-                vectorStoreIds = ids.toArray(new String[0]);
-
+                // special handling separately
             } else {
                 var parameterSchema = getOpenAiToolParameterSchema(tool);
 
@@ -58,17 +38,6 @@ class AssistantAdvisorToolset<CONTEXT> {
 
                 requestBuilder.tool(new io.github.stefanbratanov.jvm.openai.Tool.FunctionTool(requestFunction));
             }
-        }
-
-        if (fileIds != null && vectorStoreIds != null) {
-            var resources = ToolResources.codeInterpreterAndFileSearchToolResources(fileIds, vectorStoreIds);
-            requestBuilder.toolResources(resources);
-        } else if (fileIds != null) {
-            var resources = ToolResources.codeInterpreterToolResources(fileIds);
-            requestBuilder.toolResources(resources);
-        } else if (vectorStoreIds != null) {
-            var resources = ToolResources.fileSearchToolResources(vectorStoreIds);
-            requestBuilder.toolResources(resources);
         }
     }
 

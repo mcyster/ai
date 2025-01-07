@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.cyster.ai.weave.impl.code.CodeInterpreterToolBuilderImpl;
 import com.cyster.ai.weave.impl.openai.OpenAiService;
-import com.cyster.ai.weave.impl.store.SearchToolBuilderImpl;
+import com.cyster.ai.weave.impl.openai.advisor.assistant.code.CodeInterpreterToolBuilderImpl;
+import com.cyster.ai.weave.impl.openai.advisor.assistant.code.CodeInterpreterToolImpl;
+import com.cyster.ai.weave.impl.openai.advisor.assistant.store.SearchToolBuilderImpl;
+import com.cyster.ai.weave.impl.openai.advisor.assistant.store.SearchToolImpl;
 import com.cyster.ai.weave.impl.tool.Toolset;
 import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
@@ -45,7 +47,7 @@ public class AssistantAdvisorImpl<CONTEXT> implements Advisor<CONTEXT> {
     }
 
     @Override
-    public ConversationBuilder createConversationBuilder(CONTEXT context) {
+    public ConversationBuilder<CONTEXT> createConversationBuilder(CONTEXT context) {
         return new ConversationBuilder<CONTEXT>(this, context);
     }
 
@@ -90,8 +92,10 @@ public class AssistantAdvisorImpl<CONTEXT> implements Advisor<CONTEXT> {
         private final OpenAiService openAiService;
         private final String name;
         private final Toolset.Builder<CONTEXT> toolsetBuilder;
+        private Optional<SearchToolImpl<CONTEXT>> searchTool = Optional.empty();
+        private Optional<CodeInterpreterToolImpl<CONTEXT>> codeInterpreterTool = Optional.empty();
+        private final List<Path> filePaths = new ArrayList<>();
 
-        private final List<Path> filePaths = new ArrayList<Path>();
         private Optional<String> instructions = Optional.empty();
 
         public Builder(OpenAiService openAiService, String name) {
@@ -115,12 +119,14 @@ public class AssistantAdvisorImpl<CONTEXT> implements Advisor<CONTEXT> {
 
         @Override
         public SearchTool.Builder<CONTEXT> searchToolBuilder(Class<CONTEXT> contextClass) {
-            return new SearchToolBuilderImpl<CONTEXT>(this.openAiService, contextClass);
+            return new SearchToolBuilderImpl<CONTEXT>(this.openAiService, contextClass,
+                    tool -> this.searchTool = Optional.of(tool));
         }
 
         @Override
         public CodeInterpreterTool.Builder<CONTEXT> codeToolBuilder(Class<CONTEXT> contextClass) {
-            return new CodeInterpreterToolBuilderImpl<CONTEXT>(this.openAiService, contextClass);
+            return new CodeInterpreterToolBuilderImpl<CONTEXT>(this.openAiService, contextClass,
+                    tool -> this.codeInterpreterTool = Optional.of(tool));
         }
 
         @Override
@@ -131,8 +137,8 @@ public class AssistantAdvisorImpl<CONTEXT> implements Advisor<CONTEXT> {
 
         @Override
         public Advisor<CONTEXT> getOrCreate() {
-            var advisor = new LazyAssistantAdvisor<CONTEXT>(openAiService, name, toolsetBuilder, filePaths,
-                    instructions);
+            var advisor = new LazyAssistantAdvisor<CONTEXT>(openAiService, name, toolsetBuilder, searchTool,
+                    codeInterpreterTool, filePaths, instructions);
 
             return advisor;
         }

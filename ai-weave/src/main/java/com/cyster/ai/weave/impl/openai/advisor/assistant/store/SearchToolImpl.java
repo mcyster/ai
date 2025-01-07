@@ -1,4 +1,4 @@
-package com.cyster.ai.weave.impl.store;
+package com.cyster.ai.weave.impl.openai.advisor.assistant.store;
 
 import java.util.Collections;
 import java.util.Objects;
