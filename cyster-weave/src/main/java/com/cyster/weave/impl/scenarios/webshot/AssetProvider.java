@@ -26,7 +26,7 @@ public interface AssetProvider {
             this.id = id;
         }
 
-        public String getId() {
+        public String id() {
             return id;
         }
 
@@ -40,14 +40,14 @@ public interface AssetProvider {
         }
 
         @Override
-        public boolean equals(Object o) {
-            if (this == o) {
+        public boolean equals(Object object) {
+            if (this == object) {
                 return true;
             }
-            if (o == null || getClass() != o.getClass()) {
+            if (object == null || getClass() != object.getClass()) {
                 return false;
             }
-            AssetId assetId = (AssetId) o;
+            AssetId assetId = (AssetId) object;
             return id.equals(assetId.id);
         }
 

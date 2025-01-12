@@ -10,7 +10,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 
-public class LocalAssetProvider implements AssetProvider {
+public class LocalAssetProvider implements AssetProvider, AssetHandleProvider {
     private URI baseUri;
     private final Path assets;
 
@@ -64,11 +64,13 @@ public class LocalAssetProvider implements AssetProvider {
         }
     }
 
-    public URI getAssetUri(AssetId id) {
-        return baseUri.resolve(id.getId());
+    @Override
+    public AssetHandle getAssetHandle(AssetId id) {
+        return new AssetHandle(id, baseUri.resolve(id.id()));
     }
 
     public Path localPath() {
         return assets;
     }
+
 }

@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.cyster.weave.impl.scenarios.webshot.AssetHandleProvider.AssetHandle;
 import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetId;
 
 // https://www.url2png.com/
@@ -27,11 +28,11 @@ public class Webshot {
 
     private final String secret;
     private final String apiKey;
-    private final AssetProvider assetProvider;
+    private final LocalAssetProvider assetProvider;
     private final WebClient webClient;
 
     public Webshot(@Value("${URL2PNG_API_KEY}") String apiKey, @Value("${URL2PNG_SECRET}") String secret,
-            AssetProvider assetProvider) {
+            LocalAssetProvider assetProvider) {
         this.apiKey = apiKey;
         this.secret = secret;
         this.assetProvider = assetProvider;
@@ -40,10 +41,10 @@ public class Webshot {
                 .build();
     }
 
-    public AssetId getImage(String url) {
+    public AssetHandle getImage(String url) {
         String parameterTemplate = "?url=%s&fullpage=true&say_cheese=yes";
 
-        CompletableFuture<AssetId> assetIdFuture = new CompletableFuture<>();
+        CompletableFuture<AssetHandle> assetIdFuture = new CompletableFuture<>();
 
         try {
             String encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8.name());
@@ -59,7 +60,7 @@ public class Webshot {
             webClient.get().uri(requestUrl).accept(MediaType.IMAGE_PNG).retrieve().bodyToMono(byte[].class)
                     .map(ByteArrayInputStream::new).doOnNext(content -> {
                         AssetId assetId = assetProvider.putAsset(AssetProvider.Type.PNG, content);
-                        assetIdFuture.complete(assetId);
+                        assetIdFuture.complete(assetProvider.getAssetHandle(assetId));
                     }).block();
         } catch (Exception exception) {
             throw new RuntimeException("Failed to fetch the image", exception);

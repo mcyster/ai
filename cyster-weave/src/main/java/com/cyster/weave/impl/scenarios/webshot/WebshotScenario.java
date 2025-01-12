@@ -19,10 +19,8 @@ public class WebshotScenario implements Scenario<Request, Void> {
     private final String DESCRIPTION = "Turns the specified url into an image";
 
     private final Advisor<Void> advisor;
-    private LocalAssetProvider localAssetProvider;
 
-    public WebshotScenario(AiAdvisorService aiAdvisorService, WebshotTool webshotTool,
-            LocalAssetProvider localAssetProvider) {
+    public WebshotScenario(AiAdvisorService aiAdvisorService, WebshotTool webshotTool) {
 
         var instructions = """
                 You convert webpages into images
@@ -35,8 +33,6 @@ public class WebshotScenario implements Scenario<Request, Void> {
         builder.withTool(webshotTool);
 
         this.advisor = builder.getOrCreate();
-
-        this.localAssetProvider = localAssetProvider;
     }
 
     @Override
@@ -62,7 +58,7 @@ public class WebshotScenario implements Scenario<Request, Void> {
     @Override
     public ActiveConversationBuilder createConversationBuilder(Request parameters, Void context) {
         var instructionsTemplate = """
-                Take a snapshot of the page at the url {{url}} and provide a link to the resultant image at
+                Take a snapshot of the page at the url {{url}} and provide a link to the resultant image
                 """;
 
         var instructions = new StringTemplate(instructionsTemplate).render(parameters);

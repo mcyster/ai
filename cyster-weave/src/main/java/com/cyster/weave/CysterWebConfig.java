@@ -42,7 +42,7 @@ public class CysterWebConfig implements WebConfigurer {
         }
 
         this.aiHome = aiHome;
-        this.localAssetProvider = new LocalAssetProvider(applicationUri.resolve("/assets"), aiHome);
+        this.localAssetProvider = new LocalAssetProvider(applicationUri.resolve("/assets/"), aiHome);
 
     }
 
