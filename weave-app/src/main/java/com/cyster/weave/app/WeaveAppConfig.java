@@ -13,17 +13,17 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.cyster.web.rest.WebConfig;
+import com.cyster.rest.web.WebConfigurer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableWebMvc
 public class WeaveAppConfig implements WebMvcConfigurer {
-    private List<WebConfig> webConfigs;
+    private List<WebConfigurer> webConfigs;
     private List<Converter<?, ?>> converters;
     private final ObjectMapper objectMapper;
 
-    public WeaveAppConfig(ApplicationContext applicationContext, List<WebConfig> resourceHandlerConfigs,
+    public WeaveAppConfig(ApplicationContext applicationContext, List<WebConfigurer> resourceHandlerConfigs,
             List<Converter<?, ?>> converters, ObjectMapper objectMapper) {
         this.webConfigs = resourceHandlerConfigs;
         this.converters = converters;
@@ -49,7 +49,7 @@ public class WeaveAppConfig implements WebMvcConfigurer {
             config.addContentNegotiations(configurer);
         }
     }
-    
+
     @Override
     public void addFormatters(FormatterRegistry registry) {
         for (var converter : converters) {

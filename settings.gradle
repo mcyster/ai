@@ -1,6 +1,7 @@
 include 'ai-weave'
 include 'template'
 include 'store'
+include 'web'
 include 'rest'
 include 'extole-client'
 include 'store-app'

@@ -23,6 +23,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'  // TBD if still need
 
     implementation project(':ai-weave')
+    implementation project(':web')
     implementation project(':rest')
     implementation project(':template')
     implementation project(':jira-client')

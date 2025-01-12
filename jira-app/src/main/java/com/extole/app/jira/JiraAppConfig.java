@@ -13,17 +13,17 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.cyster.web.rest.WebConfig;
+import com.cyster.web.WebConfigurer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableWebMvc
 public class JiraAppConfig implements WebMvcConfigurer {
-    private List<WebConfig> resourceHandlerConfigs;
+    private List<WebConfigurer> resourceHandlerConfigs;
     private List<Converter<?, ?>> converters;
     private final ObjectMapper objectMapper;
 
-    public JiraAppConfig(ApplicationContext applicationContext, List<WebConfig> resourceHandlerConfigs,
+    public JiraAppConfig(ApplicationContext applicationContext, List<WebConfigurer> resourceHandlerConfigs,
             List<Converter<?, ?>> converters, ObjectMapper objectMapper) {
         this.resourceHandlerConfigs = resourceHandlerConfigs;
         this.converters = converters;

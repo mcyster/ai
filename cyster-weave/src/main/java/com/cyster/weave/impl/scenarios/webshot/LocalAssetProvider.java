@@ -2,20 +2,21 @@ package com.cyster.weave.impl.scenarios.webshot;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-@Component
 public class LocalAssetProvider implements AssetProvider {
-
+    private URI baseUri;
     private final Path assets;
 
-    public LocalAssetProvider(@Value("${AI_HOME}") String aiHome) {
+    public LocalAssetProvider(URI baseUri, @Value("${AI_HOME}") String aiHome) {
+        this.baseUri = baseUri;
+
         Path directory = Paths.get(aiHome);
         if (!Files.exists(directory)) {
             throw new IllegalArgumentException("AI_HOME (" + aiHome + ") does not exist");
@@ -61,5 +62,13 @@ public class LocalAssetProvider implements AssetProvider {
         } catch (IOException e) {
             throw new IllegalStateException("Failed to read asset with ID " + id, e);
         }
+    }
+
+    public URI getAssetUri(AssetId id) {
+        return baseUri.resolve(id.getId());
+    }
+
+    public Path localPath() {
+        return assets;
     }
 }
