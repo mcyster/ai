@@ -9,8 +9,8 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.zuper.weave.scenarios.runbooks.ExtoleRunbookScenarioLoader;
-import com.extole.zuper.weave.scenarios.runbooks.RunbookScenario;
-import com.extole.zuper.weave.scenarios.support.ExtoleSupportHelpScenario;
+import com.extole.zuper.weave.scenarios.runbooks.RunbookSuperScenario;
+import com.extole.zuper.weave.scenarios.support.ExtoleSupportHelpSuperScenario;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -26,17 +26,17 @@ import java.util.List;
 public class ExtoleRunbookConfiguration implements ExtoleRunbookScenarioLoader {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleRunbookConfiguration.class);
 
-    private ExtoleSupportHelpScenario helpScenario;
-    private List<RunbookScenario> runbookScenarios = new ArrayList<>();
+    private ExtoleSupportHelpSuperScenario helpScenario;
+    private List<RunbookSuperScenario> runbookScenarios = new ArrayList<>();
     private List<Scenario<?, ?>> scenarios = new ArrayList<>();
 
-    public ExtoleRunbookConfiguration(ExtoleSupportHelpScenario helpScenario, ApplicationContext context) throws IOException, ExtoleRunbookConfigurationException {
+    public ExtoleRunbookConfiguration(ExtoleSupportHelpSuperScenario helpScenario, ApplicationContext context) throws IOException, ExtoleRunbookConfigurationException {
         this.helpScenario = helpScenario;
         registerRunbooks(context);
     }
 
     @Override
-    public List<RunbookScenario> getRunbookScenarios() {
+    public List<RunbookSuperScenario> getRunbookScenarios() {
         return runbookScenarios;
     }
     
@@ -68,9 +68,9 @@ public class ExtoleRunbookConfiguration implements ExtoleRunbookScenarioLoader {
                 name = "ExtoleRunbook" + name;
                 
                 try (InputStream inputStream = resource.getInputStream()) {
-                    ExtoleConfigurableRunbookScenario.Configuration configuration;
+                    ExtoleConfigurableRunbookSuperScenario.Configuration configuration;
                     try {
-                        configuration = mapper.readValue(inputStream, ExtoleConfigurableRunbookScenario.Configuration.class);
+                        configuration = mapper.readValue(inputStream, ExtoleConfigurableRunbookSuperScenario.Configuration.class);
                     } catch(JsonMappingException exception) {
                         logger.error("Failed to load runbook yml: " + resource.getDescription(), exception);
                         continue;
@@ -78,7 +78,7 @@ public class ExtoleRunbookConfiguration implements ExtoleRunbookScenarioLoader {
 
                     logger.info("Loaded Extole Runbook: " + name);
 
-                    var runbook= new ExtoleConfigurableRunbookScenario(name, configuration, helpScenario);
+                    var runbook= new ExtoleConfigurableRunbookSuperScenario(name, configuration, helpScenario);
 
                     configurableContext.getBeanFactory().registerSingleton(runbook.getName(), runbook);
                     scenarios.add(runbook);

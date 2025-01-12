@@ -5,5 +5,5 @@ import java.util.List;
 import com.cyster.ai.weave.service.scenario.ScenarioLoader;
 
 public interface ExtoleRunbookScenarioLoader extends ScenarioLoader {
-    List<RunbookScenario> getRunbookScenarios();
+    List<RunbookSuperScenario> getRunbookScenarios();
 }

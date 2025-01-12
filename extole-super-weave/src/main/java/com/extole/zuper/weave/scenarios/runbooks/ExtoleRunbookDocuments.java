@@ -17,13 +17,13 @@ public class ExtoleRunbookDocuments {
     private DocumentStore documentStore;
 
     public ExtoleRunbookDocuments(AiService aiService, AiAdvisorService aiAdvisorService,
-            List<RunbookScenario> runbookScenarios, ExtoleRunbookScenarioLoader runbookScenarioLoader,
+            List<RunbookSuperScenario> runbookScenarios, ExtoleRunbookScenarioLoader runbookScenarioLoader,
             ExtoleRunbookDefault defaultRunbook) {
         ObjectMapper objectMapper = new ObjectMapper();
 
         var documentStoreBuilder = aiService.simpleDocumentStoreBuilder();
 
-        List<RunbookScenario> scenarios = new ArrayList<>();
+        List<RunbookSuperScenario> scenarios = new ArrayList<>();
         scenarios.addAll(runbookScenarios);
         scenarios.addAll(runbookScenarioLoader.getRunbookScenarios());
 

@@ -14,17 +14,17 @@ import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.tool.Tool;
 import com.cyster.ai.weave.service.tool.ToolException;
 import com.extole.zuper.weave.ExtoleSuperContext;
-import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorScenario.Parameters;
+import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorSuperScenario.Parameters;
 
 @Component
 public class ExtoleSupportTicketRunbookSelectorTool implements Tool<Parameters, ExtoleSuperContext> {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleSupportTicketRunbookSelectorTool.class);
 
     private AiService aiWeaveService;
-    private ExtoleSupportTicketRunbookSelectorScenario runbookSelectorScenario;
+    private ExtoleSupportTicketRunbookSelectorSuperScenario runbookSelectorScenario;
 
     ExtoleSupportTicketRunbookSelectorTool(AiService aiWeaveService,
-            ExtoleSupportTicketRunbookSelectorScenario runbookSelectorScenario) {
+            ExtoleSupportTicketRunbookSelectorSuperScenario runbookSelectorScenario) {
         this.aiWeaveService = aiWeaveService;
         this.runbookSelectorScenario = runbookSelectorScenario;
     }
@@ -65,7 +65,7 @@ public class ExtoleSupportTicketRunbookSelectorTool implements Tool<Parameters, 
                 + message.getContent());
 
         return aiWeaveService.extractResponse(
-                com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorScenario.Response.class,
+                com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorSuperScenario.Response.class,
                 message.getContent());
     }
 

@@ -3,22 +3,22 @@ package com.extole.zuper.weave.scenarios.runbooks.configurable;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
-import com.extole.zuper.weave.scenarios.runbooks.RunbookScenario;
+import com.extole.zuper.weave.scenarios.runbooks.RunbookSuperScenario;
 import com.extole.zuper.weave.scenarios.runbooks.RunbookScenarioParameters;
-import com.extole.zuper.weave.scenarios.support.ExtoleSupportHelpScenario;
+import com.extole.zuper.weave.scenarios.support.ExtoleSupportHelpSuperScenario;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ExtoleConfigurableRunbookScenario implements RunbookScenario {
+public class ExtoleConfigurableRunbookSuperScenario implements RunbookSuperScenario {
     private String name;
     private String description;
     private String keywords;
     private String instructionsTemplate;
 
-    private ExtoleSupportHelpScenario helpScenario;
+    private ExtoleSupportHelpSuperScenario helpScenario;
 
-    ExtoleConfigurableRunbookScenario(String name, Configuration configuration,
-            ExtoleSupportHelpScenario helpScenario) {
+    ExtoleConfigurableRunbookSuperScenario(String name, Configuration configuration,
+            ExtoleSupportHelpSuperScenario helpScenario) {
         this.name = name;
         this.description = configuration.getDescription();
         this.keywords = configuration.getKeywords();

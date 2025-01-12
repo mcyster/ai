@@ -12,15 +12,15 @@ import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.tool.Tool;
 import com.cyster.ai.weave.service.tool.ToolException;
 import com.extole.zuper.weave.ExtoleSuperContext;
-import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario.Parameters;
+import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientSuperScenario.Parameters;
 
 @Component
 public class ExtoleSupportTicketClientTool implements Tool<Parameters, ExtoleSuperContext> {
     private AiService aiWeaveService;
-    private ExtoleSupportTicketClientScenario extoleTicketClientScenario;
+    private ExtoleSupportTicketClientSuperScenario extoleTicketClientScenario;
 
     ExtoleSupportTicketClientTool(AiService aiWeaveService,
-            ExtoleSupportTicketClientScenario extoleTicketClientScenario) {
+            ExtoleSupportTicketClientSuperScenario extoleTicketClientScenario) {
         this.aiWeaveService = aiWeaveService;
         this.extoleTicketClientScenario = extoleTicketClientScenario;
     }
@@ -60,7 +60,7 @@ public class ExtoleSupportTicketClientTool implements Tool<Parameters, ExtoleSup
         System.out.println("!!! find clientId convo: " + message);
 
         return aiWeaveService.extractResponse(
-                com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario.Response.class,
+                com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientSuperScenario.Response.class,
                 message.getContent());
     }
 

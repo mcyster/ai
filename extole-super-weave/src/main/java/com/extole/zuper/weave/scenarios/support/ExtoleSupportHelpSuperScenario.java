@@ -17,12 +17,12 @@ import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportAdvisorToolLo
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 
 @Component
-public class ExtoleSupportHelpScenario implements Scenario<Void, ExtoleSuperContext> {
+public class ExtoleSupportHelpSuperScenario implements Scenario<Void, ExtoleSuperContext> {
     private static String DESCRIPTION = "Help with the Extole platform for members of the Extole Support Team";
 
     private final Advisor<ExtoleSuperContext> advisor;
 
-    ExtoleSupportHelpScenario(AiAdvisorService aiAdvisorService, List<ExtoleSupportAdvisorToolLoader> toolLoaders,
+    ExtoleSupportHelpSuperScenario(AiAdvisorService aiAdvisorService, List<ExtoleSupportAdvisorToolLoader> toolLoaders,
             List<ExtoleSupportTool<?>> tools, ConversationLinkTool conversationLinkTool, SchedulerTool schedulerTool) {
         String instructions = """
                 You are an senior member of the support team at Extole a SaaS marketing platform.
@@ -52,7 +52,7 @@ public class ExtoleSupportHelpScenario implements Scenario<Void, ExtoleSuperCont
 
     @Override
     public String getName() {
-        return this.getClass().getSimpleName().replace("Scenario", "");
+        return this.getClass().getSimpleName().replace("SuperScenario", "");
     }
 
     @Override

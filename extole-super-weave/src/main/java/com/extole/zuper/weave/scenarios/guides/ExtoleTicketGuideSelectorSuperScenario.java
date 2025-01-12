@@ -1,9 +1,7 @@
-package com.extole.zuper.weave.scenarios.runbooks;
+package com.extole.zuper.weave.scenarios.guides;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.AiAdvisorService;
 import com.cyster.ai.weave.service.AiService;
@@ -14,21 +12,21 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.tool.SearchTool;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
-import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorScenario.Parameters;
+import com.extole.zuper.weave.scenarios.guides.ExtoleTicketGuideSelectorSuperScenario.Parameters;
 import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketGetTool;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Component
-public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Parameters, ExtoleSuperContext> {
-    private final String DESCRIPTION = "Find the best Runbook for the specified ticket";
+// @Component
+public class ExtoleTicketGuideSelectorSuperScenario implements Scenario<Parameters, ExtoleSuperContext> {
+    private final String DESCRIPTION = "Find the best Guide for the specified ticket";
 
+    private AiAdvisorService aiAdvisorService;
     private SearchTool<ExtoleSuperContext> searchTool;
 
-    private final Advisor<ExtoleSuperContext> advisor;
+    private Advisor<ExtoleSuperContext> advisor;
 
-    public ExtoleSupportTicketRunbookSelectorScenario(AiService aiService, AiAdvisorService aiAdvisorService,
-            ExtoleRunbookDocuments runbookDocuments, SupportTicketGetTool ticketGetTool,
-            ExtoleRunbookDefault defaultRunbook) {
+    public ExtoleTicketGuideSelectorSuperScenario(AiService aiService, AiAdvisorService aiScenarioService,
+            SupportTicketGetTool ticketGetTool, ExtoleGuideStore extoleGuideStore) {
 
         String instructionsTemplate = """
                 {
@@ -39,7 +37,7 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
                     {
                       "step": "Construct a detailed query string based on the ticket",
                       "description": [
-                        "Remove PII, company names, and URLs.",
+                        "Remove PII and URLs.",
                         "Remove duplicate words and common stop words.",
                         "Remove special characters and convert all text to lowercase.",
                         "Limit the query to 20 words or fewer."
@@ -52,7 +50,7 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
                       ]
                     },
                     {
-                      "step": "Issue multiple detailed queries if no Runbook is found.",
+                      "step": "Issue multiple detailed queries if no guide is found.",
                       "description": [
                         "Focus on different keywords and combinations from the original prompt."
                       ]
@@ -62,12 +60,8 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
                     },
                     {
                       "step": "Shorten the original query to 10 words or fewer and try variations.",
-                      "condition": "If still no Runbook is found."
+                      "condition": "If still no guide is found."
                     },
-                    {
-                      "step": "Evaluate multiple search results for closest context before defaulting to {{defaultRunbookName}}.",
-                      "condition": "Only use as a last resort."
-                    }
                     {
                       "step": "Provide your answer in JSON format",
                       "schema": {{{schema}}},
@@ -81,31 +75,31 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
 
         var schema = aiService.getJsonSchema(Response.class);
 
-        Map<String, String> parameters = new HashMap<>() {
+        Map<String, Object> parameters = new HashMap<>() {
             {
                 put("schema", schema);
-                put("defaultRunbookName", defaultRunbook.getName());
             }
         };
 
         String instructions = new StringTemplate(instructionsTemplate).render(parameters);
 
-        System.out.println("!!!!!!!! extole support ticket runbook instructions: " + instructions);
+        System.out.println("!!!!!!!! extole support ticket guies: " + instructions);
 
         AdvisorBuilder<ExtoleSuperContext> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
         builder.setInstructions(instructions);
 
-        this.searchTool = builder.searchToolBuilder(ExtoleSuperContext.class).withName("runbooks")
-                .withDocumentStore(runbookDocuments.getDocumentStore()).create();
-        builder.withTool(this.searchTool);
         builder.withTool(ticketGetTool);
+
+        this.searchTool = builder.searchToolBuilder(ExtoleSuperContext.class).withName("guides")
+                .withDocumentStore(extoleGuideStore.getDocumentStore()).create();
+        builder.withTool(searchTool);
 
         this.advisor = builder.getOrCreate();
     }
 
     @Override
     public String getName() {
-        return this.getClass().getSimpleName().replace("Scenario", "");
+        return this.getClass().getSimpleName().replace("SuperScenario", "");
     }
 
     @Override
@@ -134,14 +128,14 @@ public class ExtoleSupportTicketRunbookSelectorScenario implements Scenario<Para
             System.out.println("!!!!!!!!!! search tool - vector store not ready !!!");
         }
 
-        return this.advisor.createConversationBuilder(context).addMessage("Ticket: " + parameters.ticketNumber());
+        return advisor.createConversationBuilder(context).addMessage("Ticket: " + parameters.ticketNumber());
     }
 
     public record Parameters(@JsonProperty(required = true) String ticketNumber) {
     }
 
     public record Response(@JsonProperty(required = true) String ticketNumber,
-            @JsonProperty(required = true) String runbookName, @JsonProperty(required = false) String query,
-            @JsonProperty(required = false) String[] searchResults) {
+            @JsonProperty(required = true) String guideName, @JsonProperty(required = true) String guideLink,
+            @JsonProperty(required = false) String query, @JsonProperty(required = false) String[] searchResults) {
     }
 }

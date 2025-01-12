@@ -15,8 +15,8 @@ import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.weave.rest.conversation.ScenarioContextException;
 import com.extole.app.jira.JiraScenaioContextFactory;
-import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario;
-import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketScenario;
+import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientSuperScenario;
+import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketSuperScenario;
 
 @Service
 @EnableAsync
@@ -24,12 +24,12 @@ public class TicketCommenter {
     private static final Logger logger = LoggerFactory.getLogger(TicketCommenter.class);
     private static final Logger ticketLogger = LoggerFactory.getLogger("tickets");
 
-    private final ExtoleSupportTicketScenario supportTicketScenario;
-    private final ExtoleSupportTicketClientScenario supportTicketClientScenario;
+    private final ExtoleSupportTicketSuperScenario supportTicketScenario;
+    private final ExtoleSupportTicketClientSuperScenario supportTicketClientScenario;
     private final JiraScenaioContextFactory jiraScenaioContextFactory;
 
-    public TicketCommenter(ExtoleSupportTicketScenario supportTicketScenario,
-            ExtoleSupportTicketClientScenario supportTicketClientScenario,
+    public TicketCommenter(ExtoleSupportTicketSuperScenario supportTicketScenario,
+            ExtoleSupportTicketClientSuperScenario supportTicketClientScenario,
             JiraScenaioContextFactory jiraScenaioContextFactory) {
         this.supportTicketScenario = supportTicketScenario;
         this.supportTicketClientScenario = supportTicketClientScenario;
@@ -56,7 +56,7 @@ public class TicketCommenter {
     private void clientForTicket(String ticketNumber) {
         Message response;
 
-        var parameters = new com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario.Parameters(
+        var parameters = new com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientSuperScenario.Parameters(
                 ticketNumber);
         try {
             // TODO add these conversations to our session store - also need to pass super
@@ -78,7 +78,7 @@ public class TicketCommenter {
         logger.info("Ticket - processing " + ticketNumber + " asynchronously on thread "
                 + Thread.currentThread().getName());
 
-        var parameters = new com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketScenario.Parameters(
+        var parameters = new com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketSuperScenario.Parameters(
                 ticketNumber);
 
         try {

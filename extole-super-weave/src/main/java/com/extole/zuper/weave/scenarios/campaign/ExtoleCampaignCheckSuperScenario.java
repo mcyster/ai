@@ -5,23 +5,23 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.extole.zuper.weave.ExtoleSuperContext;
-import com.extole.zuper.weave.scenarios.campaign.ExtoleCampaignCheckScenario.Parameters;
-import com.extole.zuper.weave.scenarios.support.ExtoleSupportHelpScenario;
+import com.extole.zuper.weave.scenarios.campaign.ExtoleCampaignCheckSuperScenario.Parameters;
+import com.extole.zuper.weave.scenarios.support.ExtoleSupportHelpSuperScenario;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
-public class ExtoleCampaignCheckScenario implements Scenario<Parameters, ExtoleSuperContext> {
+public class ExtoleCampaignCheckSuperScenario implements Scenario<Parameters, ExtoleSuperContext> {
     private static final String DESCRIPTION = "Check a campaign given a campaignId";
 
-    private ExtoleSupportHelpScenario helpScenario;
+    private ExtoleSupportHelpSuperScenario helpScenario;
 
-    ExtoleCampaignCheckScenario(ExtoleSupportHelpScenario helpScenario) {
+    ExtoleCampaignCheckSuperScenario(ExtoleSupportHelpSuperScenario helpScenario) {
         this.helpScenario = helpScenario;
     }
 
     @Override
     public String getName() {
-        return this.getClass().getSimpleName().replace("Scenario", "");
+        return this.getClass().getSimpleName().replace("SuperScenario", "");
     }
 
     @Override

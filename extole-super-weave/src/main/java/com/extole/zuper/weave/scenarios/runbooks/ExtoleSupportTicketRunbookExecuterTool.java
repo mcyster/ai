@@ -21,12 +21,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class ExtoleSupportTicketRunbookExecuterTool implements Tool<RunbookScenarioParameters, ExtoleSuperContext> {
-    Map<String, RunbookScenario> runbookScenarios;
+    Map<String, RunbookSuperScenario> runbookScenarios;
 
     ExtoleSupportTicketRunbookExecuterTool(AiService aiWeaveService,
-            ExtoleRunbookScenarioLoader runbookScenarioLoader, List<RunbookScenario> runbookScenarios) {
+            ExtoleRunbookScenarioLoader runbookScenarioLoader, List<RunbookSuperScenario> runbookScenarios) {
         this.runbookScenarios = runbookScenarios.stream()
-                .collect(Collectors.toMap(RunbookScenario::getName, runbook -> runbook));
+                .collect(Collectors.toMap(RunbookSuperScenario::getName, runbook -> runbook));
 
         for (var scenario : runbookScenarioLoader.getRunbookScenarios()) {
             this.runbookScenarios.put(scenario.getName(), scenario);

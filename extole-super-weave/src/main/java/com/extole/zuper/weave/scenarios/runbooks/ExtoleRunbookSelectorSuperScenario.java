@@ -16,7 +16,7 @@ import com.cyster.template.StringTemplate;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
-public class ExtoleRunbookSelectorScenario implements Scenario<Void, Void> {
+public class ExtoleRunbookSelectorSuperScenario implements Scenario<Void, Void> {
 
     public final String NAME = "extoleRunbookSelector";
     private final String DESCRIPTION = "Find the best Runbook given a set of keywords (intended for testing)";
@@ -26,7 +26,7 @@ public class ExtoleRunbookSelectorScenario implements Scenario<Void, Void> {
     private final Advisor<Void> advisor;
     private SearchTool<Void> searchTool;
 
-    public ExtoleRunbookSelectorScenario(AiService aiService, AiAdvisorService aiAdvisorService,
+    public ExtoleRunbookSelectorSuperScenario(AiService aiService, AiAdvisorService aiAdvisorService,
             ExtoleRunbookDocuments runbookDocuments, ExtoleRunbookDefault defaultRunbook) {
 
         String instructionsTemplate = """
@@ -103,7 +103,7 @@ public class ExtoleRunbookSelectorScenario implements Scenario<Void, Void> {
 
     @Override
     public String getName() {
-        return this.getClass().getSimpleName().replace("Scenario", "");
+        return this.getClass().getSimpleName().replace("SuperScenario", "");
     }
 
     @Override

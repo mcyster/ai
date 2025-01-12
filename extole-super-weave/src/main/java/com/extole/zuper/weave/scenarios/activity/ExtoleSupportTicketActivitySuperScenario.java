@@ -14,19 +14,19 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.tool.SearchTool;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
-import com.extole.zuper.weave.scenarios.activity.ExtoleSupportTicketActivityScenario.Parameters;
+import com.extole.zuper.weave.scenarios.activity.ExtoleSupportTicketActivitySuperScenario.Parameters;
 import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketGetTool;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
-public class ExtoleSupportTicketActivityScenario implements Scenario<Parameters, ExtoleSuperContext> {
+public class ExtoleSupportTicketActivitySuperScenario implements Scenario<Parameters, ExtoleSuperContext> {
     private final String DEFAULT_ACTIVITY = "unclassified";
     private final String DESCRIPTION = "Find the best Runbook for the specified ticket";
 
     private final Advisor<ExtoleSuperContext> advisor;
     private SearchTool<ExtoleSuperContext> searchTool;
 
-    public ExtoleSupportTicketActivityScenario(AiService aiService, AiAdvisorService aiAdvisorService,
+    public ExtoleSupportTicketActivitySuperScenario(AiService aiService, AiAdvisorService aiAdvisorService,
             ExtoleSupportActivityDocuments activityDocuments, SupportTicketGetTool ticketGetTool) {
 
         String instructionsTemplate = """
@@ -106,7 +106,7 @@ public class ExtoleSupportTicketActivityScenario implements Scenario<Parameters,
 
     @Override
     public String getName() {
-        return this.getClass().getSimpleName().replace("Scenario", "");
+        return this.getClass().getSimpleName().replace("SuperScenario", "");
     }
 
     @Override

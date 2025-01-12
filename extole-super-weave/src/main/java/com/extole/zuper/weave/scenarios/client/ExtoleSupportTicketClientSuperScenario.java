@@ -12,7 +12,7 @@ import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
-import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientScenario.Parameters;
+import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientSuperScenario.Parameters;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleClientGetTool;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleClientSearchTool;
 import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketClientSetTool;
@@ -20,12 +20,12 @@ import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketGetTool;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
-public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, ExtoleSuperContext> {
+public class ExtoleSupportTicketClientSuperScenario implements Scenario<Parameters, ExtoleSuperContext> {
     private final String DESCRIPTION = "Find the Extole client associated for the specified ticket";
 
     private final Advisor<ExtoleSuperContext> advisor;
 
-    public ExtoleSupportTicketClientScenario(AiService aiService, AiAdvisorService aiAdvisorService,
+    public ExtoleSupportTicketClientSuperScenario(AiService aiService, AiAdvisorService aiAdvisorService,
             SupportTicketGetTool ticketGetTool, SupportTicketClientSetTool extoleClientSetTool,
             ExtoleClientGetTool extoleClientGetTool, ExtoleClientSearchTool extoleClientSearchTool) {
 
@@ -69,7 +69,7 @@ public class ExtoleSupportTicketClientScenario implements Scenario<Parameters, E
 
     @Override
     public String getName() {
-        return this.getClass().getSimpleName().replace("Scenario", "");
+        return this.getClass().getSimpleName().replace("SuperScenario", "");
     }
 
     @Override

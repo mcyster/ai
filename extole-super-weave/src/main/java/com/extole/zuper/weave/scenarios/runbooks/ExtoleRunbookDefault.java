@@ -5,10 +5,10 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
-import com.extole.zuper.weave.scenarios.support.ExtoleSupportHelpScenario;
+import com.extole.zuper.weave.scenarios.support.ExtoleSupportHelpSuperScenario;
 
 @Component
-public class ExtoleRunbookDefault implements RunbookScenario {
+public class ExtoleRunbookDefault implements RunbookSuperScenario {
     private static String DESCRIPTION = "Analyzes and comments on tickets that could not be classfied more specifically";
     private static String KEYWORDS = "nothing";
 
@@ -18,9 +18,9 @@ public class ExtoleRunbookDefault implements RunbookScenario {
             Note the ticket number, and note its classified as "other".
             """;
 
-    private ExtoleSupportHelpScenario helpScenario;
+    private ExtoleSupportHelpSuperScenario helpScenario;
 
-    ExtoleRunbookDefault(ExtoleSupportHelpScenario helpScenario) {
+    ExtoleRunbookDefault(ExtoleSupportHelpSuperScenario helpScenario) {
         this.helpScenario = helpScenario;
     }
 

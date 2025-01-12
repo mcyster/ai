@@ -11,16 +11,16 @@ import com.cyster.ai.weave.service.tool.VoidToolAdapter;
 import com.cyster.scheduler.impl.SchedulerTool;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientTool;
-import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketScenario.Parameters;
+import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketSuperScenario.Parameters;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
-public class ExtoleSupportTicketScenario implements Scenario<Parameters, ExtoleSuperContext> {
+public class ExtoleSupportTicketSuperScenario implements Scenario<Parameters, ExtoleSuperContext> {
     private final String DESCRIPTION = "Execute the best Runbook for the specified ticket";
 
     private final Advisor<ExtoleSuperContext> advisor;
 
-    public ExtoleSupportTicketScenario(AiAdvisorService aiAdvisorService,
+    public ExtoleSupportTicketSuperScenario(AiAdvisorService aiAdvisorService,
             ExtoleSupportTicketRunbookSelectorTool runbookSelectorTool, ExtoleSupportTicketClientTool ticketClientTool,
             ExtoleSupportTicketRunbookExecuterTool runbookExecuterTool, SchedulerTool schedulerTool) {
 
@@ -47,7 +47,7 @@ public class ExtoleSupportTicketScenario implements Scenario<Parameters, ExtoleS
 
     @Override
     public String getName() {
-        return this.getClass().getSimpleName().replace("Scenario", "");
+        return this.getClass().getSimpleName().replace("SuperScenario", "");
     }
 
     @Override
