@@ -13,7 +13,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.cyster.rest.web.WebConfigurer;
+import com.cyster.web.WebConfigurer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
