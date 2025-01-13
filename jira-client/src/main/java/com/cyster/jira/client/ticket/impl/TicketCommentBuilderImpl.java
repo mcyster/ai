@@ -1,19 +1,11 @@
 package com.cyster.jira.client.ticket.impl;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.BodyInserters;
 
 import com.cyster.jira.client.adf.writer.AtlassianDocumentMapper;
 import com.cyster.jira.client.ticket.TicketCommentBuilder;
 import com.cyster.jira.client.ticket.TicketException;
 import com.cyster.jira.client.web.JiraWebClientFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -26,9 +18,7 @@ public class TicketCommentBuilderImpl implements TicketCommentBuilder {
     private final JiraWebClientFactory jiraWebClientFactory;
     private final String key;
     private boolean isInternal = true;
-    private List<Attachment> attachments = new ArrayList<>();
     ObjectNode payload = JsonNodeFactory.instance.objectNode();
-    boolean comment = false;
 
     TicketCommentBuilderImpl(JiraWebClientFactory jiraWebClientFactory, String key) {
         this.jiraWebClientFactory = jiraWebClientFactory;
@@ -40,24 +30,6 @@ public class TicketCommentBuilderImpl implements TicketCommentBuilder {
         return this;
     }
 
-    public TicketCommentBuilder withAsset(String filename, FileSystemResource resource) {
-        String attachmentResponse = this.jiraWebClientFactory.getWebClient().post()
-                .uri(uriBuilder -> uriBuilder.path("/rest/api/3/issue/" + key + "/attachments").build())
-                .header("X-Atlassian-Token", "no-check").contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(BodyInserters.fromMultipartData("file", resource)).retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .map(errorBody -> new TicketException("Error uploading attachment to ticket " + key
-                                        + ": " + response.statusCode() + " Body: " + errorBody))
-                                .flatMap(Mono::error))
-                .bodyToMono(String.class).block();
-
-        var attachment = extractAttachmentUrlFromResponse(attachmentResponse);
-        this.attachments.add(attachment);
-
-        return this;
-    }
-
     public TicketCommentBuilder withComment(String comment) throws TicketException {
         if (isAtlassianDocumentFormat(comment)) {
             throw new TicketException("Attribute 'comment' must be in markdown format");
@@ -66,15 +38,11 @@ public class TicketCommentBuilderImpl implements TicketCommentBuilder {
         AtlassianDocumentMapper atlassianDocumentMapper = new AtlassianDocumentMapper();
         payload.set("body", atlassianDocumentMapper.fromMarkdown(comment));
 
-        this.comment = true;
         return this;
     }
 
-    public void post() throws TicketException {
-        if (!comment) {
-            return;
-        }
-
+    @Override
+    public CommentId post() throws TicketException {
         if (isInternal) {
             withIsInternal();
         }
@@ -101,6 +69,8 @@ public class TicketCommentBuilderImpl implements TicketCommentBuilder {
         if (result == null || !result.has("id")) {
             throw new TicketException("Failed to add comment, unexpected response");
         }
+
+        return new CommentId(result.path("id").asText());
     }
 
     private TicketCommentBuilder withIsInternal() {
@@ -145,21 +115,4 @@ public class TicketCommentBuilderImpl implements TicketCommentBuilder {
         return false;
     }
 
-    private Attachment extractAttachmentUrlFromResponse(String responseJson) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            JsonNode responseNode = objectMapper.readTree(responseJson);
-            var id = responseNode.get(0).path("id").asText();
-            var filename = responseNode.get(0).path("filename").asText();
-            var uri = new URI(responseNode.get(0).path("content").asText());
-            return new Attachment(id, filename, uri);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to parse attachment, response: " + e.getMessage(), e);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Failed to get url for asset, response: " + e.getMessage(), e);
-        }
-    }
-
-    record Attachment(String id, String filename, URI uri) {
-    }
 }

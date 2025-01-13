@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.tool.ToolException;
+import com.cyster.jira.client.ticket.TicketCommentBuilder.CommentId;
 import com.cyster.jira.client.ticket.TicketException;
 import com.extole.jira.support.SupportTicketService;
 import com.extole.zuper.weave.ExtoleSuperContext;
@@ -54,14 +55,17 @@ class SupportTicketCommentAddTool implements ExtoleSupportTool<Request> {
             throw new ToolException("Attribute 'comment' must be specified");
         }
 
+        CommentId commentId = null;
         try {
-            supportTicketService.ticketCommentBuilder(request.key).withComment(request.comment).post();
+            commentId = supportTicketService.ticketCommentBuilder(request.key).withComment(request.comment).post();
         } catch (TicketException exception) {
             throw new ToolException("Error adding comment to ticket: " + request.key, exception);
         }
 
         ObjectNode response = JsonNodeFactory.instance.objectNode();
         response.put("key", request.key);
+        response.put("commentId", commentId.id());
+
         return response;
     }
 

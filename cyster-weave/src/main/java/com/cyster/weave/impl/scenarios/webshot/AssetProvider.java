@@ -13,7 +13,7 @@ public interface AssetProvider {
 
     void getAsset(AssetId id, AssetConsumer assetConsumer);
 
-    // TBD re-read stream problems
+    // TBD re-read stream problems on getAsset(id,consumer)
     FileSystemResource getAsset(AssetId id);
 
     @FunctionalInterface

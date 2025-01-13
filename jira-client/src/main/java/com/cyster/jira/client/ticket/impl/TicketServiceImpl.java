@@ -3,6 +3,7 @@ package com.cyster.jira.client.ticket.impl;
 import java.util.List;
 import java.util.Optional;
 
+import com.cyster.jira.client.ticket.TicketAttachmentBuilder;
 import com.cyster.jira.client.ticket.TicketCommentBuilder;
 import com.cyster.jira.client.ticket.TicketException;
 import com.cyster.jira.client.ticket.TicketMapper;
@@ -37,6 +38,12 @@ public class TicketServiceImpl<TICKET> implements TicketService<TICKET> {
         return Optional.of(tickets.get(0));
     }
 
+    @Override
+    public TicketAttachmentBuilder ticketAttachmentBuilder(String key) {
+        return new TicketAttachmentBuilderImpl(jiraWebClientFactory, key);
+    }
+
+    @Override
     public TicketCommentBuilder ticketCommentBuilder(String key) {
         return new TicketCommentBuilderImpl(jiraWebClientFactory, key);
     }

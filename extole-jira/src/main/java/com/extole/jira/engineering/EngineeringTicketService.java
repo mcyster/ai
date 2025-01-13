@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
+import com.cyster.jira.client.ticket.TicketAttachmentBuilder;
 import com.cyster.jira.client.ticket.TicketCommentBuilder;
 import com.cyster.jira.client.ticket.TicketException;
 import com.cyster.jira.client.ticket.TicketQueryBuilder;
@@ -29,6 +30,11 @@ public class EngineeringTicketService implements TicketService<EngineeringTicket
     @Override
     public Optional<EngineeringTicket> getTicket(String key) throws TicketException {
         return ticketService.getTicket(key);
+    }
+
+    @Override
+    public TicketAttachmentBuilder ticketAttachmentBuilder(String key) {
+        return ticketService.ticketAttachmentBuilder(key);
     }
 
     @Override

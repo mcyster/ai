@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.tool.ToolException;
-import com.cyster.jira.client.ticket.TicketCommentBuilder;
+import com.cyster.jira.client.ticket.TicketAttachmentBuilder;
 import com.cyster.jira.client.ticket.TicketException;
 import com.cyster.weave.impl.scenarios.webshot.AssetProvider;
 import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetId;
@@ -59,22 +59,26 @@ class SupportTicketAssetAddTool implements ExtoleSupportTool<Request> {
             throw new ToolException("Attribute 'asset' must be specified");
         }
 
+        com.cyster.jira.client.ticket.TicketAttachmentBuilder.Attachment attachment = null;
         try {
-            TicketCommentBuilder builder = supportTicketService.ticketCommentBuilder(request.key);
+            TicketAttachmentBuilder builder = supportTicketService.ticketAttachmentBuilder(request.key);
 
             // assetProvider.getAsset(AssetId.fromString(request.assetId()),
             // inputStream -> builder.withAsset(getName(), inputStream));
 
             var resource = assetProvider.getAsset(AssetId.fromString(request.assetId()));
-            builder.withAsset(getName(), resource);
+            // builder.withName();
+            builder.withAsset(resource);
 
-            builder.post();
+            attachment = builder.post();
         } catch (TicketException exception) {
             throw new ToolException("Error adding comment to ticket: " + request.key, exception);
         }
 
         ObjectNode response = JsonNodeFactory.instance.objectNode();
         response.put("key", request.key);
+        response.put("attachmentUrl", attachment.uri().toString());
+
         return response;
     }
 

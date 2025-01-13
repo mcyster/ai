@@ -7,6 +7,8 @@ public interface TicketService<TICKET> {
 
     Optional<TICKET> getTicket(String key) throws TicketException;
 
+    TicketAttachmentBuilder ticketAttachmentBuilder(String key);
+
     TicketCommentBuilder ticketCommentBuilder(String key);
 
 }
