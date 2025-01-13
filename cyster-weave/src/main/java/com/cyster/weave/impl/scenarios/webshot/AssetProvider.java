@@ -4,56 +4,30 @@ import java.io.InputStream;
 
 public interface AssetProvider {
     enum Type {
-        PNG
+        PNG;
+
+        public static Type fromString(String value) {
+            if (value == null) {
+                throw new IllegalArgumentException("Value cannot be null");
+            }
+            try {
+                return Type.valueOf(value.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("No enum constant for value: " + value, e);
+            }
+        }
     }
 
-    AssetName putAsset(String name, Type mimeType, InputStream content);
+    Asset putAsset(String name, Type mimeType, InputStream content);
 
-    void getAsset(AssetName name, AssetConsumer assetConsumer);
+    void getAsset(Asset asset, AssetConsumer assetConsumer);
 
     @FunctionalInterface
     interface AssetConsumer {
         void consume(InputStream content);
     }
 
-    public final class AssetName {
-        private final String name;
+    public record Asset(String name, Type type) {
+    };
 
-        private AssetName(String name) {
-            if (name == null || name.isBlank()) {
-                throw new IllegalArgumentException("AssetName cannot be null or blank");
-            }
-            this.name = name;
-        }
-
-        public String name() {
-            return name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-
-        public static AssetName fromString(String name) {
-            return new AssetName(name);
-        }
-
-        @Override
-        public boolean equals(Object object) {
-            if (this == object) {
-                return true;
-            }
-            if (object == null || getClass() != object.getClass()) {
-                return false;
-            }
-            AssetName assetId = (AssetName) object;
-            return name.equals(assetId.name);
-        }
-
-        @Override
-        public int hashCode() {
-            return name.hashCode();
-        }
-    }
 }

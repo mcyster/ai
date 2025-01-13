@@ -31,9 +31,10 @@ public class TicketAttachmentBuilderImpl implements TicketAttachmentBuilder {
     }
 
     @Override
-    public TicketAttachmentBuilder withAsset(String name, InputStream inputStream) {
+    public TicketAttachmentBuilder withAsset(String name, String type, InputStream inputStream) {
+        String extension = type.startsWith(".") ? type : "." + type;
         try {
-            this.assetFile = File.createTempFile(name, "png"); // TODO extension
+            this.assetFile = File.createTempFile(name + "-", extension);
             assetFile.deleteOnExit();
 
             try (var outputStream = new FileOutputStream(assetFile)) {
@@ -64,7 +65,7 @@ public class TicketAttachmentBuilderImpl implements TicketAttachmentBuilder {
             return extractAttachmentUrlFromResponse(attachmentResponse);
         } finally {
             if (assetFile.exists()) {
-                // assetFile.delete();
+                assetFile.delete();
             }
         }
 

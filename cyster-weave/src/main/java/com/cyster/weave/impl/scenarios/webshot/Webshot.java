@@ -15,8 +15,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.cyster.weave.impl.scenarios.webshot.AssetHandleProvider.AssetHandle;
-import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetName;
+import com.cyster.weave.impl.scenarios.webshot.AssetProvider.Asset;
+import com.cyster.weave.impl.scenarios.webshot.AssetUrlProvider.AccessibleAsset;
 
 // https://www.url2png.com/
 // TBD If url requires login / session cookie
@@ -41,10 +41,10 @@ public class Webshot {
                 .build();
     }
 
-    public AssetHandle getImage(String name, String url) {
+    public AccessibleAsset getImage(String name, String url) {
         String parameterTemplate = "?url=%s&fullpage=true&say_cheese=yes";
 
-        CompletableFuture<AssetHandle> assetIdFuture = new CompletableFuture<>();
+        CompletableFuture<AccessibleAsset> accessibleAssetFuture = new CompletableFuture<>();
 
         try {
             String encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8.name());
@@ -59,14 +59,14 @@ public class Webshot {
 
             webClient.get().uri(requestUrl).accept(MediaType.IMAGE_PNG).retrieve().bodyToMono(byte[].class)
                     .map(ByteArrayInputStream::new).doOnNext(content -> {
-                        AssetName assetId = assetProvider.putAsset(name, AssetProvider.Type.PNG, content);
-                        assetIdFuture.complete(assetProvider.getAssetHandle(assetId));
+                        Asset asset = assetProvider.putAsset(name, AssetProvider.Type.PNG, content);
+                        accessibleAssetFuture.complete(assetProvider.getAccessibleAsset(asset));
                     }).block();
         } catch (Exception exception) {
             throw new RuntimeException("Failed to fetch the image", exception);
         }
 
-        return assetIdFuture.join();
+        return accessibleAssetFuture.join();
     }
 
     private String md5Hash(String input) {

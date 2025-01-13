@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 
 import org.springframework.beans.factory.annotation.Value;
 
-public class LocalAssetProvider implements AssetProvider, AssetHandleProvider {
+public class LocalAssetProvider implements AssetProvider, AssetUrlProvider {
     private URI baseUri;
     private final Path assets;
 
@@ -35,21 +35,24 @@ public class LocalAssetProvider implements AssetProvider, AssetHandleProvider {
     }
 
     @Override
-    public AssetName putAsset(String name, Type type, InputStream content) {
+    public Asset putAsset(String name, Type type, InputStream content) {
 
-        Path filename = null;
-        try {
-            filename = createUniqueFileName(this.assets, name, type.toString().toLowerCase());
-        } catch (IOException exception) {
-            throw new IllegalStateException("Failed to find an asset name for asset: " + name, exception);
-        }
-        AssetName assetId = AssetName.fromString(filename.getFileName().toString());
+        String extension = "." + type.toString().toLowerCase();
+        String baseName = name.replaceAll("[^a-zA-Z0-9-_]", "_").toLowerCase();
 
-        this.assets.resolve(assetId.toString());
+        String uniqueName = baseName;
+        int counter = 1;
+        Path assetPath;
+        do {
+            String uniquePath = uniqueName + extension;
+            assetPath = this.assets.resolve(uniquePath);
+            if (!Files.exists(assetPath)) {
+                break;
+            }
+            uniqueName = baseName + "-" + counter++;
+        } while (true);
 
-        this.assets.resolve(assetId.toString());
-
-        Path assetPath = this.assets.resolve(assetId.toString());
+        Asset asset = new Asset(uniqueName, type);
 
         try {
             Files.copy(content, assetPath);
@@ -57,27 +60,27 @@ public class LocalAssetProvider implements AssetProvider, AssetHandleProvider {
             throw new IllegalStateException("Failed to write asset to " + assetPath, e);
         }
 
-        return assetId;
+        return asset;
     }
 
     @Override
-    public void getAsset(AssetName id, AssetConsumer assetConsumer) {
-        Path assetPath = this.assets.resolve(id.toString());
+    public void getAsset(Asset asset, AssetConsumer assetConsumer) {
+        Path assetPath = this.assets.resolve(asset.name() + "." + asset.type().toString().toLowerCase());
 
         if (!Files.exists(assetPath)) {
-            throw new IllegalArgumentException("Asset with ID " + id + " does not exist");
+            throw new IllegalArgumentException("Asset " + asset + " does not exist");
         }
 
         try (InputStream inputStream = Files.newInputStream(assetPath)) {
             assetConsumer.consume(inputStream);
         } catch (IOException e) {
-            throw new IllegalStateException("Failed to read asset with ID " + id, e);
+            throw new IllegalStateException("Failed to read asset with ID " + asset, e);
         }
     }
 
     @Override
-    public AssetHandle getAssetHandle(AssetName name) {
-        return new AssetHandle(name, baseUri.resolve(name.name()));
+    public AccessibleAsset getAccessibleAsset(Asset name) {
+        return new AccessibleAsset(name, baseUri.resolve(name.name()));
     }
 
     public Path localPath() {
@@ -90,7 +93,7 @@ public class LocalAssetProvider implements AssetProvider, AssetHandleProvider {
         }
 
         String sanitizedExtension = extension.startsWith(".") ? extension : "." + extension;
-        String baseName = name.replaceAll("[^a-zA-Z0-9-_]", "_"); // Replace invalid characters with '_'
+        String baseName = name.replaceAll("[^a-zA-Z0-9-_]", "_").toLowerCase();
 
         Path uniqueFile = directory.resolve(baseName + sanitizedExtension);
         int counter = 1;

@@ -5,7 +5,7 @@ import java.net.URI;
 
 public interface TicketAttachmentBuilder {
 
-    TicketAttachmentBuilder withAsset(String name, InputStream inputStream);
+    TicketAttachmentBuilder withAsset(String name, String type, InputStream inputStream);
 
     Attachment post() throws TicketException;
 

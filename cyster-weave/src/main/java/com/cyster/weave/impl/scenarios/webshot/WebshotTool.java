@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.tool.Tool;
-import com.cyster.weave.impl.scenarios.webshot.AssetHandleProvider.AssetHandle;
+import com.cyster.weave.impl.scenarios.webshot.AssetUrlProvider.AccessibleAsset;
 import com.cyster.weave.impl.scenarios.webshot.WebshotTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -49,8 +49,9 @@ public class WebshotTool implements Tool<Request, Void> {
             name = UUID.randomUUID().toString();
         }
 
-        AssetHandle assetHandle = this.webshot.getImage(name, request.url);
-        return new Response(assetHandle.assetName().name(), "png", assetHandle.assetUri().toString());
+        AccessibleAsset accessibleAsset = this.webshot.getImage(name, request.url);
+
+        return new Response(accessibleAsset.assetName().name(), "png", accessibleAsset.assetUri().toString());
     }
 
     static record Response(@JsonProperty(required = true) String assetName, String assetType, String assetUrl) {

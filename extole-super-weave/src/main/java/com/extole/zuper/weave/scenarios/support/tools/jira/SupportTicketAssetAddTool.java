@@ -9,7 +9,7 @@ import com.cyster.ai.weave.service.tool.ToolException;
 import com.cyster.jira.client.ticket.TicketAttachmentBuilder;
 import com.cyster.jira.client.ticket.TicketException;
 import com.cyster.weave.impl.scenarios.webshot.AssetProvider;
-import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetName;
+import com.cyster.weave.impl.scenarios.webshot.AssetProvider.Asset;
 import com.extole.jira.support.SupportTicketService;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
@@ -55,16 +55,20 @@ class SupportTicketAssetAddTool implements ExtoleSupportTool<Request> {
             throw new ToolException("Attribute 'key' not specified");
         }
 
-        if (request.assetId == null || request.assetId.isEmpty()) {
-            throw new ToolException("Attribute 'asset' must be specified");
+        if (request.assetName == null || request.assetName.isEmpty()) {
+            throw new ToolException("Attribute 'assetName' must be specified");
+        }
+
+        if (request.assetType == null || request.assetType.isEmpty()) {
+            throw new ToolException("Attribute 'assetType' must be specified");
         }
 
         com.cyster.jira.client.ticket.TicketAttachmentBuilder.Attachment attachment = null;
         try {
             TicketAttachmentBuilder builder = supportTicketService.ticketAttachmentBuilder(request.key);
 
-            assetProvider.getAsset(AssetName.fromString(request.assetId()),
-                    inputStream -> builder.withAsset(request.assetId(), inputStream));
+            assetProvider.getAsset(new Asset(request.assetName, AssetProvider.Type.fromString(request.assetType)),
+                    inputStream -> builder.withAsset(request.assetName, request.assetType, inputStream));
 
             attachment = builder.post();
         } catch (TicketException exception) {
@@ -83,7 +87,8 @@ class SupportTicketAssetAddTool implements ExtoleSupportTool<Request> {
     }
 
     static record Request(@JsonProperty(required = true) @JsonPropertyDescription("ticket key") String key,
-            @JsonProperty(required = true) @JsonPropertyDescription("asset") String assetId) {
+            @JsonProperty(required = true) @JsonPropertyDescription("Name of asset") String assetName,
+            @JsonProperty(required = true) @JsonPropertyDescription("Type of asset (e.g. png)") String assetType) {
     }
 
 }
