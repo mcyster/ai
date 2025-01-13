@@ -1,5 +1,7 @@
 package com.cyster.weave.impl.scenarios.webshot;
 
+import java.util.UUID;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
@@ -42,14 +44,20 @@ public class WebshotTool implements Tool<Request, Void> {
 
     @Override
     public Object execute(Request request, Void context, Weave weave) {
-        AssetHandle assetHandle = this.webshot.getImage(request.url);
-        return new Response(assetHandle.assetId().id(), assetHandle.assetUri().toString());
+        String name = request.name;
+        if (name == null || name.isBlank()) {
+            name = UUID.randomUUID().toString();
+        }
+
+        AssetHandle assetHandle = this.webshot.getImage(name, request.url);
+        return new Response(assetHandle.assetName().name(), "png", assetHandle.assetUri().toString());
     }
 
-    static record Response(@JsonProperty(required = true) String assetId, String assetUrl) {
+    static record Response(@JsonProperty(required = true) String assetName, String assetType, String assetUrl) {
     }
 
     static record Request(
+            @JsonPropertyDescription("Short descriptive name for the image") @JsonProperty(required = false) String name,
             @JsonPropertyDescription("Url to web page convert to an image") @JsonProperty(required = true) String url) {
     }
 

@@ -9,7 +9,7 @@ import com.cyster.ai.weave.service.tool.ToolException;
 import com.cyster.jira.client.ticket.TicketAttachmentBuilder;
 import com.cyster.jira.client.ticket.TicketException;
 import com.cyster.weave.impl.scenarios.webshot.AssetProvider;
-import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetId;
+import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetName;
 import com.extole.jira.support.SupportTicketService;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
@@ -63,7 +63,7 @@ class SupportTicketAssetAddTool implements ExtoleSupportTool<Request> {
         try {
             TicketAttachmentBuilder builder = supportTicketService.ticketAttachmentBuilder(request.key);
 
-            assetProvider.getAsset(AssetId.fromString(request.assetId()),
+            assetProvider.getAsset(AssetName.fromString(request.assetId()),
                     inputStream -> builder.withAsset(request.assetId(), inputStream));
 
             attachment = builder.post();

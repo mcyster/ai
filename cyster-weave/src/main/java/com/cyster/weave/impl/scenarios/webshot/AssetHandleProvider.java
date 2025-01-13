@@ -2,12 +2,12 @@ package com.cyster.weave.impl.scenarios.webshot;
 
 import java.net.URI;
 
-import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetId;
+import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetName;
 
 public interface AssetHandleProvider {
 
-    AssetHandle getAssetHandle(AssetId assetId);
+    AssetHandle getAssetHandle(AssetName assetName);
 
-    public static record AssetHandle(AssetId assetId, URI assetUri) {
+    public static record AssetHandle(AssetName assetName, URI assetUri) {
     };
 }

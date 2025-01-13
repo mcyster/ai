@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.cyster.weave.impl.scenarios.webshot.AssetHandleProvider.AssetHandle;
-import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetId;
+import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetName;
 
 // https://www.url2png.com/
 // TBD If url requires login / session cookie
@@ -41,7 +41,7 @@ public class Webshot {
                 .build();
     }
 
-    public AssetHandle getImage(String url) {
+    public AssetHandle getImage(String name, String url) {
         String parameterTemplate = "?url=%s&fullpage=true&say_cheese=yes";
 
         CompletableFuture<AssetHandle> assetIdFuture = new CompletableFuture<>();
@@ -59,7 +59,7 @@ public class Webshot {
 
             webClient.get().uri(requestUrl).accept(MediaType.IMAGE_PNG).retrieve().bodyToMono(byte[].class)
                     .map(ByteArrayInputStream::new).doOnNext(content -> {
-                        AssetId assetId = assetProvider.putAsset(AssetProvider.Type.PNG, content);
+                        AssetName assetId = assetProvider.putAsset(name, AssetProvider.Type.PNG, content);
                         assetIdFuture.complete(assetProvider.getAssetHandle(assetId));
                     }).block();
         } catch (Exception exception) {

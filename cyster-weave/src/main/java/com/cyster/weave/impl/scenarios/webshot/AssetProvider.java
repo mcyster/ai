@@ -7,36 +7,36 @@ public interface AssetProvider {
         PNG
     }
 
-    AssetId putAsset(Type mimeType, InputStream content);
+    AssetName putAsset(String name, Type mimeType, InputStream content);
 
-    void getAsset(AssetId id, AssetConsumer assetConsumer);
+    void getAsset(AssetName name, AssetConsumer assetConsumer);
 
     @FunctionalInterface
     interface AssetConsumer {
         void consume(InputStream content);
     }
 
-    public final class AssetId {
-        private final String id;
+    public final class AssetName {
+        private final String name;
 
-        private AssetId(String id) {
-            if (id == null || id.isBlank()) {
-                throw new IllegalArgumentException("AssetId cannot be null or blank");
+        private AssetName(String name) {
+            if (name == null || name.isBlank()) {
+                throw new IllegalArgumentException("AssetName cannot be null or blank");
             }
-            this.id = id;
+            this.name = name;
         }
 
-        public String id() {
-            return id;
+        public String name() {
+            return name;
         }
 
         @Override
         public String toString() {
-            return id;
+            return name;
         }
 
-        public static AssetId fromString(String id) {
-            return new AssetId(id);
+        public static AssetName fromString(String name) {
+            return new AssetName(name);
         }
 
         @Override
@@ -47,13 +47,13 @@ public interface AssetProvider {
             if (object == null || getClass() != object.getClass()) {
                 return false;
             }
-            AssetId assetId = (AssetId) object;
-            return id.equals(assetId.id);
+            AssetName assetId = (AssetName) object;
+            return name.equals(assetId.name);
         }
 
         @Override
         public int hashCode() {
-            return id.hashCode();
+            return name.hashCode();
         }
     }
 }

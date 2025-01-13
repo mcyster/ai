@@ -6,7 +6,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 
@@ -36,8 +35,20 @@ public class LocalAssetProvider implements AssetProvider, AssetHandleProvider {
     }
 
     @Override
-    public AssetId putAsset(Type type, InputStream content) {
-        AssetId assetId = AssetId.fromString(UUID.randomUUID().toString() + "." + type.toString().toLowerCase());
+    public AssetName putAsset(String name, Type type, InputStream content) {
+
+        Path filename = null;
+        try {
+            filename = createUniqueFileName(this.assets, name, type.toString().toLowerCase());
+        } catch (IOException exception) {
+            throw new IllegalStateException("Failed to find an asset name for asset: " + name, exception);
+        }
+        AssetName assetId = AssetName.fromString(filename.getFileName().toString());
+
+        this.assets.resolve(assetId.toString());
+
+        this.assets.resolve(assetId.toString());
+
         Path assetPath = this.assets.resolve(assetId.toString());
 
         try {
@@ -50,7 +61,7 @@ public class LocalAssetProvider implements AssetProvider, AssetHandleProvider {
     }
 
     @Override
-    public void getAsset(AssetId id, AssetConsumer assetConsumer) {
+    public void getAsset(AssetName id, AssetConsumer assetConsumer) {
         Path assetPath = this.assets.resolve(id.toString());
 
         if (!Files.exists(assetPath)) {
@@ -65,12 +76,30 @@ public class LocalAssetProvider implements AssetProvider, AssetHandleProvider {
     }
 
     @Override
-    public AssetHandle getAssetHandle(AssetId id) {
-        return new AssetHandle(id, baseUri.resolve(id.id()));
+    public AssetHandle getAssetHandle(AssetName name) {
+        return new AssetHandle(name, baseUri.resolve(name.name()));
     }
 
     public Path localPath() {
         return assets;
     }
 
+    public static Path createUniqueFileName(Path directory, String name, String extension) throws IOException {
+        if (!Files.exists(directory)) {
+            Files.createDirectories(directory);
+        }
+
+        String sanitizedExtension = extension.startsWith(".") ? extension : "." + extension;
+        String baseName = name.replaceAll("[^a-zA-Z0-9-_]", "_"); // Replace invalid characters with '_'
+
+        Path uniqueFile = directory.resolve(baseName + sanitizedExtension);
+        int counter = 1;
+
+        while (Files.exists(uniqueFile)) {
+            uniqueFile = directory.resolve(baseName + "-" + counter + sanitizedExtension);
+            counter++;
+        }
+
+        return uniqueFile;
+    }
 }
