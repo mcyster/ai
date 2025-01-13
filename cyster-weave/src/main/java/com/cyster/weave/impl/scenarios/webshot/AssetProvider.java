@@ -2,6 +2,8 @@ package com.cyster.weave.impl.scenarios.webshot;
 
 import java.io.InputStream;
 
+import org.springframework.core.io.FileSystemResource;
+
 public interface AssetProvider {
     enum Type {
         PNG
@@ -10,6 +12,9 @@ public interface AssetProvider {
     AssetId putAsset(Type mimeType, InputStream content);
 
     void getAsset(AssetId id, AssetConsumer assetConsumer);
+
+    // TBD re-read stream problems
+    FileSystemResource getAsset(AssetId id);
 
     @FunctionalInterface
     interface AssetConsumer {

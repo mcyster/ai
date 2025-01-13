@@ -12,6 +12,7 @@ import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.tool.VoidToolAdapter;
 import com.cyster.scheduler.impl.SchedulerTool;
 import com.cyster.weave.impl.scenarios.conversation.ConversationLinkTool;
+import com.cyster.weave.impl.scenarios.webshot.WebshotTool;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportAdvisorToolLoader;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
@@ -23,7 +24,8 @@ public class ExtoleSupportHelpSuperScenario implements Scenario<Void, ExtoleSupe
     private final Advisor<ExtoleSuperContext> advisor;
 
     ExtoleSupportHelpSuperScenario(AiAdvisorService aiAdvisorService, List<ExtoleSupportAdvisorToolLoader> toolLoaders,
-            List<ExtoleSupportTool<?>> tools, ConversationLinkTool conversationLinkTool, SchedulerTool schedulerTool) {
+            List<ExtoleSupportTool<?>> tools, ConversationLinkTool conversationLinkTool, SchedulerTool schedulerTool,
+            WebshotTool webshotTool) {
         String instructions = """
                 You are an senior member of the support team at Extole a SaaS marketing platform.
 
@@ -46,6 +48,7 @@ public class ExtoleSupportHelpSuperScenario implements Scenario<Void, ExtoleSupe
 
         builder.withTool(new VoidToolAdapter<>(schedulerTool, ExtoleSuperContext.class));
         builder.withTool(new VoidToolAdapter<>(conversationLinkTool, ExtoleSuperContext.class));
+        builder.withTool(new VoidToolAdapter<>(webshotTool, ExtoleSuperContext.class));
 
         this.advisor = builder.getOrCreate();
     }

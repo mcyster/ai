@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 @Component
 @ConditionalOnBean(Webshot.class)
-class WebshotTool implements Tool<Request, Void> {
+public class WebshotTool implements Tool<Request, Void> {
 
     private Webshot webshot;
 

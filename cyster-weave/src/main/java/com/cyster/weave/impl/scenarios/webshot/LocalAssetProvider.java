@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 
 public class LocalAssetProvider implements AssetProvider, AssetHandleProvider {
     private URI baseUri;
@@ -47,6 +48,16 @@ public class LocalAssetProvider implements AssetProvider, AssetHandleProvider {
         }
 
         return assetId;
+    }
+
+    public FileSystemResource getAsset(AssetId id) {
+        Path assetPath = this.assets.resolve(id.toString());
+
+        if (!Files.exists(assetPath)) {
+            throw new IllegalArgumentException("Asset with ID " + id + " does not exist");
+        }
+
+        return new FileSystemResource(assetPath);
     }
 
     @Override
