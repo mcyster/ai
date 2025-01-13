@@ -63,12 +63,8 @@ class SupportTicketAssetAddTool implements ExtoleSupportTool<Request> {
         try {
             TicketAttachmentBuilder builder = supportTicketService.ticketAttachmentBuilder(request.key);
 
-            // assetProvider.getAsset(AssetId.fromString(request.assetId()),
-            // inputStream -> builder.withAsset(getName(), inputStream));
-
-            var resource = assetProvider.getAsset(AssetId.fromString(request.assetId()));
-            // builder.withName();
-            builder.withAsset(resource);
+            assetProvider.getAsset(AssetId.fromString(request.assetId()),
+                    inputStream -> builder.withAsset(request.assetId(), inputStream));
 
             attachment = builder.post();
         } catch (TicketException exception) {

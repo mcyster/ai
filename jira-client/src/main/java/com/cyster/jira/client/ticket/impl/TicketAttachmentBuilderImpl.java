@@ -1,5 +1,9 @@
 package com.cyster.jira.client.ticket.impl;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -19,8 +23,7 @@ import reactor.core.publisher.Mono;
 public class TicketAttachmentBuilderImpl implements TicketAttachmentBuilder {
     private final JiraWebClientFactory jiraWebClientFactory;
     private final String key;
-    private String name;
-    private FileSystemResource resource;
+    private File assetFile;
 
     TicketAttachmentBuilderImpl(JiraWebClientFactory jiraWebClientFactory, String key) {
         this.jiraWebClientFactory = jiraWebClientFactory;
@@ -28,31 +31,42 @@ public class TicketAttachmentBuilderImpl implements TicketAttachmentBuilder {
     }
 
     @Override
-    public TicketAttachmentBuilder withName(String name) {
-        this.name = name;
-        return this;
-    }
+    public TicketAttachmentBuilder withAsset(String name, InputStream inputStream) {
+        try {
+            this.assetFile = File.createTempFile(name, "png"); // TODO extension
+            assetFile.deleteOnExit();
 
-    @Override
-    public TicketAttachmentBuilder withAsset(FileSystemResource resource) {
-        this.resource = resource;
+            try (var outputStream = new FileOutputStream(assetFile)) {
+                inputStream.transferTo(outputStream);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create temporary file for input stream", e);
+        }
         return this;
     }
 
     @Override
     public Attachment post() throws TicketException {
-        String attachmentResponse = this.jiraWebClientFactory.getWebClient().post()
-                .uri(uriBuilder -> uriBuilder.path("/rest/api/3/issue/" + key + "/attachments").build())
-                .header("X-Atlassian-Token", "no-check").contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(BodyInserters.fromMultipartData("file", resource)).retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .map(errorBody -> new TicketException("Error uploading attachment to ticket " + key
-                                        + ": " + response.statusCode() + " Body: " + errorBody))
-                                .flatMap(Mono::error))
-                .bodyToMono(String.class).block();
+        FileSystemResource resource = new FileSystemResource(assetFile);
 
-        return extractAttachmentUrlFromResponse(attachmentResponse);
+        try {
+            String attachmentResponse = this.jiraWebClientFactory.getWebClient().post()
+                    .uri(uriBuilder -> uriBuilder.path("/rest/api/3/issue/" + key + "/attachments").build())
+                    .header("X-Atlassian-Token", "no-check").contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(BodyInserters.fromMultipartData("file", resource)).retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> response.bodyToMono(String.class)
+                                    .map(errorBody -> new TicketException("Error uploading attachment to ticket " + key
+                                            + ": " + response.statusCode() + " Body: " + errorBody))
+                                    .flatMap(Mono::error))
+                    .bodyToMono(String.class).block();
+
+            return extractAttachmentUrlFromResponse(attachmentResponse);
+        } finally {
+            if (assetFile.exists()) {
+                // assetFile.delete();
+            }
+        }
 
     }
 
@@ -64,8 +78,8 @@ public class TicketAttachmentBuilderImpl implements TicketAttachmentBuilder {
             var filename = responseNode.get(0).path("filename").asText();
             var uri = new URI(responseNode.get(0).path("content").asText());
             return new Attachment(id, filename, uri);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to parse attachment, response: " + e.getMessage(), e);
+        } catch (JsonProcessingException exception) {
+            throw new RuntimeException("Failed to parse attachment, response: " + exception.getMessage(), exception);
         } catch (URISyntaxException e) {
             throw new RuntimeException("Failed to get url for asset, response: " + e.getMessage(), e);
         }

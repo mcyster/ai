@@ -1,14 +1,11 @@
 package com.cyster.jira.client.ticket;
 
+import java.io.InputStream;
 import java.net.URI;
-
-import org.springframework.core.io.FileSystemResource;
 
 public interface TicketAttachmentBuilder {
 
-    TicketAttachmentBuilder withName(String name);
-
-    TicketAttachmentBuilder withAsset(FileSystemResource resource);
+    TicketAttachmentBuilder withAsset(String name, InputStream inputStream);
 
     Attachment post() throws TicketException;
 
