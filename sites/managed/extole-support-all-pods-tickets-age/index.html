@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 
 <!--
-jq to match report, Sunday 2025-01-12 - startDate before the next day 2025-01-13, resolveDate after the previous Sunday 2025-01-05
+jq to match report, Sunday 2025-01-12 - startDate before the next day 2025-01-13, resolveDate after the beginning of the day (could just check for null as not much done on Sunday)
 
-jq 'map(select(.project != "Extole Help" and .status != "Closed - Won'"'"'t Do" and .startDate < "2025-01-13" and (.resolvedDate == null or .resolvedDate >= "2025-01-05")))' 
+jq 'map(select(.project != "Extole Help" and .status != "Closed - Won'"'"'t Do" and .startDate < "2025-01-13" and (.resolvedDate == null or .resolvedDate >= "2025-01-12")))'
 
 -->
 
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Support Ticket Resolution Times (excludes HELP)</title>
+    <title>Support Ticket Age (excludes HELP)</title>
     <meta name="tags" content="extole,support,all-pods,tickets,resolution,exec_escalated">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
     <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
     <style>
         #graphTitle {
@@ -32,7 +33,7 @@ jq 'map(select(.project != "Extole Help" and .status != "Closed - Won'"'"'t Do" 
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Support Ticket Resolution Times (excludes HELP)</h2>
+            <h2 id="graphTitle">Open Support Ticket Age (excludes HELP)</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -66,7 +67,7 @@ function categorizeAge(tickets) {
     tickets.forEach(ticket => {
         const endDate = ticket.resolvedDate && ticket.resolvedDate < currentDate ? ticket.resolvedDate : currentDate;
         
-        for (let date = getSundayMidniteAfter(new Date(ticket.startDate)); date <= getSundayMidniteAfter(endDate); date.setUTCDate(date.getUTCDate() + 7)) {
+        for (let date = getSundayMidniteAfter(new Date(ticket.startDate)); date < getSundayMidniteAfter(endDate); date.setUTCDate(date.getUTCDate() + 7)) {
             const sunday = dateToISODateString(date);
 
             var end = end > endDate ? endDate : date;
@@ -147,7 +148,7 @@ function renderChart(categories) {
                     stacked: true,
                     title: {
                         display: true,
-                        text: 'Week Ending Sunday',
+                        text: 'Sunday Midnight',
                         font: {
                             size: 16,
                             weight: 'bold'
