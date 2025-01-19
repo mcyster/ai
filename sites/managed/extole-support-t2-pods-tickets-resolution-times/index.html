@@ -1,13 +1,20 @@
 <!DOCTYPE html>
+
+<!--
+jq to match report, Sunday 2025-01-12 - startDate before the next day 2025-01-13, resolveDate after the previous Sunday 2025-01-05
+
+jq 'map(select(.project != "Extole Help" and .status != "Closed - Won'"'"'t Do" and .startDate < "2025-01-13" and (.resolvedDate == null or .resolvedDate >= "2025-01-05")))' 
+
+-->
+
 <html>
 <head>
     <meta charset="UTF-8">
     <title>T2 Ticket Resolution Times</title>
-    <meta name="tags" content="extole,support,t2-pods,tickets,resolution,exec_escalated">
+    <meta name="tags" content="extole,support,t2-pods,tickets,resolution,time">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
-    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
     <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
     <style>
         #graphTitle {
@@ -35,37 +42,52 @@
 
     <script>
 
-function getSundayMidnite(date) {
+function parseToUTCDate(dateString) {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return new Date(Date.UTC(year, month - 1, day)); // Months are 0-based
+}
+
+function getSundayMidniteAfter(date) {
     const dayOfWeek = date.getUTCDay();
     const sundayMidnight = new Date(date);
     sundayMidnight.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for Sunday
     sundayMidnight.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
-    return sundayMidnight.toISOString().split('T')[0]; // Return ISO date format
+    return sundayMidnight
 }
 
-function categorizeDurations(tickets) {
+function dateToISODateString(date) {
+    return date.toISOString().split('T')[0]; // Return ISO date format
+}
+
+function categorizeAge(tickets) {
     const categories = {};
     const currentDate = new Date();
 
     tickets.forEach(ticket => {
         const endDate = ticket.resolvedDate && ticket.resolvedDate < currentDate ? ticket.resolvedDate : currentDate;
+        
+        for (let date = getSundayMidniteAfter(new Date(ticket.startDate)); date <= getSundayMidniteAfter(endDate); date.setUTCDate(date.getUTCDate() + 7)) {
+            const sunday = dateToISODateString(date);
 
-        for (let date = new Date(ticket.startDate); date < endDate; date.setUTCDate(date.getUTCDate() + 7)) {
-            const sundayMidnite = getSundayMidnite(date);
-            const duration = Math.ceil((date.getTime() - ticket.startDate.getTime()) / (1000 * 60 * 60 * 24 * 7)); // Weeks
+            var end = end > endDate ? endDate : date;
+            const age = Math.ceil((end - ticket.startDate.getTime()) / (1000 * 60 * 60 * 24 * 7)); // Weeks
 
-            if (!categories[sundayMidnite]) {
-                categories[sundayMidnite] = { week1: 0, week2: 0, week3: 0, week4Plus: 0 };
+            if (!categories[sunday]) {
+                categories[sunday] = { week1: 0, week2: 0, week3: 0, week4Plus: 0, escalated: 0 }
             }
 
-            if (duration <= 1) {
-                categories[sundayMidnite].week1 += 1;
-            } else if (duration <= 2) {
-                categories[sundayMidnite].week2 += 1;
-            } else if (duration <= 3) {
-                categories[sundayMidnite].week3 += 1;
+            if (ticket.labels.includes("exec_escalated")) {
+                categories[sunday].escalated += 1;
             } else {
-                categories[sundayMidnite].week4Plus += 1;
+                if (age <= 1) {
+                    categories[sunday].week1 += 1;
+                } else if (age <= 2) {
+                    categories[sunday].week2 += 1;
+                } else if (age <= 3) {
+                    categories[sunday].week3 += 1;
+                } else {
+                    categories[sunday].week4Plus += 1;
+                }
             }
         }
     });
@@ -87,6 +109,7 @@ function renderChart(categories) {
     const week2Data = labels.map(week => ({ x: new Date(week), y: categories[week].week2 }));
     const week3Data = labels.map(week => ({ x: new Date(week), y: categories[week].week3 }));
     const week4PlusData = labels.map(week => ({ x: new Date(week), y: categories[week].week4Plus }));
+    const escalatedData = labels.map(week => ({ x: new Date(week), y: categories[week].escalated }));
 
     new Chart(ctx, {
         type: 'bar',
@@ -112,6 +135,11 @@ function renderChart(categories) {
                     label: '4+ Weeks',
                     backgroundColor: 'rgba(220, 0, 0, 0.5)',
                     data: week4PlusData
+                },
+                {
+                    label: 'Escalated',
+                    backgroundColor: 'rgba(80, 0, 0, 0.9)',
+                    data: escalatedData
                 }
             ]
         },
@@ -129,7 +157,7 @@ function renderChart(categories) {
                     stacked: true,
                     title: {
                         display: true,
-                        text: 'Sunday Midnight',
+                        text: 'Week Ending Sunday',
                         font: {
                             size: 16,
                             weight: 'bold'
@@ -167,14 +195,16 @@ const app = {
     async created() {
         const tickets = await getSupportTickets();
 
-        const filteredTickets = tickets.filter(ticket => 
+         const filteredTickets = tickets.filter(ticket => 
             ticket.project != "Extole Help" && ticket.clientShortName !== "extole" && ticket.status !== "Closed - Won't Do" &&
             ['UI', 'Flow', 'Guru'].includes(ticket.pod)
-        );
-
+         );
+ 
         console.log("filteredTickets", filteredTickets);
 
-        const categorizedData = categorizeDurations(filteredTickets);
+        const categorizedData = categorizeAge(filteredTickets);
+
+        console.log("categorizedData", categorizedData);
 
         renderChart(categorizedData);
     }

@@ -67,7 +67,11 @@ async function getSupportTickets() {
                 statusChangeDate: new Date(Date.parse(ticket.statusChangeDate)),
                 resolvedDate: ticket.resolvedDate ? new Date(Date.parse(ticket.resolvedDate)) : null,
                 requestedDueDate: ticket.requestedDueDate ? new Date(Date.parse(ticket.requestedDueDate)) : null,
-                requestedStartDate: ticket.requestedStartDate ? new Date(Date.parse(ticket.requestedStartDate)) : null
+                requestedStartDate: ticket.requestedStartDate ? new Date(Date.parse(ticket.requestedStartDate)) : null,
+                comments: ticket.comments?.map(comment => ({
+                    ...comment,
+                    createdDate: new Date(Date.parse(comment.createdDate))
+                })) || []
            };
         });
 
