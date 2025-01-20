@@ -3,6 +3,9 @@
 <!--
 
 Sample Extole Report Configuration
+- clientId=350892686
+- reportId=sqd74x402lmei9xioawe
+
 {
 	"name": "CONFIGURABLE_EVENT_METRICS",
 	"report_type": "CONFIGURABLE_EVENT_METRICS",
@@ -34,7 +37,7 @@ Sample Extole Report Configuration
 <head>
     <meta charset="UTF-8">
     <title>Extole Client Report NTF</title>
-    <meta name="tags" content="extole,reports,kpi,events">
+    <meta name="tags" content="extole,reports,client,customers">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -182,9 +185,12 @@ const app = {
             const params = new URLSearchParams(window.location.search);
             const clientId = params.get('clientId');
             const reportId = params.get('reportId');
-
-            //const clientId = "350892686";
-            //const reportId = "sqd74x402lmei9xioaw";
+            if (!clientId) {
+                throw new Error("Error - No clientId parameter specified to page");
+            }
+            if (!reportId) {
+                throw new Error("Error - No reportId parameter specified to page");
+            }
 
             const rows = await getReport(clientId, reportId);
 
@@ -193,12 +199,17 @@ const app = {
             renderChart(rows);
         } catch (error) {
             console.error('Error loading data:', error);
-            document.getElementById('graphMessage').textContent = `${error.message}`;
+            console.log(document);
+            setTimeout(() => {
+                document.getElementById('graphMessage').textContent = `${error.message}`;
+            }, 100);
         }
     }
 };
 
-Vue.createApp(app).mount('#app');
+window.addEventListener('load', function() {
+    Vue.createApp(app).mount('#app');
+});
 
     </script>
 
