@@ -1,0 +1,6 @@
+
+description: Runs a report that returns the root step for every outcome.
+reportType: shkaj61hj8g33p9wsam9
+parameters:
+  time_range: LAST_MONTH
+    

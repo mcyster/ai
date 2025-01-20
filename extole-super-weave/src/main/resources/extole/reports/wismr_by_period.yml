@@ -1,0 +1,6 @@
+
+description: Runs a report that returns WISMR by period.
+reportType: sg1uyp2349dartoo0915
+parameters:
+  time_range: LAST_MONTH
+    

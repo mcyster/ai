@@ -1,0 +1,5 @@
+
+description: Runs a report that returns advocates and referral index.
+reportType: sg3eyzshue0eak0ye0y
+parameters:    
+    time_range: LAST_MONTH

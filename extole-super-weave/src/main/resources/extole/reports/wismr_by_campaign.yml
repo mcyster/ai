@@ -1,0 +1,6 @@
+
+description: Runs a report that returns WISMR by campaign.
+reportType: sg1uvg4ge299xeqe015k
+parameters:
+  time_range: LAST_MONTH
+    

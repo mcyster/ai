@@ -1,0 +1,6 @@
+
+description: Runs a report that returns the participation rate.
+reportType: PARTICIPATION_RATE
+parameters:
+  time_range: LAST_MONTH
+    

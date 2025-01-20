@@ -1,0 +1,4 @@
+description: Runs a conversion audit report to check the quality scores and approval statuses
+reportType: r46c8g4g6ln0rv3ep9vf
+parameters:
+  time_range: LAST_MONTH

@@ -1,0 +1,6 @@
+
+description: Runs a report that returns events by time.
+reportType: STEP_EVENTS_BY_EVENT_TIME
+parameters:
+  time_range: LAST_WEEK
+    

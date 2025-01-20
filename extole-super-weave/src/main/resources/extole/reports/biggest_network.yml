@@ -1,0 +1,6 @@
+
+description: Runs a report that returns the biggest networks.
+reportType: BIGGEST_NETWORK
+parameters:
+  time_range: LAST_MONTH
+    

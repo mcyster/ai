@@ -1,0 +1,6 @@
+
+description: Runs a report that returns the network relationships.
+reportType: NETWORK_RELATIONSHIPS_V2
+parameters:
+  time_range: LAST_MONTH
+    

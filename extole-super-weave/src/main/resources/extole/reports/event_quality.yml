@@ -1,0 +1,6 @@
+
+description: Runs a report that returns step events and their quality.
+reportType: sgtks93qrmrmrsuanss
+parameters:
+  time_range: LAST_MONTH
+    

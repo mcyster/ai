@@ -1,0 +1,22 @@
+description: Reward Rates Report Alerts
+keywords: rewards, rates, alerts
+instructions: |
+    Load the support ticket {{ticketNumber}}, it should have been passed into the initial request as a parameter called ticketNumber and should be in JIRA format
+
+    Take the ticket description and format it nicely, add it as a comment.
+    Run and link the report for Promotion Sources V2 for the range of "last_quarter"
+    Run and link the report for WISMR by period for the range of "last_quarter"
+    Run and link the report for WISMR by campaign for the range of "last_quarter"
+    Run and link the report for Rewards to Outcomes for the range of "last_quarter"
+
+    Run all the activity insight tools.
+
+    Add a comment to the support ticket providing:
+    - a summarization the description, group by program with a sublist of the fields and the amount by which each field changed
+    - a link to the notification
+    - the number of times the related client event has occurred, including the report link
+    - list the links returned by the the activity insight tools.
+
+    Note the support ticket number, and an extremely brief summary of the comment added to the support ticket.
+    
+

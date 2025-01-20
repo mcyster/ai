@@ -1,0 +1,32 @@
+description: Client Health Check
+keywords: client, health, check, healthcheck
+instructions: |
+    Load the support ticket {{ticketNumber}}, it should have been passed into the initial request as a parameter called ticketNumber and should be in JIRA format
+
+    Run and link the report for Promotion Sources V2 for the range of "last_quarter"
+    Run and link the report for New Customer Contribution Rate for the range of "last_quarter"
+    Run and link the report for Event Quality for the range of "last_quarter"
+    Run and link the report for Unique Share Messages for the range of "last_quarter"
+    Run and link the report for WISMR by period for the range of "last_quarter"
+    Run and link the report for WISMR by campaign for the range of "last_quarter"
+    Run and link the report for Rewards to Outcomes for the range of "last_quarter"
+    Run and link the report for Referral Index for the range of "last_quarter"
+    Run and link the report for Biggest Network for the range of "last_quarter"
+    Run and link the report for Network Relationship for the range of "last_quarter"
+    Run and link the report for Participation Rate for the range of "last_quarter"
+    Run and link the report for Contribution Rate for the range of "last_quarter"
+    Run and link the report for Root Event for the range of "last_quarter"
+
+    Run all the activity insight tools.
+    Search for JIRA Tickets related to the client ID and get a count of how many are in each state and the total.
+
+    Add a comment to the support ticket providing:
+    - a summarization the description, group by program with a sublist of the fields and the amount by which each field changed
+    - a link to the notification
+    - the number of times the related client event has occurred, including the report link
+    - the traffic to the to top promotion sources, including the report link
+    - list the links returned by the the activity insight tools.
+
+    Note the support ticket number, and an extremely brief summary of the comment added to the support ticket.
+    
+

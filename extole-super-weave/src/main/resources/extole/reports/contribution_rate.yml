@@ -1,0 +1,6 @@
+
+description: Runs a report that returns the contribution rate.
+reportType: qs736v36iqgqopkvwpy4
+parameters:
+  time_range: LAST_MONTH
+    

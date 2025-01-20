@@ -1,0 +1,6 @@
+
+description: Runs a report that returns rewards issued.
+reportType: s8unar2n7lwuspzififv
+parameters:
+  time_range: LAST_MONTH
+    

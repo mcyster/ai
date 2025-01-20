@@ -1,0 +1,6 @@
+
+description: Runs a report that returns unique share messages.
+reportType: SHARE_MESSAGES
+parameters:
+  time_range: LAST_MONTH
+    

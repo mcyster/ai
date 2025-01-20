@@ -1,0 +1,24 @@
+description: Client Functional Review
+keywords: client, functional, review
+instructions: |
+    Load the support ticket {{ticketNumber}}, it should have been passed into the initial request as a parameter called ticketNumber and should be in JIRA format
+
+    Run and link the report for Promotion Sources V2 for the range of "last_month"
+    Run and link the report for New Customer Contribution Rate for the range of "last_month"
+    Run and link the report for WISMR by period for the range of "last_month"
+    Run and link the report for WISMR by campaign for the range of "last_month"
+    Run and link the report for Rewards to Outcomes for the range of "last_month"
+    Run and link the report for Referral Index for the range of "last_month"
+    Run and link the report for Participation Rate for the range of "last_month"
+    Run and link the report for Contribution Rate for the range of "last_month"
+    Run and link the report for Conversion Audit for the range of "last_month"
+    Run and link the report for Root Event for the range of "last_month"
+
+    Run all the activity insight tools.
+
+    Add a comment to the support ticket providing:
+    - list the links returned by the the activity insight tools.
+
+    Note the support ticket number, and an extremely brief summary of the comment added to the support ticket.
+    
+

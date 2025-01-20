@@ -1,0 +1,17 @@
+description: Suspicious Person Rewards Volume
+keywords: rewards, suspicious, person
+instructions: |
+    Load the support ticket {{ticketNumber}}, it should have been passed into the initial request as a parameter called ticketNumber and should be in JIRA format
+
+    Take the ticket description and format it nicely, add it as a comment.
+    Run all the activity insight tools.
+
+    Add a comment to the support ticket providing:
+    - a summarization the description, group by program with a sublist of the fields and the amount by which each field changed
+    - a link to the notification
+    - the number of times the related client event has occurred, including the report link
+    - list the links returned by the the activity insight tools.
+
+    Note the support ticket number, and an extremely brief summary of the comment added to the support ticket.
+    
+

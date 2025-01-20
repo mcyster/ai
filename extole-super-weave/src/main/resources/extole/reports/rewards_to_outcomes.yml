@@ -1,0 +1,6 @@
+
+description: Runs a report that returns rewards to outcomes.
+reportType: sg1ur13b4d2q30dm5g9q
+parameters:
+  time_range: LAST_MONTH
+    

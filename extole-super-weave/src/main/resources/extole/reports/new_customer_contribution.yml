@@ -1,0 +1,6 @@
+
+description: Runs a report that returns new customer contribution.
+reportType: sg56p014k24ad59lk3my
+parameters:
+  time_range: LAST_MONTH
+    

@@ -1,0 +1,6 @@
+
+description: Runs a report that returns promotion sources.
+reportType: TOP_PROMOTION_SOURCES_V2
+parameters:
+  time_range: LAST_MONTH
+    
