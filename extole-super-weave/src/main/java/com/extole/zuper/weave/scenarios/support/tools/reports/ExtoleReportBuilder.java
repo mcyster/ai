@@ -46,6 +46,11 @@ public class ExtoleReportBuilder {
         return this;
     }
 
+    public ExtoleReportBuilder withReportType(String reportType) {
+        this.payload.put("report_type", reportType);
+        return this;
+    }
+
     public ExtoleReportBuilder withDisplayName(String displayName) {
         this.payload.put("display_name", displayName);
         return this;
@@ -116,10 +121,13 @@ public class ExtoleReportBuilder {
 
         JsonNode report = getReportByTag(reportTag, maxAge);
         if (report == null) {
-            report = webClient.post().uri(uriBuilder -> uriBuilder.path("/v4/reports").build())
-                    .accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON).bodyValue(payload)
-                    .retrieve().bodyToMono(JsonNode.class).block();
-
+            try {
+                report = webClient.post().uri(uriBuilder -> uriBuilder.path("/v4/reports").build())
+                        .accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON).bodyValue(payload)
+                        .retrieve().bodyToMono(JsonNode.class).block();
+            } catch (WebClientResponseException exception) {
+                throw new ToolException("Failed to generate report. Payload: " + payload.toString(), exception);
+            }
             if (report == null || !report.path("report_id").isEmpty()) {
                 throw new ToolException("Internal error, failed to generate report");
             }

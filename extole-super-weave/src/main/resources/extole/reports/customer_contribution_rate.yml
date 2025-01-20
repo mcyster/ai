@@ -1,0 +1,14 @@
+description: Runs a report that lists the names of all the input consumer events and their counts for a client in the specified time period
+reportType: CONFIGURABLE_EVENT_METRICS
+parameters:
+  mappings: 'period_start = START_DATE(event.eventTime, period: "WEEK"); new_attributed_customers = GROUP_COUNT(event.id, step_name: "customer", attribution: "ATTRIBUTED", visit_type: "NEW_TO_CLIENT"); all_new_customers = GROUP_COUNT(event.id, step_name: "customer", attribution: "ALL", visit_type: "NEW_TO_CLIENT");'
+  container: production
+  sort_order: ascending(period_start)
+  campiagn_id: ALL
+  campaign_states: ALL
+  program_label: ALL
+  visit_type: ALL
+  unattributed_events: false
+  include_totals: false
+  filters: '"1"=="1"'
+  time_range: LAST_SIX_MONTHS

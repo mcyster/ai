@@ -157,7 +157,7 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool
 
     @Override
     public String getName() {
-        return this.name;
+        return this.name + "Report";
     }
 
     @Override
@@ -186,7 +186,8 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool
             });
 
             if (request.timeRange != null && !request.timeRange.isBlank()) {
-                parameters.put(PARAMETER_NAME_TIME_RANGE, request.timeRange);
+                var timeRange = new TimePeriod(request.timeRange).convertToTimeRange();
+                parameters.put(PARAMETER_NAME_TIME_RANGE, timeRange);
             }
             if (!parameters.has(PARAMETER_NAME_TIME_RANGE)) {
                 parameters.put(PARAMETER_NAME_TIME_RANGE, DEFAULT_TIME_RANGE);
@@ -194,8 +195,8 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool
         }
 
         var reportBuilder = new ExtoleReportBuilder(this.extoleWebClientFactory).withClientId(request.clientId)
-                .withLimit(rowLimit).withName(reportType).withDisplayName(name).withParameters(parameters)
-                .withWaitForResult(waitForResult);
+                .withLimit(rowLimit).withName(name).withReportType(reportType).withDisplayName(name)
+                .withParameters(parameters).withWaitForResult(waitForResult);
 
         return reportBuilder.build();
     }
@@ -209,7 +210,7 @@ class UncachedExtoleConfigurableTimeRangeReportTool implements ExtoleSupportTool
         @JsonProperty(required = true)
         public String clientId;
 
-        @JsonPropertyDescription("time range of report as an ISO date range, defaults to the last 4 weeks")
+        @JsonPropertyDescription("time range of report as an ISO period (e.g. P12W), defaults to the last 4 weeks")
         @JsonProperty(required = false)
         public String timeRange;
 
