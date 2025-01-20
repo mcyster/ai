@@ -1,5 +1,5 @@
 description: Analyze and comment on traffic increase notification ticket
-keywords: notification traffic ncrease automatic change percentage alerts
+keywords: notification traffic increase automatic change percentage alerts
 instructions: |
     Load the support ticket {{ticketNumber}}
 
