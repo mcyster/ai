@@ -64,9 +64,15 @@ public class ExtoleSupportTicketRunbookSelectorTool implements Tool<Parameters, 
         logger.info("Runbook Selection for context: " + request + " in context " + context + " got: "
                 + message.getContent());
 
-        return aiWeaveService.extractResponse(
-                com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorSuperScenario.Response.class,
-                message.getContent());
+        try {
+            return aiWeaveService.extractResponse(
+                    com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketRunbookSelectorSuperScenario.Response.class,
+                    message.getContent());
+        } catch (ToolException exception) {
+            throw new ToolException("Tool " + getName()
+                    + " didn't get an jsonResponse from ExtoleSupportTicketRunbookSelectorSuperScenario. Response: "
+                    + message.getContent(), exception);
+        }
     }
 
     public int hash() {

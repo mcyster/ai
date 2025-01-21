@@ -19,6 +19,7 @@ dependencies {
     implementation 'com.google.guava:guava:33.0.0-jre'
 
     implementation project(':jira-client')
+    implementation project(':extole-client')
     
     testImplementation('org.springframework.boot:spring-boot-starter-test')
 }

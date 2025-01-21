@@ -64,9 +64,9 @@ public class ExtoleSupportTicketClientTool implements Tool<Parameters, ExtoleSup
                     com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientSuperScenario.Response.class,
                     message.getContent());
         } catch (ToolException exception) {
-            throw new ToolException(
-                    "Tool" + getName() + " failed - invalid json response from ExtoleSupportTicketClientSuperScenario.",
-                    exception);
+            throw new ToolException("Tool" + getName()
+                    + " failed - invalid json response from ExtoleSupportTicketClientSuperScenario. Response: "
+                    + message.getContent(), exception);
         }
 
     }

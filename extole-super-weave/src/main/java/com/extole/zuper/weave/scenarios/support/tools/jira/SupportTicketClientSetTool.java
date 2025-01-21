@@ -67,9 +67,8 @@ public class SupportTicketClientSetTool implements ExtoleSupportTool<Request> {
         try {
             supportTicketService.setClient(request.key, request.clientShortName);
         } catch (TicketException exception) {
-            throw new ToolException(
-                    "Unable to set clientShortName: " + request.clientShortName + " on ticket: " + request.key,
-                    exception);
+            throw new ToolException("Unable to set clientShortName: " + request.clientShortName + " on ticket: "
+                    + request.key + " cause: " + exception.getMessage(), exception);
         }
 
         ObjectNode response = JsonNodeFactory.instance.objectNode();

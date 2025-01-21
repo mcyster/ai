@@ -62,6 +62,14 @@ public class SupportTicketService implements TicketService<SupportTicket> {
     }
 
     private void setClientAsCustomField(String ticketNumber, String clientShortName) throws TicketException {
+        var ticket = getTicket(ticketNumber);
+        if (ticket.isEmpty()) {
+            throw new TicketException("Unable to load ticket: " + ticketNumber);
+        }
+        if (ticket.get().clientShortName() != null && ticket.get().clientShortName().equals(clientShortName)) {
+            return;
+        }
+
         var jiraClientId = supportTicketClients.getJiraClientIndexForClientShortName(clientShortName);
 
         ObjectNode payload = JsonNodeFactory.instance.objectNode();
@@ -82,12 +90,13 @@ public class SupportTicketService implements TicketService<SupportTicket> {
                             .queryParam("notifyUsers", "false").build())
                     .accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON).bodyValue(payload)
                     .retrieve()
-                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response -> response
-                            .bodyToMono(String.class)
-                            .map(errorBody -> new TicketException("Problems putting client " + clientShortName
-                                    + " to ticket " + ticketNumber + " Bad request code: " + response.statusCode()
-                                    + " body: " + errorBody + " payload:" + payload.toString()))
-                            .flatMap(Mono::error))
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> response.bodyToMono(String.class)
+                                    .map(errorBody -> new TicketException("Problems putting client " + clientShortName
+                                            + " to ticket " + ticketNumber + " Bad request code: "
+                                            + response.statusCode() + " body: " + errorBody + " payload:"
+                                            + payload.toString() + " key:" + this.jiraWebClientFactory.getMaskedKey()))
+                                    .flatMap(Mono::error))
                     .toBodilessEntity().block();
         } catch (Throwable exception) {
             if (exception.getCause() instanceof TicketException) {
@@ -98,6 +107,14 @@ public class SupportTicketService implements TicketService<SupportTicket> {
     }
 
     private void setClientAsOrganization(String ticketNumber, String clientShortName) throws TicketException {
+        var ticket = getTicket(ticketNumber);
+        if (ticket.isEmpty()) {
+            throw new TicketException("Unable to load ticket: " + ticketNumber);
+        }
+        if (ticket.get().clientShortName() != null && ticket.get().clientShortName().equals(clientShortName)) {
+            return;
+        }
+
         var organizationIndex = supportTicketOrganizations.getJiraOrganizationIndexFromClientShortName(clientShortName);
 
         ObjectNode payload = JsonNodeFactory.instance.objectNode();
@@ -117,12 +134,13 @@ public class SupportTicketService implements TicketService<SupportTicket> {
                             .queryParam("notifyUsers", "false").build())
                     .accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON).bodyValue(payload)
                     .retrieve()
-                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response -> response
-                            .bodyToMono(String.class)
-                            .map(errorBody -> new TicketException("Problems posting organization " + organizationIndex
-                                    + " to ticket" + "Bad request code: " + response.statusCode() + " body: "
-                                    + errorBody + " payload:" + payload.toString()))
-                            .flatMap(Mono::error))
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> response.bodyToMono(String.class)
+                                    .map(errorBody -> new TicketException("Problems posting organization "
+                                            + organizationIndex + " to ticket" + "Bad request code: "
+                                            + response.statusCode() + " body: " + errorBody + " payload:"
+                                            + payload.toString() + " key:" + this.jiraWebClientFactory.getMaskedKey()))
+                                    .flatMap(Mono::error))
                     .toBodilessEntity().block();
         } catch (Throwable exception) {
             if (exception.getCause() instanceof TicketException) {
