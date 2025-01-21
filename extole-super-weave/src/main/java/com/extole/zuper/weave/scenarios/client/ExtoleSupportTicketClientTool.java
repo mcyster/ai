@@ -59,9 +59,16 @@ public class ExtoleSupportTicketClientTool implements Tool<Parameters, ExtoleSup
 
         System.out.println("!!! find clientId convo: " + message);
 
-        return aiWeaveService.extractResponse(
-                com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientSuperScenario.Response.class,
-                message.getContent());
+        try {
+            return aiWeaveService.extractResponse(
+                    com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientSuperScenario.Response.class,
+                    message.getContent());
+        } catch (ToolException exception) {
+            throw new ToolException(
+                    "Tool" + getName() + " failed - invalid json response from ExtoleSupportTicketClientSuperScenario.",
+                    exception);
+        }
+
     }
 
     public int hash() {

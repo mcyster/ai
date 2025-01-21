@@ -3,8 +3,12 @@ keywords: client, health, check, healthcheck
 instructions: |
     Load the support ticket {{ticketNumber}}, it should have been passed into the initial request as a parameter called ticketNumber and should be in JIRA format
 
-    Run and link the report for Promotion Sources V2 for the range of "last_quarter"
+    If there is  comment in the ticket titled "Health Check Summary" then do the actions in Phase 2, else do Phase 1.
+
+    # Phase 1
+    Run and link the report for Customer Contribution Rate for the range of "last_quarter"
     Run and link the report for New Customer Contribution Rate for the range of "last_quarter"
+    Run and link the report for Promotion Sources V2 for the range of "last_quarter"
     Run and link the report for Event Quality for the range of "last_quarter"
     Run and link the report for Unique Share Messages for the range of "last_quarter"
     Run and link the report for WISMR by period for the range of "last_quarter"
@@ -20,7 +24,7 @@ instructions: |
     Run all the activity insight tools.
     Search for JIRA Tickets related to the client ID and get a count of how many are in each state and the total.
 
-    Add a comment to the support ticket providing:
+    Add a comment to the support ticket, titled "Health Check Summary" providing:
     - a summarization the description, group by program with a sublist of the fields and the amount by which each field changed
     - a link to the notification
     - the number of times the related client event has occurred, including the report link
@@ -29,4 +33,7 @@ instructions: |
 
     Note the support ticket number, and an extremely brief summary of the comment added to the support ticket.
     
+    # Phase 2
+    Take a webshot of the Customer Contribtion Rate Report at https://beep-boop.extole.com/sites/managed/extole-client-report-ntf/index.html?clientId=$CLIENT_ID&reportId=$REPORT_ID (replacing $CLIENT_ID with the client_id of the client, and REPORT_ID with the id of the report - the string after the hash at the end of the report view url) and post the webshot to this ticket.
 
+    

@@ -127,7 +127,10 @@ function renderChart(rows) {
         rows.shift(); 
     }
  
-    const attributedRateData = rows.map(row => ({ x: new Date(row.period_start), y: row.new_attributed_customers / row.all_new_customers * 100 }))
+    const attributedRateData = rows.map(row => ({
+      x: new Date(row.period_start),
+      y: row.all_new_customers ? (row.new_attributed_customers / row.all_new_customers) * 100 : 0
+    }));
 
     new Chart(chart, {
         type: 'line',
