@@ -34,15 +34,16 @@ class SupportTicketClients {
     }
 
     public Integer getJiraClientIndexForClientShortName(String clientShortName) throws TicketException {
+        String shortName = clientShortName.toLowerCase();
         var clients = getClients();
 
-        if (!clients.containsKey(clientShortName)) {
-            System.out.println("Search failed for: " + clientShortName);
+        if (!clients.containsKey(shortName)) {
+            System.out.println("Search failed for: " + shortName);
             clients.forEach((key, value) -> System.out.println(key + " -> " + value));
 
-            throw new TicketException("Client shortName not found: " + clientShortName);
+            throw new TicketException("Client shortName not found: " + shortName);
         }
-        return clients.get(clientShortName).id();
+        return clients.get(shortName).id();
     }
 
     public String getClientShortNameForJiraClientIndex(Integer jiraClientIndex) throws TicketException {

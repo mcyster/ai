@@ -1,5 +1,7 @@
 package com.extole.zuper.weave.scenarios.support.tools;
 
+import java.util.Optional;
+
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientException;
@@ -55,7 +57,11 @@ public class ExtoleClientGetTool implements ExtoleSupportTool<Parameters> {
         } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
             throw new FatalToolException("extoleSuperUserToken is invalid", exception);
         } catch (WebClientException exception) {
-            throw new ToolException("Internal error, unable to get client");
+            var client = getByClientShortName(parameters.clientId());
+            if (client.isEmpty()) {
+                throw new ToolException("Internal error, unable to get client");
+            }
+            result = client.get();
         }
 
         if (result == null || !result.has("client_id")) {
@@ -63,6 +69,33 @@ public class ExtoleClientGetTool implements ExtoleSupportTool<Parameters> {
         }
 
         return result;
+    }
+
+    private Optional<JsonNode> getByClientShortName(String name) {
+        JsonNode resultNode;
+        try {
+            resultNode = this.extoleWebClientFactory.getSuperUserWebClient().get()
+                    .uri(uriBuilder -> uriBuilder.path("/v4/clients").queryParam("type=CUSTOMER").build())
+                    .accept(MediaType.APPLICATION_JSON).retrieve().bodyToMono(JsonNode.class).block();
+        } catch (ExtoleWebClientException | WebClientResponseException.Forbidden exception) {
+            return Optional.empty();
+        } catch (WebClientException exception) {
+            return Optional.empty();
+        }
+
+        if (!resultNode.isArray()) {
+            Optional.empty();
+        }
+
+        Optional<JsonNode> client = Optional.empty();
+        for (JsonNode node : resultNode) {
+            String shortName = node.path("short_name").asText();
+            if (name.toLowerCase().equals(shortName)) {
+                client = Optional.of(node);
+            }
+        }
+
+        return client;
     }
 
     static record Parameters(

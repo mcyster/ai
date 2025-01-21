@@ -63,7 +63,6 @@ public class ExtoleClientTool implements Tool<ExtoleClientRequest, ExtoleSession
 
         return resultNode;
     }
-
 }
 
 class ExtoleClientRequest {
