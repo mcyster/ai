@@ -32,7 +32,7 @@ jq 'map(select(.project != "Extole Help" and .status != "Closed - Won'"'"'t Do" 
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">HELP Ticket First Response Times (business hours: 9-5 cst)</h2>
+            <h2 id="graphTitle">HELP Ticket First Response Times <small>(business hours: 8-4 cst)</small></h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -64,12 +64,15 @@ function isWeekend(date) {
     return day === 0 || day === 6; // Sunday (0) or Saturday (6)
 }
 
+const businessTimeStartHour = 14
+const businessTimeEndHour = 22
+
 function toBusinessTime(date) {
     const hours = date.getUTCHours();
-    if (hours < 15) {
-        date.setUTCHours(15, 0, 0, 0);
-    } else if (hours >= 23) {
-        date.setUTCHours(23, 0, 0, 0);
+    if (hours < businessTimeStartHour) {
+        date.setUTCHours(businessTimeStartHour, 0, 0, 0);
+    } else if (hours >= businessTimeEndHour) {
+        date.setUTCHours(businessTimeEndHour, 0, 0, 0);
     }
     return date;
 }
@@ -83,8 +86,8 @@ function businessHoursDifference(start, end) {
         if (!isWeekend(current)) {
             let businessStart = new Date(current);
             let businessEnd = new Date(current);
-            businessStart.setUTCHours(11, 0, 0, 0);
-            businessEnd.setUTCHours(19, 0, 0, 0);
+            businessStart.setUTCHours(businessTimeStartHour, 0, 0, 0);
+            businessEnd.setUTCHours(businessTimeEndHour, 0, 0, 0);
 
             if (current < businessStart) {
                 current = businessStart;
