@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Alert Tickets</title>
-    <meta name="tags" content="extole,support,alert,tickets,monitoring,reward">
+    <meta name="tags" content="extole,support,alerts,tickets,monitoring,reward">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -214,7 +214,9 @@ const app = {
         try {
             const tickets = await getSupportTickets();
             //const filteredTickets = tickets.filter(ticket => ticket.reporter == "monitoring@extole.com" || ticket.reporter == "support@extole.com");
-            const filteredTickets = tickets.filter(ticket => ticket.reporter == "monitoring@extole.com");
+            //const filteredTickets = tickets.filter(ticket => ticket.reporter == "monitoring@extole.com");
+            const filteredTickets = tickets.filter(ticket => ticket.summary.includes("alerts - stats") || (ticket.runbook && ticket.runbook.includes("Triage - Rewards Monitoring")));
+
             //filteredTickets = tickets;
             console.log("filteredTickets", filteredTickets);
             const { startCounts, resolveCounts, validCounts, invalidCounts, realIssueCounts } = countTicketsPerWeek(filteredTickets);
