@@ -169,7 +169,8 @@ const app = {
     },
     async created() {
         getSupportTickets().then(tickets => {
-            filteredTickets = tickets.filter(ticket => ticket.project == "Extole Help");
+            const filteredTickets = tickets.filter(ticket => ticket.project == "Extole Help" && status != "Canceled");
+
             console.log("filteredTickets", filteredTickets);
             const categoryCounts = countTicketsPerCategoryPerWeek(filteredTickets);
             const topCategories = getTopCategories(categoryCounts);

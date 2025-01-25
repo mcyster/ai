@@ -169,7 +169,8 @@ const app = {
     async created() {
         try {
             const tickets = await getSupportTickets();
-            const filteredTickets = tickets.filter(ticket => ticket.pod === 'Flow');
+            const filteredTickets = tickets.filter(ticket => 
+                ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' && ticket.status != "Closed - Won't Do" && ticket.pod === 'Flow');
             console.log("filteredTickets", filteredTickets);
             const categoryCounts = countTicketsPerCategoryPerWeek(filteredTickets);
             const topCategories = getTopCategories(categoryCounts);

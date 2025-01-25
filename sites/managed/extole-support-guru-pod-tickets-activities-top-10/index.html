@@ -171,7 +171,8 @@ const app = {
     async created() {
         try {
             const tickets = await getSupportTickets();
-            const filteredTickets = tickets.filter(ticket => ticket.pod === 'Guru');
+            const filteredTickets = tickets.filter(ticket => 
+                ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' && ticket.status != "Closed - Won't Do" && ticket.pod === 'Guru');
             const categoryCounts = countTicketsPerCategoryPerWeek(filteredTickets);
             const topCategories = getTopCategories(categoryCounts);
             renderChart(categoryCounts, topCategories);
@@ -184,14 +185,6 @@ const app = {
 Vue.createApp(app).mount('#app');
 
 
-    </script>
-
-    <script>
-        (async function compileAndExecute() {
-            const tsCode = document.getElementById('typescript-code').textContent;
-            const jsCode = ts.transpile(tsCode, { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None });
-            eval(jsCode);
-        })();
     </script>
 </body>
 </html>

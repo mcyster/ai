@@ -166,7 +166,7 @@ const app = {
         const tickets = await getSupportTickets();
 
         const filteredTickets = tickets.filter(ticket =>
-            ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole'
+            ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' && ticket.status != "Closed - Won't Do"
         );
     
         console.log("filteredTickets", filteredTickets);

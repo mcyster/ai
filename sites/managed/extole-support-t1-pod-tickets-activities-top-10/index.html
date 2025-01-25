@@ -168,7 +168,9 @@ const app = {
     },
     created() {
         getSupportTickets().then(tickets => {
-            tickets = tickets.filter(ticket => ticket.pod === 'Support T1 Pod' || (ticket.key && ticket.key.includes("HELP")));
+            tickets = tickets.filter(ticket => 
+                (ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' && ticket.status != "Closed - Won't Do" && ticket.pod === 'Support T1 Pod') || (ticket.key.includes("HELP") && ticket.status != "Canceled")
+            );
             const categoryCounts = countTicketsPerCategoryPerWeek(tickets);
             const topCategories = getTopCategories(categoryCounts);
             renderChart(categoryCounts, topCategories);
