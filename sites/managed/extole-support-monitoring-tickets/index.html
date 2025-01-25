@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Alert Tickets</title>
-    <meta name="tags" content="extole,support,alerts,tickets,reward">
+    <title>Monitoring Tickets</title>
+    <meta name="tags" content="extole,support,alerts,tickets,monitoring,reward">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Alert - Tickets</h2>
+            <h2 id="graphTitle">Monitoring - Tickets</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -213,7 +213,11 @@ const app = {
     async created() {
         try {
             const tickets = await getSupportTickets();
-            const filteredTickets = tickets.filter(ticket => ticket.reporter == "monitoring@extole.com" || ticket.reporter == "support@extole.com");
+            //const filteredTickets = tickets.filter(ticket => ticket.reporter == "monitoring@extole.com" || ticket.reporter == "support@extole.com");
+            //const filteredTickets = tickets.filter(ticket => ticket.reporter == "monitoring@extole.com");
+            const filteredTickets = tickets.filter(ticket => ticket.summary.includes("alerts - stats") || (ticket.runbook && ticket.runbook.includes("Triage - Rewards Monitoring")));
+
+            //filteredTickets = tickets;
             console.log("filteredTickets", filteredTickets);
             const { startCounts, resolveCounts, validCounts, invalidCounts, realIssueCounts } = countTicketsPerWeek(filteredTickets);
             renderChart(startCounts, resolveCounts, validCounts, invalidCounts, realIssueCounts);
