@@ -39,26 +39,27 @@ function calculateTicketDurationsByPriority(tickets) {
     const durationMap = {};
 
     tickets.forEach(ticket => {
-        const resolved = ticket.resolvedDate || now;
-        const duration = (resolved.getTime() - ticket.startDate.getTime()) / (1000 * 60 * 60 * 24); // Duration in days
+        if (ticket.startDate < now) {
+            const resolved = ticket.resolvedDate || now;
+            const duration = (resolved.getTime() - ticket.startDate.getTime()) / (1000 * 60 * 60 * 24); // Duration in days
 
-        var clientPriority = ticket.clientPriority || 'Unspecified';
-        if (clientPriority == "high") {
-            clientPriority = "High"
+            var clientPriority = ticket.clientPriority || 'Unspecified';
+            if (clientPriority == "high") {
+                clientPriority = "High"
+            }
+
+            const weekEndDate = getWeekEndDate(ticket.startDate);
+
+            if (!durationMap[clientPriority]) {
+                durationMap[clientPriority] = {};
+            }
+            if (!durationMap[clientPriority][weekEndDate]) {
+                durationMap[clientPriority][weekEndDate] = [];
+            }
+
+            durationMap[clientPriority][weekEndDate].push(duration);
         }
-
-        const weekEndDate = getWeekEndDate(ticket.startDate);
-
-        if (!durationMap[clientPriority]) {
-            durationMap[clientPriority] = {};
-        }
-        if (!durationMap[clientPriority][weekEndDate]) {
-            durationMap[clientPriority][weekEndDate] = [];
-        }
-
-        durationMap[clientPriority][weekEndDate].push(duration);
     });
-
     return durationMap;
 }
 
