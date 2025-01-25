@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Alert Reward Monitoring Tickets</title>
-    <meta name="tags" content="extole,support,alerts,tickets,monitoring,reward">
+    <title>Reward Monitoring Tickets</title>
+    <meta name="tags" content="extole,support,alerts,tickets,reward">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Alert - Reward Monitoring Tickets</h2>
+            <h2 id="graphTitle">Reward Monitoring - Tickets</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -37,6 +37,7 @@
 function countTicketsPerWeek(tickets) {
     const startCounts = {};
     const resolveCounts = {};
+    const realIssueCounts = {};
     const validCounts = {};
     const invalidCounts = {};
 
@@ -51,6 +52,13 @@ function countTicketsPerWeek(tickets) {
             resolveCounts[resolvedWeekEnd] = 0;
         }
         resolveCounts[resolvedWeekEnd]++;
+
+        if (realIssueCounts[resolvedWeekEnd] === undefined) {
+            realIssueCounts[resolvedWeekEnd] = 0;
+        }
+        if (ticket.labels.includes("real_issue")) {
+            realIssueCounts[resolvedWeekEnd]++;
+        }
 
         if (validCounts[resolvedWeekEnd] === undefined) {
             validCounts[resolvedWeekEnd] = 0;
@@ -73,7 +81,7 @@ function countTicketsPerWeek(tickets) {
 
     });
 
-    return { startCounts, resolveCounts, validCounts, invalidCounts };
+    return { startCounts, resolveCounts, validCounts, invalidCounts, realIssueCounts };
 }
 
 function getWeekEndDate(date) {
@@ -84,7 +92,7 @@ function getWeekEndDate(date) {
     return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
 }
 
-function renderChart(startCounts, resolveCounts, validCounts, invalidCounts) {
+function renderChart(startCounts, resolveCounts, validCounts, invalidCounts, realIssueCounts) {
     const ctx = document.getElementById('chart');
     if (!ctx) return;
     let weeks = Object.keys(startCounts).sort();
@@ -102,6 +110,7 @@ function renderChart(startCounts, resolveCounts, validCounts, invalidCounts) {
     const resolveData = weeks.map(week => ({ x: new Date(week), y: resolveCounts[week] || 0 }));
     const validData = weeks.map(week => ({ x: new Date(week), y: validCounts[week] || 0 }));
     const invalidData = weeks.map(week => ({ x: new Date(week), y: invalidCounts[week] || 0 }));
+    const realIssueData = weeks.map(week => ({ x: new Date(week), y: realIssueCounts[week] || 0 }));
 
     new Chart(ctx, {
         type: 'line',
@@ -137,6 +146,14 @@ function renderChart(startCounts, resolveCounts, validCounts, invalidCounts) {
                     borderColor: 'rgba(255, 182, 193, 1)',
                     fill: false,
                     data: invalidData,
+                    borderWidth: 2
+                },
+                {
+                    label: 'Real Issues (includes Valid)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(135, 206, 250, 0.2)',
+                    fill: false,
+                    data: realIssueData,
                     borderWidth: 2
                 }
             ]
@@ -196,13 +213,14 @@ const app = {
     async created() {
         try {
             const tickets = await getSupportTickets();
-            const filteredTickets = tickets.filter(ticket => 
+            const filteredTickets = tickets.filter(ticket =>
             //    ticket.reporter == "monitoring@extole.com" && 
                 ticket.runbook && ticket.runbook.includes("Triage - Rewards Monitoring")
             );
+
             console.log("filteredTickets", filteredTickets);
-            const { startCounts, resolveCounts, validCounts, invalidCounts } = countTicketsPerWeek(filteredTickets);
-            renderChart(startCounts, resolveCounts, validCounts, invalidCounts);
+            const { startCounts, resolveCounts, validCounts, invalidCounts, realIssueCounts } = countTicketsPerWeek(filteredTickets);
+            renderChart(startCounts, resolveCounts, validCounts, invalidCounts, realIssueCounts);
         } catch (error) {
             console.error('Error loading data:', error);
         }
