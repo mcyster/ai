@@ -2,14 +2,18 @@
 set -eu
 set -o pipefail
 
-usage="Usage: $(basename $0) [-h][-r]
+usage="Usage: $(basename $0) [-h][-r][-f]
     -h - help
     -r - restart
+    -f - run in forground
 
 Starts the admin-app in the background
 "
 
+APP_PROFILE="${ADMIN_APP_PROFILE:-prod}"
+
 restart=0
+foreground=0
 while [ $# -gt 0 ]; do
     case "$1" in
         -h|-\?)
@@ -19,6 +23,9 @@ while [ $# -gt 0 ]; do
         -r)
             restart=1
         ;;
+	-f)
+	    foreground=1
+	;;
         *)
 	    break
         ;;
@@ -45,12 +52,14 @@ app_home=$AI_HOME/admin-app
 
 mkdir -p $app_home/logs
 
-jar="$(find $app_home/libs -name "admin-app*.jar" | sort | tail -1)"
+jar="$(find $app_home/build/libs -name "admin-app*.jar" | grep -v "plain.jar" | sort | tail -1)"
+
+app="libs/admin-app"
 
 if [ $restart -eq 1 ]; then
-    if pgrep -n -f $jar >/dev/null; then
+    if pgrep -n -f $app >/dev/null; then
         echo -n "admin-app stopping..."
-        pkill -f $jar
+        pkill -f $app
 
         end=$((SECONDS+240))
         while pgrep -f $jar >/dev/null; do
@@ -66,19 +75,43 @@ if [ $restart -eq 1 ]; then
     fi
 fi
 
-if pgrep -f libs/admin-app >/dev/null; then
+if pgrep -f $app >/dev/null; then
     echo "admin-app already running on $(pgrep -f libs/admin-app)"
     exit 0
 fi
 
 echo "admin-app $jar last modified $(stat -c '%y' $jar)"
 
-if [ -z "${ADMIN_APP_PROFILE:-}" ]; then
-    ADMIN_APP_PROFILE=prod
-fi
-
 cd $app_home
-nohup java -jar "$jar" --spring.profiles.active="$ADMIN_APP_PROFILE" > "$app_home/logs/admin-app-output.log" 2>&1 &
 
-echo "admin-app running in background as process: $!"
+app_cmd=(java -jar "$jar" --spring.profiles.active="$APP_PROFILE")
+
+if [ "$foreground" == "1" ]; then
+    echo "Running: ${app_cmd[*]}"
+    "${app_cmd[@]}"
+else
+    log="$app_home/logs/app-output.log"
+    echo "Running in background, logs: $log"
+    nohup "${app_cmd[@]}" > "$log" 2>&1 &
+    pid=$!
+    echo "admin-app running in background as process: $pid"
+
+    timeout=60
+    port=9000
+    interval=1
+    echo "admin-app waiting for port $port to be available (timeout: ${timeout}s)..."
+
+    until ss -anp | grep -q ":$port"; do
+        sleep $interval
+        timeout=$((timeout - interval))
+        if [ $timeout -le 0 ]; then
+            echo "Timeout reached. Port $port is not being listened on."
+            tail -100 "$log"
+            exit 1
+        fi
+    done
+
+    echo "admin-app port $port is now being listened on."
+    exit 0
+fi
 
