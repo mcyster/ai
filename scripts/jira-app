@@ -80,14 +80,14 @@ fi
 echo "jira-app $jar last modified $(stat -c '%y' $jar)"
 
 cd $app_home
-app_command=(java -jar "$jar" --spring.profiles.active="APP_PROFILE")
+app_command=(java -jar "$jar" --spring.profiles.active="$APP_PROFILE")
 
 if [ "$foreground" == "1" ]; then
-    echo "Running: ${app_cmd[*]}"
+    echo "jira-app running: ${app_command[*]}"
     "${app_command[@]}"
 else
     log="$app_home/logs/app-output.log"
-    echo "Running in background, logs: $log"
+    echo "jira-app running in background, logs: $log"
     nohup "${app_command[@]}" > "$log" 2>&1 &
     pid=$!
     echo "jira-app running in background as process: $pid"
@@ -101,7 +101,7 @@ else
         sleep $interval
         timeout=$((timeout - interval))
         if [ $timeout -le 0 ]; then
-            echo "Timeout reached. Port $port is not being listened on."
+            echo "jira-app timeout reached. Port $port is not being listened on."
             tail -100 "$log"
             exit 1
         fi

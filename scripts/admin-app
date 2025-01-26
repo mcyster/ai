@@ -87,11 +87,11 @@ cd $app_home
 app_cmd=(java -jar "$jar" --spring.profiles.active="$APP_PROFILE")
 
 if [ "$foreground" == "1" ]; then
-    echo "Running: ${app_cmd[*]}"
+    echo "admin-app running: ${app_cmd[*]}"
     "${app_cmd[@]}"
 else
     log="$app_home/logs/app-output.log"
-    echo "Running in background, logs: $log"
+    echo "admin-app running in background, logs: $log"
     nohup "${app_cmd[@]}" > "$log" 2>&1 &
     pid=$!
     echo "admin-app running in background as process: $pid"
