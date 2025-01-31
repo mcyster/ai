@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Support Tickets Top 10 Clients</title>
-    <meta name="tags" content="extole,tickets,all-pods,support,client">
+    <title>Total Duration Top 10 Activities</title>
+    <meta name="tags" content="extole,support,tickets,activities,duration,all-pods">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,30 +25,37 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Support Tickets Created Each Week by Top 10 Clients</h2>
+            <h2 id="graphTitle">Total Duration Top 10 Activities</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
 
-   <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+
+    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
     <script src="../extole/support-tickets.js"></script>
     <script>
 
-function countTicketsPerClientPerWeek(tickets) {
-    const clientCounts = {};
+function durationTicketsPerCategoryPerWeek(tickets) {
+    const categoryCounts = {};
 
     tickets.forEach(ticket => {
         const creationDate = new Date(ticket.createdDate);
-        var client = ticket.clientShortName || 'Unknown Client';
-        client = client.toLowerCase();
+        const category = ticket.activity || 'Uncategorized';
         const weekEndDate = getWeekEndDate(creationDate);
 
-        if (!clientCounts[client]) {
-            clientCounts[client] = {};
+        if (!categoryCounts[category]) {
+            categoryCounts[category] = {};
         }
-        clientCounts[client][weekEndDate] = (clientCounts[client][weekEndDate] || 0) + 1;
+
+        var duration = ticket.duration;
+        if (duration < 600) {
+           duraton = 600;
+        }
+
+        categoryCounts[category][weekEndDate] = (categoryCounts[category][weekEndDate] || 0) + ticket.duration;
     });
-    return clientCounts;
+
+    return categoryCounts;
 }
 
 function getWeekEndDate(date) {
@@ -59,41 +66,38 @@ function getWeekEndDate(date) {
     return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
 }
 
-function getTopClients(clientCounts, limit = 10) {
-    const lastMonth = new Date();
-    lastMonth.setMonth(lastMonth.getMonth() - 1);
-    const lastMonthISO = lastMonth.toISOString().split('T')[0];
-
-    const clientTotals = {};
-    for (const client in clientCounts) {
-        // Only count tickets in the last month
-        clientTotals[client] = Object.entries(clientCounts[client])
-            .filter(([weekEndDate]) => weekEndDate >= lastMonthISO)
-            .reduce((sum, [, count]) => sum + count, 0);
+function getTopCategories(categoryCounts, limit = 10) {
+    const categoryTotals = {};
+    for (const category in categoryCounts) {
+        categoryTotals[category] = Object.values(categoryCounts[category]).reduce((sum, count) => sum + count, 0);
     }
 
-    return Object.entries(clientTotals)
+    return Object.entries(categoryTotals)
         .sort(([, totalA], [, totalB]) => totalB - totalA)
         .slice(0, limit)
-        .map(([client]) => client);
+        .map(([category]) => category);
 }
 
-function renderChart(clientCounts, topClients) {
+function renderChart(categoryDurations, topCategories) {
     const ctx = document.getElementById('chart');
     if (!ctx) return;
 
     let weeks = new Set();
-    topClients.forEach(client => {
-        Object.keys(clientCounts[client]).forEach(week => weeks.add(week));
+    topCategories.forEach(category => {
+        Object.keys(categoryDurations[category]).forEach(week => weeks.add(week));
     });
     weeks = new Set(Array.from(weeks).sort());
-    weeks = new Set(Array.from(weeks).slice(-24)); // Ensure we only show the last 24 weeks if there are more than 24 weeks of data
 
-    const colors = generateColors(topClients.length);
-    const datasets = topClients.map((client, index) => {
-        const data = Array.from(weeks).map(week => ({ x: new Date(week), y: clientCounts[client][week] || 0 }));
+    // Filter weeks to include only the last 6 months
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    weeks = new Set(Array.from(weeks).filter(week => new Date(week) >= sixMonthsAgo));
+
+    const colors = generateColors(topCategories.length);
+    const datasets = topCategories.map((category, index) => {
+        const data = Array.from(weeks).map(week => ({ x: new Date(week), y: (categoryDurations[category][week] || 0) / 60 / 60 }));
         return {
-            label: client,
+            label: category,
             backgroundColor: colors[index], // Set the backgroundColor to match the borderColor
             borderColor: colors[index], // Use the same color for the border
             fill: false,
@@ -136,7 +140,7 @@ function renderChart(clientCounts, topClients) {
                     beginAtZero: true, // Ensure y-axis starts at 0
                     title: {
                         display: true,
-                        text: 'Number of Tickets',
+                        text: 'Total Duration (hours)',
                         font: {
                             size: 16,
                             weight: 'bold'
@@ -173,14 +177,12 @@ const app = {
     async created() {
         try {
             const tickets = await getSupportTickets();
-            // Only consider tickets created in the last 6 months
-            const sixMonthsAgo = new Date();
-            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-            const filteredTickets = tickets.filter(ticket => new Date(ticket.createdDate) >= sixMonthsAgo);
-
-            const clientCounts = countTicketsPerClientPerWeek(filteredTickets);
-            const topClients = getTopClients(clientCounts);
-            renderChart(clientCounts, topClients);
+            const filteredTickets = tickets.filter(ticket => 
+                 ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' 
+                 && ticket.status != "Closed - Won't Do");
+            const categoryDurations = durationTicketsPerCategoryPerWeek(filteredTickets);
+            const topCategories = getTopCategories(categoryDurations);
+            renderChart(categoryDurations, topCategories);
         } catch (error) {
             console.error('Error loading data:', error);
         }
@@ -190,5 +192,6 @@ const app = {
 Vue.createApp(app).mount('#app');
 
     </script>
+
 </body>
 </html>
