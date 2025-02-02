@@ -1,6 +1,3 @@
-#n ai
-Restful ai app
-
 
 # Development
 
