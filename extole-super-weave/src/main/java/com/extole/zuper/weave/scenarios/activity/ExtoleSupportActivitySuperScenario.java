@@ -16,14 +16,14 @@ import com.cyster.template.StringTemplate;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
-public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
+public class ExtoleSupportActivitySuperScenario implements Scenario<Void, Void> {
     private final String DEFAULT_ACTIVITY = "unclassified";
     private final String DESCRIPTION = "Find the best Activity given a set of keywords (intended for testing)";
 
     private final Advisor<Void> advisor;
     private final SearchTool<Void> searchTool;
 
-    public ExtoleSupportActivityScenario(AiService aiService, AiAdvisorService aiAdvisorService,
+    public ExtoleSupportActivitySuperScenario(AiService aiService, AiAdvisorService aiAdvisorService,
             ExtoleSupportActivityDocuments activityDocuments) {
 
         String instructionsTemplate = """
@@ -97,7 +97,7 @@ public class ExtoleSupportActivityScenario implements Scenario<Void, Void> {
 
     @Override
     public String getName() {
-        return this.getClass().getSimpleName().replace("Scenario", "");
+        return this.getClass().getSimpleName().replace("SuperScenario", "");
     }
 
     @Override

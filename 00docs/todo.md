@@ -2,6 +2,10 @@
 
 # Next
 
+- Set client on HELP repo
+- Update code to ensure detection of file change causes vector store to be rebuilt
+- Reuse VectorStores across assistants, rather than building multiple
+- Monitor for vector stores that are about to expire and rebuild/touch them
 - Conversation persistence - abstract, pass to weave, then jira conversations will be visible
 - Scenario/ToolContextFactories clumsy - perhaps use Spring's FactoryBean
   - Decorator to convert Scenario<Void, ExtoleSessionContext> to Scenario<Void, Void>

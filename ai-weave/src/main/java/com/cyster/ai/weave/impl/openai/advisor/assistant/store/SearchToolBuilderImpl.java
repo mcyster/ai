@@ -13,6 +13,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.cyster.ai.weave.impl.openai.OpenAiService;
 import com.cyster.ai.weave.service.DocumentStore;
 import com.cyster.ai.weave.service.DocumentStore.Document;
@@ -22,6 +25,7 @@ import io.github.stefanbratanov.jvm.openai.CreateVectorStoreFileBatchRequest;
 import io.github.stefanbratanov.jvm.openai.CreateVectorStoreRequest;
 import io.github.stefanbratanov.jvm.openai.ExpiresAfter;
 import io.github.stefanbratanov.jvm.openai.FilesClient;
+import io.github.stefanbratanov.jvm.openai.OpenAIException;
 import io.github.stefanbratanov.jvm.openai.PaginationQueryParameters;
 import io.github.stefanbratanov.jvm.openai.UploadFileRequest;
 import io.github.stefanbratanov.jvm.openai.VectorStore;
@@ -30,6 +34,8 @@ import io.github.stefanbratanov.jvm.openai.VectorStoresClient;
 import io.github.stefanbratanov.jvm.openai.VectorStoresClient.PaginatedVectorStores;
 
 public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEXT> {
+    private static final Logger logger = LoggerFactory.getLogger(SearchToolBuilderImpl.class);
+
     private final static String METADATA_HASH = "data_hash";
 
     private final OpenAiService openAiService;
@@ -93,6 +99,8 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
 
                     Path realFile = Paths.get(directory.toString(), safeName + safeExtension);
 
+                    logger.debug("Building VectorStore " + this.name + " uploading file: " + realFile);
+
                     try {
                         Files.createFile(realFile);
 
@@ -103,9 +111,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
                                 throw new RuntimeException(exception);
                             }
 
-                            var fileUpload = new UploadFileRequest(realFile, "assistants");
-                            var file = this.openAiService.createClient(FilesClient.class).uploadFile(fileUpload);
-                            files.add(file.id());
+                            files.add(uploadFile(realFile));
                         });
                         Files.delete(realFile);
 
@@ -149,6 +155,39 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
         }
 
         return vectorStore;
+    }
+
+    private String uploadFile(Path localFile) {
+        int retryCount = 0;
+        final int maxRetries = 3;
+
+        String fileId = null;
+        while (true) {
+            try {
+                var fileUpload = new UploadFileRequest(localFile, "assistants");
+                var file = this.openAiService.createClient(FilesClient.class).uploadFile(fileUpload);
+                fileId = file.id();
+                break;
+            } catch (OpenAIException exception) {
+                int statusCode = exception.statusCode();
+
+                if (statusCode >= 500 && statusCode < 600 && retryCount < maxRetries) {
+                    logger.warn("Failed to upload file asset, will retry");
+
+                    retryCount++;
+                    try {
+                        Thread.sleep((long) (Math.random() * 1000 + 100));
+                    } catch (InterruptedException interuptExcepion) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException("Retry interrupted, while waiting to do retry on: ", exception);
+                    }
+                } else {
+                    throw exception;
+                }
+            }
+        }
+
+        return fileId;
     }
 
     private SearchToolImpl<CONTEXT> useStore(VectorStore vectorStore) {

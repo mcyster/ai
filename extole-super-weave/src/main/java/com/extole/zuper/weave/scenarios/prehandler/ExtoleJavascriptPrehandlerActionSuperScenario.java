@@ -76,7 +76,7 @@ public class ExtoleJavascriptPrehandlerActionSuperScenario implements Scenario<V
 
         builder.setInstructions(instructions);
 
-        this.searchTool = builder.searchToolBuilder(ExtoleSuperContext.class).withName("extole-store")
+        this.searchTool = builder.searchToolBuilder(ExtoleSuperContext.class).withName("extole-api")
                 .withDocumentStore(extoleStore.getDocumentStore()).create();
         builder.withTool(searchTool);
 

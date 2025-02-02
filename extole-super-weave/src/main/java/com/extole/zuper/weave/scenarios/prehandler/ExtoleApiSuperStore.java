@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.slf4j.Logger;
@@ -50,6 +51,11 @@ public class ExtoleApiSuperStore {
 
             try {
                 Git git = Git.open(localJavaApiRepository);
+
+                git.reset().setMode(ResetCommand.ResetType.HARD).call();
+
+                git.clean().setCleanDirectories(true).setForce(true).call();
+
                 git.pull().call();
             } catch (IOException | GitAPIException exception) {
                 logger.error("Unable to update the java api repository: " + localJavaApiRepository, exception);
@@ -67,7 +73,8 @@ public class ExtoleApiSuperStore {
             }
 
         } catch (IOException | GitAPIException exception) {
-            logger.error("Unable to update the java api repository: " + localJavaApiRepository, exception);
+            logger.error("Unable to determine commitish of the java api repository: " + localJavaApiRepository,
+                    exception);
         }
 
         return latestCommitHash;

@@ -3,7 +3,7 @@ keywords: notification email render
 instructions: |
     Load the support ticket {{ticketNumber}}
 
-    Determine the client_id, notification_id (aka event_id) and user_id from https://my.extole.com/notifications/view
+    Extract the client_id, user_id, and notification_id (also known as event_id) from the URL in the ticket. The URL will be in this format: https://my.extole.com/notifications?client_id=$CLIENT_ID&user_id=$USER_ID#/view/$NOTIFICATION_ID
 
     Get the notification using the notification_id and user_id to determine its associated attributes.
     Get similar client events by searching for client events by user_id and like_noticication_id.

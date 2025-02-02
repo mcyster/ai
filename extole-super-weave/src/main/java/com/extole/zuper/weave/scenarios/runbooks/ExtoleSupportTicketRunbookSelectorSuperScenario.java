@@ -95,7 +95,7 @@ public class ExtoleSupportTicketRunbookSelectorSuperScenario implements Scenario
         AdvisorBuilder<ExtoleSuperContext> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
         builder.setInstructions(instructions);
 
-        this.searchTool = builder.searchToolBuilder(ExtoleSuperContext.class).withName("runbooks")
+        this.searchTool = builder.searchToolBuilder(ExtoleSuperContext.class).withName("ticket-runbooks")
                 .withDocumentStore(runbookDocuments.getDocumentStore()).create();
         builder.withTool(this.searchTool);
         builder.withTool(ticketGetTool);

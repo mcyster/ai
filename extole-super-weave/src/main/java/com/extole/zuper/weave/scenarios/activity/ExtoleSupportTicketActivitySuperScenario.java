@@ -94,7 +94,7 @@ public class ExtoleSupportTicketActivitySuperScenario implements Scenario<Parame
         AdvisorBuilder<ExtoleSuperContext> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
         builder.setInstructions(instructions);
 
-        this.searchTool = builder.searchToolBuilder(ExtoleSuperContext.class).withName("activities")
+        this.searchTool = builder.searchToolBuilder(ExtoleSuperContext.class).withName("ticket-activities")
                 .withDocumentStore(activityDocuments.getDocuments()).create();
         builder.withTool(searchTool);
 
