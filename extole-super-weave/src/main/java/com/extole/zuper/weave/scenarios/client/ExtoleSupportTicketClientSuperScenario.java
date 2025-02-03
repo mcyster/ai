@@ -39,7 +39,7 @@ public class ExtoleSupportTicketClientSuperScenario implements Scenario<Paramete
 
                 If you find a client_id, verify the clientId and get the client name and short name using the {{clientGetTool}}.
 
-                If you can't find a client_id, load all clients using {{clientSetTool}} and see if you can find a matching name or short name in the ticket.
+                If you can't find a client_id, load all clients using {{clientSearchTool}} and see if you can find a matching name or short name in the ticket.
 
                 If a client is found, set the client on the ticket using the {{clientSetTool}} tool.
 
@@ -50,8 +50,8 @@ public class ExtoleSupportTicketClientSuperScenario implements Scenario<Paramete
                 """;
 
         Map<String, Object> parameters = Map.of("ticketGetTool", ticketGetTool.getName(), "clientGetTool",
-                extoleClientGetTool.getName(), "clientSetTool", extoleClientSetTool.getName(), "schema",
-                aiService.getJsonSchema(Response.class));
+                extoleClientGetTool.getName(), "clientSearchTool", extoleClientSearchTool.getName(), "clientSetTool",
+                extoleClientSetTool.getName(), "schema", aiService.getJsonSchema(Response.class));
 
         String instructions = new StringTemplate(instructionsTemplate).render(parameters);
 

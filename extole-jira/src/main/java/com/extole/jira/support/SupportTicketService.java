@@ -56,17 +56,20 @@ public class SupportTicketService implements TicketService<SupportTicket> {
     public void setClient(String ticketNumber, String clientShortName) throws TicketException {
         if (ticketNumber.startsWith("HELP")) {
             setClientAsOrganization(ticketNumber, clientShortName);
+            setClientAsCustomField(ticketNumber, clientShortName, true);
         } else {
-            setClientAsCustomField(ticketNumber, clientShortName);
+            setClientAsCustomField(ticketNumber, clientShortName, false);
         }
     }
 
-    private void setClientAsCustomField(String ticketNumber, String clientShortName) throws TicketException {
+    private void setClientAsCustomField(String ticketNumber, String clientShortName, boolean force)
+            throws TicketException {
         var ticket = getTicket(ticketNumber);
         if (ticket.isEmpty()) {
             throw new TicketException("Unable to load ticket: " + ticketNumber);
         }
-        if (ticket.get().clientShortName() != null && ticket.get().clientShortName().equals(clientShortName)) {
+        if (!force && ticket.get().clientShortName() != null
+                && ticket.get().clientShortName().equals(clientShortName)) {
             return;
         }
 

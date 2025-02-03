@@ -159,7 +159,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
 
     private String uploadFile(Path localFile) {
         int retryCount = 0;
-        final int maxRetries = 3;
+        final int maxRetries = 5;
 
         String fileId = null;
         while (true) {
@@ -176,7 +176,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
 
                     retryCount++;
                     try {
-                        Thread.sleep((long) (Math.random() * 1000 + 100));
+                        Thread.sleep((long) (Math.random() * 3000 + 100));
                     } catch (InterruptedException interuptExcepion) {
                         Thread.currentThread().interrupt();
                         throw new RuntimeException("Retry interrupted, while waiting to do retry on: ", exception);
