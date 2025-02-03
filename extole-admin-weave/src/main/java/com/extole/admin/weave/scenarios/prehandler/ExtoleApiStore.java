@@ -32,7 +32,7 @@ public class ExtoleApiStore {
         var documentStore = aiService.directoryDocumentStoreBuilder().withDirectory(localJavaApiRepository.toPath())
                 .withHash(hash).create();
 
-        builder.withName("extole-store");
+        builder.withName("extole-api");
         builder.withDocumentStore(documentStore);
 
         return builder.create();

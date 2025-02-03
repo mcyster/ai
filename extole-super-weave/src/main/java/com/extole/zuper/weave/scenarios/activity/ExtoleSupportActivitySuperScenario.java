@@ -97,7 +97,7 @@ public class ExtoleSupportActivitySuperScenario implements Scenario<Void, Void> 
 
     @Override
     public String getName() {
-        return this.getClass().getSimpleName().replace("SuperScenario", "");
+        return this.getClass().getSimpleName().replace("Scenario", "");
     }
 
     @Override

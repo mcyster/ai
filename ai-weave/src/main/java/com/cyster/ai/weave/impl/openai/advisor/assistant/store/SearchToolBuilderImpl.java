@@ -222,13 +222,15 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
             return false;
         }
 
-        if (vectorStore.metadata().containsKey(METADATA_HASH)) {
-            if (vectorStore.metadata().get(METADATA_HASH).equals(this.documentStore.getHash())) {
-                return true;
-            }
+        if (!vectorStore.metadata().containsKey(METADATA_HASH)) {
+            return false;
         }
 
-        return false;
+        if (!vectorStore.metadata().get(METADATA_HASH).equals(this.documentStore.getHash())) {
+            return false;
+        }
+
+        return true;
     }
 
     public static boolean isVectorStoreExpired(VectorStore vectorStore) {
