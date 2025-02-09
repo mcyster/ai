@@ -28,8 +28,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/**"));
 
         if (isOauthEnabled) {
-            http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                    .requestMatchers("/terms.html", "/privacy.html").permitAll().anyRequest().authenticated())
+            http.authorizeHttpRequests(
+                    authorizeRequests -> authorizeRequests.requestMatchers("/terms.html", "/privacy.html", "/ticket")
+                            .permitAll().anyRequest().authenticated())
                     .oauth2Login(oauth2 -> oauth2
                             .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)));
         } else {

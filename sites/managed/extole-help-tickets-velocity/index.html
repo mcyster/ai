@@ -39,21 +39,23 @@ function countTicketsPerWeek(tickets) {
     const resolveCounts = {};
     
     tickets.forEach(ticket => {
-        const startDate = ticket.startDate;
-        const resolutionDate = ticket.resolvedDate || new Date(); // Use current date if not resolved
+	if (ticket.resolvedDate) {
+            const startDate = ticket.startDate;
+            const resolutionDate = ticket.resolvedDate || new Date(); // Use current date if not resolved
 
-        const startWeekEnd = getWeekEndDate(startDate);
-        const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
+            const startWeekEnd = getWeekEndDate(startDate);
+            const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
 
-        if (resolveCounts[resolvedWeekEnd] === undefined) {
-            resolveCounts[resolvedWeekEnd] = 0;
+            if (resolveCounts[resolvedWeekEnd] === undefined) {
+                resolveCounts[resolvedWeekEnd] = 0;
+            }
+            resolveCounts[resolvedWeekEnd]++;
+
+            if (startCounts[startWeekEnd] === undefined) {
+                startCounts[startWeekEnd] = 0;
+            }
+            startCounts[startWeekEnd]++;
         }
-        resolveCounts[resolvedWeekEnd]++;
-
-        if (startCounts[startWeekEnd] === undefined) {
-            startCounts[startWeekEnd] = 0;
-        }
-        startCounts[startWeekEnd]++;
     });
 
     return { startCounts, resolveCounts };
