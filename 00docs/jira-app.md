@@ -47,7 +47,7 @@ Define
       - GOOGLE_CLIENT_ID
       - GOOGLE_CLIENT_SECRET
 
-### Setup a App Refersh token
+### Setup a App Refresh token
 This is to allow the 3rd party snapshot service to take screenshots of the jira-app
 
 - Goto [Goole Cloud](https://console.cloud.google.com)
