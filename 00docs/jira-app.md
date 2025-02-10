@@ -9,7 +9,7 @@ jira-app-deploy
 # Setup
 
 ### Setup OpenAI API Key
-Define 
+Define
   - JIRA_APP_DOMAIN=beep-boop.extole.com   # or localhost for dev
 
  Define
@@ -46,6 +46,42 @@ Define
     - Define:
       - GOOGLE_CLIENT_ID
       - GOOGLE_CLIENT_SECRET
+
+### Setup a App Refersh token
+This is to allow the 3rd party snapshot service to take screenshots of the jira-app
+
+- Goto [Goole Cloud](https://console.cloud.google.com)
+  - Select the project: BeepBoop
+  - Create Cedentials:
+    - name: snapshot
+    - uri: http://beep-boop.extole.com/snapshot     # for dev use: http://localhost:8090/snapshot
+    - download the json key
+- run the command $AI_HOME/scripts/snapshot-refresh-token and follow the instructsions
+  - define the output as:
+    - SNAPSHOT_REFRESH_TOKEN
+- run the command $AI_HOME/scripts/snapshot-token passing the refresh_token from the previous script
+  - if you get a token - things are working!
+- in $HOME/ai-rc define:
+  - export APP_CLIENT_SECRET=
+  - export APP_REFRESH_TOKEN=
+
+### Setup Webshot service: Browshot
+You only need one webshot service. Browshot supports headers so is currrently the preferred service
+
+- goto https://browshot.com/
+- create an account, get your key (under AccountAPI account/info)
+- in $HOME/ai-rc define:
+  - export BROWSHOT_API_KEY=
+
+
+### Setup Webshot service: Url2Png
+You only need one webshot service. Browshot above is preferred
+
+- goto https://www.url2png.com/
+- createn an account, get your api key and secrey
+- in $HOME/ai-rc define:
+  - export URL2PNG_API_KEY=
+  - export URL2PNG_SECRET=
 
 ### Github setup
 

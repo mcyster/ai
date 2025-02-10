@@ -6,16 +6,16 @@ import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
-public class WebshotEnabledCondition implements Condition {
-    private static final Logger logger = LoggerFactory.getLogger(WebshotEnabledCondition.class);
+public class BrowshotWebshotEnabledCondition implements Condition {
+    private static final Logger logger = LoggerFactory.getLogger(BrowshotWebshotEnabledCondition.class);
 
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-        String apiKey = context.getEnvironment().getProperty("URL2PNG_API_KEY");
+        String apiKey = context.getEnvironment().getProperty("BROWSHOT_API_KEY");
         boolean isApiKeyPresent = apiKey != null && !apiKey.isEmpty();
 
         if (!isApiKeyPresent) {
-            logger.warn("Webshot screnario not enabled: URL2PNG_API_KEY is not set or empty.");
+            logger.warn("Webshot screnario not enabled: BROWSHOT_API_KEY is not set or empty.");
         }
 
         return isApiKeyPresent;

@@ -2,6 +2,7 @@ package com.cyster.weave.impl.scenarios.webshot;
 
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,7 @@ public class WebshotTool implements Tool<Request, Void> {
 
     private Webshot webshot;
 
-    WebshotTool(Webshot webshot) {
+    WebshotTool(@Qualifier("url2PngWebshot") Webshot webshot) {
         this.webshot = webshot;
     }
 
