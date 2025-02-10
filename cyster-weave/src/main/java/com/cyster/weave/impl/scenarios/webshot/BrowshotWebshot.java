@@ -22,16 +22,14 @@ public class BrowshotWebshot implements Webshot {
     private static final Logger logger = LoggerFactory.getLogger(WebshotTool.class);
 
     private final String apiKey;
-    private final String appUrl;
-    private final AppTokenService appTokenService; // TODO abstract out a url -> token service
+    private final TokenService tokenService;
     private final LocalAssetProvider assetProvider;
     private final WebClient webClient;
 
-    public BrowshotWebshot(@Value("${BROWSHOT_API_KEY}") String apiKey, @Value("${app.url}") String appUrl,
-            AppTokenService appTokenService, LocalAssetProvider assetProvider) {
+    public BrowshotWebshot(@Value("${BROWSHOT_API_KEY}") String apiKey, TokenService tokenService,
+            LocalAssetProvider assetProvider) {
         this.apiKey = apiKey;
-        this.appUrl = appUrl;
-        this.appTokenService = appTokenService;
+        this.tokenService = tokenService;
         this.assetProvider = assetProvider;
         this.webClient = WebClient.builder().codecs(
                 clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024))
@@ -42,12 +40,8 @@ public class BrowshotWebshot implements Webshot {
     public AccessibleAsset getImage(String name, String url) {
         CompletableFuture<AccessibleAsset> accessibleAssetFuture = new CompletableFuture<>();
 
-        String token = null;
-        if (url.startsWith(appUrl)) {
-            token = appTokenService.refreshToken().accessToken();
-        }
-
-        final String authorizationHeader = token != null ? "Authorization: Bearer " + token : null;
+        var token = tokenService.getToken(url);
+        final String authorizationHeader = token.isPresent() ? "Authorization: Bearer " + token.get() : null;
 
         try {
             logger.info("Browshot url {}", url);

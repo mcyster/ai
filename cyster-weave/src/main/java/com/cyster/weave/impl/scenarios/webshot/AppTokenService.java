@@ -7,23 +7,35 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-//@Component
-public class AppTokenService {
+// @Component
+public class AppTokenService implements TokenProvider {
+    private final String baseUri;
     private final String tokenUri;
     private final String clientId;
     private final String clientSecret;
     private final String refreshToken;
     private final WebClient webClient;
 
-    public AppTokenService(@Value("${app.token_uri}") String tokenUri, @Value("${app.client_id}") String clientId,
-            @Value("${app.client_secret}") String clientSecret, @Value("${app.refresh_token}") String refreshToken,
-            WebClient.Builder webClientBuilder) {
+    public AppTokenService(@Value("${app.url}") String baseUri, @Value("${app.token_uri}") String tokenUri,
+            @Value("${app.client_id}") String clientId, @Value("${app.client_secret}") String clientSecret,
+            @Value("${app.refresh_token}") String refreshToken, WebClient.Builder webClientBuilder) {
+        this.baseUri = baseUri;
         this.tokenUri = tokenUri;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
         this.refreshToken = refreshToken;
 
         this.webClient = webClientBuilder.build();
+    }
+
+    @Override
+    public String baseUri() {
+        return baseUri;
+    }
+
+    @Override
+    public String getToken() {
+        return refreshToken().accessToken();
     }
 
     public TokenResponse refreshToken() {
