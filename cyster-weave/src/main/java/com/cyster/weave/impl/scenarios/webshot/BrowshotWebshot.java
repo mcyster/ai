@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.cyster.weave.impl.scenarios.webshot.AssetProvider.Asset;
@@ -17,14 +16,14 @@ import com.cyster.weave.impl.scenarios.webshot.AssetUrlProvider.AccessibleAsset;
 // https://browshot.com/
 // supports specifying headers
 
-@Component
+// @Component
 @Conditional(BrowshotWebshotEnabledCondition.class)
 public class BrowshotWebshot implements Webshot {
     private static final Logger logger = LoggerFactory.getLogger(WebshotTool.class);
 
     private final String apiKey;
     private final String appUrl;
-    private final AppTokenService appTokenService; // TODO abstract in a url -> token service
+    private final AppTokenService appTokenService; // TODO abstract out a url -> token service
     private final LocalAssetProvider assetProvider;
     private final WebClient webClient;
 

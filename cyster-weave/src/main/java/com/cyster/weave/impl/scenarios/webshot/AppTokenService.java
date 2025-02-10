@@ -1,14 +1,13 @@
 package com.cyster.weave.impl.scenarios.webshot;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Component
+//@Component
 public class AppTokenService {
     private final String tokenUri;
     private final String clientId;
