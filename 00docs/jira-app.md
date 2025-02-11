@@ -52,11 +52,16 @@ This is to allow the 3rd party snapshot service to take screenshots of the jira-
 
 - Goto [Goole Cloud](https://console.cloud.google.com)
   - Select the project: BeepBoop
+    - Navigate to APIs & Services > Credentials
+    - Create a new OAuth 2.0 Client ID under Create Credentials
+    - Choose Web Application or another relevant application type
   - Create Cedentials:
     - name: snapshot
-    - uri: http://beep-boop.extole.com/snapshot     # for dev use: http://localhost:8090/snapshot
+    - uri: https://beep-boop.extole.com/snapshot     # for dev use: http://localhost:8090/snapshot
     - download the json key
 - run the command $AI_HOME/scripts/snapshot-refresh-token and follow the instructsions
+  - run it again with the code from the URL code=XXX
+  - take that json output, extract the refresh_token, pass this to the next script
   - define the output as:
     - SNAPSHOT_REFRESH_TOKEN
 - run the command $AI_HOME/scripts/snapshot-token passing the refresh_token from the previous script

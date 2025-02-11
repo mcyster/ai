@@ -22,8 +22,8 @@ while [ $# -gt 0 ]; do
             exit 0
         ;;
         -r)
-            REDIRECT_URI="$1"
             shift
+            REDIRECT_URI="$1"
         ;;
         *)
             break
