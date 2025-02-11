@@ -88,15 +88,21 @@ const schema = {
 const ajv = new ajv7();
 const validateReport = ajv.compile(schema);
 
-async function getReport(clientId, reportId) {
+async function getReport(clientId, reportId, token) {
     const url = `/extole/${clientId}/reports/${reportId}/download.json`;
+
+    const headers = {
+        "Content-Type": "application/json",
+    };
+
+    if (token) {
+        headers["Authorization"] = "Bearer " + token;
+    }
 
     try {
         const response = await fetch(url, {
             method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            }
+            headers: headers
         });
 
         if (!response.ok) {
@@ -188,6 +194,8 @@ const app = {
             const params = new URLSearchParams(window.location.search);
             const clientId = params.get('clientId');
             const reportId = params.get('reportId');
+            const token = params.get('token');
+
             if (!clientId) {
                 throw new Error("Error - No clientId parameter specified to page");
             }
@@ -195,7 +203,7 @@ const app = {
                 throw new Error("Error - No reportId parameter specified to page");
             }
 
-            const rows = await getReport(clientId, reportId);
+            const rows = await getReport(clientId, reportId, token);
 
             console.log("rows", rows);
  

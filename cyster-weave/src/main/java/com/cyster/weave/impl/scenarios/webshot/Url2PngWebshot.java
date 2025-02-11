@@ -23,7 +23,7 @@ import com.cyster.weave.impl.scenarios.webshot.AssetUrlProvider.AccessibleAsset;
 @Component
 @Conditional(Url2PngWebshotEnabledCondition.class)
 public class Url2PngWebshot implements Webshot {
-    private static final Logger logger = LoggerFactory.getLogger(WebshotTool.class);
+    private static final Logger logger = LoggerFactory.getLogger(Url2PngWebshot.class);
 
     private final String secret;
     private final String apiKey;
