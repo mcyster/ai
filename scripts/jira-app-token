@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -eu
+set -o pipefail
+#
+
+usage="Usage: $(basename $0) [-h]
+    -h - help
+
+Prints a short lived access token for jira-app
+"
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -h|-\?)
+            echo "$usage"
+            exit 0
+        ;;
+        *)
+            break
+        ;;
+    esac
+    shift
+done
+
+APP_TOKEN_URI=$(find $AI_HOME/jira-app/build -name application.properties | xargs grep app.token_uri | awk -F= '{print $2}')
+if [ -z "$APP_TOKEN_URI" ]; then
+    echo "Error: unable to find app app_token_uri" 1>&2
+    exit 1
+fi
+
+APP_CLIENT_ID=$(find $AI_HOME/jira-app/build -name application.properties | xargs grep app.client_id | awk -F= '{print $2}')
+if [ -z "$APP_CLIENT_ID" ]; then
+    echo "Error: unable to find app client_id" 1>&2
+    exit 1
+fi
+
+if [ -z "$APP_CLIENT_SECRET" ]; then
+    echo "Error: APP_CLIENT_SECRET not defined" 1>&2
+    exit 1
+fi
+
+if [ -z "$APP_REFRESH_TOKEN" ]; then
+    echo "Error: APP_REFRESH_TOKEN not defined" 1>&2
+    exit 1
+fi
+
+TOKEN_RESPONSE=$(curl -s -X POST $APP_TOKEN_URI \
+  -d client_id=$APP_CLIENT_ID \
+  -d client_secret=$APP_CLIENT_SECRET \
+  -d refresh_token=$APP_REFRESH_TOKEN \
+  -d grant_type=refresh_token)
+
+ACCESS_TOKEN=$(echo $TOKEN_RESPONSE | jq -r '.access_token')
+
+if [[ "$ACCESS_TOKEN" == "null" || -z "$ACCESS_TOKEN" ]]; then
+  echo "Error: Failed to retrieve access token" 1>&2
+  exit 1
+fi
+
+echo "$ACCESS_TOKEN"
+
