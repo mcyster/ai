@@ -22,16 +22,20 @@ while [ $# -gt 0 ]; do
     shift
 done
 
-APP_TOKEN_URI=$(find $AI_HOME/jira-app/build -name application.properties | xargs grep app.token_uri | awk -F= '{print $2}')
-if [ -z "$APP_TOKEN_URI" ]; then
-    echo "Error: unable to find app app_token_uri" 1>&2
-    exit 1
+if [ -z "${APP_TOKEN_URI:-}" ]; then
+    APP_TOKEN_URI=$(find $AI_HOME/jira-app/build -name application.properties | xargs grep app.token_uri | awk -F= '{print $2}')
+    if [ -z "$APP_TOKEN_URI" ]; then
+        echo "Error: unable to find app app_token_uri" 1>&2
+        exit 1
+    fi
 fi
 
-APP_CLIENT_ID=$(find $AI_HOME/jira-app/build -name application.properties | xargs grep app.client_id | awk -F= '{print $2}')
-if [ -z "$APP_CLIENT_ID" ]; then
-    echo "Error: unable to find app client_id" 1>&2
-    exit 1
+if [ -z "${APP_CLIENT_ID:-}" ]; then
+    APP_CLIENT_ID=$(find $AI_HOME/jira-app/build -name application.properties | xargs grep app.client_id | awk -F= '{print $2}')
+    if [ -z "$APP_CLIENT_ID" ]; then
+        echo "Error: unable to find app client_id" 1>&2
+        exit 1
+    fi
 fi
 
 if [ -z "$APP_CLIENT_SECRET" ]; then

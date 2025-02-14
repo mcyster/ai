@@ -56,14 +56,21 @@ async function getSupportTickets() {
             if (!ticket.createdDate) {
                 throw new Error(`Ticket is missing createdDate: ${JSON.stringify(ticket)}`);
             }
-            if (!ticket.startDate) {
-                throw new Error(`Ticket is missing startDate: ${JSON.stringify(ticket)}`);
-            }
+
+            const createdDate = new Date(Date.parse(ticket.createdDate));
+
+            var startDate = createdDate;
+	    if (ticket.requestedStartDate) {
+                const requestedStartDate = new Date(Date.parse(ticket.requestedStartDate));
+                if (requestedStartDate > startDate) {
+		    startDate = requestedStartDate;
+	        }
+	    }
 
             return {
                 ...ticket,
-                createdDate: new Date(Date.parse(ticket.createdDate)),
-                startDate: ticket.startDate ? new Date(Date.parse(ticket.startDate)) : null,
+                createdDate: createdDate,
+                startDate: startDate,
                 statusChangeDate: new Date(Date.parse(ticket.statusChangeDate)),
                 resolvedDate: ticket.resolvedDate ? new Date(Date.parse(ticket.resolvedDate)) : null,
                 requestedDueDate: ticket.requestedDueDate ? new Date(Date.parse(ticket.requestedDueDate)) : null,
