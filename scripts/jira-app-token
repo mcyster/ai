@@ -5,20 +5,15 @@ set -o pipefail
 
 usage="Usage: $(basename $0) [-h][-c]
     -h - help
-    -c - check
 
 Prints a short lived access token for jira-app
 "
 
-check="no"
 while [ $# -gt 0 ]; do
     case "$1" in
         -h|-\?)
             echo "$usage"
             exit 0
-        ;;
-        -c)
-            check="yes"
         ;;
         *)
             break
@@ -61,9 +56,4 @@ if [[ "$ACCESS_TOKEN" == "null" || -z "$ACCESS_TOKEN" ]]; then
 fi
 
 echo "$ACCESS_TOKEN"
-
-if [ "$check" == "yes" ]; then
-  echo 
-  curl -H "Authorization: Bearer $ACCESS_TOKEN" 'https://www.googleapis.com/oauth2/v3/tokeninfo'
-fi
 

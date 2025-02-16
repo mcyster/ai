@@ -1,9 +1,13 @@
 package com.cyster.weave.impl.scenarios.webshot;
 
 import java.io.ByteArrayInputStream;
+import java.net.URI;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,36 +45,59 @@ public class BrowshotWebshot implements Webshot {
     public AccessibleAsset getImage(String name, String url) {
         CompletableFuture<AccessibleAsset> accessibleAssetFuture = new CompletableFuture<>();
 
+        logger.info("XXXXXXXXXXXXX get token");
+
         var token = tokenService.getToken(url);
-        // TBD if we can put the token in a cookie to make requests, adding to url as a
-        // quick fix
+        Map<String, String> headers = new HashMap<>();
         if (token.isPresent()) {
-            url = url.contains("?") ? url + "&token=" + token.get() : url + "?token=" + token.get();
+            headers.put("Authorization", "Bearer " + token.get());
         }
 
         logger.info("Requesting screenshot for {}", url);
 
-        createScreenshot(url).flatMap(this::waitForScreenshotReady).flatMap(this::downloadScreenshot).map(content -> {
-            Asset asset = assetProvider.putAsset(name, AssetProvider.Type.PNG, content);
-            return assetProvider.getAccessibleAsset(asset);
-        }).doOnSuccess(accessibleAssetFuture::complete).doOnError(accessibleAssetFuture::completeExceptionally)
+        createScreenshot(url, headers).flatMap(this::waitForScreenshotReady).flatMap(this::downloadScreenshot)
+                .map(content -> {
+                    Asset asset = assetProvider.putAsset(name, AssetProvider.Type.PNG, content);
+                    return assetProvider.getAccessibleAsset(asset);
+                }).doOnSuccess(accessibleAssetFuture::complete).doOnError(accessibleAssetFuture::completeExceptionally)
                 .subscribe();
 
         return accessibleAssetFuture.join();
     }
 
-    private Mono<Integer> createScreenshot(String url) {
-        return webClient.get()
-                .uri(uriBuilder -> uriBuilder.scheme("https").host("api.browshot.com").path("/api/v1/screenshot/create")
-                        .queryParam("url", url).queryParam("instance_id", "65").queryParam("key", apiKey).build())
-                .retrieve().bodyToMono(Map.class).flatMap(response -> {
-                    Object screenshotId = response.get("id");
-                    if (screenshotId instanceof Integer id) {
-                        return Mono.just(id);
-                    } else {
-                        return Mono.error(new RuntimeException("Failed to retrieve id: " + response.toString()));
-                    }
-                });
+    private Mono<Integer> createScreenshot(String url, Map<String, String> headers) {
+        Optional<String> headerParameter = headerText(headers);
+
+        return webClient.get().uri(uriBuilder -> {
+            uriBuilder.scheme("https").host("api.browshot.com").path("/api/v1/screenshot/create").queryParam("url", url)
+                    .queryParam("instance_id", "65").queryParam("key", apiKey);
+
+            if (headerParameter.isPresent()) {
+                uriBuilder.queryParam("headers", headerParameter);
+            }
+
+            URI uri = uriBuilder.build();
+            logger.info("XXXXXXXXXXXXXXXXXXXXXX URI: {}", uri);
+            return uri;
+        }).retrieve().bodyToMono(Map.class).flatMap(response -> {
+            Object screenshotId = response.get("id");
+            if (screenshotId instanceof Integer id) {
+                return Mono.just(id);
+            } else {
+                return Mono.error(new RuntimeException("Failed to retrieve id: " + response.toString()));
+            }
+        });
+    }
+
+    private Optional<String> headerText(Map<String, String> headers) {
+        if (headers.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String headerText = headers.entrySet().stream().map(entry -> entry.getKey() + ": " + entry.getValue())
+                .collect(Collectors.joining("\n"));
+
+        return Optional.of(headerText);
     }
 
     private Mono<String> waitForScreenshotReady(Integer screenshotId) {
