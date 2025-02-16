@@ -16,7 +16,6 @@ import com.extole.app.jira.authentication.CustomOAuth2UserService;
 
 @Configuration
 public class SecurityConfig {
-
     private final CustomOAuth2UserService customOAuth2UserService;
     private final boolean isOauthEnabled;
 
@@ -27,7 +26,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtDecoder jwtDecoder) throws Exception {
         http.addFilterBefore(new ForwardedHeaderFilter(), UsernamePasswordAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable);
 
@@ -35,6 +34,8 @@ public class SecurityConfig {
             http.authorizeHttpRequests(
                     auth -> auth.requestMatchers("/terms.html", "/privacy.html", "/ticket").permitAll()
                             .requestMatchers("/conversations/messages").authenticated().anyRequest().authenticated())
+                    .addFilterBefore(new CookieJwtAuthenticationFilter(jwtDecoder),
+                            org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                     .oauth2Login(oauth2 -> oauth2
                             .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)))
                     .oauth2ResourceServer(

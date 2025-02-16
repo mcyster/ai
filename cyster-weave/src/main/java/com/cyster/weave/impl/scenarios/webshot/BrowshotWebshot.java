@@ -49,13 +49,18 @@ public class BrowshotWebshot implements Webshot {
 
         var token = tokenService.getToken(url);
         Map<String, String> headers = new HashMap<>();
+        // if (token.isPresent()) {
+        // headers.put("Authorization", "Bearer " + token.get());
+        // }
+
+        Map<String, String> cookies = new HashMap<>();
         if (token.isPresent()) {
-            headers.put("Authorization", "Bearer " + token.get());
+            cookies.put("id_token", token.get());
         }
 
         logger.info("Requesting screenshot for {}", url);
 
-        createScreenshot(url, headers).flatMap(this::waitForScreenshotReady).flatMap(this::downloadScreenshot)
+        createScreenshot(url, headers, cookies).flatMap(this::waitForScreenshotReady).flatMap(this::downloadScreenshot)
                 .map(content -> {
                     Asset asset = assetProvider.putAsset(name, AssetProvider.Type.PNG, content);
                     return assetProvider.getAccessibleAsset(asset);
@@ -65,8 +70,9 @@ public class BrowshotWebshot implements Webshot {
         return accessibleAssetFuture.join();
     }
 
-    private Mono<Integer> createScreenshot(String url, Map<String, String> headers) {
+    private Mono<Integer> createScreenshot(String url, Map<String, String> headers, Map<String, String> cookies) {
         Optional<String> headerParameter = headerText(headers);
+        Optional<String> cookieParameter = cookieText(cookies);
 
         return webClient.get().uri(uriBuilder -> {
             uriBuilder.scheme("https").host("api.browshot.com").path("/api/v1/screenshot/create").queryParam("url", url)
@@ -74,6 +80,10 @@ public class BrowshotWebshot implements Webshot {
 
             if (headerParameter.isPresent()) {
                 uriBuilder.queryParam("headers", headerParameter);
+            }
+
+            if (cookieParameter.isPresent()) {
+                uriBuilder.queryParam("cookie", cookieParameter);
             }
 
             URI uri = uriBuilder.build();
@@ -98,6 +108,17 @@ public class BrowshotWebshot implements Webshot {
                 .collect(Collectors.joining("\n"));
 
         return Optional.of(headerText);
+    }
+
+    private Optional<String> cookieText(Map<String, String> cookies) {
+        if (cookies.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String cookieText = cookies.entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue())
+                .collect(Collectors.joining("; "));
+
+        return Optional.of(cookieText);
     }
 
     private Mono<String> waitForScreenshotReady(Integer screenshotId) {
