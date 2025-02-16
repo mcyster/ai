@@ -36,7 +36,7 @@ public class AppTokenService implements TokenProvider {
 
     @Override
     public String getToken() {
-        return refreshToken().accessToken();
+        return refreshToken().idToken();
     }
 
     public TokenResponse refreshToken() {

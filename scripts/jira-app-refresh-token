@@ -3,13 +3,12 @@ set -eu
 set -o pipefail
 #
 
-SCOPES="https://www.googleapis.com/auth/userinfo.profile"
-REDIRECT_URI=http://localhost:8090/snapshot
+SCOPES="openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"
+SCOPES="$(echo "$SCOPES" | sed 's/ /%20/g')"
 
-usage="Usage: $(basename $0) [-h][-r redirect_url] credentials_json_file [code]
+usage="Usage: $(basename $0) [-h] credentials_json_file [code]
     -h - help
-    -r redirect_url - defaults to $REDIRECT_URI
-    credntials_json_file
+    credentials_json_file
     code
 
 Gets a refresh_token
@@ -20,10 +19,6 @@ while [ $# -gt 0 ]; do
         -h|-\?)
             echo "$usage"
             exit 0
-        ;;
-        -r)
-            shift
-            REDIRECT_URI="$1"
         ;;
         *)
             break
@@ -41,12 +36,12 @@ fi
 CLIENT_ID=$(jq -r '.web.client_id' "$CREDENTIALS_FILE")
 CLIENT_SECRET=$(jq -r '.web.client_secret' "$CREDENTIALS_FILE")
 TOKEN_URI=$(jq -r '.web.token_uri' "$CREDENTIALS_FILE")
-
+REDIRECT_URI=$(jq -r '.web.redirect_uris[0]' "$CREDENTIALS_FILE")
 
 CODE="${2:-}"
 if [ -z "$CODE" ]; then
-  echo "Paste this url in your browser, then get the code parameter (note %2F is /) from the redirect url and rerun this script"
-  echo "  https://accounts.google.com/o/oauth2/auth?client_id=$CLIENT_ID&redirect_uri=$REDIRECT_URI&response_type=code&scope=$SCOPES&access_type=offline&prompt=consent"
+  echo "Paste this url in your browser, then get the code parameter (note %2F is /) from the google redirect url and rerun this script"
+  echo "  https://accounts.google.com/o/oauth2/auth?client_id=$CLIENT_ID&redirect_uri=$REDIRECT_URI&response_type=code%20id_token&scope=$SCOPES&access_type=offline&prompt=consent"
   exit 1
 fi
 

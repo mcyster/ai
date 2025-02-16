@@ -43,9 +43,10 @@ Define
       - Roles: Identity
       - Users: Limit to extole employees
   - Create Credentials
-    - Define:
-      - GOOGLE_CLIENT_ID
-      - GOOGLE_CLIENT_SECRET
+    - in `~/.ai-rc` define:
+      - GOOGLE_TOKEN_URI=XXX
+      - GOOGLE_CLIENT_ID=XXX
+      - GOOGLE_CLIENT_SECRET=XXX
 
 ### Setup a App Refresh token
 This is to allow the 3rd party snapshot service to take screenshots of the jira-app
@@ -53,22 +54,14 @@ This is to allow the 3rd party snapshot service to take screenshots of the jira-
 - Goto [Goole Cloud](https://console.cloud.google.com)
   - Select the project: BeepBoop
     - Navigate to APIs & Services > Credentials
-    - Create a new OAuth 2.0 Client ID under Create Credentials
-    - Choose Web Application or another relevant application type
-  - Create Cedentials:
-    - name: snapshot
-    - uri: https://beep-boop.extole.com/snapshot     # for dev use: http://localhost:8090/snapshot
-    - download the json key
-- run the command $AI_HOME/scripts/snapshot-refresh-token and follow the instructsions
+    - Download the credentials json file
+- run the command `$AI_HOME/scripts/jira-app-refresh-token  PATH_TO_CREDENTIALS_JSON`
+  - and follow the instructions
   - run it again with the code from the URL code=XXX
-  - take that json output, extract the refresh_token, pass this to the next script
-  - define the output as:
-    - SNAPSHOT_REFRESH_TOKEN
-- run the command $AI_HOME/scripts/snapshot-token passing the refresh_token from the previous script
-  - if you get a token - things are working!
-- in $HOME/ai-rc define:
-  - export APP_CLIENT_SECRET=
-  - export APP_REFRESH_TOKEN=
+  - take that json output, extract the refresh_token
+  - in `~/.ai-rc` define:
+     - APP_REFRESH_TOKEN=XXX
+- run the command $AI_HOME/scripts/jira-app-token
 
 ### Setup Webshot service: Browshot
 You only need one webshot service. Browshot supports headers so is currrently the preferred service
