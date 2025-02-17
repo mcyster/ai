@@ -54,15 +54,12 @@ public class TokenController {
     @GetMapping("/app-dump")
     @ResponseStatus(HttpStatus.OK)
     public void dumpToken(HttpServletRequest request, HttpServletResponse response) {
-        logger.info("XXXXXXXXXXXXXXX app-dump");
+        logger.info("app-dump");
 
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("id_token".equals(cookie.getName())) {
-                    logger.info("XXXXXXXXXXXXXXX id_token: {}", cookie.getValue());
-                    break;
-                }
+                logger.info("cookie: {}: {}", cookie.getName(), cookie.getValue());
             }
         }
     }

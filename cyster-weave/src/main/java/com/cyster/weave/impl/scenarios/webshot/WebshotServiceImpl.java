@@ -29,11 +29,13 @@ public class WebshotServiceImpl implements WebshotService {
 
         for (WebshotProvider provider : webshotProviders) {
             if (provider.canHandle(url)) {
-                logger.info("screenshot found non default provider: {}", provider.getClass().getSimpleName());
+                logger.info("screenshot provider: {}", provider.getClass().getSimpleName());
 
                 return provider.takeSnapshot(name, url);
             }
         }
+
+        logger.info("screenshot provider: default");
 
         return defaultWebshotService.takeSnapshot(name, url);
     }

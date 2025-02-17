@@ -32,8 +32,6 @@ public class JiraAppWebshotProvider implements WebshotProvider {
     }
 
     public boolean canHandle(String url) {
-        logger.info("XXXXXXXXXXXXX url {} appUrl {} ", url, appUrl);
-
         return url.startsWith(appUrl);
     }
 
@@ -42,16 +40,13 @@ public class JiraAppWebshotProvider implements WebshotProvider {
         var builder = new ScreenshotOneBuilder(accessKey, assetProvider);
 
         if (url.startsWith(appUrl)) {
-            String token = tokenService.getToken();
-            logger.info("XXXXXXXXXXXXX token: " + token);
-
-            builder.addHeader("Authorization", "Bearer " + token);
+            builder.addHeader("Authorization", "Bearer " + tokenService.getToken());
             builder.url(appUrl + "/app-token?url=" + URLEncoder.encode(url, StandardCharsets.UTF_8));
         } else {
             builder.url(url);
         }
 
-        logger.info("Requesting screenshot for {}", url);
+        logger.info("taking screenshot of {}", url);
 
         return builder.takeSnapshot(name);
     }
