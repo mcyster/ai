@@ -2,6 +2,8 @@ package com.cyster.webshot;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.imageio.ImageIO;
 
@@ -13,23 +15,68 @@ import ru.yandex.qatools.ashot.Screenshot;
 import ru.yandex.qatools.ashot.shooting.ShootingStrategies;
 
 public class Webshot {
-    public static void main(String[] args) {
-        // Set the path to your WebDriver executable
-        System.setProperty("webdriver.chrome.driver",
-                "/nix/store/7g7v07wcac6shkdjik6j3sj7kcazffr3-chromedriver-unwrapped-133.0.6943.98/bin/chromedriver");
+    public static void main(String[] args) throws URISyntaxException {
+        if (args.length < 1) {
+            System.out.println("Usage: java Webshot <URL>");
+            System.exit(1);
+        }
+
+        String url = args[0];
+
+        String chromeDriver = System.getenv("CHROMEDRIVER");
+        if (chromeDriver == null || chromeDriver.isEmpty()) {
+            throw new IllegalStateException("CHROMEDRIVER environment variable is not set");
+        }
+        System.setProperty("webdriver.chrome.driver", chromeDriver);
 
         WebDriver driver = new ChromeDriver();
-        driver.get("https://example.com");
+        driver.get(url);
 
         Screenshot screenshot = new AShot().shootingStrategy(ShootingStrategies.viewportPasting(1000))
                 .takeScreenshot(driver);
 
+        File file = getUniqueFile(url, ".png");
         try {
-            ImageIO.write(screenshot.getImage(), "PNG", new File("screenshot.png"));
+            ImageIO.write(screenshot.getImage(), "PNG", file);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         driver.quit();
+
+        System.out.println(file.getAbsolutePath());
     }
+
+    static File getUniqueFile(String url, String extension) throws URISyntaxException {
+        String baseName = urlToFileName(url) + extension;
+        String tempDir = System.getProperty("java.io.tmpdir");
+        File file = new File(tempDir, baseName);
+        int count = 1;
+
+        while (file.exists()) {
+            String newName = baseName + "_" + count;
+            file = new File(tempDir, newName);
+            count++;
+        }
+        return file;
+    }
+
+    private static String urlToFileName(String url) throws URISyntaxException {
+        URI uri = new URI(url);
+        String domain = uri.getHost();
+        if (domain == null) {
+            throw new URISyntaxException(url, "Invalid URL");
+        }
+
+        if (domain.startsWith("www.")) {
+            domain = domain.substring(4);
+        }
+
+        String path = uri.getPath().replaceAll("^/+", "").replace("/", "-");
+        String fileName = domain + (path.isEmpty() ? "" : "-" + path);
+        fileName = fileName.replaceAll("[^a-zA-Z0-9_-]", "-");
+
+        return fileName;
+    }
+
 }
