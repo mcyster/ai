@@ -2,6 +2,8 @@ package com.cyster.weave.impl.scenarios.webshot;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,13 +29,15 @@ import reactor.core.publisher.Mono;
 public class BrowshotWebshot implements Webshot {
     private static final Logger logger = LoggerFactory.getLogger(BrowshotWebshot.class);
 
+    private final String appUrl;
     private final String apiKey;
     private final TokenService tokenService;
     private final LocalAssetProvider assetProvider;
     private final WebClient webClient;
 
-    public BrowshotWebshot(@Value("${BROWSHOT_API_KEY}") String apiKey, TokenService tokenService,
-            LocalAssetProvider assetProvider) {
+    public BrowshotWebshot(@Value("${app.url}") String appUrl, @Value("${BROWSHOT_API_KEY}") String apiKey,
+            TokenService tokenService, LocalAssetProvider assetProvider) {
+        this.appUrl = appUrl;
         this.apiKey = apiKey;
         this.tokenService = tokenService;
         this.assetProvider = assetProvider;
@@ -49,14 +53,16 @@ public class BrowshotWebshot implements Webshot {
 
         var token = tokenService.getToken(url);
         Map<String, String> headers = new HashMap<>();
-        // if (token.isPresent()) {
-        // headers.put("Authorization", "Bearer " + token.get());
-        // }
+        if (token.isPresent()) {
+            headers.put("Authorization", "Bearer " + token.get());
+
+            url = appUrl + "/app-token?url=" + URLEncoder.encode(url, StandardCharsets.UTF_8);
+        }
 
         Map<String, String> cookies = new HashMap<>();
-        if (token.isPresent()) {
-            cookies.put("id_token", token.get());
-        }
+        // if (token.isPresent()) {
+        // cookies.put("id_token", token.get());
+        // }
 
         logger.info("Requesting screenshot for {}", url);
 
