@@ -10,6 +10,8 @@ in
       jdk21
       ngrok
       oauth2l
+      google-chrome
+      chromedriver
     ];
 
     LANG = "en_US.UTF-8";
@@ -23,5 +25,8 @@ in
       fi
       export SPRING_AI_OPENAI_API_KEY=$OPENAI_API_KEY
       export LANG=en_US.UTF-8
+
+      mkdir -p $HOME/.nix-profile/bin
+      ln -sf ${pkgs.google-chrome}/bin/google-chrome-stable $HOME/.nix-profile/bin/google-chrome
     '';
   }

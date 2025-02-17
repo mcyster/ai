@@ -1,0 +1,22 @@
+
+plugins {
+    id 'application'
+}
+
+version = '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.seleniumhq.selenium:selenium-java:4.28.1'
+    implementation 'ru.yandex.qatools.ashot:ashot:1.5.4'
+}
+
+application {
+    mainClass = 'com.cyster.webshot.Webshot'
+}
+
+defaultTasks 'run'
+

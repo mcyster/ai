@@ -1,5 +1,6 @@
 include 'ai-weave'
 include 'template'
+include 'webshot'
 include 'store'
 include 'web'
 include 'rest'
