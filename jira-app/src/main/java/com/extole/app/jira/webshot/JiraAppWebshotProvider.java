@@ -38,9 +38,10 @@ public class JiraAppWebshotProvider implements WebshotProvider {
         var builder = new ScreenshotOneBuilder(accessKey, assetProvider);
 
         if (url.startsWith(appUrl)) {
-            logger.info("XXXXXXXXXXXXX get token");
+            String token = tokenService.getToken();
+            logger.info("XXXXXXXXXXXXX token: " + token);
 
-            builder.addHeader("Authorization", "Bearer " + tokenService.getToken());
+            builder.addHeader("Authorization", "Bearer " + token);
             builder.url(appUrl + "/app-token?url=" + URLEncoder.encode(url, StandardCharsets.UTF_8));
         } else {
             builder.url(url);

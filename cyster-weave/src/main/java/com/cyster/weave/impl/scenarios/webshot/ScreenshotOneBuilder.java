@@ -1,6 +1,7 @@
 package com.cyster.weave.impl.scenarios.webshot;
 
 import java.io.ByteArrayInputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,9 +63,11 @@ public class ScreenshotOneBuilder {
             ObjectMapper objectMapper = new ObjectMapper();
             String jsonPayload = objectMapper.writeValueAsString(request);
 
+            logger.info("https://api.screenshotone.com/take post ", jsonPayload);
+
             byte[] imageBytes = webClient.post().uri("https://api.screenshotone.com/take").headers(httpHeaders -> {
-                headers.forEach(httpHeaders::add);
                 httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+                httpHeaders.setAccept(Collections.singletonList(MediaType.IMAGE_PNG));
             }).body(BodyInserters.fromValue(jsonPayload)).retrieve().bodyToMono(byte[].class).block();
 
             if (imageBytes != null) {
