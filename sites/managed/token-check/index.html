@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="tags" content="debug">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Dump</title>
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        body { margin: 20px; overflow: auto; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .content { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <p>This page makes an ajax request to /app-dump</p>
+    </div>
+
+<script>
+    async function fetchTokenDump() {
+        try {
+            const response = await fetch('/app-dump', {
+                method: 'GET',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                const data = await response.text();
+                console.log('Token dump response:', data);
+            } else {
+                console.error('Failed to fetch token dump');
+            }
+        } catch (error) {
+            console.error('Error during fetch:', error);
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', fetchTokenDump);
+</script>
+
+</body>
+</html>

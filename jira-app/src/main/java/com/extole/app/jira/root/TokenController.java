@@ -1,5 +1,7 @@
 package com.extole.app.jira.root;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
 public class TokenController {
-
+    private static final Logger logger = LoggerFactory.getLogger(TokenController.class);
     private final boolean isSecure;
 
     public TokenController(@Value("${app.url}") String appUrl) {
@@ -47,5 +49,21 @@ public class TokenController {
         }
 
         response.setHeader("Location", url);
+    }
+
+    @GetMapping("/app-dump")
+    @ResponseStatus(HttpStatus.OK)
+    public void dumpToken(HttpServletRequest request, HttpServletResponse response) {
+        logger.info("XXXXXXXXXXXXXXX app-dump");
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("id_token".equals(cookie.getName())) {
+                    logger.info("XXXXXXXXXXXXXXX id_token: {}", cookie.getValue());
+                    break;
+                }
+            }
+        }
     }
 }
