@@ -63,23 +63,13 @@ This is to allow the 3rd party snapshot service to take screenshots of the jira-
      - APP_REFRESH_TOKEN=XXX
 - run the command $AI_HOME/scripts/jira-app-token
 
-### Setup Webshot service: Browshot
-You only need one webshot service. Browshot supports headers so is currrently the preferred service
+### Setup Webshot service: ScreenshotOne
 
-- goto https://browshot.com/
-- create an account, get your key (under AccountAPI account/info)
+- goto https://screenshotone.com/
+- create an account, get your accessKey and secret (under AccountAPI account/info)
 - in $HOME/ai-rc define:
-  - export BROWSHOT_API_KEY=
-
-
-### Setup Webshot service: Url2Png
-You only need one webshot service. Browshot above is preferred
-
-- goto https://www.url2png.com/
-- createn an account, get your api key and secrey
-- in $HOME/ai-rc define:
-  - export URL2PNG_API_KEY=
-  - export URL2PNG_SECRET=
+  - export SCREENSHOTONE_API_KEY=XXX
+  - export SCREENSHOTONE_SECRET=XXX
 
 ### Github setup
 
@@ -126,53 +116,52 @@ In your Jira account, you will need to setup a webhook
   - url: $NGROK_URL/tickets?secret=$JIRA_WEBHOOK_SECRET
   - issue requests for: create, comment create
 
-
 # Using
 
 ## Runbooks
 Execute the best runbook against a support ticket
 ```
-curl -s  -H 'Content-Type: application/json' 'http://beep-boop.extole.com:8090/conversations/messages' -d '{"scenario":"ExtoleSupportTicket", "parameters": { "ticketNumber": "SUP-NNNNN" }}' | jq .
+curl -s -H "Authorization: Bearer $($AI_HOME/scripts/jira-app-token)" -H 'Content-Type: application/json' 'http://beep-boop.extole.com/conversations/messages' -d '{"scenario":"ExtoleSupportTicket", "parameters": { "ticketNumber": "SUP-NNNNN" }}' | jq .
 ```
 
 Determine the best Runbook given a set of keywords
 ```
-curl -s  -H 'Content-Type: application/json' 'http://beep-boop.extole.com:8090/conversations/messages' -d '{"scenario":"ExtoleRunbookSelector", "prompt": "word1 word2" }' | jq .
+curl -s -H "Authorization: Bearer $($AI_HOME/scripts/jira-app-token)" -H 'Content-Type: application/json' 'http://beep-boop.extole.com/conversations/messages' -d '{"scenario":"ExtoleRunbookSelector", "prompt": "word1 word2" }' | jq .
 ```
 
 Execute a specific Runbook Scenario (intended for testing purposes only):
 ```
-curl -s  -H 'Content-Type: application/json' 'http://beep-boop.extole.com:8090/conversations/messages' -d '{"scenario":"ExtoleRunbookJoke", "parameters": {"ticketNumber": "SUP-NNNNN", "runbookName": "ExtoleRunbookJoke", "clientId": "NNNNNNNNNNN", "clientShortName": "NAME" }}' | jq .
+curl -s -H "Authorization: Bearer $($AI_HOME/scripts/jira-app-token)" -H 'Content-Type: application/json' 'http://beep-boop.extole.com/conversations/messages' -d '{"scenario":"ExtoleRunbookJoke", "parameters": {"ticketNumber": "SUP-NNNNN", "runbookName": "ExtoleRunbookJoke", "clientId": "NNNNNNNNNNN", "clientShortName": "NAME" }}' | jq .
 ```
 
 ## Activities
 Determine the best activity given a ticket number
 ```
-curl -s  -H 'Content-Type: application/json' 'http://beep-boop.extole.com:8090/conversations/messages' -d '{"scenario":"ExtoleSupportTicketActivity", "parameters": {"ticketNumber": "SUP-NNNNN" }}' | jq .
+curl -s -H "Authorization: Bearer $($AI_HOME/scripts/jira-app-token)" -H 'Content-Type: application/json' 'http://beep-boop.extole.com/conversations/messages' -d '{"scenario":"ExtoleSupportTicketActivity", "parameters": {"ticketNumber": "SUP-NNNNN" }}' | jq .
 ```
 
 Determine best support activity given a set of keywords
 ```
-curl -s  -H 'Content-Type: application/json' 'http://beep-boop.extole.com:8090/conversations/messages' -d '{"scenario":"ExtoleSupportActivity", "prompt": "word1 word2" }' | jq .
+curl -s -H "Authorization: Bearer $($AI_HOME/scripts/jira-app-token)" -H 'Content-Type: application/json' 'http://beep-boop.extole.com/conversations/messages' -d '{"scenario":"ExtoleSupportActivity", "prompt": "word1 word2" }' | jq .
 ```
 
 ## Scenarios
 
 Avaliable scenaios
 ```
-curl -s  -H 'Content-Type: application/json' 'http://beep-boop.extole.com:8090/scenarios' | jq -r '.[].name'
+curl -s -H "Authorization: Bearer $($AI_HOME/scripts/jira-app-token)" -H 'Content-Type: application/json' 'http://beep-boop.extole.com/scenarios' | jq -r '.[].name'
 ```
 
 Get the schama of a Report Run
 ```
-curl -s -H "Authorization: Bearer $token" -H 'Content-Type: application/json' 'http://beep-boop.extole.com:8080/conversations/messages' -d '{ "scenario": "ExtoleSupportHelp", "prompt": "Can you write a typescript class for a row of the report id: s4y0iq3ses720z9dt8mf in client id: 1890234003 reportRunType is report_runner"}' | jq -r '.response.content'
+curl -s -H "Authorization: Bearer $($AI_HOME/scripts/jira-app-token)" -H 'Content-Type: application/json' 'http://beep-boop.extole.com/conversations/messages' -d '{ "scenario": "ExtoleSupportHelp", "prompt": "Can you write a typescript class for a row of the report id: s4y0iq3ses720z9dt8mf in client id: 1890234003 reportRunType is report_runner"}' | jq -r '.response.content'
 ```
 
 ## Support tickets
 
 Get support tickets
 ```
-curl -s 'http://beep-boop.extole.com:8090/support/tickets' | jq .
+curl -s -H "Authorization: Bearer $($AI_HOME/scripts/jira-app-token)" 'http://beep-boop.extole.com/support/tickets' | jq .
 ```
 
 ## References
