@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import com.cyster.weave.impl.scenarios.webshot.AssetUrlProvider.AccessibleAsset;
 import com.cyster.weave.impl.scenarios.webshot.LocalAssetProvider;
@@ -13,6 +14,7 @@ import com.cyster.weave.impl.scenarios.webshot.ScreenshotOneBuilder;
 import com.cyster.weave.impl.scenarios.webshot.ScreenshotOneWebshot;
 import com.cyster.weave.impl.scenarios.webshot.WebshotProvider;
 
+@Component
 public class JiraAppWebshotProvider implements WebshotProvider {
     private static final Logger logger = LoggerFactory.getLogger(ScreenshotOneWebshot.class);
 
