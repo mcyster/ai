@@ -2,14 +2,9 @@ package com.cyster.weave.impl.scenarios.webshot;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,74 +21,40 @@ import reactor.core.publisher.Mono;
 
 @Component
 @Conditional(BrowshotWebshotEnabledCondition.class)
-public class BrowshotWebshot implements Webshot {
+public class BrowshotWebshot implements WebshotService {
     private static final Logger logger = LoggerFactory.getLogger(BrowshotWebshot.class);
 
-    private final String appUrl;
     private final String apiKey;
-    private final TokenService tokenService;
     private final LocalAssetProvider assetProvider;
     private final WebClient webClient;
 
-    public BrowshotWebshot(@Value("${app.url}") String appUrl, @Value("${BROWSHOT_API_KEY}") String apiKey,
-            TokenService tokenService, LocalAssetProvider assetProvider) {
-        this.appUrl = appUrl;
+    public BrowshotWebshot(@Value("${BROWSHOT_API_KEY}") String apiKey, LocalAssetProvider assetProvider) {
         this.apiKey = apiKey;
-        this.tokenService = tokenService;
         this.assetProvider = assetProvider;
         this.webClient = WebClient.builder()
                 .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024)).build();
     }
 
     @Override
-    public AccessibleAsset getImage(String name, String url) {
+    public AccessibleAsset takeSnapshot(String name, String url) {
         CompletableFuture<AccessibleAsset> accessibleAssetFuture = new CompletableFuture<>();
-
-        logger.info("XXXXXXXXXXXXX get token");
-
-        var token = tokenService.getToken(url);
-        Map<String, String> headers = new HashMap<>();
-        if (token.isPresent()) {
-            headers.put("Authorization", "Bearer " + token.get());
-
-            url = appUrl + "/app-token?url=" + URLEncoder.encode(url, StandardCharsets.UTF_8);
-        }
-
-        Map<String, String> cookies = new HashMap<>();
-        // if (token.isPresent()) {
-        // cookies.put("id_token", token.get());
-        // }
 
         logger.info("Requesting screenshot for {}", url);
 
-        createScreenshot(url, headers, cookies).flatMap(this::waitForScreenshotReady).flatMap(this::downloadScreenshot)
-                .map(content -> {
-                    Asset asset = assetProvider.putAsset(name, AssetProvider.Type.PNG, content);
-                    return assetProvider.getAccessibleAsset(asset);
-                }).doOnSuccess(accessibleAssetFuture::complete).doOnError(accessibleAssetFuture::completeExceptionally)
+        createScreenshot(url).flatMap(this::waitForScreenshotReady).flatMap(this::downloadScreenshot).map(content -> {
+            Asset asset = assetProvider.putAsset(name, AssetProvider.Type.PNG, content);
+            return assetProvider.getAccessibleAsset(asset);
+        }).doOnSuccess(accessibleAssetFuture::complete).doOnError(accessibleAssetFuture::completeExceptionally)
                 .subscribe();
 
         return accessibleAssetFuture.join();
     }
 
-    private Mono<Integer> createScreenshot(String url, Map<String, String> headers, Map<String, String> cookies) {
-        Optional<String> headerParameter = headerText(headers);
-        Optional<String> cookieParameter = cookieText(cookies);
-
+    private Mono<Integer> createScreenshot(String url) {
         return webClient.get().uri(uriBuilder -> {
             uriBuilder.scheme("https").host("api.browshot.com").path("/api/v1/screenshot/create").queryParam("url", url)
                     .queryParam("instance_id", "65").queryParam("key", apiKey);
-
-            if (headerParameter.isPresent()) {
-                uriBuilder.queryParam("headers", headerParameter);
-            }
-
-            if (cookieParameter.isPresent()) {
-                uriBuilder.queryParam("cookie", cookieParameter);
-            }
-
             URI uri = uriBuilder.build();
-            logger.info("XXXXXXXXXXXXXXXXXXXXXX URI: {}", uri);
             return uri;
         }).retrieve().bodyToMono(Map.class).flatMap(response -> {
             Object screenshotId = response.get("id");
@@ -103,28 +64,6 @@ public class BrowshotWebshot implements Webshot {
                 return Mono.error(new RuntimeException("Failed to retrieve id: " + response.toString()));
             }
         });
-    }
-
-    private Optional<String> headerText(Map<String, String> headers) {
-        if (headers.isEmpty()) {
-            return Optional.empty();
-        }
-
-        String headerText = headers.entrySet().stream().map(entry -> entry.getKey() + ": " + entry.getValue())
-                .collect(Collectors.joining("\n"));
-
-        return Optional.of(headerText);
-    }
-
-    private Optional<String> cookieText(Map<String, String> cookies) {
-        if (cookies.isEmpty()) {
-            return Optional.empty();
-        }
-
-        String cookieText = cookies.entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue())
-                .collect(Collectors.joining("; "));
-
-        return Optional.of(cookieText);
     }
 
     private Mono<String> waitForScreenshotReady(Integer screenshotId) {

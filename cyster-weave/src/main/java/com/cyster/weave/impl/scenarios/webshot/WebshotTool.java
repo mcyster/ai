@@ -14,13 +14,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 @Component
-@ConditionalOnBean(Webshot.class)
+@ConditionalOnBean(WebshotService.class)
 public class WebshotTool implements Tool<Request, Void> {
 
-    private Webshot webshot;
+    private WebshotService webshotService;
 
-    WebshotTool(@Qualifier("screenshotOneWebshot") Webshot webshot) {
-        this.webshot = webshot;
+    WebshotTool(@Qualifier("webshotServiceImpl") WebshotService webshot) {
+        this.webshotService = webshot;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class WebshotTool implements Tool<Request, Void> {
             name = UUID.randomUUID().toString();
         }
 
-        AccessibleAsset accessibleAsset = this.webshot.getImage(name, request.url);
+        AccessibleAsset accessibleAsset = this.webshotService.takeSnapshot(name, request.url);
 
         return new Response(accessibleAsset.assetName().name(), "png", accessibleAsset.assetUri().toString());
     }

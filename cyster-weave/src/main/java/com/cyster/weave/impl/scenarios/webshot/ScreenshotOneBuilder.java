@@ -18,7 +18,7 @@ import com.cyster.weave.impl.scenarios.webshot.AssetUrlProvider.AccessibleAsset;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 // https://screenshotone.com/docs
-// 
+// https://github.com/screenshotone/jsdk 
 
 public class ScreenshotOneBuilder {
     private static final Logger logger = LoggerFactory.getLogger(ScreenshotOneBuilder.class);
@@ -50,7 +50,7 @@ public class ScreenshotOneBuilder {
         return this;
     }
 
-    public AccessibleAsset getImage(String name) {
+    public AccessibleAsset takeSnapshot(String name) {
         logger.info("capture {} to {}", this.url, name);
 
         try {

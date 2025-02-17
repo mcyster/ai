@@ -22,7 +22,7 @@ import com.cyster.weave.impl.scenarios.webshot.AssetUrlProvider.AccessibleAsset;
 
 @Component
 @Conditional(Url2PngWebshotEnabledCondition.class)
-public class Url2PngWebshot implements Webshot {
+public class Url2PngWebshot implements WebshotService {
     private static final Logger logger = LoggerFactory.getLogger(Url2PngWebshot.class);
 
     private final String secret;
@@ -41,7 +41,7 @@ public class Url2PngWebshot implements Webshot {
     }
 
     @Override
-    public AccessibleAsset getImage(String name, String url) {
+    public AccessibleAsset takeSnapshot(String name, String url) {
         String parameterTemplate = "?url=%s&fullpage=true&say_cheese=yes";
 
         CompletableFuture<AccessibleAsset> accessibleAssetFuture = new CompletableFuture<>();

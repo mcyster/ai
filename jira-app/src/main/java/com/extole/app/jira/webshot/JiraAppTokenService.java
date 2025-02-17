@@ -1,4 +1,4 @@
-package com.cyster.weave.impl.scenarios.webshot;
+package com.extole.app.jira.webshot;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -9,18 +9,16 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
-public class AppTokenService implements TokenProvider {
-    private final String baseUri;
+public class JiraAppTokenService {
     private final String tokenUri;
     private final String clientId;
     private final String clientSecret;
     private final String refreshToken;
     private final WebClient webClient;
 
-    public AppTokenService(@Value("${app.url}") String baseUri, @Value("${app.token_uri}") String tokenUri,
-            @Value("${app.client_id}") String clientId, @Value("${app.client_secret}") String clientSecret,
-            @Value("${app.refresh_token}") String refreshToken, WebClient.Builder webClientBuilder) {
-        this.baseUri = baseUri;
+    public JiraAppTokenService(@Value("${app.token_uri}") String tokenUri, @Value("${app.client_id}") String clientId,
+            @Value("${app.client_secret}") String clientSecret, @Value("${app.refresh_token}") String refreshToken,
+            WebClient.Builder webClientBuilder) {
         this.tokenUri = tokenUri;
         this.clientId = clientId;
         this.clientSecret = clientSecret;
@@ -29,12 +27,6 @@ public class AppTokenService implements TokenProvider {
         this.webClient = webClientBuilder.build();
     }
 
-    @Override
-    public String baseUri() {
-        return baseUri;
-    }
-
-    @Override
     public String getToken() {
         return refreshToken().idToken();
     }

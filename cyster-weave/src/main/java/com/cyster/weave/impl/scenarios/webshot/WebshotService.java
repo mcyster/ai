@@ -2,8 +2,7 @@ package com.cyster.weave.impl.scenarios.webshot;
 
 import com.cyster.weave.impl.scenarios.webshot.AssetUrlProvider.AccessibleAsset;
 
-public interface Webshot {
+public interface WebshotService {
 
-    AccessibleAsset getImage(String name, String url);
-
+    AccessibleAsset takeSnapshot(String name, String url);
 }
