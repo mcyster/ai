@@ -49,9 +49,8 @@ public class CookieJwtAuthenticationFilter extends OncePerRequestFilter {
                     }
                 }
             }
-        } else {
-            logger.warn("No cookies found in the request");
         }
+
         filterChain.doFilter(request, response);
     }
 }
