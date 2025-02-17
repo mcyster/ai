@@ -21,6 +21,7 @@ pkgs.mkShell {
     pkgs.gtk3
     pkgs.wayland
     pkgs.libxkbcommon
+    pkgs.noto-fonts  # Comprehensive font support
   ];
 
   LANG = "en_US.UTF-8";
@@ -46,7 +47,7 @@ pkgs.mkShell {
     export CHROMEDRIVER=${pkgs.chromedriver}/bin/chromedriver
 
     # Ensure Chrome can access the necessary fonts
-    export FONTCONFIG_FILE=$HOME/.nix-profile/etc/fonts/fonts.conf
+    export FONTCONFIG_PATH=$HOME/.nix-profile/etc/fonts
   '';
 }
 

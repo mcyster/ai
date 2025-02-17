@@ -19,7 +19,7 @@ public class WebshotTool implements Tool<Request, Void> {
 
     private Webshot webshot;
 
-    WebshotTool(@Qualifier("browshotWebshot") Webshot webshot) {
+    WebshotTool(@Qualifier("screenshotOneWebshot") Webshot webshot) {
         this.webshot = webshot;
     }
 
