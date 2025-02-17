@@ -63,7 +63,7 @@ public class ScreenshotOneBuilder {
             ObjectMapper objectMapper = new ObjectMapper();
             String jsonPayload = objectMapper.writeValueAsString(request);
 
-            logger.info("https://api.screenshotone.com/take post ", jsonPayload);
+            logger.info("https://api.screenshotone.com/take post: {}", jsonPayload);
 
             byte[] imageBytes = webClient.post().uri("https://api.screenshotone.com/take").headers(httpHeaders -> {
                 httpHeaders.setContentType(MediaType.APPLICATION_JSON);
