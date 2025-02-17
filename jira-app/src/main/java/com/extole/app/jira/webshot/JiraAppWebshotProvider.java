@@ -30,6 +30,8 @@ public class JiraAppWebshotProvider implements WebshotProvider {
     }
 
     public boolean canHandle(String url) {
+        logger.info("XXXXXXXXXXXXX url {} appUrl {} ", url, appUrl);
+
         return url.startsWith(appUrl);
     }
 

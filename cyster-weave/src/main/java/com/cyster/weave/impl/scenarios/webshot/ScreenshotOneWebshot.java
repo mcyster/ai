@@ -23,7 +23,7 @@ public class ScreenshotOneWebshot implements WebshotService {
 
     @Override
     public AccessibleAsset takeSnapshot(String name, String url) {
-        logger.info("XXXXXXXXXXXXX get token");
+        logger.info("takeSnapshot {} to {}", name, url);
 
         var builder = new ScreenshotOneBuilder(accessKey, assetProvider);
         builder.url(url);
