@@ -9,6 +9,7 @@ import javax.imageio.ImageIO;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import ru.yandex.qatools.ashot.AShot;
 import ru.yandex.qatools.ashot.Screenshot;
@@ -29,7 +30,14 @@ public class Webshot {
         }
         System.setProperty("webdriver.chrome.driver", chromeDriver);
 
-        WebDriver driver = new ChromeDriver();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        options.addArguments("--disable-gpu");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--remote-debugging-port=9222");
+
+        WebDriver driver = new ChromeDriver(options);
         driver.get(url);
 
         Screenshot screenshot = new AShot().shootingStrategy(ShootingStrategies.viewportPasting(1000))
@@ -54,7 +62,7 @@ public class Webshot {
         int count = 1;
 
         while (file.exists()) {
-            String newName = baseName + "_" + count;
+            String newName = baseName + "-" + count;
             file = new File(tempDir, newName);
             count++;
         }

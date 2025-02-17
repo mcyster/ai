@@ -21,6 +21,7 @@ async function getData(reportRunType, reportId, extoleToken) {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${extoleToken}`
+                credentials: 'include'
             }
         });
         if (!response.ok) {
