@@ -7,9 +7,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 public class LocalAssetProvider implements AssetProvider, AssetUrlProvider {
+    private static final Logger logger = LoggerFactory.getLogger(LocalAssetProvider.class);
+
     private URI baseUri;
     private final Path assets;
 
@@ -58,30 +62,12 @@ public class LocalAssetProvider implements AssetProvider, AssetUrlProvider {
 
     @Override
     public AccessibleAsset getAccessibleAsset(Asset asset) {
+        logger.info("getting accessible asset for '{}'", asset.name());
         return new AccessibleAsset(asset, baseUri.resolve(asset.name()));
     }
 
     public Path localPath() {
         return assets;
-    }
-
-    public static Path createUniqueFileName(Path directory, String name, String extension) throws IOException {
-        if (!Files.exists(directory)) {
-            Files.createDirectories(directory);
-        }
-
-        String sanitizedExtension = extension.startsWith(".") ? extension : "." + extension;
-        String baseName = name.replaceAll("[^a-zA-Z0-9-_ ]", "-").toLowerCase();
-
-        Path uniqueFile = directory.resolve(baseName + sanitizedExtension);
-        int counter = 1;
-
-        while (Files.exists(uniqueFile)) {
-            uniqueFile = directory.resolve(baseName + "-" + counter + sanitizedExtension);
-            counter++;
-        }
-
-        return uniqueFile;
     }
 
     private static class LocalAssetWriter implements AssetWriter {
