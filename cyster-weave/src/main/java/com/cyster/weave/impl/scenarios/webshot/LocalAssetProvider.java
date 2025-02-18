@@ -35,32 +35,10 @@ public class LocalAssetProvider implements AssetProvider, AssetUrlProvider {
     }
 
     @Override
-    public Asset putAsset(String name, Type type, InputStream content) {
+    public AssetWriter createAssetWriter(String name, Type type) {
+        String baseName = name.replaceAll("[^a-zA-Z0-9-_ ]", "-").toLowerCase();
 
-        String extension = "." + type.toString().toLowerCase();
-        String baseName = name.replaceAll("[^a-zA-Z0-9-_]", "_").toLowerCase();
-
-        String uniqueName = baseName;
-        int counter = 1;
-        Path assetPath;
-        do {
-            String uniquePath = uniqueName + extension;
-            assetPath = this.assets.resolve(uniquePath);
-            if (!Files.exists(assetPath)) {
-                break;
-            }
-            uniqueName = baseName + "-" + counter++;
-        } while (true);
-
-        Asset asset = new Asset(uniqueName, type);
-
-        try {
-            Files.copy(content, assetPath);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to write asset to " + assetPath, e);
-        }
-
-        return asset;
+        return new LocalAssetWriter(assets, baseName, type);
     }
 
     @Override
@@ -79,8 +57,8 @@ public class LocalAssetProvider implements AssetProvider, AssetUrlProvider {
     }
 
     @Override
-    public AccessibleAsset getAccessibleAsset(Asset name) {
-        return new AccessibleAsset(name, baseUri.resolve(name.name()));
+    public AccessibleAsset getAccessibleAsset(Asset asset) {
+        return new AccessibleAsset(asset, baseUri.resolve(asset.name()));
     }
 
     public Path localPath() {
@@ -93,7 +71,7 @@ public class LocalAssetProvider implements AssetProvider, AssetUrlProvider {
         }
 
         String sanitizedExtension = extension.startsWith(".") ? extension : "." + extension;
-        String baseName = name.replaceAll("[^a-zA-Z0-9-_]", "_").toLowerCase();
+        String baseName = name.replaceAll("[^a-zA-Z0-9-_ ]", "-").toLowerCase();
 
         Path uniqueFile = directory.resolve(baseName + sanitizedExtension);
         int counter = 1;
@@ -104,5 +82,54 @@ public class LocalAssetProvider implements AssetProvider, AssetUrlProvider {
         }
 
         return uniqueFile;
+    }
+
+    private static class LocalAssetWriter implements AssetWriter {
+        private final Path assets;
+        private String baseName;
+
+        private Type type;
+
+        public LocalAssetWriter(Path assets, String baseName, Type type) {
+            this.assets = assets;
+            this.baseName = baseName;
+            this.type = type;
+        }
+
+        @Override
+        public AssetWriter name(String name) {
+            this.baseName = name;
+            return this;
+        }
+
+        @Override
+        public AssetWriter type(Type type) {
+            this.type = type;
+            return this;
+        }
+
+        @Override
+        public Asset write(InputStream content) {
+            String uniqueName = baseName;
+            int counter = 1;
+            Path assetPath;
+            do {
+                String uniquePath = uniqueName + "." + type.toString().toLowerCase();
+                assetPath = this.assets.resolve(uniquePath);
+                if (!Files.exists(assetPath)) {
+                    break;
+                }
+                uniqueName = baseName + "-" + counter++;
+            } while (true);
+
+            try {
+                Files.copy(content, assetPath);
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to write asset to " + assetPath, e);
+            }
+
+            return new Asset(uniqueName, type);
+        }
+
     }
 }

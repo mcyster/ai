@@ -18,9 +18,17 @@ public interface AssetProvider {
         }
     }
 
-    Asset putAsset(String name, Type mimeType, InputStream content);
+    AssetWriter createAssetWriter(String name, Type mimeType);
 
     void getAsset(Asset asset, AssetConsumer assetConsumer);
+
+    interface AssetWriter {
+        AssetWriter name(String name);
+
+        AssetWriter type(Type type);
+
+        Asset write(InputStream content);
+    }
 
     @FunctionalInterface
     interface AssetConsumer {

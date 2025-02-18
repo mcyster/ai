@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.cyster.weave.impl.scenarios.webshot.AssetProvider.Asset;
+import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetWriter;
+import com.cyster.weave.impl.scenarios.webshot.AssetProvider.Type;
 import com.cyster.weave.impl.scenarios.webshot.AssetUrlProvider.AccessibleAsset;
 
 import reactor.core.publisher.Mono;
@@ -37,17 +39,19 @@ public class BrowshotWebshot implements WebshotService {
 
     @Override
     public AccessibleAsset takeSnapshot(String name, String url) {
-        CompletableFuture<AccessibleAsset> accessibleAssetFuture = new CompletableFuture<>();
+        AssetWriter assetWriter = assetProvider.createAssetWriter(name, Type.PNG);
+
+        CompletableFuture<Asset> accessibleAssetFuture = new CompletableFuture<>();
 
         logger.info("Requesting screenshot for {}", url);
 
         createScreenshot(url).flatMap(this::waitForScreenshotReady).flatMap(this::downloadScreenshot).map(content -> {
-            Asset asset = assetProvider.putAsset(name, AssetProvider.Type.PNG, content);
-            return assetProvider.getAccessibleAsset(asset);
+            return assetWriter.write(content);
         }).doOnSuccess(accessibleAssetFuture::complete).doOnError(accessibleAssetFuture::completeExceptionally)
                 .subscribe();
 
-        return accessibleAssetFuture.join();
+        Asset asset = accessibleAssetFuture.join();
+        return assetProvider.getAccessibleAsset(asset);
     }
 
     private Mono<Integer> createScreenshot(String url) {

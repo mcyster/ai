@@ -1,10 +1,11 @@
 package com.cyster.weave.impl.scenarios.webshot;
 
-import com.cyster.weave.impl.scenarios.webshot.AssetUrlProvider.AccessibleAsset;
+import com.cyster.weave.impl.scenarios.webshot.AssetProvider.Asset;
+import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetWriter;
 
 public interface WebshotProvider {
 
     boolean canHandle(String url);
 
-    AccessibleAsset takeSnapshot(String name, String url);
+    Asset takeSnapshot(AssetWriter writer, String url);
 }

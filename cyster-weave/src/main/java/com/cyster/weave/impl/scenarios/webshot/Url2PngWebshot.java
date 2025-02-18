@@ -16,6 +16,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.cyster.weave.impl.scenarios.webshot.AssetProvider.Asset;
+import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetWriter;
+import com.cyster.weave.impl.scenarios.webshot.AssetProvider.Type;
 import com.cyster.weave.impl.scenarios.webshot.AssetUrlProvider.AccessibleAsset;
 
 // https://www.url2png.com/
@@ -42,9 +44,11 @@ public class Url2PngWebshot implements WebshotService {
 
     @Override
     public AccessibleAsset takeSnapshot(String name, String url) {
+        AssetWriter assetWriter = assetProvider.createAssetWriter(name, Type.PNG);
+
         String parameterTemplate = "?url=%s&fullpage=true&say_cheese=yes";
 
-        CompletableFuture<AccessibleAsset> accessibleAssetFuture = new CompletableFuture<>();
+        CompletableFuture<Asset> accessibleAssetFuture = new CompletableFuture<>();
 
         try {
             String encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8.name());
@@ -59,14 +63,16 @@ public class Url2PngWebshot implements WebshotService {
 
             webClient.get().uri(requestUrl).accept(MediaType.IMAGE_PNG).retrieve().bodyToMono(byte[].class)
                     .map(ByteArrayInputStream::new).doOnNext(content -> {
-                        Asset asset = assetProvider.putAsset(name, AssetProvider.Type.PNG, content);
-                        accessibleAssetFuture.complete(assetProvider.getAccessibleAsset(asset));
+                        Asset asset = assetWriter.write(content);
+                        accessibleAssetFuture.complete(asset);
                     }).block();
         } catch (Exception exception) {
             throw new RuntimeException("Failed to fetch the image", exception);
         }
 
-        return accessibleAssetFuture.join();
+        Asset asset = accessibleAssetFuture.join();
+
+        return assetProvider.getAccessibleAsset(asset);
     }
 
     private String md5Hash(String input) {

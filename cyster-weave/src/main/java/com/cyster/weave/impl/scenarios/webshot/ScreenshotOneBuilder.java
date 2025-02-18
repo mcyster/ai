@@ -15,7 +15,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.cyster.weave.impl.scenarios.webshot.AssetProvider.Asset;
-import com.cyster.weave.impl.scenarios.webshot.AssetUrlProvider.AccessibleAsset;
+import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetWriter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 // https://screenshotone.com/docs
@@ -25,12 +25,10 @@ public class ScreenshotOneBuilder {
     private static final Logger logger = LoggerFactory.getLogger(ScreenshotOneBuilder.class);
 
     private final WebClient webClient;
-    private final LocalAssetProvider assetProvider;
     private String url;
     private Map<String, String> headers = new HashMap<>();
 
-    public ScreenshotOneBuilder(@Value("${SCREENSHOTONE_API_KEY}") String accessKey, LocalAssetProvider assetProvider) {
-        this.assetProvider = assetProvider;
+    public ScreenshotOneBuilder(@Value("${SCREENSHOTONE_API_KEY}") String accessKey) {
         this.webClient = WebClient.builder().defaultHeader("X-Access-Key", accessKey).codecs(
                 clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024))
                 .build();
@@ -51,8 +49,8 @@ public class ScreenshotOneBuilder {
         return this;
     }
 
-    public AccessibleAsset takeSnapshot(String name) {
-        logger.info("capture {} to {}", this.url, name);
+    public Asset takeSnapshot(AssetWriter assetWriter) {
+        logger.info("capture {} to {}", this.url);
 
         try {
             List<String> headerList = headers.entrySet().stream().map(entry -> entry.getKey() + ": " + entry.getValue())
@@ -72,8 +70,8 @@ public class ScreenshotOneBuilder {
 
             if (imageBytes != null) {
                 ByteArrayInputStream content = new ByteArrayInputStream(imageBytes);
-                Asset asset = assetProvider.putAsset(name, AssetProvider.Type.PNG, content);
-                return assetProvider.getAccessibleAsset(asset);
+                assetWriter.type(AssetProvider.Type.PNG);
+                return assetWriter.write(content);
             } else {
                 throw new RuntimeException("Failed to fetch the image: Response body is null");
             }
