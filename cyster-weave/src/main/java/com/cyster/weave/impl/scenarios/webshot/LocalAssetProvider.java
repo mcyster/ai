@@ -40,7 +40,7 @@ public class LocalAssetProvider implements AssetProvider, AssetUrlProvider {
 
     @Override
     public AssetWriter createAssetWriter(String name, Type type) {
-        String baseName = name.replaceAll("[^a-zA-Z0-9-_ ]", "-").toLowerCase();
+        String baseName = name.replaceAll("[^a-zA-Z0-9-_]", "-").toLowerCase();
 
         return new LocalAssetWriter(assets, baseName, type);
     }
@@ -62,7 +62,6 @@ public class LocalAssetProvider implements AssetProvider, AssetUrlProvider {
 
     @Override
     public AccessibleAsset getAccessibleAsset(Asset asset) {
-        logger.info("getting accessible asset for '{}'", asset.name());
         return new AccessibleAsset(asset, baseUri.resolve(asset.name()));
     }
 
