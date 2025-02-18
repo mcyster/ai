@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import com.cyster.weave.impl.scenarios.webshot.AssetProvider.Asset;
 import com.cyster.weave.impl.scenarios.webshot.AssetProvider.AssetWriter;
 import com.cyster.weave.impl.scenarios.webshot.DefaultWebshotProvider;
-import com.cyster.weave.impl.scenarios.webshot.ScreenshotOneBuilder;
+import com.cyster.weave.impl.scenarios.webshot.ScreenshotOne;
 import com.cyster.weave.impl.scenarios.webshot.WebshotProvider;
 
 @Component
@@ -20,13 +20,13 @@ public class JiraAppWebshotProvider implements WebshotProvider {
 
     private final String appUrl;
     private final JiraAppTokenService tokenService;
-    private final String accessKey;
+    private final ScreenshotOne screenshotOne;
 
     public JiraAppWebshotProvider(@Value("${app.url}") String appUrl, JiraAppTokenService tokenService,
-            @Value("${SCREENSHOTONE_API_KEY}") String accessKey) {
+            ScreenshotOne screenshotOne) {
         this.appUrl = appUrl;
         this.tokenService = tokenService;
-        this.accessKey = accessKey;
+        this.screenshotOne = screenshotOne;
     }
 
     public boolean canHandle(String url) {
@@ -35,7 +35,7 @@ public class JiraAppWebshotProvider implements WebshotProvider {
 
     @Override
     public Asset takeSnapshot(AssetWriter assetWriter, String url) {
-        var builder = new ScreenshotOneBuilder(accessKey);
+        var builder = screenshotOne.createBuilder();
 
         if (url.startsWith(appUrl)) {
             builder.addHeader("Authorization", "Bearer " + tokenService.getToken());
