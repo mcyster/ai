@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Guru Pod Duration by Monitoring</title>
+    <meta name="tags" content="extole,support,tickets,alerts,monitoring,duration,guru-pod">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Guru Pod - Monitoring vs Non-Monitoring Ticket Durations</h2>
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
+    <script>
+
+function durationTicketsBySource(tickets) {
+    const durations = { 'Monitoring': {}, 'Non-Monitoring': {} };
+
+    tickets.forEach(ticket => {
+        const creationDate = new Date(ticket.createdDate);
+        const weekEndDate = getWeekEndDate(creationDate);
+
+        const source = ticket.reporter === 'monitoring@extole.com' ? 'Monitoring' : 'Non-Monitoring';
+
+        if (!durations[source][weekEndDate]) {
+            durations[source][weekEndDate] = 0;
+        }
+
+        var duration = ticket.duration;
+        if (duration < 600) {
+           duration = 600;
+        }
+
+        durations[source][weekEndDate] += duration;
+    });
+
+    return durations;
+}
+
+function getWeekEndDate(date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
+
+function renderChart(sourceDurations) {
+    const ctx = document.getElementById('chart');
+    if (!ctx) return;
+
+    let weeks = new Set();
+    Object.values(sourceDurations).forEach(sourceData => {
+        Object.keys(sourceData).forEach(week => weeks.add(week));
+    });
+    weeks = new Set(Array.from(weeks).sort());
+
+    // Filter weeks to include only the last 6 months
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    weeks = new Set(Array.from(weeks).filter(week => new Date(week) >= sixMonthsAgo));
+
+    const colors = ['hsl(210, 50%, 45%)', 'hsl(30, 50%, 45%)'];
+    const datasets = ['Monitoring', 'Non-Monitoring'].map((source, index) => {
+        const data = Array.from(weeks).map(week => ({ x: new Date(week), y: (sourceDurations[source][week] || 0) / 60 / 60 }));
+        return {
+            label: source,
+            backgroundColor: colors[index],
+            borderColor: colors[index],
+            fill: false,
+            data,
+            borderWidth: 4
+        };
+    });
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true, // Ensure y-axis starts at 0
+                    title: {
+                        display: true,
+                        text: 'Total Duration (hours)',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+const app = {
+    data() {
+        return {
+            jsonData: []
+        };
+    },
+    async created() {
+        try {
+            const tickets = await getSupportTickets();
+            const filteredTickets = tickets.filter(ticket => 
+                 ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' 
+                 && ticket.status != "Closed - Won't Do"
+                 && ticket.pod === 'Guru');
+            const sourceDurations = durationTicketsBySource(filteredTickets);
+            renderChart(sourceDurations);
+        } catch (error) {
+            console.error('Error loading data:', error);
+        }
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
+    </script>
+
+</body>
+</html>
