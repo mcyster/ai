@@ -37,12 +37,14 @@
 function countTicketsPerWeek(tickets) {
     const startCounts = {};
     const resolveCounts = {};
-    
+    const now = new Date();
+
     tickets.forEach(ticket => {
         const startDate = ticket.startDate;
-        if (startDate == null) {
-            console.log("sadness");
+        if (startDate == null || startDate > now) {
+            return;
         }
+        
         const resolutionDate = ticket.resolvedDate || new Date(); // Use current date if not resolved
 
         const startWeekEnd = getWeekEndDate(startDate);
