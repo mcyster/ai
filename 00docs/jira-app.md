@@ -197,7 +197,7 @@ curl -s \
   "https://beep-boop.extole.com/conversations/messages" \
   -d '{
     "scenario": "ExtoleSupportHelp",
-    "prompt": "Add a comment to SUP-53042 saying joke conming soon, then scehdule in 30 seconds the scenario ExtoleSupportHelp with the prompt: add comment to SUP-53042 telling a joke about time"
+    "prompt": "Add a comment to SUP-53042 saying joke comming soon, then scehdule in 30 seconds the scenario ExtoleSupportHelp with the prompt: add comment to SUP-53042 telling a joke about time"
   }'
 ```
 
