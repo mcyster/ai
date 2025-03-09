@@ -5,8 +5,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,36 +42,32 @@ public class TicketController {
     private static final Logger logger = LoggerFactory.getLogger(TicketController.class);
     private static final Logger eventLogger = LoggerFactory.getLogger("events");
 
-    public TicketController(TicketCommenter ticketCommenter,  @Value("${JIRA_WEBHOOK_SECRET:}") String jiraWebhookSecret) {
+    public TicketController(TicketCommenter ticketCommenter,
+            @Value("${JIRA_WEBHOOK_SECRET:}") String jiraWebhookSecret) {
         if (jiraWebhookSecret == null || jiraWebhookSecret.trim().isEmpty()) {
             logger.warn("Environment variable JIRA_WEBHOOK_SECRET not specified");
         }
-        
+
         this.ticketCommenter = ticketCommenter;
         this.jiraWebhookSecret = Optional.of(jiraWebhookSecret);
     }
 
     @PostMapping("/ticket")
-    public ResponseEntity<String> ticketEvent(
-            @RequestParam("secret") String secret, 
-            @RequestBody JsonNode request) throws BadRequestException, FatalException {
-        
+    public ResponseEntity<String> ticketEvent(@RequestParam("secret") String secret, @RequestBody JsonNode request)
+            throws BadRequestException, FatalException {
+
         logger.info("ticket secret: " + secret + " configuredSecret: " + this.jiraWebhookSecret.orElse(""));
-        
+
         if (this.jiraWebhookSecret.isPresent() && secret == null) {
             logger.error("No secret parameter specified in request");
-             return ResponseEntity
-                 .status(HttpStatus.BAD_REQUEST)
-                 .body("No secret specified");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No secret specified");
         }
-    
+
         if (this.jiraWebhookSecret.isPresent() && !secret.equals(this.jiraWebhookSecret.get())) {
             logger.error("Secret parameter does not match JIRA_WEBHOOK_SECRET");
-               return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body("Secret does not match configured secret");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Secret does not match configured secret");
         }
-        
+
         eventLogger.info(request.toString());
 
         if (!request.has("issue")) {
@@ -87,55 +83,57 @@ public class TicketController {
         }
         var webhookEvent = request.path("webhookEvent").asText().toLowerCase();
 
-        logger.info("Ticket - checking: " + ticketNumber);
+        logger.info("Ticket - checking: " + ticketNumber + " - " + webhookEvent);
 
         switch (webhookEvent) {
         case "jira:issue_created":
-            if (isSupportedProject(ticketNumber)) {
+            if (!isSupportedProject(ticketNumber)) {
+                logger.info("Ticket - " + ticketNumber + " - issue_created - ignored - not in a supported project");
+            } else {
                 logger.info("Ticket - " + ticketNumber + " - issue_created - processing");
                 ticketCommenter.process(ticketNumber);
-            } else {
-                logger.info("Ticket - " + ticketNumber + " - issue_created - ignored - not in a supported project");
             }
             break;
 
         case "comment_created":
             if (!request.has("comment")) {
                 logger.info("Ticket - " + ticketNumber + " - comment_created - has no comment - ignoring");
-            }
-            else if (!request.get("comment").has("body")) {
+            } else if (!request.get("comment").has("body")) {
                 logger.info("Ticket - " + ticketNumber + " - comment_created - comment has no body - ignoring");
-            }
-            var comment = request.get("comment").get("body").asText();
-            Matcher matcher = MENTION_PATTERN.matcher(comment);
+            } else {
+                var comment = request.get("comment").get("body").asText();
+                Matcher matcher = MENTION_PATTERN.matcher(comment);
 
-            boolean mention = false;
-            while (matcher.find()) {
-                if (matcher.group().equals("[~accountid:" + JIRA_APP_ACCOUNT_ID + "]")) {
-                    mention = true;
-                    break;
+                boolean mention = false;
+                while (matcher.find()) {
+                    if (matcher.group().equals("[~accountid:" + JIRA_APP_ACCOUNT_ID + "]")) {
+                        mention = true;
+                        break;
+                    }
                 }
-            }
-            if (mention) {
-               logger.info("Ticket - " + ticketNumber + " - comment_created - ai mention");
+                if (mention) {
+                    logger.info("Ticket - " + ticketNumber + " - comment_created - ai mention");
 
-               String cleanedComment = MENTION_PATTERN.matcher(comment).replaceAll("");
-               try {
-                   if (cleanedComment.isBlank()) {
-                       ticketCommenter.process(ticketNumber);
-                   } else {
-                       ticketCommenter.process(ticketNumber, cleanedComment);
-                   }
-               } catch(Exception exception) {
-                   logger.error("Failed to process ticket - " + ticketNumber, exception);
-                   throw exception;
-               }
+                    String cleanedComment = MENTION_PATTERN.matcher(comment).replaceAll("");
+                    try {
+                        if (cleanedComment.isBlank()) {
+                            ticketCommenter.process(ticketNumber);
+                        } else {
+                            ticketCommenter.process(ticketNumber, cleanedComment);
+                        }
+                    } catch (Exception exception) {
+                        logger.error("Failed to process ticket - " + ticketNumber, exception);
+                        throw exception;
+                    }
+                } else {
+                    logger.info("Ticket - " + ticketNumber + " - comment_created - ai not mentioned");
+                }
             }
             break;
 
         default:
             logger.info("Ticket - " + ticketNumber + " - " + webhookEvent + " ignored");
-       }
+        }
 
         return ResponseEntity.ok().build();
     }
@@ -156,6 +154,7 @@ public class TicketController {
         public FatalException(String message, Throwable cause) {
             super(message, cause);
         }
+
     }
 
     private static boolean isSupportedProject(String ticketNumber) {
