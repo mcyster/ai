@@ -164,6 +164,43 @@ Get support tickets
 curl -s -H "Authorization: Bearer $($AI_HOME/scripts/jira-app-token)" 'http://beep-boop.extole.com/support/tickets' | jq .
 ```
 
+## Leveraging tools from a scenario
+Take a screen short, using the generic extoleSupportHelp scenario
+```
+curl -X POST \
+  -H "Authorization: Bearer $($AI_HOME/scripts/jira-app-token)" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "scenario": "ExtoleSupportHelp",
+    "prompt": "Take a screenshot of http://cyster.com and add the image to the ticket SUP-1 then add a comment with a link referencing the image to the ticket"
+  }' \
+  'https://beep-boop.extole.com/conversations/messages'
+```
+
+Review a report
+```
+curl -X POST
+  -H "Authorization: Bearer $($(./beep-boop-token))" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "scenario":"ExtoleSupportHelp",
+    "prompt":"Review the report id srz8qc1brkdfzcwt046x in the client 754568636 look for errors."
+  }' \
+  'https://beep-boop.extole.com/conversations/messages' | jq .
+```
+
+Schedule sometmng to happen in the future
+```
+curl -s \
+  -H "Authorization: Bearer $($AI_HOME/scripts/jira-app-token)" \
+  -H "Content-Type: application/json" \
+  "https://beep-boop.extole.com/conversations/messages" \
+  -d '{
+    "scenario": "ExtoleSupportHelp",
+    "prompt": "Add a comment to SUP-53042 saying joke conming soon, then scehdule in 30 seconds the scenario ExtoleSupportHelp with the prompt: add comment to SUP-53042 telling a joke about time"
+  }'
+```
+
 ## References
 - https://developer.atlassian.com/server/jira/platform/webhooks/
 - https://ngrok.com/
