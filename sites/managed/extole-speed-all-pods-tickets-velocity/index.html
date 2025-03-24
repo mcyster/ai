@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Alert Tickets</title>
-    <meta name="tags" content="extole,support,alerts,tickets,reward">
+    <title>Speed Ticket Velocity</title>
+    <meta name="tags" content="extole,speed,all-pods,tickets,velocity">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,55 +25,43 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">Alert - Tickets</h2>
+            <h2 id="graphTitle">Speed Ticket Velocity (excludes HELP)</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
 
-  <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
     <script src="../extole/support-tickets.js"></script>
     <script>
 
 function countTicketsPerWeek(tickets) {
     const startCounts = {};
     const resolveCounts = {};
-    const realIssueCounts = {};
+    const now = new Date();
 
     tickets.forEach(ticket => {
         const startDate = ticket.startDate;
+        if (startDate == null || startDate > now) {
+            return;
+        }
+        
         const resolutionDate = ticket.resolvedDate || new Date(); // Use current date if not resolved
 
         const startWeekEnd = getWeekEndDate(startDate);
         const resolvedWeekEnd = resolutionDate ? getWeekEndDate(resolutionDate) : null;
 
-        if (resolveCounts[resolvedWeekEnd] === undefined) {
+        if (!resolveCounts[resolvedWeekEnd]) {
             resolveCounts[resolvedWeekEnd] = 0;
         }
         resolveCounts[resolvedWeekEnd]++;
 
-        if (realIssueCounts[resolvedWeekEnd] === undefined) {
-            realIssueCounts[resolvedWeekEnd] = 0;
-        }
-
-        if (ticket.reporter == "monitoring@extole.com") {
-            if (ticket.labels.includes("real_issue")) {
-                realIssueCounts[resolvedWeekEnd]++;
-            }
-        } else {
-            if (ticket.status != "Closed - Won't Do") {
-                realIssueCounts[resolvedWeekEnd]++;
-            }
-        }
-
-        if (startCounts[startWeekEnd] === undefined) {
+        if (!startCounts[startWeekEnd]) {
             startCounts[startWeekEnd] = 0;
         }
-         
         startCounts[startWeekEnd]++;
-
     });
 
-    return { startCounts, resolveCounts, realIssueCounts };
+    return { startCounts, resolveCounts };
 }
 
 function getWeekEndDate(date) {
@@ -84,11 +72,11 @@ function getWeekEndDate(date) {
     return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
 }
 
-function renderChart(startCounts, resolveCounts, realIssueCounts) {
+function renderChart(startCounts, resolveCounts) {
     const ctx = document.getElementById('chart');
     if (!ctx) return;
     let weeks = Object.keys(startCounts).sort();
-
+    
     // Remove the first week unconditionally
     if (weeks.length > 1) {
         weeks.shift();
@@ -100,7 +88,6 @@ function renderChart(startCounts, resolveCounts, realIssueCounts) {
 
     const createData = weeks.map(week => ({ x: new Date(week), y: startCounts[week] || 0 }));
     const resolveData = weeks.map(week => ({ x: new Date(week), y: resolveCounts[week] || 0 }));
-    const realIssueData = weeks.map(week => ({ x: new Date(week), y: realIssueCounts[week] || 0 }));
 
     new Chart(ctx, {
         type: 'line',
@@ -112,7 +99,7 @@ function renderChart(startCounts, resolveCounts, realIssueCounts) {
                     borderColor: 'rgba(200, 30, 30, 1)',
                     fill: false,
                     data: createData,
-                    borderWidth: 4
+                    borderWidth: 4 
                 },
                 {
                     label: 'Tickets Closed',
@@ -120,15 +107,7 @@ function renderChart(startCounts, resolveCounts, realIssueCounts) {
                     borderColor: 'rgba(34, 139, 34, 1)',
                     fill: false,
                     data: resolveData,
-                    borderWidth: 4
-                },
-                {
-                    label: 'Real Issues',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgba(135, 206, 250, 0.2)',
-                    fill: false,
-                    data: realIssueData,
-                    borderWidth: 2
+                    borderWidth: 4 
                 }
             ]
         },
@@ -158,7 +137,7 @@ function renderChart(startCounts, resolveCounts, realIssueCounts) {
                     }
                 },
                 y: {
-                    beginAtZero: true,
+                    beginAtZero: true, // Ensure y-axis starts at 0
                     title: {
                         display: true,
                         text: 'Number of Tickets',
@@ -185,21 +164,24 @@ const app = {
         };
     },
     async created() {
-        try {
-            const tickets = await getSupportTickets();
-            const filteredTickets = tickets.filter(ticket => ticket.project != "Extole Help" && (ticket.reporter == "monitoring@extole.com" || ticket.reporter == "support@extole.com"));
-            console.log("filteredTickets", filteredTickets);
-            const { startCounts, resolveCounts, realIssueCounts } = countTicketsPerWeek(filteredTickets);
-            renderChart(startCounts, resolveCounts, realIssueCounts);
-        } catch (error) {
-            console.error('Error loading data:', error);
-        }
+        const tickets = await getSupportTickets();
+
+        const filteredTickets = tickets.filter(ticket =>
+            ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' && ticket.resolvedDate !== null && ticket.key.startsWith("SPEED")
+        );
+        console.log('filteredTickets:', filteredTickets);
+
+        const ticketCountsPerWeek = countTicketsPerWeek(filteredTickets);
+        console.log("ticketCountsPerWeek", ticketCountsPerWeek);
+
+        renderChart(ticketCountsPerWeek.startCounts, ticketCountsPerWeek.resolveCounts);
     }
 };
 
 Vue.createApp(app).mount('#app');
 
-
     </script>
+
 </body>
 </html>
+
