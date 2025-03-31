@@ -53,6 +53,7 @@ public class TicketCommenter {
     void processMessage(String ticketNumber, Optional<String> prompt) {
 
         clientForTicket(ticketNumber);
+
         activityForTicket(ticketNumber);
 
         commentOnTicket(ticketNumber, prompt);
