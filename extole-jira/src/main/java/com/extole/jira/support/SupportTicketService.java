@@ -53,6 +53,43 @@ public class SupportTicketService implements TicketService<SupportTicket> {
         return ticketService.ticketCommentBuilder(key);
     }
 
+    public void setActivity(String ticketNumber, String category, String activity) throws TicketException {
+        var ticket = getTicket(ticketNumber);
+        if (ticket.isEmpty()) {
+            throw new TicketException("Unable to load ticket: " + ticketNumber);
+        }
+
+        ObjectNode payload = JsonNodeFactory.instance.objectNode();
+        ObjectNode fields = payload.putObject("fields");
+
+        ObjectNode activityField = fields.putObject("customfield_11392");
+        activityField.put("value", category);
+
+        ObjectNode child = activityField.putObject("child");
+        child.put("value", activity);
+
+        try {
+            this.jiraWebClientFactory.getWebClient().put()
+                    .uri(uriBuilder -> uriBuilder.path("/rest/api/3/issue/" + ticketNumber)
+                            .queryParam("notifyUsers", "false").build())
+                    .accept(MediaType.APPLICATION_JSON).contentType(MediaType.APPLICATION_JSON).bodyValue(payload)
+                    .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response -> response
+                            .bodyToMono(String.class)
+                            .map(errorBody -> new TicketException("Problems putting custom field Activity to ticket "
+                                    + ticketNumber + ". Bad request code: " + response.statusCode() + " body: "
+                                    + errorBody + " payload: " + payload.toString() + " key: "
+                                    + this.jiraWebClientFactory.getMaskedKey()))
+                            .flatMap(Mono::error))
+                    .toBodilessEntity().block();
+        } catch (Throwable exception) {
+            if (exception.getCause() instanceof TicketException) {
+                throw (TicketException) exception.getCause();
+            }
+            throw exception;
+        }
+    }
+
     public void setClient(String ticketNumber, String clientShortName) throws TicketException {
         if (ticketNumber.startsWith("HELP")) {
             setClientAsOrganization(ticketNumber, clientShortName);

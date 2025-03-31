@@ -15,6 +15,7 @@ import com.cyster.ai.weave.service.conversation.Message;
 import com.cyster.ai.weave.service.conversation.Message.Type;
 import com.cyster.weave.rest.conversation.ScenarioContextException;
 import com.extole.app.jira.JiraScenaioContextFactory;
+import com.extole.zuper.weave.scenarios.activity.ExtoleSupportTicketActivitySuperScenario;
 import com.extole.zuper.weave.scenarios.client.ExtoleSupportTicketClientSuperScenario;
 import com.extole.zuper.weave.scenarios.runbooks.ExtoleSupportTicketSuperScenario;
 
@@ -26,13 +27,16 @@ public class TicketCommenter {
 
     private final ExtoleSupportTicketSuperScenario supportTicketScenario;
     private final ExtoleSupportTicketClientSuperScenario supportTicketClientScenario;
+    private final ExtoleSupportTicketActivitySuperScenario supportTicketActivityScenario;
     private final JiraScenaioContextFactory jiraScenaioContextFactory;
 
     public TicketCommenter(ExtoleSupportTicketSuperScenario supportTicketScenario,
             ExtoleSupportTicketClientSuperScenario supportTicketClientScenario,
+            ExtoleSupportTicketActivitySuperScenario supportTicketActivityScenario,
             JiraScenaioContextFactory jiraScenaioContextFactory) {
         this.supportTicketScenario = supportTicketScenario;
         this.supportTicketClientScenario = supportTicketClientScenario;
+        this.supportTicketActivityScenario = supportTicketActivityScenario;
         this.jiraScenaioContextFactory = jiraScenaioContextFactory;
     }
 
@@ -49,6 +53,7 @@ public class TicketCommenter {
     void processMessage(String ticketNumber, Optional<String> prompt) {
 
         clientForTicket(ticketNumber);
+        activityForTicket(ticketNumber);
 
         commentOnTicket(ticketNumber, prompt);
     }
@@ -62,6 +67,25 @@ public class TicketCommenter {
             // TODO add these conversations to our session store - also need to pass super
             // context!
             var conversation = supportTicketClientScenario
+                    .createConversationBuilder(parameters, jiraScenaioContextFactory.createContext()).start();
+
+            response = conversation.respond();
+        } catch (ConversationException | ScenarioContextException exception) {
+            logger.error("Problem processing ticket: " + ticketNumber, exception);
+            return;
+        }
+        logger.info("Ticket - client idenfified " + ticketNumber + " : " + response);
+    }
+
+    private void activityForTicket(String ticketNumber) {
+        Message response;
+
+        var parameters = new com.extole.zuper.weave.scenarios.activity.ExtoleSupportTicketActivitySuperScenario.Parameters(
+                ticketNumber);
+        try {
+            // TODO add these conversations to our session store - also need to pass super
+            // context!
+            var conversation = supportTicketActivityScenario
                     .createConversationBuilder(parameters, jiraScenaioContextFactory.createContext()).start();
 
             response = conversation.respond();

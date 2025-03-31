@@ -29,7 +29,6 @@ class SupportTicketMapper implements TicketMapper<SupportTicket> {
             add("created");
             add("summary");
             add("parent");
-            add("priority");
             add("issuetype");
             add("status");
             add("labels");

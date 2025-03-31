@@ -1,6 +1,6 @@
 package com.extole.zuper.weave.scenarios.activity;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
@@ -11,94 +11,47 @@ import com.cyster.ai.weave.service.advisor.Advisor;
 import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
-import com.cyster.ai.weave.service.tool.SearchTool;
 import com.cyster.template.StringTemplate;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.activity.ExtoleSupportTicketActivitySuperScenario.Parameters;
+import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketActivitySetTool;
 import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketGetTool;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Component
 public class ExtoleSupportTicketActivitySuperScenario implements Scenario<Parameters, ExtoleSuperContext> {
-    private final String DEFAULT_ACTIVITY = "unclassified";
     private final String DESCRIPTION = "Find the best Runbook for the specified ticket";
 
     private final Advisor<ExtoleSuperContext> advisor;
-    private SearchTool<ExtoleSuperContext> searchTool;
 
     public ExtoleSupportTicketActivitySuperScenario(AiService aiService, AiAdvisorService aiAdvisorService,
-            ExtoleSupportActivityDocuments activityDocuments, SupportTicketGetTool ticketGetTool) {
+            ExtoleSupportActivities supportActivities, SupportTicketGetTool ticketGetTool,
+            SupportTicketActivitySetTool supportTicketActivitySetTool) {
+
+        List<Activity> activities = supportActivities.loadActivities();
 
         String instructionsTemplate = """
-                {
-                  "instructions": [
-                    {
-                      "step": "Fetch the specified ticket",
-                    },
-                    {
-                      "step": "Construct a detailed query string based on the ticket",
-                      "description": [
-                        "Remove PII, company names, and URLs.",
-                        "Remove duplicate words and common stop words.",
-                        "Remove special characters and convert all text to lowercase.",
-                        "Limit the query to 20 words or fewer."
-                      ]
-                    },
-                    {
-                      "step": "Search using the detailed query."
-                      "description": [
-                        "Look for an approximate match, choose the first result."
-                      ]
-                    },
-                    {
-                      "step": "Issue multiple detailed queries if no Activity is found.",
-                      "description": [
-                        "Focus on different keywords and combinations from the original prompt."
-                      ]
-                    },
-                    {
-                      "step": "Use synonyms or related industry terms if initial queries yield no results."
-                    },
-                    {
-                      "step": "Shorten the original query to 10 words or fewer and try variations.",
-                      "condition": "If still no Activity is found."
-                    },
-                    {
-                      "step": "Evaluate multiple search results for closest context before defaulting to '{{defaultActivity}}'.",
-                      "condition": "Only use as '{{defaultActivity}}' as a last resort."
-                    }
-                    {
-                      "step": "Provide your answer in JSON format",
-                      "schema": {{{schema}}},
-                      "description": [
-                        "Its important to always return a json response."
-                      ]
-                    }
-                  ]
-                }
+                        Fetch the specified ticket.
+                        If the ticket has no associated activity then classify it using the activity list below and set the activity on the ticket.
+                        If you can't determine an activity, leave the activity unset on the ticket.
+
+                        Activities:
+                        {{#activities}}
+                        - {{name}}
+                        {{/activities}}
                 """;
 
-        var schema = aiService.getJsonSchema(Response.class);
-
-        Map<String, String> parameters = new HashMap<>() {
-            {
-                put("schema", schema);
-                put("defaultActivity", DEFAULT_ACTIVITY);
-            }
-        };
+        Map<String, Object> parameters = Map.of("activities", activities);
 
         String instructions = new StringTemplate(instructionsTemplate).render(parameters);
 
-        System.out.println("!!!!!!!! extole support ticket activty instructions: " + instructions);
+        System.out.println("!!!!!!!! extole support ticket activity instructions: " + instructions);
 
         AdvisorBuilder<ExtoleSuperContext> builder = aiAdvisorService.getOrCreateAdvisorBuilder(getName());
         builder.setInstructions(instructions);
 
-        this.searchTool = builder.searchToolBuilder(ExtoleSuperContext.class).withName("activities")
-                .withDocumentStore(activityDocuments.getDocuments()).create();
-        builder.withTool(searchTool);
-
         builder.withTool(ticketGetTool);
+        builder.withTool(supportTicketActivitySetTool);
 
         this.advisor = builder.getOrCreate();
 
@@ -128,11 +81,6 @@ public class ExtoleSupportTicketActivitySuperScenario implements Scenario<Parame
     public ActiveConversationBuilder createConversationBuilder(Parameters parameters, ExtoleSuperContext context) {
         if (parameters == null || parameters.ticketNumber() == null || parameters.ticketNumber().isBlank()) {
             throw new IllegalArgumentException("No ticketNumber specified");
-        }
-
-        if (!searchTool.isReady()) {
-            // Still seem to have to wait a bit sometimes, even when its ready here
-            System.out.println("!!!!!!!!!! search tool - vector store not ready !!!");
         }
 
         return this.advisor.createConversationBuilder(context).addMessage("Ticket: " + parameters.ticketNumber());
