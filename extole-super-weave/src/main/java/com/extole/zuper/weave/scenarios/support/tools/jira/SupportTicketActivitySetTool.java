@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 import com.cyster.ai.weave.service.Weave;
 import com.cyster.ai.weave.service.tool.ToolException;
 import com.cyster.jira.client.ticket.TicketException;
+import com.extole.jira.support.Activity;
 import com.extole.jira.support.SupportTicketService;
 import com.extole.zuper.weave.ExtoleSuperContext;
-import com.extole.zuper.weave.scenarios.activity.ExtoleSupportActivities;
 import com.extole.zuper.weave.scenarios.support.tools.ExtoleSupportTool;
 import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketActivitySetTool.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,15 +23,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @Component
 public class SupportTicketActivitySetTool implements ExtoleSupportTool<Request> {
     private SupportTicketService supportTicketService;
-    private Map<String, String> activityCategory = new HashMap<>();
 
-    SupportTicketActivitySetTool(SupportTicketService supportTicketService, ExtoleSupportActivities supportActivities,
+    SupportTicketActivitySetTool(SupportTicketService supportTicketService, 
             @Value("${JIRA_TEST_MODE:false}") boolean testMode) {
         this.supportTicketService = supportTicketService;
-
-        for (var activity : supportActivities.loadActivities()) {
-            activityCategory.put(activity.name(), activity.category());
-        }
     }
 
     @Override
@@ -64,14 +59,18 @@ public class SupportTicketActivitySetTool implements ExtoleSupportTool<Request> 
             throw new ToolException("Attribute 'activity' must be specified");
         }
 
-        if (!activityCategory.containsKey(request.activity)) {
-            throw new ToolException("" + "" + "Unknown activity: " + request.activity);
+        Activity matchingActivity = null;
+        for(Activity activity : supportTicketService.getActivities()) {
+        	if (activity.name().equalsIgnoreCase(request.activity)) {
+        		matchingActivity = activity;
+        	}
         }
-
-        String category = activityCategory.get(request.activity);
-
+        if (matchingActivity == null) {
+            throw new ToolException("Unknown activity: " + request.activity);
+        }
+        	
         try {
-            supportTicketService.setActivity(request.key, category, request.activity);
+            supportTicketService.setActivity(request.key, matchingActivity);
         } catch (TicketException exception) {
             throw new ToolException("Unable to set activity: " + request.activity + " on ticket: " + request.key
                     + " cause: " + exception.getMessage(), exception);

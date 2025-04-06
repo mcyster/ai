@@ -1,5 +1,6 @@
 package com.extole.jira.support;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.MediaType;
@@ -24,13 +25,15 @@ public class SupportTicketService implements TicketService<SupportTicket> {
     private final TicketService<SupportTicket> ticketService;
     private final SupportTicketOrganizations supportTicketOrganizations;
     private final SupportTicketClients supportTicketClients;
-
+    private final SupportTicketActivities supportTicketActivities;
+    
     SupportTicketService(TicketServiceFactory ticketServiceFactory, JiraWebClientFactory jiraWebClientFactory,
-            SupportTicketOrganizations supportTicketOrganization, SupportTicketClients supportTicketClients) {
+            SupportTicketOrganizations supportTicketOrganization, SupportTicketClients supportTicketClients, SupportTicketActivities supportTicketActivities) {
         this.jiraWebClientFactory = jiraWebClientFactory;
         this.ticketService = ticketServiceFactory.createTicketService(new SupportTicketMapper());
         this.supportTicketOrganizations = supportTicketOrganization;
         this.supportTicketClients = supportTicketClients;
+        this.supportTicketActivities = supportTicketActivities;
     }
 
     @Override
@@ -53,7 +56,7 @@ public class SupportTicketService implements TicketService<SupportTicket> {
         return ticketService.ticketCommentBuilder(key);
     }
 
-    public void setActivity(String ticketNumber, String category, String activity) throws TicketException {
+    public void setActivity(String ticketNumber, Activity activity) throws TicketException {
         var ticket = getTicket(ticketNumber);
         if (ticket.isEmpty()) {
             throw new TicketException("Unable to load ticket: " + ticketNumber);
@@ -63,10 +66,10 @@ public class SupportTicketService implements TicketService<SupportTicket> {
         ObjectNode fields = payload.putObject("fields");
 
         ObjectNode activityField = fields.putObject("customfield_11392");
-        activityField.put("value", category);
+        activityField.put("value", activity.category());
 
         ObjectNode child = activityField.putObject("child");
-        child.put("value", activity);
+        child.put("value", activity.name());
 
         try {
             this.jiraWebClientFactory.getWebClient().put()
@@ -190,4 +193,7 @@ public class SupportTicketService implements TicketService<SupportTicket> {
         }
     }
 
+    public List<Activity> getActivities() {
+    	return supportTicketActivities.getActivities();
+    }
 }

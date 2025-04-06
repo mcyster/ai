@@ -12,6 +12,8 @@ import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.template.StringTemplate;
+import com.extole.jira.support.Activity;
+import com.extole.jira.support.SupportTicketService;
 import com.extole.zuper.weave.ExtoleSuperContext;
 import com.extole.zuper.weave.scenarios.activity.ExtoleSupportTicketActivitySuperScenario.Parameters;
 import com.extole.zuper.weave.scenarios.support.tools.jira.SupportTicketActivitySetTool;
@@ -25,11 +27,13 @@ public class ExtoleSupportTicketActivitySuperScenario implements Scenario<Parame
     private final Advisor<ExtoleSuperContext> advisor;
 
     public ExtoleSupportTicketActivitySuperScenario(AiService aiService, AiAdvisorService aiAdvisorService,
-            ExtoleSupportActivities supportActivities, SupportTicketGetTool ticketGetTool,
-            SupportTicketActivitySetTool supportTicketActivitySetTool) {
+            SupportTicketGetTool ticketGetTool,
+            SupportTicketActivitySetTool supportTicketActivitySetTool,
+            SupportTicketService supportTicketService) {
 
-        List<Activity> activities = supportActivities.loadActivities();
+        List<Activity> activities = supportTicketService.getActivities();
 
+        
         String instructionsTemplate = """
                         Fetch the specified ticket.
                         If the ticket has no associated activity then classify it using the activity list below and set the activity on the ticket.
