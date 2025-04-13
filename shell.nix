@@ -35,19 +35,6 @@ pkgs.mkShell {
     fi
     export SPRING_AI_OPENAI_API_KEY=$OPENAI_API_KEY
     export LANG=en_US.UTF-8
-
-    # Enable Wayland support for Chrome
-    export NIXOS_OZONE_WL=1
-
-    # Create a symlink named 'google-chrome' pointing to 'google-chrome-stable'
-    mkdir -p $HOME/.nix-profile/bin
-    ln -sf ${pkgs.google-chrome}/bin/google-chrome-stable $HOME/.nix-profile/bin/google-chrome
-
-    # Set the CHROMEDRIVER environment variable
-    export CHROMEDRIVER=${pkgs.chromedriver}/bin/chromedriver
-
-    # Ensure Chrome can access the necessary fonts
-    export FONTCONFIG_PATH=$HOME/.nix-profile/etc/fonts
   '';
 }
 
