@@ -9,19 +9,6 @@ pkgs.mkShell {
     pkgs.jdk21
     pkgs.ngrok
     pkgs.oauth2l
-    pkgs.google-chrome
-    pkgs.chromedriver
-    pkgs.fontconfig
-    pkgs.freetype
-    pkgs.xorg.libX11
-    pkgs.xorg.libXrender
-    pkgs.xorg.libXext
-    pkgs.glib
-    pkgs.nss
-    pkgs.gtk3
-    pkgs.wayland
-    pkgs.libxkbcommon
-    pkgs.noto-fonts  # Comprehensive font support
   ];
 
   LANG = "en_US.UTF-8";
