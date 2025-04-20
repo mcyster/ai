@@ -31,8 +31,8 @@ public class ScenarioResponse {
 
         try {
             return schemaGenerator.generateSchema(parameterClass);
-        } catch (JsonMappingException exception) {
-            throw new RuntimeException(exception);
+        } catch (JsonMappingException | IllegalArgumentException exception) {
+            throw new RuntimeException("Problem getting Json schema of parameters for Scenario: " + name, exception);
         }
     }
 
