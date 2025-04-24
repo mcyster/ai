@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Support Tickets Pods</title>
+    <meta name="tags" content="extole,tickets,all-pods,support,pod">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">Support Tickets Created Each Week by Pods</h2>
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+   <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
+    <script>
+
+function countTicketsPerPodPerWeek(tickets) {
+    const podCounts = {};
+
+    tickets.forEach(ticket => {
+        const creationDate = new Date(ticket.createdDate);
+        
+        // Assign pod based on the condition
+        var pod = ticket.pod || (ticket.key.startsWith('HELP') ? 't1' : 'Unknown Pod');
+        pod = pod.toLowerCase();
+        
+        const weekEndDate = getWeekEndDate(creationDate);
+
+        if (!podCounts[pod]) {
+            podCounts[pod] = {};
+        }
+        podCounts[pod][weekEndDate] = (podCounts[pod][weekEndDate] || 0) + 1;
+    });
+    return podCounts;
+}
+
+function getWeekEndDate(date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
+
+function getTopPods(podCounts, limit = 10) {
+    const lastMonth = new Date();
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    const lastMonthISO = lastMonth.toISOString().split('T')[0];
+
+    const podTotals = {};
+    for (const pod in podCounts) {
+        podTotals[pod] = Object.entries(podCounts[pod])
+            .filter(([weekEndDate]) => weekEndDate >= lastMonthISO)
+            .reduce((sum, [, count]) => sum + count, 0);
+    }
+
+    return Object.entries(podTotals)
+        .sort(([, totalA], [, totalB]) => totalB - totalA)
+        .slice(0, limit)
+        .map(([pod]) => pod);
+}
+
+function renderChart(podCounts, topPods) {
+    const ctx = document.getElementById('chart');
+    if (!ctx) return;
+
+    let weeks = new Set();
+    topPods.forEach(pod => {
+        Object.keys(podCounts[pod]).forEach(week => weeks.add(week));
+    });
+    weeks = new Set(Array.from(weeks).sort());
+    weeks = new Set(Array.from(weeks).slice(-24));
+
+    const colors = generateColors(topPods.length);
+    const datasets = topPods.map((pod, index) => {
+        const data = Array.from(weeks).map(week => ({ x: new Date(week), y: podCounts[pod][week] || 0 }));
+        return {
+            label: pod,
+            backgroundColor: colors[index],
+            borderColor: colors[index],
+            fill: false,
+            data,
+            borderWidth: 4
+        };
+    });
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Tickets',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function generateColors(numColors) {
+    const colors = [];
+    const hueStep = 360 / numColors;
+    for (let i = 0; i < numColors; i++) {
+        const hue = i * hueStep;
+        const color = `hsl(${hue}, 50%, 45%)`;
+        colors.push(color);
+    }
+    return colors;
+}
+
+const app = {
+    data() {
+        return {
+            jsonData: []
+        };
+    },
+    async created() {
+        try {
+            const tickets = await getSupportTickets();
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            const filteredTickets = tickets.filter(ticket => new Date(ticket.createdDate) >= sixMonthsAgo);
+
+            const podCounts = countTicketsPerPodPerWeek(filteredTickets);
+            const topPods = getTopPods(podCounts);
+            renderChart(podCounts, topPods);
+        } catch (error) {
+            console.error('Error loading data:', error);
+        }
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
+    </script>
+</body>
+</html>

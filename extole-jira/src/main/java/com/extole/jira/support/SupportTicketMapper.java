@@ -48,6 +48,7 @@ class SupportTicketMapper implements TicketMapper<SupportTicket> {
             add("customfield_11391"); // estimatedDeliveryDate, format sad ...
             add("customfield_11379"); // RunbookUsage
             add("customfield_11392"); // Activity
+            add("customfield_11459"); // Work Type
             add("aggregatetimespent");
 
         }
@@ -120,6 +121,13 @@ class SupportTicketMapper implements TicketMapper<SupportTicket> {
         } else {
             ticketBuilder.activityCategory("Uncategorized");
             ticketBuilder.activity("Uncategorized");
+        }
+
+        JsonNode workType = fields.path("customfield_11459");
+        if (workType != null) {
+            ticketBuilder.workType(workType.path("value").asText("Unknown"));
+        } else {
+            ticketBuilder.workType("TBD");
         }
 
         ticketBuilder.resolvedDate(toInstant(fields.path("resolutiondate").asText(null)));

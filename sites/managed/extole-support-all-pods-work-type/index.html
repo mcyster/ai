@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>T2 Tickets Created Each Week by Work Type</title>
+    <meta name="tags" content="extole,tickets,t2-pods,support,workType">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            margin: auto;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">T2 Tickets Created Each Week by Work Type</h2>
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+   <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
+    <script>
+
+function countTicketsPerWorkTypePerWeek(tickets) {
+    const workTypeCounts = {};
+
+    tickets.forEach(ticket => {
+        const creationDate = new Date(ticket.createdDate);
+        var workType = ticket.workType || 'Unknown';
+        workType = workType.toLowerCase();
+        const weekEndDate = getWeekEndDate(creationDate);
+
+        if (!workTypeCounts[workType]) {
+            workTypeCounts[workType] = {};
+        }
+        workTypeCounts[workType][weekEndDate] = (workTypeCounts[workType][weekEndDate] || 0) + 1;
+    });
+    return workTypeCounts;
+}
+
+function getWeekEndDate(date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
+
+function getTopWorkTypes(workTypeCounts, limit = 3) {
+    const lastMonth = new Date();
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    const lastMonthISO = lastMonth.toISOString().split('T')[0];
+
+    const workTypeTotals = {};
+    for (const workType in workTypeCounts) {
+        workTypeTotals[workType] = Object.entries(workTypeCounts[workType])
+            .filter(([weekEndDate]) => weekEndDate >= lastMonthISO)
+            .reduce((sum, [, count]) => sum + count, 0);
+    }
+
+    return Object.entries(workTypeTotals)
+        .sort(([, totalA], [, totalB]) => totalB - totalA)
+        .slice(0, limit)
+        .map(([workType]) => workType);
+}
+
+function renderChart(workTypeCounts, topWorkTypes) {
+    const ctx = document.getElementById('chart');
+    if (!ctx) return;
+
+    let weeks = new Set();
+    topWorkTypes.forEach(workType => {
+        Object.keys(workTypeCounts[workType]).forEach(week => weeks.add(week));
+    });
+    weeks = new Set(Array.from(weeks).sort());
+    weeks = new Set(Array.from(weeks).slice(-24));
+
+    const colors = generateColors(topWorkTypes.length);
+    const datasets = topWorkTypes.map((workType, index) => {
+        const data = Array.from(weeks).map(week => ({ x: new Date(week), y: workTypeCounts[workType][week] || 0 }));
+        return {
+            label: workType,
+            backgroundColor: colors[index],
+            borderColor: colors[index],
+            fill: false,
+            data,
+            borderWidth: 4
+        };
+    });
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Tickets',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function generateColors(numColors) {
+    const colors = [];
+    const hueStep = 360 / numColors;
+    for (let i = 0; i < numColors; i++) {
+        const hue = i * hueStep;
+        const color = `hsl(${hue}, 50%, 45%)`;
+        colors.push(color);
+    }
+    return colors;
+}
+
+const app = {
+    data() {
+        return {
+            jsonData: []
+        };
+    },
+    async created() {
+        try {
+            const tickets = await getSupportTickets();
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            const filteredTickets = tickets.filter(ticket => new Date(ticket.createdDate) >= sixMonthsAgo &&    
+              ['UI', 'Flow', 'Guru'].includes(ticket.pod)
+            );
+
+            const workTypeCounts = countTicketsPerWorkTypePerWeek(filteredTickets);
+            const topWorkTypes = getTopWorkTypes(workTypeCounts);
+            renderChart(workTypeCounts, topWorkTypes);
+        } catch (error) {
+            console.error('Error loading data:', error);
+        }
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
+    </script>
+</body>
+</html>

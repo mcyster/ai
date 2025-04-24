@@ -8,7 +8,7 @@ import java.util.List;
 public record SupportTicket(String key, String project, String summary, String description, Instant createdDate,
         Instant resolvedDate, String priority, String issueType, String status, List<String> labels, String reporter,
         String assignee, String runbook, String runbookUsage, String activity, String activityCategory,
-        String clientShortName, String clientId, Instant statusChangeDate, String csm, String pod,
+        String clientShortName, String clientId, Instant statusChangeDate, String csm, String pod, String workType,
         String clientPriority, Duration duration, Instant startDate, Instant requestedStartDate,
         Instant requestedDueDate, List<Comment> comments) {
 
@@ -38,6 +38,7 @@ public record SupportTicket(String key, String project, String summary, String d
         private Instant statusChangeDate;
         private String csm;
         private String pod;
+        private String workType;
         private String clientPriority;
         private Duration duration;
         private Instant startDate;
@@ -150,6 +151,11 @@ public record SupportTicket(String key, String project, String summary, String d
             return this;
         }
 
+        public Builder workType(String workType) {
+            this.workType = workType;
+            return this;
+        }
+
         public Builder clientPriority(String clientPriority) {
             this.clientPriority = clientPriority;
             return this;
@@ -188,8 +194,8 @@ public record SupportTicket(String key, String project, String summary, String d
         public SupportTicket build() {
             return new SupportTicket(key, project, summary, description, createdDate, resolvedDate, priority, issueType,
                     status, labels, reporter, assignee, runbook, runbookUsage, activity, activityCategory,
-                    clientShortName, clientId, statusChangeDate, csm, pod, clientPriority, duration, startDate,
-                    requestedStartDate, requestedDueDate, comments);
+                    clientShortName, clientId, statusChangeDate, csm, pod, workType, clientPriority, duration,
+                    startDate, requestedStartDate, requestedDueDate, comments);
         }
     }
 

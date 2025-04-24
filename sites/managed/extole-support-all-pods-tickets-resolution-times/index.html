@@ -119,19 +119,9 @@ function renderChart(categories) {
             labels: labels,
             datasets: [
                 {
-                    label: '1 Week',
-                    backgroundColor: 'rgba(34, 139, 34, 0.5)',
-                    data: week1Data
-                },
-                {
-                    label: '2 Weeks',
-                    backgroundColor: 'rgba(144, 238, 144, 0.5)',
-                    data: week2Data
-                },
-                {
-                    label: '3 Weeks',
-                    backgroundColor: 'rgba(255, 165, 0, 0.5)',
-                    data: week3Data
+                    label: 'Escalated',
+                    backgroundColor: 'rgba(80, 0, 0, 0.9)',
+                    data: escalatedData
                 },
                 {
                     label: '4+ Weeks',
@@ -139,9 +129,19 @@ function renderChart(categories) {
                     data: week4PlusData
                 },
                 {
-                    label: 'Escalated',
-                    backgroundColor: 'rgba(80, 0, 0, 0.9)',
-                    data: escalatedData
+                    label: '3 Weeks',
+                    backgroundColor: 'rgba(255, 165, 0, 0.5)',
+                    data: week3Data
+                },
+                {
+                    label: '2 Weeks',
+                    backgroundColor: 'rgba(144, 238, 144, 0.5)',
+                    data: week2Data
+                },
+                {
+                    label: '1 Week',
+                    backgroundColor: 'rgba(34, 139, 34, 0.5)',
+                    data: week1Data
                 }
             ]
         },
