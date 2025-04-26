@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>T2 Tickets Created Launch vs Support</title>
+    <meta name="tags" content="extole,tickets,t2-pods,support,launch">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typescript@latest"></script> <!-- Add TypeScript compiler script -->
+    <script src="/sites/managed/chat/chat.js" data-scenario="WebDeveloper" data-href-website-id="/([^/]+)/[^/]+$"></script>
+    <style>
+        #graphTitle {
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .chart-container {
+            width: 80%;
+            max-width: 2400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="chart-container">
+            <h2 id="graphTitle">T2 Tickets Created Launch vs Support</h2>
+            <canvas id="chart"></canvas>
+        </div>
+    </div>
+
+   <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
+    <script src="../extole/support-tickets.js"></script>
+    <script>
+
+function countTicketsPerSourcePerWeek(tickets) {
+    const sourceCounts = { 'Launch': {}, 'Support': {} }; // Initialize for both sources
+
+    tickets.forEach(ticket => {
+        const creationDate = new Date(ticket.createdDate);
+        const ticketSource = (ticket.key && ticket.key.startsWith('LAUNCH')) ? 'Launch' : 'Support';
+        const weekEndDate = getWeekEndDate(creationDate);
+
+        // Ensure the week exists for the source
+        if (!sourceCounts[ticketSource][weekEndDate]) {
+            sourceCounts[ticketSource][weekEndDate] = 0;
+        }
+        sourceCounts[ticketSource][weekEndDate] += 1;
+    });
+    return sourceCounts;
+}
+
+function getWeekEndDate(date) {
+    const dayOfWeek = date.getUTCDay();
+    const weekEndDate = new Date(date);
+    weekEndDate.setUTCDate(date.getUTCDate() + (7 - dayOfWeek) % 7); // Adjust for week ending on Sunday
+    weekEndDate.setUTCHours(0, 0, 0, 0); // Set to the start of the day (UTC)
+    return weekEndDate.toISOString().split('T')[0]; // Return ISO date format
+}
+
+function renderChart(sourceCounts, ticketSources) {
+    const context = document.getElementById('chart');
+    if (!context) return;
+
+    let weeks = new Set();
+    // Collect all unique weeks from both sources
+    ticketSources.forEach(ticketSource => {
+        if (sourceCounts[ticketSource]) {
+            Object.keys(sourceCounts[ticketSource]).forEach(week => weeks.add(week));
+        }
+    });
+
+    // Sort weeks and limit to the last 24
+    let sortedWeeks = Array.from(weeks).sort();
+    if (sortedWeeks.length > 24) {
+        sortedWeeks = sortedWeeks.slice(-24);
+    }
+    weeks = new Set(sortedWeeks);
+
+
+    const colors = generateColors(ticketSources.length);
+    const datasets = ticketSources.map((ticketSource, index) => {
+        const data = Array.from(weeks).map(week => ({ x: new Date(week), y: (sourceCounts[ticketSource] && sourceCounts[ticketSource][week]) || 0 }));
+        return {
+            label: ticketSource,
+            backgroundColor: colors[index],
+            borderColor: colors[index],
+            fill: false,
+            data,
+            borderWidth: 4
+        };
+    });
+
+    new Chart(context, {
+        type: 'line',
+        data: {
+            datasets
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'week',
+                        tooltipFormat: 'PP',
+                        displayFormats: {
+                            week: 'PP'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Week Ending',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Number of Tickets',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        font: {
+                            weight: 'bold'
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function generateColors(numColors) {
+    const colors = [];
+    const hueStep = 360 / numColors;
+    for (let i = 0; i < numColors; i++) {
+        const hue = i * hueStep;
+        const color = `hsl(${hue}, 50%, 45%)`;
+        colors.push(color);
+    }
+    return colors;
+}
+
+const app = {
+    data() {
+        return {
+            jsonData: []
+        };
+    },
+    async created() {
+        try {
+            const tickets = await getSupportTickets();
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            const filteredTickets = tickets.filter(ticket => new Date(ticket.createdDate) >= sixMonthsAgo &&
+              ['UI', 'Flow', 'Guru'].includes(ticket.pod)
+            );
+
+            const sourceCounts = countTicketsPerSourcePerWeek(filteredTickets);
+            const ticketSources = ['Launch', 'Support']; // Define the sources directly
+            renderChart(sourceCounts, ticketSources);
+        } catch (error) {
+            console.error('Error loading data:', error);
+        }
+    }
+};
+
+Vue.createApp(app).mount('#app');
+
+    </script>
+</body>
+</html>
