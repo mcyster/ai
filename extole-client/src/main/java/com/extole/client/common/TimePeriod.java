@@ -1,4 +1,4 @@
-package com.extole.zuper.weave.scenarios.support.tools.reports.configurable;
+package com.extole.client.common;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -16,6 +16,7 @@ public class TimePeriod {
 
     public TimePeriod(String input) {
         this.input = input;
+
     }
 
     public String convertToTimeRange() {

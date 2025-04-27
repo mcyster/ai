@@ -8,6 +8,7 @@ import com.cyster.ai.weave.service.advisor.AdvisorBuilder;
 import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.tool.SearchTool;
+import com.extole.admin.weave.scenarios.help.tools.ExtoleConfigurableReportPostTool;
 import com.extole.admin.weave.scenarios.prehandler.ExtoleApiStore;
 import com.extole.admin.weave.session.ExtoleSessionContext;
 
@@ -17,11 +18,19 @@ public class ExtoleReportWriterScenario implements Scenario<Void, ExtoleSessionC
 
     private final Advisor<ExtoleSessionContext> advisor;
 
-    ExtoleReportWriterScenario(AiAdvisorService aiAdvisorService, ExtoleApiStore extoleStore) {
+    ExtoleReportWriterScenario(AiAdvisorService aiAdvisorService, ExtoleApiStore extoleStore,
+            ExtoleConfigurableReportPostTool extoleConfigurableReportPostTool) {
 
         String instructions = """
                 An Extole configurable report is defining by 'mappings' which is a series of columns separated by a new line or semicolon
                 A column is defined as the column name, followed by an equals sign, followed by an expression: NAME=EXPRESSION
+
+                Mappings can be written for a number of events in the extole system
+                - step events (often just called events), the name of the high level business events in out system, maps to the class StepRecord
+                - input events, events fired into Extole, often result in the triggering of step events, maps to the class InputRecord
+                - reward events, events associated with issuing rewards, maps to the class RewardEvent
+                - message events, events associated with sending messages over email or sms, mmaps to class MessageConsumerEvent
+                - client events, events fire when the configuration of the client changes, maps to class ClientEvent
 
                 # Examples
 
@@ -69,6 +78,8 @@ public class ExtoleReportWriterScenario implements Scenario<Void, ExtoleSessionC
                 group_count(propertyName, filter)
                 Counts the number of uniqe values of propertyName filtered by filer
                 Filter is step_name followed by a the name of a step event or "all" to count all steps
+
+                After you've created a mapping, test it by running a report for a short duration like 1 hour.
                 """
                 .stripIndent();
 
@@ -79,6 +90,8 @@ public class ExtoleReportWriterScenario implements Scenario<Void, ExtoleSessionC
         SearchTool.Builder<ExtoleSessionContext> searchToolBuilder = builder
                 .searchToolBuilder(ExtoleSessionContext.class);
         extoleStore.createStoreTool(searchToolBuilder);
+
+        builder.withTool(extoleConfigurableReportPostTool);
 
         this.advisor = builder.getOrCreate();
     }
