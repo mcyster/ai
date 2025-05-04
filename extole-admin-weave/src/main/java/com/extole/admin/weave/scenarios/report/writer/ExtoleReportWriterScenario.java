@@ -58,16 +58,32 @@ public class ExtoleReportWriterScenario implements Scenario<Void, ExtoleSessionC
 
                 Functions include:
 
-                person(person_id)
+                Function: person(person_id)
                 Fetches a person by id
-                Where:
+                Parameters:
                 - person_id is the id of the person
+                Returns: an instance of class Person
+                Exampe: person(event.personId).email
 
+                Function: event(event_id)
+                Load a specific consumer event (input or step) by event id
+                Parameters
+                - event id
+                Returns: an instance of class ConsumerEvent
+                Example: event(event.rootEventId).name
 
-                Campaign(campaign_id)
+                Function: Campaign(campaign_id)
                 Fetch a campaign by id
-                Where
+                Parmeters:
                 - campaign_id is the id of the campaign
+                Returns: an instance of class Campaign
+                Example: campaign(event.campaignId).campaignName
+
+                Function: CampaignSummary(campaign_id)
+                Returns a campaign summary, which understands when the campaign was started, stopped etc
+                Parmeters:
+                - campaign_id is the id of the campaign
+
 
                 Contant(value)
                 Returns a constant

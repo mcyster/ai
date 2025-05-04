@@ -18,8 +18,8 @@ import com.cyster.ai.weave.service.DocumentStore;
 public class ExtoleApiSuperStore {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleApiSuperStore.class);
 
-    private static final String remoteJavaApiRepository = "git@github.com:extole/java-api.git";
-    private static final File localJavaApiRepository = new File("/tmp/extole/java-api");
+    private static final String remoteJavaApiRepository = "git@github.com:extole/api-evalutable.git";
+    private static final File localJavaApiRepository = new File("/tmp/extole/api-evalutable");
 
     private final AiService aiService;
 

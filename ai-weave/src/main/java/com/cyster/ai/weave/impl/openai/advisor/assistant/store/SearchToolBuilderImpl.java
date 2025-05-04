@@ -81,7 +81,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
         List<String> files = new ArrayList<String>();
 
         try {
-            var directory = Files.createTempDirectory("store-" + safeName(this.name));
+            var directory = Files.createTempDirectory("store-" + safeName(this.name) + "-");
 
             try (Stream<Document> documentStream = documentStore.stream()) {
                 documentStream.forEach(document -> {
@@ -182,7 +182,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
                         throw new RuntimeException("Retry interrupted, while waiting to do retry on: ", exception);
                     }
                 } else {
-                    throw exception;
+                    throw new RuntimeException("Failed to upload asset: " + localFile.toString(), exception);
                 }
             }
         }
@@ -244,7 +244,7 @@ public class SearchToolBuilderImpl<CONTEXT> implements SearchTool.Builder<CONTEX
     }
 
     private static String safeName(String name) {
-        return name.replaceAll("\\s+", "_").replaceAll("[^a-zA-Z0-9_]", "");
+        return name.replaceAll("\\s+", "_").replaceAll("[^a-zA-Z0-9_-]", "");
     }
 
 }

@@ -17,8 +17,8 @@ import com.cyster.ai.weave.service.tool.SearchTool;
 public class ExtoleApiStore {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleApiStore.class);
 
-    private static final String remoteJavaApiRepository = "git@github.com:extole/java-api.git";
-    private static final File localJavaApiRepository = new File("/tmp/extole/java-api");
+    private static final String remoteJavaApiRepository = "git@github.com:extole/api-evalutable.git";
+    private static final File localJavaApiRepository = new File("/tmp/extole/api-evalutable");
 
     private final AiService aiService;
 
@@ -32,7 +32,7 @@ public class ExtoleApiStore {
         var documentStore = aiService.directoryDocumentStoreBuilder().withDirectory(localJavaApiRepository.toPath())
                 .withHash(hash).create();
 
-        builder.withName("extole-api");
+        builder.withName("api-evalutable");
         builder.withDocumentStore(documentStore);
 
         return builder.create();

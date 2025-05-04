@@ -187,7 +187,12 @@ const app = {
     async created() {
         try {
             const tickets = await getSupportTickets();
-            const filteredTickets = tickets.filter(ticket => ticket.project != "Extole Help" && (ticket.reporter == "monitoring@extole.com" || ticket.reporter == "support@extole.com"));
+            const filteredTickets = tickets.filter(ticket => 
+                ticket.project != "Extole Help" &&
+                (ticket.reporter == "monitoring@extole.com" || ticket.reporter == "support@extole.com") &&
+                !(ticket.summary.includes("alerts - stats") ||
+                  (ticket.runbook && ticket.runbook.includes("Triage - Rewards Monitoring")))
+            );
             console.log("filteredTickets", filteredTickets);
             const { startCounts, resolveCounts, realIssueCounts } = countTicketsPerWeek(filteredTickets);
             renderChart(startCounts, resolveCounts, realIssueCounts);
