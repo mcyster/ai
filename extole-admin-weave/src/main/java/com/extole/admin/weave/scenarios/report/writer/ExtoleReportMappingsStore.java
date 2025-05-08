@@ -1,4 +1,4 @@
-package com.extole.admin.weave.scenarios.prehandler;
+package com.extole.admin.weave.scenarios.report.writer;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,17 +15,17 @@ import com.cyster.ai.weave.service.AiService;
 import com.cyster.ai.weave.service.tool.SearchTool;
 
 @Component
-public class ExtoleApiStore {
-    private static final Logger logger = LoggerFactory.getLogger(ExtoleApiStore.class);
+public class ExtoleReportMappingsStore {
+    private static final Logger logger = LoggerFactory.getLogger(ExtoleReportMappingsStore.class);
 
-    private static final String repositoryName = "api-evalutable";
+    private static final String repositoryName = "api-report-mappings";
 
     private static final String remoteJavaApiRepository = "git@github.com:extole/" + repositoryName + ".git";
     private static final File localJavaApiRepository = Path.of("/tmp/extole", repositoryName).toFile();
 
     private final AiService aiService;
 
-    ExtoleApiStore(AiService aiService) {
+    ExtoleReportMappingsStore(AiService aiService) {
         this.aiService = aiService;
     }
 

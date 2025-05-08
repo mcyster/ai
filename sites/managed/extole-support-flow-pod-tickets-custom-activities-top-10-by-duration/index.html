@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>UI Pod Top 10 Activities by Duration</title>
-    <meta name="tags" content="extole,support,tickets,activities,duration,ui-pod">
+    <title>Flow Pod Top 10 Custom Activities by Duration</title>
+    <meta name="tags" content="extole,support,tickets,custom,activities,duration,flow-pod">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">UI Pod - Top 10 Activities by Duration</h2>
+            <h2 id="graphTitle">Flow Pod - Top 10 Custom Activities by Duration</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -156,7 +156,8 @@ const app = {
             const filteredTickets = tickets.filter(ticket =>
                 ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' &&
                 ticket.status != "Closed - Won't Do" &&
-                ticket.pod === 'UI' &&
+                ticket.pod === 'Flow' &&
+                ticket.workType === 'Custom' &&
                 typeof ticket.duration === 'number'
             );
             console.log("filteredTickets based on duration", filteredTickets);

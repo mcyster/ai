@@ -9,7 +9,6 @@ import com.cyster.ai.weave.service.conversation.ActiveConversationBuilder;
 import com.cyster.ai.weave.service.scenario.Scenario;
 import com.cyster.ai.weave.service.tool.SearchTool;
 import com.extole.admin.weave.scenarios.help.tools.ExtoleConfigurableReportPostTool;
-import com.extole.admin.weave.scenarios.prehandler.ExtoleApiStore;
 import com.extole.admin.weave.session.ExtoleSessionContext;
 
 @Component
@@ -18,7 +17,7 @@ public class ExtoleReportWriterScenario implements Scenario<Void, ExtoleSessionC
 
     private final Advisor<ExtoleSessionContext> advisor;
 
-    ExtoleReportWriterScenario(AiAdvisorService aiAdvisorService, ExtoleApiStore extoleStore,
+    ExtoleReportWriterScenario(AiAdvisorService aiAdvisorService, ExtoleReportMappingsStore extoleStore,
             ExtoleConfigurableReportPostTool extoleConfigurableReportPostTool) {
 
         String instructions = """

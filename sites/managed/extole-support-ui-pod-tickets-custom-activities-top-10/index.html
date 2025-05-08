@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>UI Pod Top 10 Activities by Duration</title>
-    <meta name="tags" content="extole,support,tickets,activities,duration,ui-pod">
+    <title>UI Pod Top 10 Custom Activities</title>
+    <meta name="tags" content="extole,support,tickets,custom,activities,ui-pod">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
@@ -25,7 +25,7 @@
 <body>
     <div id="app">
         <div class="chart-container">
-            <h2 id="graphTitle">UI Pod - Top 10 Activities by Duration</h2>
+            <h2 id="graphTitle">UI Pod - Top 10 Custom Activities</h2>
             <canvas id="chart"></canvas>
         </div>
     </div>
@@ -33,22 +33,21 @@
     <!-- The attributes on a ticket can be found be loading ../extole/support-ticket.js -->
     <script src="../extole/support-tickets.js"></script>
     <script>
-function calculateWeeklyDurationPerCategory(tickets) {
-    const categoryWeeklyDurations = {};
+function countTicketsPerCategoryPerWeek(tickets) {
+    const categoryCounts = {};
 
     tickets.forEach(ticket => {
         const creationDate = new Date(ticket.createdDate);
         const category = ticket.activity || 'Uncategorized';
         const weekEndDate = getWeekEndDate(creationDate);
-        const duration = ticket.duration || 0;
 
-        if (!categoryWeeklyDurations[category]) {
-            categoryWeeklyDurations[category] = {};
+        if (!categoryCounts[category]) {
+            categoryCounts[category] = {};
         }
-        categoryWeeklyDurations[category][weekEndDate] = (categoryWeeklyDurations[category][weekEndDate] || 0) + duration;
+        categoryCounts[category][weekEndDate] = (categoryCounts[category][weekEndDate] || 0) + 1;
     });
 
-    return categoryWeeklyDurations;
+    return categoryCounts;
 }
 
 function getWeekEndDate(date) {
@@ -59,26 +58,26 @@ function getWeekEndDate(date) {
     return weekEndDate.toISOString().split('T')[0];
 }
 
-function getTopCategoriesByDuration(categoryWeeklyDurations, limit = 10) {
-    const categoryTotalDurations = {};
+function getTopCategories(categoryCounts, limit = 10) {
+    const categoryTotals = {};
 
-    for (const category in categoryWeeklyDurations) {
-        categoryTotalDurations[category] = Object.values(categoryWeeklyDurations[category]).reduce((sum, durationValue) => sum + durationValue, 0);
+    for (const category in categoryCounts) {
+        categoryTotals[category] = Object.values(categoryCounts[category]).reduce((sum, count) => sum + count, 0);
     }
 
-    return Object.entries(categoryTotalDurations)
-        .sort(([, totalDurationA], [, totalDurationB]) => totalDurationB - totalDurationA)
+    return Object.entries(categoryTotals)
+        .sort(([, totalA], [, totalB]) => totalB - totalA)
         .slice(0, limit)
-        .map(([categoryName]) => categoryName);
+        .map(([category]) => category);
 }
 
-function renderChart(categoryWeeklyDurations, topCategories) {
+function renderChart(categoryCounts, topCategories) {
     const ctx = document.getElementById('chart');
     if (!ctx) return;
 
     let weeks = new Set();
     topCategories.forEach(category => {
-        Object.keys(categoryWeeklyDurations[category]).forEach(week => weeks.add(week));
+        Object.keys(categoryCounts[category]).forEach(week => weeks.add(week));
     });
     weeks = new Set(Array.from(weeks).sort());
 
@@ -87,11 +86,10 @@ function renderChart(categoryWeeklyDurations, topCategories) {
     weeks = new Set(Array.from(weeks).filter(week => new Date(week) >= sixMonthsAgo));
 
     const colors = generateColors(topCategories.length);
-    const millisecondsToHours = 1000 * 60 * 60;
     const datasets = topCategories.map((category, index) => {
         const data = Array.from(weeks).map(week => ({
             x: new Date(week),
-            y: (categoryWeeklyDurations[category][week] || 0) / millisecondsToHours
+            y: categoryCounts[category][week] || 0
         }));
         return {
             label: category,
@@ -126,7 +124,7 @@ function renderChart(categoryWeeklyDurations, topCategories) {
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Total Duration (Hours)',
+                        text: 'Number of Tickets',
                         font: { size: 16, weight: 'bold' }
                     },
                     ticks: { font: { weight: 'bold' } }
@@ -153,16 +151,13 @@ const app = {
     async created() {
         try {
             const tickets = await getSupportTickets();
-            const filteredTickets = tickets.filter(ticket =>
-                ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' &&
-                ticket.status != "Closed - Won't Do" &&
-                ticket.pod === 'UI' &&
-                typeof ticket.duration === 'number'
-            );
-            console.log("filteredTickets based on duration", filteredTickets);
-            const categoryDurations = calculateWeeklyDurationPerCategory(filteredTickets);
-            const topCategories = getTopCategoriesByDuration(categoryDurations);
-            renderChart(categoryDurations, topCategories);
+            const filteredTickets = tickets.filter(ticket => 
+                ticket.clientShortName && ticket.clientShortName.toLowerCase() !== 'extole' && ticket.status != "Closed - Won't Do" && ticket.pod === 'UI' 
+                && ticket.workType === 'Custom');
+            console.log("filteredTickets", filteredTickets);
+            const categoryCounts = countTicketsPerCategoryPerWeek(filteredTickets);
+            const topCategories = getTopCategories(categoryCounts);
+            renderChart(categoryCounts, topCategories);
         } catch (error) {
             console.error('Error loading data:', error);
         }

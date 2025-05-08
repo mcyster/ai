@@ -2,6 +2,7 @@ package com.extole.zuper.weave.scenarios.prehandler;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
@@ -18,8 +19,10 @@ import com.cyster.ai.weave.service.DocumentStore;
 public class ExtoleApiSuperStore {
     private static final Logger logger = LoggerFactory.getLogger(ExtoleApiSuperStore.class);
 
-    private static final String remoteJavaApiRepository = "git@github.com:extole/api-evalutable.git";
-    private static final File localJavaApiRepository = new File("/tmp/extole/api-evalutable");
+    public static final String repositoryName = "api-evalutable";
+
+    private static final String remoteJavaApiRepository = "git@github.com:extole/" + repositoryName + ".git";
+    private static final File localJavaApiRepository = Path.of("/tmp/extole", repositoryName).toFile();
 
     private final AiService aiService;
 
